@@ -1,0 +1,145 @@
+{
+  "site": {
+    "name": "Kolac Digital",
+    "logo": "kolac.digital"
+  },
+  "hero": {
+    "rotatingHeadlines": [
+      "Leadgenerierung durch digitale Präsenz",
+      "Aufbau deiner digitalen Präsenz",
+      "Sichtbarkeit, die sich auszahlt"
+    ],
+    "subline": "Webseiten, Google Ads und Videocontent – alles aus einer Hand. Wir kümmern uns um dein Marketing, du dich um dein Business.",
+    "buttonPrimary": "Projekt starten",
+    "buttonSecondary": "Unsere Arbeit"
+  },
+  "leistungen": {
+    "label": "LEISTUNGEN",
+    "headline": "Was wir für dich tun",
+    "intro": "Webseiten, Google Ads und Videocontent – mit klarem Fokus auf Ergebnisse. Kein Schnickschnack, sondern das, was dein Business nach vorne bringt.",
+    "services": [
+      {
+        "title": "Webseiten",
+        "icon": "monitor",
+        "description": "Professionelle Websites, die verkaufen – egal ob Onlineshop, Buchungsseite oder Unternehmensauftritt.",
+        "features": [
+          "E-Commerce & Onlineshops",
+          "Buchungssysteme & Kalender",
+          "Landingpages & Firmenseiten"
+        ]
+      },
+      {
+        "title": "Google Ads",
+        "icon": "search",
+        "description": "Gezielte Werbeanzeigen, die genau die Menschen erreichen, die nach deinem Angebot suchen.",
+        "features": [
+          "Suchkampagnen & Shopping",
+          "Conversion-Tracking",
+          "Laufende Optimierung"
+        ]
+      },
+      {
+        "title": "Videocontent",
+        "icon": "video",
+        "description": "Kurzvideos, die Aufmerksamkeit erzeugen – von der Idee bis zum fertigen Schnitt.",
+        "features": [
+          "Reels, TikToks & Shorts",
+          "Skripte & Konzeption",
+          "Dreh & Postproduktion"
+        ]
+      }
+    ],
+    "extra": "Und wenn du mehr brauchst? Wir unterstützen auch bei Logos, Flyern, Produktfotografie und mehr."
+  },
+  "about": {
+    "label": "ÜBER UNS",
+    "headline": "Digital aus Überzeugung",
+    "image": "images/yk.png",
+    "text": [
+      "Wir sind kein klassisches Agentur-Team mit 50 Leuten und endlosen Meetings. Bei Kolac Digital bekommst du direkte Kommunikation, schnelle Umsetzung und jemanden, der weiß was funktioniert – weil wir es selbst jeden Tag machen.",
+      "Ob Webseiten die konvertieren, Google Ads die performen oder Social Media Content der Reichweite bringt – wir haben es für unsere eigenen Projekte getestet, bevor wir es für dich umsetzen. Unter anderem auch mit einem eigenen Social Media Kanal in der Entertainment-Branche.",
+      "Keine Theorie, sondern Praxis. Keine Ausreden, sondern Ergebnisse."
+    ],
+    "tags": [
+      "Marketing & Strategie",
+      "Hands-on Umsetzung",
+      "Schnelle Reaktionszeit",
+      "Alles aus einer Hand"
+    ]
+  },
+  "referenzen": {
+    "label": "REFERENZEN",
+    "headline": "Ergebnisse, die sprechen",
+    "subline": "Ausgewählte Projekte – mit echten Ergebnissen.",
+    "projects": [
+      {
+        "company": "Bacara Ästhetik",
+        "tag": "Webseite & Social Media",
+        "mockupType": "browser",
+        "mockupImage": "images/bacara-website.png",
+        "services": [
+          "Webseite mit Online-Buchungssystem",
+          "Sprechstundenzeiten mit Live-Update",
+          "Automatische Rechnungsstellung",
+          "Kundengewinnung durch Social Media"
+        ],
+        "keyWin": "800+ Termine gebucht über die Webseite – Tendenz steigend.",
+        "link": "https://www.bacara-aesthetik.de",
+        "linkText": "Website ansehen"
+      },
+      {
+        "company": "MK Automobile",
+        "tag": "Social Media",
+        "mockupType": "phone",
+        "mockupImage": "images/mk-tiktok.png",
+        "services": [
+          "Social Media Kanal vereinheitlicht",
+          "Ideen, Filmen, Schneiden, Posten",
+          "Kunde fokussiert sich aufs Kerngeschäft"
+        ],
+        "keyWin": "Organische Leadgenerierung + Steigerung der Markenbekanntheit und Kundenvertrauen.",
+        "link": null,
+        "linkText": null
+      },
+      {
+        "company": "Mironi",
+        "tag": "Onlineshop & Marketing",
+        "mockupType": "browser",
+        "mockupImage": "images/mironi-website.png",
+        "services": [
+          "E-Commerce Shop mit Bestellstatus-Mails",
+          "Automatisierte Mailkampagnen",
+          "Google Ads, Meta Ads & Social Media"
+        ],
+        "keyWin": "Marketing komplett ausgelagert – mehr Zeit fürs Strategische, weniger Stress.",
+        "link": "https://mironi.de",
+        "linkText": "Shop ansehen"
+      },
+      {
+        "company": "Car HiFi Halim",
+        "tag": "Social Media",
+        "mockupType": "phone",
+        "mockupImage": "images/halim-tiktok.png",
+        "services": [
+          "TikTok-Kanal von Grund auf aufgebaut",
+          "Content-Strategie & Umsetzung",
+          "Regelmäßige Videoerstellung"
+        ],
+        "keyWin": "Von 0 auf 2.200+ Follower – mit Videos die bis zu 218K Views erreichen.",
+        "link": null,
+        "linkText": null
+      }
+    ]
+  },
+  "kontakt": {
+    "label": "KONTAKT",
+    "headline": "Lass uns über dein Projekt sprechen",
+    "subline": "Schreib uns oder ruf an – wir melden uns innerhalb von 24 Stunden.",
+    "email": "yusuf@kolac-digital.de",
+    "phone": "+49 176 95762018",
+    "formButton": "Nachricht senden"
+  },
+  "footer": {
+    "copyright": "© 2025 Kolac Digital. Alle Rechte vorbehalten."
+  }
+}

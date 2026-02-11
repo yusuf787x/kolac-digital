@@ -1,0 +1,139 @@
+backend:
+  name: github
+  repo: your-username/kolac-digital  # Hier deinen GitHub-Repo-Pfad eintragen
+  branch: main
+
+media_folder: "images"
+public_folder: "/images"
+
+collections:
+  - name: "site"
+    label: "Website Inhalte"
+    files:
+      - name: "content"
+        label: "Alle Inhalte"
+        file: "content/site.json"
+        format: "json"
+        fields:
+          # Site Info
+          - label: "Website"
+            name: "site"
+            widget: "object"
+            fields:
+              - { label: "Name", name: "name", widget: "string" }
+              - { label: "Logo Text", name: "logo", widget: "string" }
+
+          # Hero Section
+          - label: "Hero"
+            name: "hero"
+            widget: "object"
+            fields:
+              - label: "Rotierende Headlines"
+                name: "rotatingHeadlines"
+                widget: "list"
+                field:
+                  label: "Headline"
+                  name: "headline"
+                  widget: "string"
+              - { label: "Subline", name: "subline", widget: "text" }
+              - { label: "Primärer Button", name: "buttonPrimary", widget: "string" }
+              - { label: "Sekundärer Button", name: "buttonSecondary", widget: "string" }
+
+          # Leistungen Section
+          - label: "Leistungen"
+            name: "leistungen"
+            widget: "object"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Headline", name: "headline", widget: "string" }
+              - { label: "Intro Text", name: "intro", widget: "text" }
+              - label: "Services"
+                name: "services"
+                widget: "list"
+                fields:
+                  - { label: "Titel", name: "title", widget: "string" }
+                  - label: "Icon"
+                    name: "icon"
+                    widget: "select"
+                    options: ["monitor", "search", "video"]
+                  - { label: "Beschreibung", name: "description", widget: "text" }
+                  - label: "Features"
+                    name: "features"
+                    widget: "list"
+                    field:
+                      label: "Feature"
+                      name: "feature"
+                      widget: "string"
+              - { label: "Extra Hinweis", name: "extra", widget: "text" }
+
+          # Über uns Section
+          - label: "Über uns"
+            name: "about"
+            widget: "object"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Headline", name: "headline", widget: "string" }
+              - { label: "Bild", name: "image", widget: "image" }
+              - label: "Text-Absätze"
+                name: "text"
+                widget: "list"
+                field:
+                  label: "Absatz"
+                  name: "paragraph"
+                  widget: "text"
+              - label: "Tags"
+                name: "tags"
+                widget: "list"
+                field:
+                  label: "Tag"
+                  name: "tag"
+                  widget: "string"
+
+          # Referenzen Section
+          - label: "Referenzen"
+            name: "referenzen"
+            widget: "object"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Headline", name: "headline", widget: "string" }
+              - { label: "Subline", name: "subline", widget: "text" }
+              - label: "Projekte"
+                name: "projects"
+                widget: "list"
+                fields:
+                  - { label: "Firmenname", name: "company", widget: "string" }
+                  - { label: "Tag", name: "tag", widget: "string" }
+                  - label: "Mockup Typ"
+                    name: "mockupType"
+                    widget: "select"
+                    options: ["browser", "phone"]
+                  - { label: "Mockup Bild", name: "mockupImage", widget: "image" }
+                  - label: "Services"
+                    name: "services"
+                    widget: "list"
+                    field:
+                      label: "Service"
+                      name: "service"
+                      widget: "string"
+                  - { label: "Key Win", name: "keyWin", widget: "text" }
+                  - { label: "Link URL", name: "link", widget: "string", required: false }
+                  - { label: "Link Text", name: "linkText", widget: "string", required: false }
+
+          # Kontakt Section
+          - label: "Kontakt"
+            name: "kontakt"
+            widget: "object"
+            fields:
+              - { label: "Label", name: "label", widget: "string" }
+              - { label: "Headline", name: "headline", widget: "string" }
+              - { label: "Subline", name: "subline", widget: "text" }
+              - { label: "E-Mail", name: "email", widget: "string" }
+              - { label: "Telefon", name: "phone", widget: "string" }
+              - { label: "Formular Button", name: "formButton", widget: "string" }
+
+          # Footer
+          - label: "Footer"
+            name: "footer"
+            widget: "object"
+            fields:
+              - { label: "Copyright", name: "copyright", widget: "string" }
