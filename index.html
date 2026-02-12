@@ -20,6 +20,12 @@
 </head>
 <body>
 
+  <!-- ===== SCROLL DEPTH-OF-FIELD BLUR ===== -->
+  <div class="scroll-blur-overlay" aria-hidden="true">
+    <div class="scroll-blur-top"></div>
+    <div class="scroll-blur-bottom"></div>
+  </div>
+
   <!-- ===== GLOBAL FLOATING BACKGROUND ELEMENTS ===== -->
   <div class="bg-floating-elements" aria-hidden="true"></div>
 
@@ -93,6 +99,17 @@
         </div>
       </div>
 
+      <!-- Camera Mockup -->
+      <div class="float-el float-camera">
+        <div class="float-camera-body">
+          <div class="float-camera-lens">
+            <div class="float-camera-lens-inner"></div>
+          </div>
+          <div class="float-camera-viewfinder"></div>
+          <div class="float-camera-rec"></div>
+        </div>
+      </div>
+
       <!-- Gold accent circles -->
       <div class="float-el float-circle float-circle-1"></div>
       <div class="float-el float-circle float-circle-2"></div>
@@ -137,7 +154,10 @@
         <!-- Cards rendered by JS -->
       </div>
 
-      <p class="leistungen-extra reveal">Und wenn du mehr brauchst? Wir unterstützen auch bei Logos, Flyern, Produktfotografie und mehr.</p>
+      <div class="leistungen-extra reveal">
+        <p class="leistungen-extra-text">Und wenn du mehr brauchst? Wir unterstützen auch bei Logos, Flyern, Produktfotografie und mehr.</p>
+        <a href="#kontakt" class="btn btn-primary">Projekt starten</a>
+      </div>
     </div>
   </section>
 

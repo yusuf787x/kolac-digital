@@ -113,8 +113,8 @@
       });
     }
 
-    const extra = document.querySelector('.leistungen-extra');
-    if (extra) extra.textContent = d.extra;
+    const extraText = document.querySelector('.leistungen-extra-text');
+    if (extraText) extraText.textContent = d.extra;
   }
 
   function getServiceIcon(type) {
@@ -185,16 +185,37 @@
       const card = document.createElement('div');
       card.className = `ref-card reveal reveal-delay-${(i % 4) + 1}`;
 
-      const mockupHTML = project.mockupType === 'phone'
-        ? `<div class="ref-mockup">
+      let mockupHTML;
+      if (project.mockupType === 'both') {
+        mockupHTML = `<div class="ref-mockup ref-mockup-dual">
+            <div class="ref-mockup-browser">
+              <div class="mockup-bar">
+                <span class="mockup-bar-dot"></span>
+                <span class="mockup-bar-dot"></span>
+                <span class="mockup-bar-dot"></span>
+              </div>
+              <div class="mockup-screen">
+                <img src="${project.mockupImage}" alt="${project.company} Website" onerror="this.style.display='none'">
+              </div>
+            </div>
+            <div class="ref-mockup-phone ref-mockup-phone-overlay">
+              <div class="mockup-notch"></div>
+              <div class="mockup-screen">
+                <img src="${project.mockupImagePhone}" alt="${project.company} Social Media" onerror="this.style.display='none'">
+              </div>
+            </div>
+          </div>`;
+      } else if (project.mockupType === 'phone') {
+        mockupHTML = `<div class="ref-mockup">
             <div class="ref-mockup-phone">
               <div class="mockup-notch"></div>
               <div class="mockup-screen">
                 <img src="${project.mockupImage}" alt="${project.company}" onerror="this.style.display='none'">
               </div>
             </div>
-          </div>`
-        : `<div class="ref-mockup">
+          </div>`;
+      } else {
+        mockupHTML = `<div class="ref-mockup">
             <div class="ref-mockup-browser">
               <div class="mockup-bar">
                 <span class="mockup-bar-dot"></span>
@@ -206,6 +227,7 @@
               </div>
             </div>
           </div>`;
+      }
 
       const servicesHTML = project.services.map(s => `<li>${s}</li>`).join('');
       const linkHTML = project.link
@@ -708,9 +730,10 @@
     ];
 
     const animations = ['bg-float-drift-1', 'bg-float-drift-2', 'bg-float-drift-3'];
-    const sizes = [24, 30, 36, 42, 48];
-    const opacities = [0.08, 0.1, 0.12, 0.14, 0.16];
-    const durations = [14, 18, 22, 26, 30, 35];
+    const sizes = [28, 34, 40, 48, 56];
+    const opacities = [0.35, 0.45, 0.55, 0.65, 0.75];
+    const durations = [12, 16, 20, 24, 28, 32];
+    const spinDurations = [14, 18, 22, 26, 30, 35];
     const elementCount = 24;
 
     for (let i = 0; i < elementCount; i++) {
@@ -722,7 +745,9 @@
       const opacity = opacities[i % opacities.length];
       const duration = durations[i % durations.length];
       const animation = animations[i % animations.length];
-      const delay = (i * 1.5);
+      const spinDuration = spinDurations[i % spinDurations.length];
+      const spinDir = i % 2 === 0 ? 'normal' : 'reverse';
+      const delay = (i * 0.8);
       const left = (i * 7 + (i * 13 % 5)) % 100;
       const top = (i * 6 + (i * 17 % 8)) % 100;
 
@@ -732,6 +757,8 @@
         left: ${left}%;
         top: ${top}%;
         --float-opacity: ${opacity};
+        --spin-duration: ${spinDuration}s;
+        --spin-direction: ${spinDir};
         animation: ${animation} ${duration}s ease-in-out ${delay}s infinite;
       `;
       el.innerHTML = icon.svg;
@@ -739,7 +766,7 @@
 
       setTimeout(() => {
         el.classList.add('active');
-      }, 500 + (i * 200));
+      }, 300 + (i * 120));
     }
   }
 

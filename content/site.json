@@ -29,11 +29,12 @@
         ]
       },
       {
-        "title": "Google Ads",
+        "title": "Google & Meta Ads",
         "icon": "search",
-        "description": "Gezielte Werbeanzeigen, die genau die Menschen erreichen, die nach deinem Angebot suchen.",
+        "description": "Gezielte Werbeanzeigen auf Google und Meta, die genau die Menschen erreichen, die nach deinem Angebot suchen.",
         "features": [
-          "Suchkampagnen & Shopping",
+          "Google Suchkampagnen & Shopping",
+          "Meta Ads (Facebook & Instagram)",
           "Conversion-Tracking",
           "Laufende Optimierung"
         ]
@@ -56,13 +57,13 @@
     "headline": "Digital aus Überzeugung",
     "image": "images/yk.png",
     "text": [
-      "Wir sind kein klassisches Agentur-Team mit 50 Leuten und endlosen Meetings. Bei Kolac Digital bekommst du direkte Kommunikation, schnelle Umsetzung und jemanden, der weiß was funktioniert – weil wir es selbst jeden Tag machen.",
-      "Ob Webseiten die konvertieren, Google Ads die performen oder Social Media Content der Reichweite bringt – wir haben es für unsere eigenen Projekte getestet, bevor wir es für dich umsetzen. Unter anderem auch mit einem eigenen Social Media Kanal in der Entertainment-Branche.",
+      "Wir sind kein klassisches Agentur-Team mit 50 Leuten und endlosen Meetings. Bei Kolac Digital bekommst du direkte Kommunikation, schnelle Umsetzung und faire Preise – ohne den typischen Agentur-Aufschlag.",
+      "Ob Webseiten die konvertieren, Google Ads die performen oder Social Media Content der Reichweite bringt – wir haben es für unsere eigenen Projekte getestet, bevor wir es für dich umsetzen. Unter anderem auch mit einem eigenen Social Media Kanal mit über 40.000 Abonnenten in der Entertainment-Branche.",
       "Keine Theorie, sondern Praxis. Keine Ausreden, sondern Ergebnisse."
     ],
     "tags": [
       "Marketing & Strategie",
-      "Hands-on Umsetzung",
+      "Faire Preise",
       "Schnelle Reaktionszeit",
       "Alles aus einer Hand"
     ]
@@ -75,8 +76,9 @@
       {
         "company": "Bacara Ästhetik",
         "tag": "Webseite & Social Media",
-        "mockupType": "browser",
+        "mockupType": "both",
         "mockupImage": "images/bacara-website.png",
+        "mockupImagePhone": "images/bacara-social.png",
         "services": [
           "Webseite mit Online-Buchungssystem",
           "Sprechstundenzeiten mit Live-Update",
