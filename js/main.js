@@ -334,6 +334,14 @@
     const headlines = JSON.parse(el.dataset.headlines);
     if (headlines.length === 0) return;
 
+    // Create text node and cursor span
+    const textNode = document.createTextNode('');
+    const cursor = document.createElement('span');
+    cursor.className = 'typewriter-cursor';
+    el.innerHTML = '';
+    el.appendChild(textNode);
+    el.appendChild(cursor);
+
     const typeSpeed = 55;
     const deleteSpeed = 35;
     const pauseAfterType = 2500;
@@ -348,7 +356,7 @@
 
       if (!isDeleting) {
         charIndex++;
-        el.textContent = currentText.substring(0, charIndex);
+        textNode.textContent = currentText.substring(0, charIndex);
 
         if (charIndex === currentText.length) {
           isDeleting = true;
@@ -358,7 +366,7 @@
         setTimeout(tick, typeSpeed);
       } else {
         charIndex--;
-        el.textContent = currentText.substring(0, charIndex);
+        textNode.textContent = currentText.substring(0, charIndex);
 
         if (charIndex === 0) {
           isDeleting = false;
@@ -515,20 +523,29 @@
     });
   }
 
-  /* ---------- 11. Testimonial Slider ---------- */
+  /* ---------- 11. Testimonial Slider (Infinite Loop) ---------- */
   function initTestimonialSlider() {
     const slider = document.querySelector('.testimonial-slider');
     const track = document.querySelector('.testimonial-track');
     if (!slider || !track) return;
 
-    const cards = track.querySelectorAll('.testimonial-card');
-    if (cards.length === 0) return;
+    const originalCards = Array.from(track.querySelectorAll('.testimonial-card'));
+    const totalOriginal = originalCards.length;
+    if (totalOriginal === 0) return;
+
+    // Clone all cards and append for infinite loop
+    originalCards.forEach((card) => {
+      track.appendChild(card.cloneNode(true));
+    });
+
+    const allCards = track.querySelectorAll('.testimonial-card');
 
     let currentIndex = 0;
     let startX = 0;
     let currentTranslate = 0;
     let prevTranslate = 0;
     let isDragging = false;
+    let isTransitioning = false;
 
     const prevBtn = slider.querySelector('.testimonial-arrow-prev');
     const nextBtn = slider.querySelector('.testimonial-arrow-next');
@@ -541,35 +558,71 @@
       return 1;
     }
 
-    function getMaxIndex() {
-      return Math.max(0, cards.length - getCardsPerView());
-    }
-
     function getSlideWidth() {
-      if (cards.length === 0) return 0;
+      if (allCards.length === 0) return 0;
       const style = getComputedStyle(track);
       const gap = parseFloat(style.gap) || 24;
-      return cards[0].offsetWidth + gap;
+      return allCards[0].offsetWidth + gap;
     }
 
-    function goToSlide(index) {
-      currentIndex = Math.max(0, Math.min(index, getMaxIndex()));
+    function setTransform(animate) {
+      if (animate) {
+        track.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+      } else {
+        track.style.transition = 'none';
+      }
       currentTranslate = -(currentIndex * getSlideWidth());
       prevTranslate = currentTranslate;
       track.style.transform = `translateX(${currentTranslate}px)`;
-      updateControls();
     }
 
-    function updateControls() {
+    function goToSlide(index, animate) {
+      if (isTransitioning) return;
+      currentIndex = index;
+      setTransform(animate !== false);
+      updateDots();
+
+      // Check if we need to loop
+      if (currentIndex >= totalOriginal) {
+        isTransitioning = true;
+        setTimeout(() => {
+          currentIndex = currentIndex - totalOriginal;
+          setTransform(false);
+          isTransitioning = false;
+        }, 520);
+      } else if (currentIndex < 0) {
+        isTransitioning = true;
+        currentIndex = currentIndex + totalOriginal;
+        setTransform(false);
+        // Jump to clone position, then animate back
+        currentIndex = currentIndex + totalOriginal;
+        setTransform(false);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            currentIndex = currentIndex - totalOriginal;
+            setTransform(true);
+            setTimeout(() => { isTransitioning = false; }, 520);
+          });
+        });
+      }
+    }
+
+    function updateDots() {
+      const dotIndex = ((currentIndex % totalOriginal) + totalOriginal) % totalOriginal;
       dots.forEach((dot, i) => {
-        dot.classList.toggle('active', i === currentIndex);
+        dot.classList.toggle('active', i === dotIndex);
       });
-      if (prevBtn) prevBtn.disabled = currentIndex === 0;
-      if (nextBtn) nextBtn.disabled = currentIndex >= getMaxIndex();
     }
 
-    if (prevBtn) prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
-    if (nextBtn) nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+    // Remove disabled logic – infinite loop never disables buttons
+    if (prevBtn) {
+      prevBtn.removeAttribute('disabled');
+      prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+    }
+    if (nextBtn) {
+      nextBtn.removeAttribute('disabled');
+      nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+    }
 
     dots.forEach((dot) => {
       dot.addEventListener('click', () => {
@@ -578,9 +631,11 @@
     });
 
     function touchStart(e) {
+      if (isTransitioning) return;
       isDragging = true;
       startX = getPositionX(e);
       track.classList.add('grabbing');
+      track.style.transition = 'none';
     }
 
     function touchMove(e) {
@@ -625,10 +680,12 @@
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => goToSlide(currentIndex), 150);
+      resizeTimer = setTimeout(() => {
+        setTransform(false);
+      }, 150);
     });
 
-    updateControls();
+    updateDots();
   }
 
   /* ---------- 12. Background Floating Elements ---------- */
@@ -651,10 +708,10 @@
     ];
 
     const animations = ['bg-float-drift-1', 'bg-float-drift-2', 'bg-float-drift-3'];
-    const sizes = [18, 22, 26, 30, 34];
-    const opacities = [0.04, 0.05, 0.06, 0.07, 0.08];
-    const durations = [12, 15, 18, 20, 24, 28];
-    const elementCount = 18;
+    const sizes = [24, 30, 36, 42, 48];
+    const opacities = [0.08, 0.1, 0.12, 0.14, 0.16];
+    const durations = [14, 18, 22, 26, 30, 35];
+    const elementCount = 24;
 
     for (let i = 0; i < elementCount; i++) {
       const icon = icons[i % icons.length];
