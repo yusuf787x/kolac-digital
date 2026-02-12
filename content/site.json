@@ -5,8 +5,8 @@
   },
   "hero": {
     "rotatingHeadlines": [
+      "Neue Kunden durch gezieltes Marketing",
       "Leadgenerierung durch digitale Präsenz",
-      "Aufbau deiner digitalen Präsenz",
       "Sichtbarkeit, die sich auszahlt"
     ],
     "subline": "Webseiten, Google Ads und Videocontent – alles aus einer Hand. Wir kümmern uns um dein Marketing, du dich um dein Business.",
@@ -128,6 +128,43 @@
         "keyWin": "Von 0 auf 2.200+ Follower – mit Videos die bis zu 218K Views erreichen.",
         "link": null,
         "linkText": null
+      }
+    ]
+  },
+  "kundenstimmen": {
+    "label": "KUNDENSTIMMEN",
+    "headline": "Was unsere Kunden sagen",
+    "subline": "Echtes Feedback von echten Partnern.",
+    "testimonials": [
+      {
+        "name": "Sarah M.",
+        "company": "Bacara Ästhetik",
+        "quote": "Kolac Digital hat unsere Online-Präsenz komplett transformiert. Die Buchungen über die Website haben sich verdreifacht.",
+        "rating": 5
+      },
+      {
+        "name": "Mehmet K.",
+        "company": "MK Automobile",
+        "quote": "Endlich jemand, der Social Media versteht. Die Videos bringen echte Kunden – nicht nur Likes.",
+        "rating": 5
+      },
+      {
+        "name": "Lisa W.",
+        "company": "Mironi",
+        "quote": "Von der Webseite bis zu Google Ads – alles aus einer Hand. Schnell, zuverlässig und mit echten Ergebnissen.",
+        "rating": 5
+      },
+      {
+        "name": "Halim B.",
+        "company": "Car HiFi Halim",
+        "quote": "Innerhalb weniger Wochen von 0 auf über 2000 Follower. Die Content-Strategie hat voll eingeschlagen.",
+        "rating": 5
+      },
+      {
+        "name": "Anna F.",
+        "company": "Studio Bloom",
+        "quote": "Super unkomplizierte Zusammenarbeit. Wir wurden jederzeit auf dem Laufenden gehalten und das Ergebnis übertrifft unsere Erwartungen.",
+        "rating": 5
       }
     ]
   },

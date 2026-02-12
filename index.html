@@ -20,11 +20,14 @@
 </head>
 <body>
 
+  <!-- ===== GLOBAL FLOATING BACKGROUND ELEMENTS ===== -->
+  <div class="bg-floating-elements" aria-hidden="true"></div>
+
   <!-- ===== NAVIGATION ===== -->
   <nav class="navbar" role="navigation" aria-label="Hauptnavigation">
     <div class="container">
       <a href="#" class="nav-logo" aria-label="Kolac Digital – Startseite">
-        kolac<span class="dot">.</span>digital
+        <img src="images/logo.png" alt="Kolac Digital">
       </a>
 
       <div class="nav-links">
@@ -169,6 +172,36 @@
     </div>
   </section>
 
+  <!-- ===== KUNDENSTIMMEN ===== -->
+  <section class="kundenstimmen" id="kundenstimmen">
+    <div class="container">
+      <div class="kundenstimmen-header reveal">
+        <div class="section-label">KUNDENSTIMMEN</div>
+        <h2 class="section-headline">Was unsere Kunden sagen</h2>
+        <p class="section-subline">Echtes Feedback von echten Partnern.</p>
+      </div>
+
+      <div class="testimonial-slider reveal reveal-delay-1">
+        <div class="testimonial-track">
+          <!-- Cards rendered by JS -->
+        </div>
+
+        <button class="testimonial-arrow testimonial-arrow-prev" aria-label="Vorheriges Testimonial">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+        <button class="testimonial-arrow testimonial-arrow-next" aria-label="Nächstes Testimonial">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+
+        <div class="testimonial-dots"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== KONTAKT ===== -->
   <section class="kontakt" id="kontakt">
     <div class="container">
@@ -237,7 +270,7 @@
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="container">
-      <a href="#" class="footer-logo">kolac<span class="dot">.</span>digital</a>
+      <a href="#" class="footer-logo"><img src="images/logo.png" alt="Kolac Digital"></a>
       <div class="footer-links">
         <a href="#leistungen">Leistungen</a>
         <a href="#about">Über uns</a>

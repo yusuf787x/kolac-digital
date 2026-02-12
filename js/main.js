@@ -42,6 +42,9 @@
     // Referenzen
     renderReferenzen();
 
+    // Kundenstimmen
+    renderKundenstimmen();
+
     // Kontakt
     renderKontakt();
 
@@ -50,31 +53,21 @@
     if (footerCopy) footerCopy.textContent = siteData.footer.copyright;
   }
 
-  function setLogo(selector, text) {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    // "kolac.digital" → "kolac" + gold dot + "digital"
-    const parts = text.split('.');
-    if (parts.length === 2) {
-      el.innerHTML = `${parts[0]}<span class="dot">.</span>${parts[1]}`;
-    } else {
-      el.textContent = text;
-    }
+  function setLogo() {
+    // Logo is now an <img> element set in HTML – no dynamic rendering needed
   }
 
   function renderHero() {
     const d = siteData.hero;
 
-    // Rotating headlines
+    // Single headline element for typewriter effect
     const wrapper = document.querySelector('.hero-headline-wrapper');
     if (wrapper) {
       wrapper.innerHTML = '';
-      d.rotatingHeadlines.forEach((text, i) => {
-        const h1 = document.createElement('h1');
-        h1.className = 'hero-headline' + (i === 0 ? ' active' : '');
-        h1.textContent = text;
-        wrapper.appendChild(h1);
-      });
+      const h1 = document.createElement('h1');
+      h1.className = 'hero-headline';
+      h1.dataset.headlines = JSON.stringify(d.rotatingHeadlines);
+      wrapper.appendChild(h1);
     }
 
     // Subline
@@ -265,6 +258,61 @@
     if (submitBtn) submitBtn.textContent = d.formButton;
   }
 
+  function renderKundenstimmen() {
+    if (!siteData.kundenstimmen) return;
+    const d = siteData.kundenstimmen;
+
+    const label = document.querySelector('.kundenstimmen .section-label');
+    if (label) label.innerHTML = `<span></span>${d.label}`;
+
+    const headline = document.querySelector('.kundenstimmen .section-headline');
+    if (headline) headline.textContent = d.headline;
+
+    const subline = document.querySelector('.kundenstimmen .section-subline');
+    if (subline) subline.textContent = d.subline;
+
+    const track = document.querySelector('.testimonial-track');
+    if (!track) return;
+
+    track.innerHTML = '';
+    d.testimonials.forEach((t) => {
+      const card = document.createElement('div');
+      card.className = 'testimonial-card';
+
+      const initial = t.name.charAt(0).toUpperCase();
+      const starsHTML = Array(t.rating || 5).fill(
+        '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+      ).join('');
+
+      card.innerHTML = `
+        <p class="testimonial-quote">${t.quote}</p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">${initial}</div>
+          <div class="testimonial-author-info">
+            <span class="testimonial-name">${t.name}</span>
+            <span class="testimonial-company">${t.company}</span>
+          </div>
+          <div class="testimonial-stars">${starsHTML}</div>
+        </div>
+      `;
+
+      track.appendChild(card);
+    });
+
+    // Render dots
+    const dotsContainer = document.querySelector('.testimonial-dots');
+    if (dotsContainer) {
+      dotsContainer.innerHTML = '';
+      d.testimonials.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'testimonial-dot' + (i === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', `Testimonial ${i + 1}`);
+        dot.dataset.index = i;
+        dotsContainer.appendChild(dot);
+      });
+    }
+  }
+
   /* ---------- 3. Init after render ---------- */
   function initAfterRender() {
     initRotatingHeadlines();
@@ -274,20 +322,55 @@
     initSmoothScroll();
     initMobileMenu();
     initContactForm();
+    initTestimonialSlider();
+    initBgFloatingElements();
   }
 
-  /* ---------- 4. Rotating Headlines ---------- */
+  /* ---------- 4. Typewriter Headlines ---------- */
   function initRotatingHeadlines() {
-    const headlines = document.querySelectorAll('.hero-headline');
+    const el = document.querySelector('.hero-headline');
+    if (!el || !el.dataset.headlines) return;
+
+    const headlines = JSON.parse(el.dataset.headlines);
     if (headlines.length === 0) return;
 
-    let current = 0;
+    const typeSpeed = 55;
+    const deleteSpeed = 35;
+    const pauseAfterType = 2500;
+    const pauseAfterDelete = 400;
 
-    setInterval(() => {
-      headlines[current].classList.remove('active');
-      current = (current + 1) % headlines.length;
-      headlines[current].classList.add('active');
-    }, 3000);
+    let headlineIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+
+    function tick() {
+      const currentText = headlines[headlineIndex];
+
+      if (!isDeleting) {
+        charIndex++;
+        el.textContent = currentText.substring(0, charIndex);
+
+        if (charIndex === currentText.length) {
+          isDeleting = true;
+          setTimeout(tick, pauseAfterType);
+          return;
+        }
+        setTimeout(tick, typeSpeed);
+      } else {
+        charIndex--;
+        el.textContent = currentText.substring(0, charIndex);
+
+        if (charIndex === 0) {
+          isDeleting = false;
+          headlineIndex = (headlineIndex + 1) % headlines.length;
+          setTimeout(tick, pauseAfterDelete);
+          return;
+        }
+        setTimeout(tick, deleteSpeed);
+      }
+    }
+
+    tick();
   }
 
   /* ---------- 5. Scroll Reveal ---------- */
@@ -430,6 +513,177 @@
 
       console.log('Form submission:', data);
     });
+  }
+
+  /* ---------- 11. Testimonial Slider ---------- */
+  function initTestimonialSlider() {
+    const slider = document.querySelector('.testimonial-slider');
+    const track = document.querySelector('.testimonial-track');
+    if (!slider || !track) return;
+
+    const cards = track.querySelectorAll('.testimonial-card');
+    if (cards.length === 0) return;
+
+    let currentIndex = 0;
+    let startX = 0;
+    let currentTranslate = 0;
+    let prevTranslate = 0;
+    let isDragging = false;
+
+    const prevBtn = slider.querySelector('.testimonial-arrow-prev');
+    const nextBtn = slider.querySelector('.testimonial-arrow-next');
+    const dots = slider.querySelectorAll('.testimonial-dot');
+
+    function getCardsPerView() {
+      const width = window.innerWidth;
+      if (width >= 1024) return 3;
+      if (width >= 768) return 2;
+      return 1;
+    }
+
+    function getMaxIndex() {
+      return Math.max(0, cards.length - getCardsPerView());
+    }
+
+    function getSlideWidth() {
+      if (cards.length === 0) return 0;
+      const style = getComputedStyle(track);
+      const gap = parseFloat(style.gap) || 24;
+      return cards[0].offsetWidth + gap;
+    }
+
+    function goToSlide(index) {
+      currentIndex = Math.max(0, Math.min(index, getMaxIndex()));
+      currentTranslate = -(currentIndex * getSlideWidth());
+      prevTranslate = currentTranslate;
+      track.style.transform = `translateX(${currentTranslate}px)`;
+      updateControls();
+    }
+
+    function updateControls() {
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+      if (prevBtn) prevBtn.disabled = currentIndex === 0;
+      if (nextBtn) nextBtn.disabled = currentIndex >= getMaxIndex();
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        goToSlide(parseInt(dot.dataset.index, 10));
+      });
+    });
+
+    function touchStart(e) {
+      isDragging = true;
+      startX = getPositionX(e);
+      track.classList.add('grabbing');
+    }
+
+    function touchMove(e) {
+      if (!isDragging) return;
+      const currentX = getPositionX(e);
+      currentTranslate = prevTranslate + (currentX - startX);
+      track.style.transform = `translateX(${currentTranslate}px)`;
+    }
+
+    function touchEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      track.classList.remove('grabbing');
+
+      const movedBy = currentTranslate - prevTranslate;
+      const threshold = getSlideWidth() * 0.25;
+
+      if (movedBy < -threshold) {
+        goToSlide(currentIndex + 1);
+      } else if (movedBy > threshold) {
+        goToSlide(currentIndex - 1);
+      } else {
+        goToSlide(currentIndex);
+      }
+    }
+
+    function getPositionX(e) {
+      return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+    }
+
+    track.addEventListener('mousedown', touchStart);
+    track.addEventListener('mousemove', touchMove);
+    track.addEventListener('mouseup', touchEnd);
+    track.addEventListener('mouseleave', () => { if (isDragging) touchEnd(); });
+
+    track.addEventListener('touchstart', touchStart, { passive: true });
+    track.addEventListener('touchmove', touchMove, { passive: true });
+    track.addEventListener('touchend', touchEnd);
+
+    track.addEventListener('dragstart', (e) => e.preventDefault());
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => goToSlide(currentIndex), 150);
+    });
+
+    updateControls();
+  }
+
+  /* ---------- 12. Background Floating Elements ---------- */
+  function initBgFloatingElements() {
+    const container = document.querySelector('.bg-floating-elements');
+    if (!container) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const icons = [
+      { svg: '<svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>' },
+      { svg: '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>', fill: true },
+      { svg: '<svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' },
+      { svg: '<svg viewBox="0 0 24 24"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>' },
+      { svg: '<svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>' },
+      { svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
+      { svg: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+      { svg: '<svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>' },
+      { svg: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg>' },
+      { svg: '<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' },
+    ];
+
+    const animations = ['bg-float-drift-1', 'bg-float-drift-2', 'bg-float-drift-3'];
+    const sizes = [18, 22, 26, 30, 34];
+    const opacities = [0.04, 0.05, 0.06, 0.07, 0.08];
+    const durations = [12, 15, 18, 20, 24, 28];
+    const elementCount = 18;
+
+    for (let i = 0; i < elementCount; i++) {
+      const icon = icons[i % icons.length];
+      const el = document.createElement('div');
+      el.className = 'bg-float-icon' + (icon.fill ? ' fill-icon' : '');
+
+      const size = sizes[i % sizes.length];
+      const opacity = opacities[i % opacities.length];
+      const duration = durations[i % durations.length];
+      const animation = animations[i % animations.length];
+      const delay = (i * 1.5);
+      const left = (i * 7 + (i * 13 % 5)) % 100;
+      const top = (i * 6 + (i * 17 % 8)) % 100;
+
+      el.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        left: ${left}%;
+        top: ${top}%;
+        --float-opacity: ${opacity};
+        animation: ${animation} ${duration}s ease-in-out ${delay}s infinite;
+      `;
+      el.innerHTML = icon.svg;
+      container.appendChild(el);
+
+      setTimeout(() => {
+        el.classList.add('active');
+      }, 500 + (i * 200));
+    }
   }
 
   /* ---------- Init on DOM ready ---------- */
