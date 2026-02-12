@@ -939,36 +939,43 @@ textarea {
 .ref-card {
   background: #fff;
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: var(--shadow-sm);
   border: 1px solid rgba(0, 0, 0, 0.04);
   transition: all var(--transition);
 }
 
 .ref-card:hover {
-  transform: translateY(-4px);
   box-shadow: var(--shadow-md);
 }
 
-/* Mockup Area */
+/* Mockup Area – floating, no background */
 .ref-mockup {
   position: relative;
-  background: var(--color-light-gray);
-  padding: 24px;
+  background: transparent;
+  padding: 20px 24px 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
-  overflow: hidden;
+  min-height: 180px;
+  overflow: visible;
+  margin-bottom: -20px;
+  z-index: 2;
 }
 
 .ref-mockup-browser {
   width: 100%;
   max-width: 320px;
   background: #fff;
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
+  border-radius: 10px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s ease;
+}
+
+.ref-card:hover .ref-mockup-browser {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 .ref-mockup-browser .mockup-bar {
@@ -1007,7 +1014,13 @@ textarea {
   background: #1a1a1a;
   border-radius: 28px;
   padding: 8px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s ease;
+}
+
+.ref-card:hover .ref-mockup-phone {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22), 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .ref-mockup-phone .mockup-notch {
@@ -1033,7 +1046,11 @@ textarea {
 
 /* Content Area */
 .ref-content {
-  padding: 28px;
+  padding: 32px 28px 28px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius) var(--radius);
 }
 
 .ref-tag {
