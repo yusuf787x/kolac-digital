@@ -186,7 +186,19 @@
       card.className = `ref-card reveal reveal-delay-${(i % 4) + 1}`;
 
       let mockupHTML;
-      if (project.mockupType === 'both') {
+      if (project.mockupType === 'phone-app') {
+        mockupHTML = `<div class="ref-mockup ref-mockup-phone-app">
+            <div class="ref-mockup-phone">
+              <div class="mockup-notch"></div>
+              <div class="mockup-screen">
+                <img src="${project.mockupImage}" alt="${project.company} TikTok" onerror="this.style.display='none'">
+              </div>
+            </div>
+            <div class="ref-mockup-app-icon">
+              <img src="${project.mockupImageApp}" alt="${project.company} App" onerror="this.style.display='none'">
+            </div>
+          </div>`;
+      } else if (project.mockupType === 'both') {
         mockupHTML = `<div class="ref-mockup ref-mockup-dual">
             <div class="ref-mockup-browser">
               <div class="mockup-bar">

@@ -118,16 +118,47 @@
         "linkText": "Shop ansehen"
       },
       {
-        "company": "Car HiFi Halim",
-        "tag": "Social Media",
-        "mockupType": "phone",
-        "mockupImage": "images/halim-tiktok.png",
+        "company": "AF-Gebäudeservice",
+        "tag": "Webseite & Digitalisierung",
+        "mockupType": "browser",
+        "mockupImage": "images/AF-Gebäudeservice.png",
         "services": [
-          "TikTok-Kanal von Grund auf aufgebaut",
-          "Content-Strategie & Umsetzung",
-          "Regelmäßige Videoerstellung"
+          "Professioneller Webauftritt von Grund auf",
+          "Digitales Anfrage- & Angebotsformular",
+          "Google My Business Optimierung",
+          "Lokale SEO & strukturierte Unternehmensdarstellung"
         ],
-        "keyWin": "Von 0 auf 2.200+ Follower – mit Videos die bis zu 218K Views erreichen.",
+        "keyWin": "Anfragen laufen jetzt digital rein – kein verpasster Auftrag mehr durch fehlende Erreichbarkeit.",
+        "link": "https://www.af-gebaeudeservice.de",
+        "linkText": "Website ansehen"
+      },
+      {
+        "company": "Die Marke Yuma",
+        "tag": "Social Media & App",
+        "mockupType": "phone-app",
+        "mockupImage": "images/yuma-tiktok.png",
+        "mockupImageApp": "images/yumaplay-icon.png",
+        "services": [
+          "TikTok Entertainment-Kanal aufgebaut & skaliert",
+          "YumaPlay Quiz-App selbst entwickelt & im App Store",
+          "Viraler Content mit konsistenter Markenstrategie"
+        ],
+        "keyWin": "40.000 Abonnenten, über 90.000.000 Aufrufe und 4.700.000 Likes generiert.",
+        "link": null,
+        "linkText": null
+      },
+      {
+        "company": "CarHiFi Herford",
+        "tag": "Webseite & Social Media",
+        "mockupType": "both",
+        "mockupImage": "images/carhifi-herford-website.png",
+        "mockupImagePhone": "images/halim-tiktok.png",
+        "services": [
+          "Webseite mit Custom CMS",
+          "Custom Konfigurator für Soundanlagen",
+          "TikTok Content-Strategie & Umsetzung"
+        ],
+        "keyWin": "Leadgenerierung +74% – dazu starkes Social Media Abonnenten-Wachstum.",
         "link": null,
         "linkText": null
       }
@@ -158,7 +189,7 @@
       },
       {
         "name": "Halim B.",
-        "company": "Car HiFi Halim",
+        "company": "CarHiFi Herford",
         "quote": "Innerhalb weniger Wochen von 0 auf über 2000 Follower. Die Content-Strategie hat voll eingeschlagen.",
         "rating": 5
       },
