@@ -2344,52 +2344,101 @@ textarea {
    MOBILE ONLY – max 767px
    ========================================================================== */
 @media (max-width: 767px) {
-  /* Floating hero elements – scaled down for mobile */
+  /* Floating hero elements – visible on mobile */
   .floating-elements {
     display: block;
   }
 
-  /* Hide the large mockup cards on mobile – keep only decorative shapes */
-  .float-phone,
-  .float-browser,
-  .float-dashboard,
+  /* Hide decorative shapes (circles, lines, camera) – keep the 3 mockups */
+  .float-circle-1,
+  .float-circle-2,
+  .float-circle-3,
+  .float-line-1,
+  .float-line-2,
   .float-camera {
     display: none;
   }
 
-  /* Decorative circles – repositioned so they don't overlap text */
-  .float-circle-1 {
-    width: 50px;
-    height: 50px;
-    left: 4%;
-    bottom: 12%;
+  /* Phone mockup – right side, upper third */
+  .float-phone {
+    display: block;
+    width: 64px;
+    height: 124px;
+    border-radius: 12px;
+    right: 2%;
+    top: 12%;
+    transform: rotate(6deg);
+    opacity: 0.7;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   }
 
-  .float-circle-2 {
-    width: 28px;
-    height: 28px;
-    right: 6%;
-    top: 18%;
+  .float-phone::before {
+    width: 24px;
+    height: 4px;
+    top: 5px;
   }
 
-  .float-circle-3 {
-    width: 14px;
-    height: 14px;
-    left: 10%;
-    top: 22%;
+  .float-phone-screen {
+    top: 12px;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    border-radius: 8px;
   }
 
-  /* Accent lines – smaller and tucked to edges */
-  .float-line-1 {
-    width: 70px;
+  /* Browser mockup – left side, middle */
+  .float-browser {
+    display: block;
+    width: 120px;
+    height: 82px;
     left: 2%;
     top: 48%;
+    transform: rotate(-4deg);
+    opacity: 0.65;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
   }
 
-  .float-line-2 {
-    width: 50px;
+  .float-browser-bar {
+    height: 16px;
+    padding: 0 6px;
+    gap: 3px;
+  }
+
+  .float-browser-dot {
+    width: 4px;
+    height: 4px;
+  }
+
+  .float-browser-content {
+    padding: 8px;
+    gap: 5px;
+  }
+
+  .float-browser-line {
+    height: 4px;
+  }
+
+  /* Dashboard mockup – right side, lower third */
+  .float-dashboard {
+    display: block;
+    width: 90px;
+    height: 60px;
     right: 3%;
-    top: 62%;
+    bottom: 22%;
+    transform: rotate(3deg);
+    opacity: 0.65;
+    padding: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+
+  .float-dashboard-header {
+    font-size: 6px;
+    margin-bottom: 5px;
+  }
+
+  .float-dashboard-bars {
+    height: 28px;
+    gap: 4px;
   }
 
   /* Tighter hero padding */
