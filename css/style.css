@@ -2350,14 +2350,52 @@ textarea {
     display: block;
   }
 
-  /* Hide decorative shapes (circles, lines, camera) – keep the 3 mockups */
-  .float-circle-1,
-  .float-circle-2,
-  .float-circle-3,
-  .float-line-1,
-  .float-line-2,
+  /* Camera still hidden – too complex for small screen */
   .float-camera {
     display: none;
+  }
+
+  /* circle-1 – left side upper, above the browser mockup */
+  .float-circle-1 {
+    display: block;
+    width: 36px;
+    height: 36px;
+    left: 5%;
+    top: 20%;
+  }
+
+  /* circle-2 – right side middle, gap between phone & dashboard */
+  .float-circle-2 {
+    display: block;
+    width: 22px;
+    height: 22px;
+    right: 16%;
+    top: 52%;
+  }
+
+  /* circle-3 – lower center-left, fills bottom gap */
+  .float-circle-3 {
+    display: block;
+    width: 12px;
+    height: 12px;
+    left: 26%;
+    bottom: 16%;
+  }
+
+  /* line-1 – bottom left, below browser */
+  .float-line-1 {
+    display: block;
+    width: 60px;
+    left: 3%;
+    bottom: 14%;
+  }
+
+  /* line-2 – right side, between phone top area and dashboard */
+  .float-line-2 {
+    display: block;
+    width: 44px;
+    right: 12%;
+    top: 36%;
   }
 
   /* Phone mockup – right side, upper third */
