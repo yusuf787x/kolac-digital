@@ -2344,9 +2344,52 @@ textarea {
    MOBILE ONLY – max 767px
    ========================================================================== */
 @media (max-width: 767px) {
-  /* Hide floating hero elements – too cluttered on small screens */
+  /* Floating hero elements – scaled down for mobile */
   .floating-elements {
+    display: block;
+  }
+
+  /* Hide the large mockup cards on mobile – keep only decorative shapes */
+  .float-phone,
+  .float-browser,
+  .float-dashboard,
+  .float-camera {
     display: none;
+  }
+
+  /* Decorative circles – repositioned so they don't overlap text */
+  .float-circle-1 {
+    width: 50px;
+    height: 50px;
+    left: 4%;
+    bottom: 12%;
+  }
+
+  .float-circle-2 {
+    width: 28px;
+    height: 28px;
+    right: 6%;
+    top: 18%;
+  }
+
+  .float-circle-3 {
+    width: 14px;
+    height: 14px;
+    left: 10%;
+    top: 22%;
+  }
+
+  /* Accent lines – smaller and tucked to edges */
+  .float-line-1 {
+    width: 70px;
+    left: 2%;
+    top: 48%;
+  }
+
+  .float-line-2 {
+    width: 50px;
+    right: 3%;
+    top: 62%;
   }
 
   /* Tighter hero padding */
