@@ -716,43 +716,23 @@
       });
     });
 
-    let startY = 0;
-    let isHorizontalSwipe = null;
-
     function touchStart(e) {
       if (isTransitioning) return;
       isDragging = true;
-      isHorizontalSwipe = null;
       startX = getPositionX(e);
-      startY = e.type.includes('mouse') ? e.pageY : e.touches[0].clientY;
       track.classList.add('grabbing');
       track.style.transition = 'none';
     }
 
     function touchMove(e) {
       if (!isDragging) return;
-      const currentX = getPositionX(e);
-      const currentY = e.type.includes('mouse') ? e.pageY : e.touches[0].clientY;
-      const diffX = Math.abs(currentX - startX);
-      const diffY = Math.abs(currentY - startY);
-
-      // Determine swipe direction on first significant movement
-      if (isHorizontalSwipe === null && (diffX > 5 || diffY > 5)) {
-        isHorizontalSwipe = diffX > diffY;
-      }
-
-      // Only handle horizontal swipes; let vertical ones scroll the page
-      if (isHorizontalSwipe === false) return;
-      if (isHorizontalSwipe && e.cancelable) e.preventDefault();
-
-      currentTranslate = prevTranslate + (currentX - startX);
+      currentTranslate = prevTranslate + (getPositionX(e) - startX);
       track.style.transform = `translateX(${currentTranslate}px)`;
     }
 
     function touchEnd() {
       if (!isDragging) return;
       isDragging = false;
-      isHorizontalSwipe = null;
       track.classList.remove('grabbing');
 
       const movedBy = currentTranslate - prevTranslate;
@@ -777,9 +757,9 @@
     track.addEventListener('mouseleave', () => { if (isDragging) touchEnd(); });
 
     track.addEventListener('touchstart', touchStart, { passive: true });
-    // non-passive so we can preventDefault for horizontal swipes
-    track.addEventListener('touchmove', touchMove, { passive: false });
+    track.addEventListener('touchmove', touchMove, { passive: true });
     track.addEventListener('touchend', touchEnd);
+    track.addEventListener('touchcancel', touchEnd);
 
     track.addEventListener('dragstart', (e) => e.preventDefault());
 
