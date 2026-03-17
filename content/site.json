@@ -87,7 +87,10 @@
         ],
         "keyWin": "800+ Termine gebucht über die Webseite – Tendenz steigend.",
         "link": "https://www.bacara-aesthetik.de",
-        "linkText": "Website ansehen"
+        "linkText": "Website ansehen",
+        "socialLink": "https://www.instagram.com/bacaraasthetik/?hl=de",
+        "socialLinkText": "Instagram ansehen",
+        "socialIcon": "instagram"
       },
       {
         "company": "MK Automobile",
@@ -101,7 +104,10 @@
         ],
         "keyWin": "Organische Leadgenerierung + Steigerung der Markenbekanntheit und Kundenvertrauen.",
         "link": null,
-        "linkText": null
+        "linkText": null,
+        "socialLink": "https://www.tiktok.com/@mkautomobileherford",
+        "socialLinkText": "TikTok ansehen",
+        "socialIcon": "tiktok"
       },
       {
         "company": "Mironi",
@@ -145,7 +151,10 @@
         ],
         "keyWin": "40.000 Abonnenten, über 90.000.000 Aufrufe und 4.700.000 Likes generiert.",
         "link": null,
-        "linkText": null
+        "linkText": null,
+        "socialLink": "https://www.tiktok.com/@the.yuma.show",
+        "socialLinkText": "TikTok ansehen",
+        "socialIcon": "tiktok"
       },
       {
         "company": "CarHiFi Herford",
@@ -160,7 +169,10 @@
         ],
         "keyWin": "Leadgenerierung +74% – dazu starkes Social Media Abonnenten-Wachstum.",
         "link": null,
-        "linkText": null
+        "linkText": null,
+        "socialLink": "https://www.tiktok.com/@hifi.halim",
+        "socialLinkText": "TikTok ansehen",
+        "socialIcon": "tiktok"
       }
     ]
   },

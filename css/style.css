@@ -1332,6 +1332,21 @@ textarea {
   gap: 10px;
 }
 
+.ref-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.ref-link-social {
+  color: var(--text-muted);
+}
+
+.ref-link-social svg {
+  flex-shrink: 0;
+}
+
 /* ==========================================================================
    6. KONTAKT SECTION
    ========================================================================== */
