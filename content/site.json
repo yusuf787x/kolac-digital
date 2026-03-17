@@ -88,6 +88,7 @@
         "keyWin": "800+ Termine gebucht über die Webseite – Tendenz steigend.",
         "link": "https://www.bacara-aesthetik.de",
         "linkText": "Website ansehen",
+        "linkIcon": "website",
         "socialLink": "https://www.instagram.com/bacaraasthetik/?hl=de",
         "socialLinkText": "Instagram ansehen",
         "socialIcon": "instagram"
@@ -121,7 +122,8 @@
         ],
         "keyWin": "Marketing komplett ausgelagert – mehr Zeit fürs Strategische, weniger Stress.",
         "link": "https://mironi.de",
-        "linkText": "Shop ansehen"
+        "linkText": "Shop ansehen",
+        "linkIcon": "shop"
       },
       {
         "company": "AF-Gebäudeservice",
@@ -136,7 +138,8 @@
         ],
         "keyWin": "Anfragen laufen jetzt digital rein – kein verpasster Auftrag mehr durch fehlende Erreichbarkeit.",
         "link": "https://www.af-gebaeudeservice.de",
-        "linkText": "Website ansehen"
+        "linkText": "Website ansehen",
+        "linkIcon": "website"
       },
       {
         "company": "Die Marke Yuma",
@@ -150,8 +153,9 @@
           "Viraler Content mit konsistenter Markenstrategie"
         ],
         "keyWin": "40.000 Abonnenten, über 90.000.000 Aufrufe und 4.700.000 Likes generiert.",
-        "link": null,
-        "linkText": null,
+        "link": "https://yusuf787x.github.io/yumaplay-web/",
+        "linkText": "App ansehen",
+        "linkIcon": "app",
         "socialLink": "https://www.tiktok.com/@the.yuma.show",
         "socialLinkText": "TikTok ansehen",
         "socialIcon": "tiktok"
@@ -182,33 +186,33 @@
     "subline": "Echtes Feedback von echten Partnern.",
     "testimonials": [
       {
-        "name": "Sarah M.",
+        "name": "Dr. Bugrahan Bacara",
         "company": "Bacara Ästhetik",
         "quote": "Kolac Digital hat unsere Online-Präsenz komplett transformiert. Die Buchungen über die Website haben sich verdreifacht.",
         "rating": 5
       },
       {
-        "name": "Mehmet K.",
+        "name": "Mert Külah",
         "company": "MK Automobile",
         "quote": "Endlich jemand, der Social Media versteht. Die Videos bringen echte Kunden – nicht nur Likes.",
         "rating": 5
       },
       {
-        "name": "Lisa W.",
+        "name": "Selim Ö.",
         "company": "Mironi",
         "quote": "Von der Webseite bis zu Google Ads – alles aus einer Hand. Schnell, zuverlässig und mit echten Ergebnissen.",
         "rating": 5
       },
       {
-        "name": "Halim B.",
+        "name": "Halim Ö.",
         "company": "CarHiFi Herford",
         "quote": "Innerhalb weniger Wochen von 0 auf über 2000 Follower. Die Content-Strategie hat voll eingeschlagen.",
         "rating": 5
       },
       {
-        "name": "Anna F.",
-        "company": "Studio Bloom",
-        "quote": "Super unkomplizierte Zusammenarbeit. Wir wurden jederzeit auf dem Laufenden gehalten und das Ergebnis übertrifft unsere Erwartungen.",
+        "name": "Alessandro F.",
+        "company": "AF-Gebäudeservice",
+        "quote": "Seit der neuen Website kommen Anfragen automatisch rein – kein Anruf mehr nötig. Professionell, schnell und genau das, was wir gebraucht haben.",
         "rating": 5
       }
     ]
@@ -222,6 +226,6 @@
     "formButton": "Nachricht senden"
   },
   "footer": {
-    "copyright": "© 2025 Kolac Digital. Alle Rechte vorbehalten."
+    "copyright": "© 2019–2026 Kolac Digital. Alle Rechte vorbehalten."
   }
 }

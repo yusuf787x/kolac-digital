@@ -185,22 +185,26 @@
       const card = document.createElement('div');
       card.className = `ref-card reveal reveal-delay-${(i % 4) + 1}`;
 
+      const wrapLink = (html, href) => href
+        ? `<a href="${href}" target="_blank" rel="noopener" class="mockup-clickable">${html}</a>`
+        : html;
+
       let mockupHTML;
       if (project.mockupType === 'phone-app') {
         mockupHTML = `<div class="ref-mockup ref-mockup-phone-app">
-            <div class="ref-mockup-phone">
+            ${wrapLink(`<div class="ref-mockup-phone ref-mockup-elem">
               <div class="mockup-notch"></div>
               <div class="mockup-screen">
                 <img src="${project.mockupImage}" alt="${project.company} TikTok" onerror="this.style.display='none'">
               </div>
-            </div>
-            <div class="ref-mockup-app-icon">
-              <img src="${project.mockupImageApp}" alt="${project.company} App" onerror="this.style.display='none'">
-            </div>
+            </div>`, project.socialLink)}
+            ${wrapLink(`<div class="ref-mockup-app-icon ref-mockup-elem">
+              <img src="${project.mockupImageApp}" alt="${project.company} App">
+            </div>`, project.link)}
           </div>`;
       } else if (project.mockupType === 'both') {
         mockupHTML = `<div class="ref-mockup ref-mockup-dual">
-            <div class="ref-mockup-browser">
+            ${wrapLink(`<div class="ref-mockup-browser">
               <div class="mockup-bar">
                 <span class="mockup-bar-dot"></span>
                 <span class="mockup-bar-dot"></span>
@@ -209,26 +213,26 @@
               <div class="mockup-screen">
                 <img src="${project.mockupImage}" alt="${project.company} Website" onerror="this.style.display='none'">
               </div>
-            </div>
-            <div class="ref-mockup-phone ref-mockup-phone-overlay">
+            </div>`, project.link)}
+            ${wrapLink(`<div class="ref-mockup-phone ref-mockup-phone-overlay">
               <div class="mockup-notch"></div>
               <div class="mockup-screen">
                 <img src="${project.mockupImagePhone}" alt="${project.company} Social Media" onerror="this.style.display='none'">
               </div>
-            </div>
+            </div>`, project.socialLink)}
           </div>`;
       } else if (project.mockupType === 'phone') {
         mockupHTML = `<div class="ref-mockup">
-            <div class="ref-mockup-phone">
+            ${wrapLink(`<div class="ref-mockup-phone">
               <div class="mockup-notch"></div>
               <div class="mockup-screen">
                 <img src="${project.mockupImage}" alt="${project.company}" onerror="this.style.display='none'">
               </div>
-            </div>
+            </div>`, project.socialLink)}
           </div>`;
       } else {
         mockupHTML = `<div class="ref-mockup">
-            <div class="ref-mockup-browser">
+            ${wrapLink(`<div class="ref-mockup-browser">
               <div class="mockup-bar">
                 <span class="mockup-bar-dot"></span>
                 <span class="mockup-bar-dot"></span>
@@ -237,22 +241,25 @@
               <div class="mockup-screen">
                 <img src="${project.mockupImage}" alt="${project.company}" onerror="this.style.display='none'">
               </div>
-            </div>
+            </div>`, project.link)}
           </div>`;
       }
 
       const servicesHTML = project.services.map(s => `<li>${s}</li>`).join('');
 
-      const tiktokIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.05a8.15 8.15 0 0 0 4.77 1.52V7.12a4.85 4.85 0 0 1-1-.43z"/></svg>`;
-      const instagramIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`;
-
-      const iconMap = { tiktok: tiktokIcon, instagram: instagramIcon };
+      const icons = {
+        tiktok: `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.05a8.15 8.15 0 0 0 4.77 1.52V7.12a4.85 4.85 0 0 1-1-.43z"/></svg>`,
+        instagram: `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`,
+        website: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+        shop: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+        app: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
+      };
 
       const linkHTML = project.link
-        ? `<a href="${project.link}" target="_blank" rel="noopener" class="ref-link">${project.linkText} →</a>`
+        ? `<a href="${project.link}" target="_blank" rel="noopener" class="ref-link ref-link-${project.linkIcon || 'website'}">${icons[project.linkIcon || 'website'] || ''} ${project.linkText}</a>`
         : '';
       const socialLinkHTML = project.socialLink
-        ? `<a href="${project.socialLink}" target="_blank" rel="noopener" class="ref-link ref-link-social">${iconMap[project.socialIcon] || ''} ${project.socialLinkText} →</a>`
+        ? `<a href="${project.socialLink}" target="_blank" rel="noopener" class="ref-link ref-link-${project.socialIcon}">${icons[project.socialIcon] || ''} ${project.socialLinkText}</a>`
         : '';
 
       card.innerHTML = `
@@ -274,6 +281,12 @@
 
       grid.appendChild(card);
     });
+
+    // CTA button after grid
+    const ctaWrap = document.createElement('div');
+    ctaWrap.className = 'ref-cta-wrap reveal';
+    ctaWrap.innerHTML = `<a href="#kontakt" class="ref-cta-btn">Vielleicht dein Projekt als nächstes? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>`;
+    grid.parentElement.appendChild(ctaWrap);
   }
 
   function renderKontakt() {
@@ -331,6 +344,7 @@
       ).join('');
 
       card.innerHTML = `
+        <div class="testimonial-stars">${starsHTML}</div>
         <p class="testimonial-quote">${t.quote}</p>
         <div class="testimonial-author">
           <div class="testimonial-avatar">${initial}</div>
@@ -338,7 +352,6 @@
             <span class="testimonial-name">${t.name}</span>
             <span class="testimonial-company">${t.company}</span>
           </div>
-          <div class="testimonial-stars">${starsHTML}</div>
         </div>
       `;
 
@@ -380,13 +393,18 @@
     const headlines = JSON.parse(el.dataset.headlines);
     if (headlines.length === 0) return;
 
-    // Create text node and cursor span
-    const textNode = document.createTextNode('');
+    // Structure: mainSpan (all but last word) + noBreakSpan (last word + cursor)
+    const mainSpan = document.createElement('span');
+    const noBreakSpan = document.createElement('span');
+    noBreakSpan.style.whiteSpace = 'nowrap';
+    const lastWordNode = document.createTextNode('');
     const cursor = document.createElement('span');
     cursor.className = 'typewriter-cursor';
+    noBreakSpan.appendChild(lastWordNode);
+    noBreakSpan.appendChild(cursor);
     el.innerHTML = '';
-    el.appendChild(textNode);
-    el.appendChild(cursor);
+    el.appendChild(mainSpan);
+    el.appendChild(noBreakSpan);
 
     const typeSpeed = 55;
     const deleteSpeed = 35;
@@ -397,12 +415,23 @@
     let charIndex = 0;
     let isDeleting = false;
 
+    function updateDisplay(text) {
+      const lastSpace = text.lastIndexOf(' ');
+      if (lastSpace === -1) {
+        mainSpan.textContent = '';
+        lastWordNode.textContent = text;
+      } else {
+        mainSpan.textContent = text.substring(0, lastSpace + 1);
+        lastWordNode.textContent = text.substring(lastSpace + 1);
+      }
+    }
+
     function tick() {
       const currentText = headlines[headlineIndex];
 
       if (!isDeleting) {
         charIndex++;
-        textNode.textContent = currentText.substring(0, charIndex);
+        updateDisplay(currentText.substring(0, charIndex));
 
         if (charIndex === currentText.length) {
           isDeleting = true;
@@ -412,7 +441,7 @@
         setTimeout(tick, typeSpeed);
       } else {
         charIndex--;
-        textNode.textContent = currentText.substring(0, charIndex);
+        updateDisplay(currentText.substring(0, charIndex));
 
         if (charIndex === 0) {
           isDeleting = false;
@@ -486,11 +515,22 @@
     const navbar = document.querySelector('.navbar');
     if (!navbar) return;
 
+    const blurBottom = document.querySelector('.scroll-blur-bottom');
+
     const onScroll = () => {
       if (window.scrollY > 50) {
         navbar.classList.add('scrolled');
       } else {
         navbar.classList.remove('scrolled');
+      }
+
+      if (blurBottom) {
+        const distFromBottom = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+        if (distFromBottom < 120) {
+          blurBottom.classList.add('hidden');
+        } else {
+          blurBottom.classList.remove('hidden');
+        }
       }
     };
 
