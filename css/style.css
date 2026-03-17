@@ -1736,10 +1736,16 @@ textarea {
   overflow: hidden;
 }
 
+.testimonial-slider,
+.testimonial-track-wrap,
+.testimonial-track,
+.testimonial-card {
+  touch-action: pan-y;
+}
+
 .testimonial-track {
   display: flex;
   gap: 24px;
-  touch-action: pan-y;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: grab;
   user-select: none;
