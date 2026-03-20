@@ -610,6 +610,7 @@
       formData.append('access_key', '32c71b72-7062-453d-a6a8-8b877f0aa323');
       formData.append('subject', 'Neue Kontaktanfrage über kolac-digital.de');
       formData.append('from_name', 'Kolac Digital Website');
+      formData.append('ccemail', 'yusuf_kolac@live.de');
 
       fetch('https://api.web3forms.com/submit', {
         method: 'POST',
