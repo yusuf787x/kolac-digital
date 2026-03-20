@@ -716,24 +716,43 @@
       });
     });
 
+    // Bind touch to the stable wrapper — track moves via transform so its
+    // hit area shifts after each swipe, causing events to miss on repeat swipes.
+    const trackWrap = slider.querySelector('.testimonial-track-wrap') || slider;
+
+    let startY = 0;
+    let isHorizontalSwipe = null;
+
     function touchStart(e) {
       if (isTransitioning) return;
+      const t = e.touches[0];
       isDragging = true;
-      startX = getPositionX(e);
-      track.classList.add('grabbing');
+      isHorizontalSwipe = null;
+      startX = t.clientX;
+      startY = t.clientY;
       track.style.transition = 'none';
     }
 
     function touchMove(e) {
       if (!isDragging) return;
-      currentTranslate = prevTranslate + (getPositionX(e) - startX);
+      const t = e.touches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+
+      if (isHorizontalSwipe === null && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+        isHorizontalSwipe = Math.abs(dx) >= Math.abs(dy);
+      }
+      if (!isHorizontalSwipe) return; // vertical → page scrolls normally
+
+      if (e.cancelable) e.preventDefault();
+      currentTranslate = prevTranslate + dx;
       track.style.transform = `translateX(${currentTranslate}px)`;
     }
 
     function touchEnd() {
       if (!isDragging) return;
       isDragging = false;
-      track.classList.remove('grabbing');
+      isHorizontalSwipe = null;
 
       const movedBy = currentTranslate - prevTranslate;
       const threshold = getSlideWidth() * 0.25;
@@ -751,17 +770,26 @@
       return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
     }
 
-    track.addEventListener('mousedown', touchStart);
-    track.addEventListener('mousemove', touchMove);
+    // Mouse drag (desktop)
+    track.addEventListener('mousedown', (e) => {
+      if (isTransitioning) return;
+      isDragging = true; startX = e.pageX;
+      track.style.transition = 'none';
+    });
+    track.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      currentTranslate = prevTranslate + (e.pageX - startX);
+      track.style.transform = `translateX(${currentTranslate}px)`;
+    });
     track.addEventListener('mouseup', touchEnd);
     track.addEventListener('mouseleave', () => { if (isDragging) touchEnd(); });
-
-    track.addEventListener('touchstart', touchStart, { passive: true });
-    track.addEventListener('touchmove', touchMove, { passive: true });
-    track.addEventListener('touchend', touchEnd);
-    track.addEventListener('touchcancel', touchEnd);
-
     track.addEventListener('dragstart', (e) => e.preventDefault());
+
+    // Touch – bound to stable wrapper so hit area never shifts after a swipe
+    trackWrap.addEventListener('touchstart', touchStart, { passive: true });
+    trackWrap.addEventListener('touchmove', touchMove, { passive: false });
+    trackWrap.addEventListener('touchend', touchEnd);
+    trackWrap.addEventListener('touchcancel', touchEnd);
 
     let resizeTimer;
     window.addEventListener('resize', () => {
