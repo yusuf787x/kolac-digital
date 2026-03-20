@@ -601,11 +601,36 @@
         return;
       }
 
-      // For now, show success message
-      alert('Danke für deine Nachricht! Wir melden uns innerhalb von 24 Stunden bei dir.');
-      form.reset();
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Wird gesendet...';
+      submitBtn.disabled = true;
 
-      console.log('Form submission:', data);
+      // Web3Forms
+      formData.append('access_key', '32c71b72-7062-453d-a6a8-8b877f0aa323');
+      formData.append('subject', 'Neue Kontaktanfrage über kolac-digital.de');
+      formData.append('from_name', 'Kolac Digital Website');
+
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success) {
+            alert('Danke für deine Nachricht! Wir melden uns innerhalb von 24 Stunden bei dir.');
+            form.reset();
+          } else {
+            alert('Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreib uns direkt an yusuf@kolac-digital.de');
+          }
+        })
+        .catch(() => {
+          alert('Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreib uns direkt an yusuf@kolac-digital.de');
+        })
+        .finally(() => {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        });
     });
   }
 
