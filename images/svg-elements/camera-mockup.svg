@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="130" height="104" viewBox="0 0 130 104">
+  <defs>
+    <linearGradient id="cameraBody" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+    <radialGradient id="lensGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(0,113,227,0.3)"/>
+      <stop offset="40%" stop-color="#111"/>
+      <stop offset="70%" stop-color="#222"/>
+      <stop offset="100%" stop-color="#111"/>
+    </radialGradient>
+    <filter id="camShadow">
+      <feDropShadow dx="0" dy="10" stdDeviation="15" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  <!-- Viewfinder (top) -->
+  <rect x="90" y="0" width="22" height="14" rx="3" ry="3" fill="#1a1a1a" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <!-- Camera body -->
+  <rect x="0" y="14" width="130" height="90" rx="10" ry="10" fill="url(#cameraBody)" stroke="rgba(255,255,255,0.1)" stroke-width="1" filter="url(#camShadow)"/>
+  <!-- Lens outer ring -->
+  <circle cx="49" cy="59" r="22" fill="#0a0a0a" stroke="#333" stroke-width="3"/>
+  <!-- Lens inner -->
+  <circle cx="49" cy="59" r="11" fill="url(#lensGrad)" stroke="#2a2a2a" stroke-width="2"/>
+  <!-- Lens reflection -->
+  <ellipse cx="45" cy="55" rx="4" ry="3" fill="rgba(255,255,255,0.06)"/>
+  <!-- REC light -->
+  <circle cx="112" cy="30" r="3" fill="#e53e3e"/>
+  <circle cx="112" cy="30" r="5" fill="none" stroke="rgba(229,62,62,0.3)" stroke-width="1"/>
+  <!-- Flash -->
+  <rect x="80" y="36" width="12" height="8" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+  <!-- Model text -->
+  <text x="80" y="72" font-family="Inter, sans-serif" font-size="5" font-weight="600" fill="rgba(255,255,255,0.15)" letter-spacing="1">KOLAC</text>
+  <!-- Grip texture lines -->
+  <line x1="4" y1="30" x2="4" y2="88" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  <line x1="7" y1="30" x2="7" y2="88" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  <line x1="10" y1="30" x2="10" y2="88" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+</svg>
