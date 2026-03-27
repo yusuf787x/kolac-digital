@@ -2204,17 +2204,29 @@ textarea {
   /* Footer */
   .footer-inner {
     border-radius: 28px;
-    padding: 36px 48px 28px;
+    padding: 28px 48px 20px;
   }
 
   .footer-top {
     flex-direction: row;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    margin-bottom: 16px;
   }
 
   .footer-columns {
-    gap: 64px;
+    flex-direction: row;
+    gap: 48px;
+  }
+
+  .footer-col {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .footer-col-title {
+    margin-bottom: 0;
   }
 }
 
