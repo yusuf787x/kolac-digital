@@ -1665,12 +1665,16 @@ textarea {
 }
 
 .footer .container {
+  max-width: none;
+  padding: 0;
+}
+
+.footer-top {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  max-width: none;
-  padding: 0;
+  gap: 28px;
+  margin-bottom: 24px;
 }
 
 .footer-logo {
@@ -1685,27 +1689,42 @@ textarea {
   object-fit: contain;
 }
 
-.footer-links {
+.footer-columns {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
+  gap: 48px;
 }
 
-.footer-links a {
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-col-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 4px;
+}
+
+.footer-col a {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.65);
   transition: color var(--transition);
 }
 
-.footer-links a:hover {
+.footer-col a:hover {
   color: #fff;
 }
 
 .footer-copy {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.5);
   text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ==========================================================================
@@ -2185,16 +2204,17 @@ textarea {
   /* Footer */
   .footer-inner {
     border-radius: 28px;
-    padding: 32px 40px 24px;
+    padding: 36px 48px 28px;
   }
 
-  .footer .container {
+  .footer-top {
     flex-direction: row;
     justify-content: space-between;
+    align-items: flex-start;
   }
 
-  .footer-links {
-    gap: 28px;
+  .footer-columns {
+    gap: 64px;
   }
 }
 
