@@ -888,6 +888,66 @@
     }
   }
 
+  /* ---------- 12. YouTube Video Lazy Loading ---------- */
+  function initVideoPlayers() {
+    document.querySelectorAll('.video-placeholder').forEach(function (placeholder) {
+      function handleClick() {
+        var wrapper = placeholder.closest('.video-wrapper');
+        var videoId = wrapper.dataset.youtubeId;
+        if (!videoId) return;
+
+        // Check cookie consent
+        if (window.CookieConsent && !window.CookieConsent.hasFunctional()) {
+          // Show consent notice
+          var notice = document.createElement('div');
+          notice.className = 'video-consent-notice';
+          notice.innerHTML =
+            '<p>Dieses Video wird von YouTube bereitgestellt. ' +
+            'Bitte akzeptiere funktionale Cookies, um es abzuspielen.</p>' +
+            '<button>Cookies akzeptieren</button>';
+          notice.querySelector('button').addEventListener('click', function () {
+            // Accept functional cookies and reload video
+            if (window.CookieConsent) {
+              var consent = window.CookieConsent.getConsent() || {};
+              consent.essential = true;
+              consent.functional = true;
+              consent.timestamp = new Date().toISOString();
+              localStorage.setItem('kolac_cookie_consent', JSON.stringify(consent));
+              window.dispatchEvent(new CustomEvent('cookieConsentChanged', { detail: consent }));
+            }
+            notice.remove();
+            embedVideo(wrapper, videoId);
+          });
+          wrapper.appendChild(notice);
+          return;
+        }
+
+        embedVideo(wrapper, videoId);
+      }
+
+      placeholder.addEventListener('click', handleClick);
+      placeholder.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      });
+    });
+  }
+
+  function embedVideo(wrapper, videoId) {
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://www.youtube-nocookie.com/embed/' + videoId + '?autoplay=1&rel=0';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    iframe.title = 'YouTube Video';
+    wrapper.innerHTML = '';
+    wrapper.appendChild(iframe);
+  }
+
   /* ---------- Init on DOM ready ---------- */
-  document.addEventListener('DOMContentLoaded', loadContent);
+  document.addEventListener('DOMContentLoaded', function () {
+    loadContent();
+    initVideoPlayers();
+  });
 })();

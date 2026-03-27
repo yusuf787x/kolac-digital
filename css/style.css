@@ -1736,6 +1736,140 @@ textarea {
   overflow: hidden;
 }
 
+/* Video Testimonials */
+.video-testimonials {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 56px;
+}
+
+.video-card {
+  background: #fff;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.video-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+}
+
+.video-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.video-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.video-placeholder:hover img {
+  opacity: 0.85;
+}
+
+.video-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 68px;
+  height: 48px;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.video-placeholder:hover .video-play-btn {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.video-play-btn svg {
+  width: 100%;
+  height: 100%;
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-consent-notice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  text-align: center;
+  padding: 24px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.video-consent-notice button {
+  padding: 8px 20px;
+  border-radius: 980px;
+  background: var(--color-blue);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s ease;
+}
+
+.video-consent-notice button:hover {
+  background: #005bb5;
+}
+
+.video-info {
+  padding: 20px 24px 24px;
+}
+
+.video-name {
+  font-family: var(--font-main);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: 2px;
+}
+
+.video-company {
+  font-size: 14px;
+  color: var(--color-blue);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.video-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-gray);
+}
+
 .kundenstimmen-header {
   margin-bottom: 48px;
 }
@@ -2176,6 +2310,10 @@ textarea {
   /* Kundenstimmen */
   .kundenstimmen {
     padding: 80px 0;
+  }
+
+  .video-testimonials {
+    grid-template-columns: 1fr 1fr;
   }
 
   .testimonial-card {
