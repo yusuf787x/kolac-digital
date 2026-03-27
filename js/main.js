@@ -606,15 +606,23 @@
       submitBtn.textContent = 'Wird gesendet...';
       submitBtn.disabled = true;
 
-      // Web3Forms
-      formData.append('access_key', '32c71b72-7062-453d-a6a8-8b877f0aa323');
-      formData.append('subject', 'Neue Kontaktanfrage über kolac-digital.de');
-      formData.append('from_name', 'Kolac Digital Website');
-      formData.append('ccemail', 'yusuf_kolac@live.de');
+      // Web3Forms – JSON format
+      var payload = {
+        access_key: '32c71b72-7062-453d-a6a8-8b877f0aa323',
+        subject: 'Neue Kontaktanfrage über kolac-digital.de',
+        from_name: 'Kolac Digital Website',
+        name: data.name,
+        email: data.email,
+        phone: data.phone || '',
+        company: data.company || '',
+        service: data.service || '',
+        message: data.message || ''
+      };
 
       fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
       })
         .then((res) => res.json())
         .then((result) => {
@@ -622,10 +630,12 @@
             alert('Danke für deine Nachricht! Wir melden uns innerhalb von 24 Stunden bei dir.');
             form.reset();
           } else {
+            console.error('Web3Forms error:', result);
             alert('Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreib uns direkt an yusuf@kolac-digital.de');
           }
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error('Form submit error:', err);
           alert('Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreib uns direkt an yusuf@kolac-digital.de');
         })
         .finally(() => {
