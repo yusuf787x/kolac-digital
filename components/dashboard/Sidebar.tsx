@@ -1,8 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { listInvoices } from '@/lib/firestore';
+import { isOverdue } from '@/lib/utils';
 import Logo from '@/components/Logo';
 
 interface NavItem {
@@ -21,13 +24,25 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/einstellungen', label: 'Einstellungen', icon: '⚙️' },
 ];
 
-interface SidebarProps {
-  overdueCount?: number;
-}
-
-export default function Sidebar({ overdueCount = 0 }: SidebarProps) {
+export default function Sidebar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+  const [overdueCount, setOverdueCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    listInvoices()
+      .then((invoices) => {
+        const count = invoices.filter(
+          (inv) =>
+            inv.status !== 'paid' &&
+            inv.status !== 'partially_paid' &&
+            isOverdue(inv.status, inv.dueDate.toDate()),
+        ).length;
+        setOverdueCount(count);
+      })
+      .catch(() => setOverdueCount(0));
+  }, [user, pathname]);
 
   const isActive = (href: string) =>
     href === '/dashboard'
