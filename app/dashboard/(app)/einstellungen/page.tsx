@@ -1,16 +1,30 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { Suspense, useEffect, useState, type FormEvent } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Timestamp } from 'firebase/firestore';
 import {
   getSettings,
   updateSettings,
   getGoogleAuth,
+  saveGoogleAuth,
   deleteGoogleAuth,
 } from '@/lib/firestore';
 import { seedInitialData } from '@/lib/seed';
 import type { Settings, GoogleAuth } from '@/lib/types';
 
 export default function EinstellungenPage() {
+  return (
+    <Suspense fallback={<div className="card text-sm text-gray-500">Lädt…</div>}>
+      <EinstellungenInner />
+    </Suspense>
+  );
+}
+
+function EinstellungenInner() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [settings, setSettings] = useState<Settings | null>(null);
   const [defaultPaymentDays, setDefaultPaymentDays] = useState('7');
   const [defaultClosingText, setDefaultClosingText] = useState('');
@@ -21,6 +35,7 @@ export default function EinstellungenPage() {
   const [googleAuth, setGoogleAuth] = useState<GoogleAuth | null>(null);
   const [seedRunning, setSeedRunning] = useState(false);
   const [seedMessage, setSeedMessage] = useState<string | null>(null);
+  const [googleStatus, setGoogleStatus] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([getSettings(), getGoogleAuth()]).then(([s, g]) => {
@@ -31,6 +46,62 @@ export default function EinstellungenPage() {
       setGoogleAuth(g);
     });
   }, []);
+
+  // Pickup tokens after OAuth callback redirect.
+  useEffect(() => {
+    const flag = searchParams.get('google');
+    if (!flag) return;
+
+    if (flag === 'error') {
+      const reason = searchParams.get('reason') ?? 'unbekannt';
+      setGoogleStatus(`Verbindung fehlgeschlagen: ${reason}`);
+      router.replace('/dashboard/einstellungen');
+      return;
+    }
+
+    if (flag === 'connected') {
+      (async () => {
+        setGoogleStatus('Speichere Verbindung…');
+        try {
+          const res = await fetch('/api/auth/google/pickup');
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error ?? `HTTP ${res.status}`);
+          }
+          const { payload } = (await res.json()) as {
+            payload: {
+              refreshToken: string;
+              accessToken: string | null;
+              tokenExpiresAt: number | null;
+              scopes: string[];
+              connectedEmail: string;
+            };
+          };
+
+          await saveGoogleAuth({
+            refreshToken: payload.refreshToken,
+            accessToken: payload.accessToken,
+            tokenExpiresAt: payload.tokenExpiresAt
+              ? Timestamp.fromMillis(payload.tokenExpiresAt)
+              : null,
+            scopes: payload.scopes,
+            connectedEmail: payload.connectedEmail,
+          });
+
+          const fresh = await getGoogleAuth();
+          setGoogleAuth(fresh);
+          setGoogleStatus(`Google Drive verbunden als ${payload.connectedEmail}.`);
+        } catch (err) {
+          console.error(err);
+          setGoogleStatus(
+            `Verbindung konnte nicht gespeichert werden: ${(err as Error).message}`,
+          );
+        } finally {
+          router.replace('/dashboard/einstellungen');
+        }
+      })();
+    }
+  }, [searchParams, router]);
 
   const handleSaveSettings = async (e: FormEvent) => {
     e.preventDefault();
@@ -174,6 +245,9 @@ export default function EinstellungenPage() {
             <button onClick={handleConnectDrive} className="btn-secondary">
               Google Drive verbinden
             </button>
+          )}
+          {googleStatus && (
+            <p className="mt-3 text-sm text-gray-700">{googleStatus}</p>
           )}
         </section>
 

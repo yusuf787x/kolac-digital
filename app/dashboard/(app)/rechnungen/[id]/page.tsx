@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Timestamp, serverTimestamp } from 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore';
 import {
   getInvoice,
   getCustomer,
@@ -18,6 +18,8 @@ import {
   daysOverdue,
 } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
+// PDF generator and drive sync are dynamic imports — they pull in
+// @react-pdf/renderer (~500kB) which we only need on-demand.
 
 export default function RechnungDetailPage() {
   const params = useParams<{ id: string }>();
@@ -29,6 +31,9 @@ export default function RechnungDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [syncingDrive, setSyncingDrive] = useState(false);
 
   const refresh = async () => {
     const inv = await getInvoice(id);
@@ -122,6 +127,141 @@ export default function RechnungDetailPage() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!customer) {
+      alert('Kunde nicht geladen — PDF kann nicht generiert werden.');
+      return;
+    }
+    setGeneratingPdf(true);
+    try {
+      const { generateInvoicePdfBlob, downloadBlob, buildInvoiceFilename } =
+        await import('@/lib/pdf-generator');
+      const blob = await generateInvoicePdfBlob(invoice, customer);
+      downloadBlob(blob, buildInvoiceFilename(invoice, customer));
+    } catch (err) {
+      console.error(err);
+      alert('PDF-Generierung fehlgeschlagen.');
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!customer || !customer.email) {
+      alert('Kein E-Mail-Empfänger im Kundenprofil hinterlegt.');
+      return;
+    }
+    if (
+      !confirm(
+        `Rechnung ${invoice.invoiceNumber} an ${customer.email} per E-Mail senden?`,
+      )
+    )
+      return;
+    setSendingEmail(true);
+    try {
+      const { generateInvoicePdfBlob, buildInvoiceFilename } =
+        await import('@/lib/pdf-generator');
+      const blob = await generateInvoicePdfBlob(invoice, customer);
+      const arrayBuffer = await blob.arrayBuffer();
+      const base64 = btoa(
+        String.fromCharCode(...new Uint8Array(arrayBuffer)),
+      );
+      const filename = buildInvoiceFilename(invoice, customer);
+
+      const res = await fetch('/api/email/invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: customer.email,
+          customerName: [customer.firstName, customer.lastName]
+            .filter(Boolean)
+            .join(' ') || customer.company,
+          invoiceNumber: invoice.invoiceNumber,
+          totalAmount: invoice.totalAmount,
+          dueDate: formatDateDE(invoice.dueDate.toDate()),
+          pdfBase64: base64,
+          filename,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || 'Versand fehlgeschlagen');
+      }
+
+      await updateInvoice(invoice.id, {
+        status: invoice.status === 'draft' ? 'sent' : invoice.status,
+        sentAt: invoice.sentAt ?? Timestamp.fromDate(new Date()),
+      });
+      await refresh();
+      alert('E-Mail erfolgreich versendet.');
+    } catch (err) {
+      console.error(err);
+      alert(`Versand fehlgeschlagen: ${(err as Error).message}`);
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const handleSyncDrive = async () => {
+    if (!customer) return;
+    setSyncingDrive(true);
+    try {
+      const { syncInvoiceToDrive } = await import('@/lib/drive-sync');
+      const link = await syncInvoiceToDrive(invoice, customer);
+      await refresh();
+      alert(`Auf Google Drive gesichert.\n${link}`);
+    } catch (err) {
+      console.error(err);
+      alert(`Drive-Sync fehlgeschlagen: ${(err as Error).message}`);
+    } finally {
+      setSyncingDrive(false);
+    }
+  };
+
+  const handleSendReminder = async () => {
+    if (!customer || !customer.email) {
+      alert('Kein E-Mail-Empfänger im Kundenprofil hinterlegt.');
+      return;
+    }
+    if (!confirm(`Zahlungserinnerung an ${customer.email} senden?`)) return;
+    setSendingEmail(true);
+    try {
+      const dueDateString = formatDateDE(invoice.dueDate.toDate());
+      const days = daysOverdue(invoice.dueDate.toDate());
+      const remaining =
+        invoice.status === 'partially_paid'
+          ? invoice.totalAmount - invoice.paidAmount
+          : invoice.totalAmount;
+
+      const res = await fetch('/api/email/reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: customer.email,
+          customerName: [customer.firstName, customer.lastName]
+            .filter(Boolean)
+            .join(' ') || customer.company,
+          invoiceNumber: invoice.invoiceNumber,
+          dueDate: dueDateString,
+          daysOverdue: days,
+          remainingAmount: remaining,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || 'Versand fehlgeschlagen');
+      }
+      alert('Erinnerung versendet.');
+    } catch (err) {
+      console.error(err);
+      alert(`Versand fehlgeschlagen: ${(err as Error).message}`);
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const isDraft = invoice.status === 'draft';
   const remaining = invoice.totalAmount - invoice.paidAmount;
 
@@ -164,18 +304,34 @@ export default function RechnungDetailPage() {
               </Link>
             )}
             <button
-              onClick={() => alert('PDF-Generator wird in Phase 4 aktiviert.')}
+              onClick={handleDownloadPdf}
+              disabled={generatingPdf}
               className="btn-secondary"
             >
-              PDF
+              {generatingPdf ? 'Generiere PDF…' : 'PDF herunterladen'}
             </button>
             <button
-              onClick={() =>
-                alert('E-Mail-Versand (Resend) wird in Phase 5 aktiviert.')
+              onClick={handleSendEmail}
+              disabled={sendingEmail || !customer?.email}
+              className="btn-secondary"
+              title={
+                !customer?.email
+                  ? 'Keine E-Mail im Kundenprofil hinterlegt'
+                  : ''
               }
+            >
+              {sendingEmail ? 'Sende…' : 'Per E-Mail senden'}
+            </button>
+            <button
+              onClick={handleSyncDrive}
+              disabled={syncingDrive || !customer}
               className="btn-secondary"
             >
-              Per E-Mail senden
+              {syncingDrive
+                ? 'Synct…'
+                : invoice.driveUrl
+                  ? 'Drive: aktualisieren'
+                  : 'Auf Drive sichern'}
             </button>
             <button
               onClick={handleDelete}
@@ -217,12 +373,16 @@ export default function RechnungDetailPage() {
                 Teilweise bezahlt…
               </button>
               <button
-                onClick={() =>
-                  alert('Erinnerungs-Mails werden in Phase 5 aktiviert.')
-                }
+                onClick={handleSendReminder}
+                disabled={sendingEmail || !customer?.email}
                 className="btn-secondary"
+                title={
+                  !customer?.email
+                    ? 'Keine E-Mail im Kundenprofil hinterlegt'
+                    : ''
+                }
               >
-                Erinnerung senden
+                {sendingEmail ? 'Sende…' : 'Erinnerung senden'}
               </button>
             </>
           )}
