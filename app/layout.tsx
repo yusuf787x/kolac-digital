@@ -9,6 +9,14 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/images/favicon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/images/favicon-512.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: '/images/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
