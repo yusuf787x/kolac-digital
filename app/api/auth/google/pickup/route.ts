@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PICKUP_COOKIE } from '@/lib/google-oauth';
 
 export const runtime = 'nodejs';
@@ -9,21 +9,16 @@ export const runtime = 'nodejs';
  * Firestore via the authenticated client SDK. The cookie is cleared
  * immediately after read.
  */
-export async function GET(req: Request) {
-  const cookie = req.headers
-    .get('cookie')
-    ?.split(';')
-    .map((c) => c.trim())
-    .find((c) => c.startsWith(`${PICKUP_COOKIE}=`));
+export async function GET(req: NextRequest) {
+  const cookie = req.cookies.get(PICKUP_COOKIE);
 
-  if (!cookie) {
+  if (!cookie?.value) {
     return NextResponse.json({ error: 'no_pickup_cookie' }, { status: 404 });
   }
 
-  const value = cookie.slice(PICKUP_COOKIE.length + 1);
-
   try {
-    const decoded = Buffer.from(value, 'base64').toString('utf8');
+    // Cookie API auto-decodes URL-encoded values, so the raw base64 lands here.
+    const decoded = Buffer.from(cookie.value, 'base64').toString('utf8');
     const payload = JSON.parse(decoded);
 
     const res = NextResponse.json({ ok: true, payload });
@@ -34,7 +29,11 @@ export async function GET(req: Request) {
     return res;
   } catch (err) {
     return NextResponse.json(
-      { error: 'invalid_cookie', detail: (err as Error).message },
+      {
+        error: 'invalid_cookie',
+        detail: (err as Error).message,
+        cookieLength: cookie.value.length,
+      },
       { status: 400 },
     );
   }

@@ -11,7 +11,11 @@ import {
   deleteGoogleAuth,
 } from '@/lib/firestore';
 import { seedInitialData } from '@/lib/seed';
-import { importFromGoogleSheet, type ImportResult } from '@/lib/import-from-sheet';
+import {
+  importFromGoogleSheet,
+  inspectGoogleSheet,
+  type ImportResult,
+} from '@/lib/import-from-sheet';
 import type { Settings, GoogleAuth } from '@/lib/types';
 
 export default function EinstellungenPage() {
@@ -40,6 +44,9 @@ function EinstellungenInner() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+  const [einnahmenTabOverride, setEinnahmenTabOverride] = useState('');
+  const [ausgabenTabOverride, setAusgabenTabOverride] = useState('');
+  const [inspecting, setInspecting] = useState(false);
 
   useEffect(() => {
     Promise.all([getSettings(), getGoogleAuth()]).then(([s, g]) => {
@@ -171,13 +178,46 @@ function EinstellungenInner() {
     setImportError(null);
     setImportResult(null);
     try {
-      const result = await importFromGoogleSheet();
+      const result = await importFromGoogleSheet({
+        einnahmenTab: einnahmenTabOverride.trim() || undefined,
+        ausgabenTab: ausgabenTabOverride.trim() || undefined,
+      });
       setImportResult(result);
     } catch (err) {
       console.error(err);
       setImportError((err as Error).message);
     } finally {
       setImporting(false);
+    }
+  };
+
+  const handleInspect = async () => {
+    setInspecting(true);
+    setImportError(null);
+    try {
+      const data = await inspectGoogleSheet();
+      // Reuse the result block — fill in only diagnostics, no writes happened.
+      setImportResult({
+        invoicesCreated: 0,
+        invoicesSkipped: 0,
+        expensesCreated: 0,
+        expensesSkipped: 0,
+        customersCreated: 0,
+        highestInvoiceCounter: 0,
+        errors: ['(Inspect-Modus — es wurden keine Daten angelegt.)'],
+        tabsAvailable: data.tabs,
+        einnahmenTab: data.einnahmenTab,
+        ausgabenTab: data.ausgabenTab,
+        einnahmenRowCount: data.einnahmen.length,
+        ausgabenRowCount: data.ausgaben.length,
+        einnahmenPreview: data.einnahmenPreview,
+        ausgabenPreview: data.ausgabenPreview,
+      });
+    } catch (err) {
+      console.error(err);
+      setImportError((err as Error).message);
+    } finally {
+      setInspecting(false);
     }
   };
 
@@ -288,18 +328,53 @@ function EinstellungenInner() {
             übersprungen — der Import kann beliebig oft ausgeführt werden.
             Drive-Links werden mit gespeichert.
           </p>
-          <button
-            onClick={handleImport}
-            disabled={importing || !googleAuth}
-            className="btn-secondary"
-            title={
-              !googleAuth ? 'Google Drive muss zuerst verbunden sein.' : ''
-            }
-          >
-            {importing
-              ? 'Importiere…'
-              : 'Einnahmen + Ausgaben aus Sheet importieren'}
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="label text-xs">
+                Tab-Name "Einnahmen" (optional, wenn Auto-Erkennung versagt)
+              </label>
+              <input
+                className="input"
+                value={einnahmenTabOverride}
+                onChange={(e) => setEinnahmenTabOverride(e.target.value)}
+                placeholder="z.B. Einnahmen 2026"
+              />
+            </div>
+            <div>
+              <label className="label text-xs">
+                Tab-Name "Ausgaben" (optional)
+              </label>
+              <input
+                className="input"
+                value={ausgabenTabOverride}
+                onChange={(e) => setAusgabenTabOverride(e.target.value)}
+                placeholder="z.B. Ausgaben 2026"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleImport}
+              disabled={importing || !googleAuth}
+              className="btn-secondary"
+              title={
+                !googleAuth ? 'Google Drive muss zuerst verbunden sein.' : ''
+              }
+            >
+              {importing
+                ? 'Importiere…'
+                : 'Einnahmen + Ausgaben aus Sheet importieren'}
+            </button>
+            <button
+              onClick={handleInspect}
+              disabled={inspecting || !googleAuth}
+              className="btn-secondary"
+              title="Liest das Sheet, ohne etwas zu speichern. Hilft bei Diagnose."
+            >
+              {inspecting ? 'Lese…' : 'Sheet inspizieren (Debug)'}
+            </button>
+          </div>
 
           {importError && (
             <div className="mt-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
@@ -308,23 +383,71 @@ function EinstellungenInner() {
           )}
 
           {importResult && (
-            <div className="mt-3 px-3 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-gray-700 space-y-1">
-              <p>
-                <strong>Rechnungen:</strong> {importResult.invoicesCreated} angelegt,{' '}
-                {importResult.invoicesSkipped} übersprungen
-              </p>
-              <p>
-                <strong>Ausgaben:</strong> {importResult.expensesCreated} angelegt,{' '}
-                {importResult.expensesSkipped} übersprungen
-              </p>
-              {importResult.customersCreated > 0 && (
-                <p>
-                  <strong>Neue Kunden:</strong> {importResult.customersCreated} (mit
-                  Auto-Erstellt-Notiz)
+            <div className="mt-3 px-3 py-3 rounded-lg bg-gray-50 border border-gray-200 text-sm text-gray-700 space-y-2">
+              <div>
+                <p className="font-medium">Sheet-Diagnose:</p>
+                <p className="text-xs">
+                  Verfügbare Tabs:{' '}
+                  <code className="bg-white px-1 rounded">
+                    {importResult.tabsAvailable.join(' · ') || '(keine)'}
+                  </code>
                 </p>
+                <p className="text-xs">
+                  Einnahmen-Tab:{' '}
+                  <code className="bg-white px-1 rounded">
+                    {importResult.einnahmenTab || '(nicht gefunden)'}
+                  </code>{' '}
+                  → {importResult.einnahmenRowCount} Zeilen
+                </p>
+                <p className="text-xs">
+                  Ausgaben-Tab:{' '}
+                  <code className="bg-white px-1 rounded">
+                    {importResult.ausgabenTab || '(nicht gefunden)'}
+                  </code>{' '}
+                  → {importResult.ausgabenRowCount} Zeilen
+                </p>
+              </div>
+
+              {importResult.einnahmenPreview.length > 0 && (
+                <details>
+                  <summary className="cursor-pointer text-xs font-medium">
+                    Einnahmen-Preview (erste {importResult.einnahmenPreview.length} Zeilen)
+                  </summary>
+                  <pre className="mt-1 bg-white p-2 rounded overflow-x-auto text-[11px]">
+                    {JSON.stringify(importResult.einnahmenPreview, null, 2)}
+                  </pre>
+                </details>
               )}
+
+              {importResult.ausgabenPreview.length > 0 && (
+                <details>
+                  <summary className="cursor-pointer text-xs font-medium">
+                    Ausgaben-Preview (erste {importResult.ausgabenPreview.length} Zeilen)
+                  </summary>
+                  <pre className="mt-1 bg-white p-2 rounded overflow-x-auto text-[11px]">
+                    {JSON.stringify(importResult.ausgabenPreview, null, 2)}
+                  </pre>
+                </details>
+              )}
+
+              <div className="pt-2 border-t border-gray-200">
+                <p>
+                  <strong>Rechnungen:</strong> {importResult.invoicesCreated} angelegt,{' '}
+                  {importResult.invoicesSkipped} übersprungen
+                </p>
+                <p>
+                  <strong>Ausgaben:</strong> {importResult.expensesCreated} angelegt,{' '}
+                  {importResult.expensesSkipped} übersprungen
+                </p>
+                {importResult.customersCreated > 0 && (
+                  <p>
+                    <strong>Neue Kunden:</strong> {importResult.customersCreated}
+                  </p>
+                )}
+              </div>
+
               {importResult.errors.length > 0 && (
-                <details className="mt-2">
+                <details>
                   <summary className="cursor-pointer text-xs text-gray-500">
                     Hinweise und Fehler ({importResult.errors.length})
                   </summary>

@@ -28,6 +28,14 @@ export interface ImportResult {
   customersCreated: number;
   highestInvoiceCounter: number;
   errors: string[];
+  // Diagnostics — shown in UI so the user can see what the importer found.
+  tabsAvailable: string[];
+  einnahmenTab: string;
+  ausgabenTab: string;
+  einnahmenRowCount: number;
+  ausgabenRowCount: number;
+  einnahmenPreview: (string | number)[][];
+  ausgabenPreview: (string | number)[][];
 }
 
 /** Parse a German date string like "30.04.2026" or "30/04/2026". */
@@ -90,32 +98,64 @@ function guessCategory(description: string): ExpenseCategory {
   return 'Sonstiges';
 }
 
-interface SheetRows {
+interface SheetResponse {
+  tabs: string[];
+  einnahmenTab: string;
+  ausgabenTab: string;
   einnahmen: (string | number)[][];
   ausgaben: (string | number)[][];
+  einnahmenPreview: (string | number)[][];
+  ausgabenPreview: (string | number)[][];
 }
 
-async function fetchSheet(refreshToken: string): Promise<SheetRows> {
+async function fetchSheet(
+  refreshToken: string,
+  einnahmenTabOverride?: string,
+  ausgabenTabOverride?: string,
+): Promise<SheetResponse> {
   const res = await fetch('/api/import/read-sheet', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
+    body: JSON.stringify({
+      refreshToken,
+      einnahmenTab: einnahmenTabOverride,
+      ausgabenTab: ausgabenTabOverride,
+    }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error ?? `HTTP ${res.status}`);
   }
-  const data = (await res.json()) as SheetRows;
-  return data;
+  return (await res.json()) as SheetResponse;
 }
 
-export async function importFromGoogleSheet(): Promise<ImportResult> {
+/** Diagnostic-only: read the sheet without writing anything. */
+export async function inspectGoogleSheet(): Promise<SheetResponse> {
   const auth = await getGoogleAuth();
   if (!auth?.refreshToken) {
     throw new Error(
       'Google Drive ist nicht verbunden. Erst in Einstellungen verbinden.',
     );
   }
+  return fetchSheet(auth.refreshToken);
+}
+
+export async function importFromGoogleSheet(opts?: {
+  einnahmenTab?: string;
+  ausgabenTab?: string;
+}): Promise<ImportResult> {
+  const auth = await getGoogleAuth();
+  if (!auth?.refreshToken) {
+    throw new Error(
+      'Google Drive ist nicht verbunden. Erst in Einstellungen verbinden.',
+    );
+  }
+
+  const sheetData = await fetchSheet(
+    auth.refreshToken,
+    opts?.einnahmenTab,
+    opts?.ausgabenTab,
+  );
 
   const result: ImportResult = {
     invoicesCreated: 0,
@@ -125,9 +165,16 @@ export async function importFromGoogleSheet(): Promise<ImportResult> {
     customersCreated: 0,
     highestInvoiceCounter: 0,
     errors: [],
+    tabsAvailable: sheetData.tabs,
+    einnahmenTab: sheetData.einnahmenTab,
+    ausgabenTab: sheetData.ausgabenTab,
+    einnahmenRowCount: sheetData.einnahmen.length,
+    ausgabenRowCount: sheetData.ausgaben.length,
+    einnahmenPreview: sheetData.einnahmenPreview,
+    ausgabenPreview: sheetData.ausgabenPreview,
   };
 
-  const { einnahmen, ausgaben } = await fetchSheet(auth.refreshToken);
+  const { einnahmen, ausgaben } = sheetData;
 
   // Pre-fetch existing data for deduplication.
   const [existingCustomers, existingInvoices, existingExpenses] =
