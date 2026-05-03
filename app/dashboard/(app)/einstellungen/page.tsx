@@ -11,6 +11,7 @@ import {
   deleteGoogleAuth,
 } from '@/lib/firestore';
 import { seedInitialData } from '@/lib/seed';
+import { importFromGoogleSheet, type ImportResult } from '@/lib/import-from-sheet';
 import type { Settings, GoogleAuth } from '@/lib/types';
 
 export default function EinstellungenPage() {
@@ -36,6 +37,9 @@ function EinstellungenInner() {
   const [seedRunning, setSeedRunning] = useState(false);
   const [seedMessage, setSeedMessage] = useState<string | null>(null);
   const [googleStatus, setGoogleStatus] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([getSettings(), getGoogleAuth()]).then(([s, g]) => {
@@ -155,6 +159,28 @@ function EinstellungenInner() {
     setGoogleAuth(null);
   };
 
+  const handleImport = async () => {
+    if (
+      !confirm(
+        'Alle Einnahmen und Ausgaben aus dem Google Sheet importieren?\n\n' +
+          'Bestehende Rechnungsnummern und Ausgaben werden übersprungen — der Import ist sicher und kann mehrfach ausgeführt werden.',
+      )
+    )
+      return;
+    setImporting(true);
+    setImportError(null);
+    setImportResult(null);
+    try {
+      const result = await importFromGoogleSheet();
+      setImportResult(result);
+    } catch (err) {
+      console.error(err);
+      setImportError((err as Error).message);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div>
       <header className="mb-8">
@@ -248,6 +274,68 @@ function EinstellungenInner() {
           )}
           {googleStatus && (
             <p className="mt-3 text-sm text-gray-700">{googleStatus}</p>
+          )}
+        </section>
+
+        <section className="card">
+          <h2 className="text-base font-semibold text-gray-900 mb-2">
+            Aus Google Sheet importieren
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Liest die Tabs <strong>Einnahmen</strong> und <strong>Ausgaben</strong> aus
+            deinem Buchhaltungs-Sheet und legt für jede Zeile einen passenden
+            Eintrag an. Bestehende Rechnungsnummern und Ausgaben werden
+            übersprungen — der Import kann beliebig oft ausgeführt werden.
+            Drive-Links werden mit gespeichert.
+          </p>
+          <button
+            onClick={handleImport}
+            disabled={importing || !googleAuth}
+            className="btn-secondary"
+            title={
+              !googleAuth ? 'Google Drive muss zuerst verbunden sein.' : ''
+            }
+          >
+            {importing
+              ? 'Importiere…'
+              : 'Einnahmen + Ausgaben aus Sheet importieren'}
+          </button>
+
+          {importError && (
+            <div className="mt-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+              {importError}
+            </div>
+          )}
+
+          {importResult && (
+            <div className="mt-3 px-3 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-gray-700 space-y-1">
+              <p>
+                <strong>Rechnungen:</strong> {importResult.invoicesCreated} angelegt,{' '}
+                {importResult.invoicesSkipped} übersprungen
+              </p>
+              <p>
+                <strong>Ausgaben:</strong> {importResult.expensesCreated} angelegt,{' '}
+                {importResult.expensesSkipped} übersprungen
+              </p>
+              {importResult.customersCreated > 0 && (
+                <p>
+                  <strong>Neue Kunden:</strong> {importResult.customersCreated} (mit
+                  Auto-Erstellt-Notiz)
+                </p>
+              )}
+              {importResult.errors.length > 0 && (
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-xs text-gray-500">
+                    Hinweise und Fehler ({importResult.errors.length})
+                  </summary>
+                  <ul className="mt-1 list-disc list-inside text-xs text-gray-600">
+                    {importResult.errors.map((e, i) => (
+                      <li key={i}>{e}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
           )}
         </section>
 

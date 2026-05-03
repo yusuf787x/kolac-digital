@@ -173,9 +173,9 @@ export default function AusgabenPage() {
                     {formatEUR(e.amount)}
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                    {e.receiptUrl && (
+                    {(e.receiptUrl || e.driveUrl) && (
                       <a
-                        href={e.receiptUrl}
+                        href={e.receiptUrl || e.driveUrl || '#'}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-brand-blue hover:underline text-xs font-medium mr-3"
