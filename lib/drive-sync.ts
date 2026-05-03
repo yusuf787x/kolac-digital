@@ -11,16 +11,17 @@ import {
   generateInvoicePdfBlob,
   buildInvoiceFilename,
 } from './pdf-generator';
+import { fileToBase64 } from './file-utils';
 
-async function blobToBase64(blob: Blob): Promise<string> {
-  const buf = await blob.arrayBuffer();
-  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+export interface DriveSyncResult {
+  webViewLink: string;
+  sheetSyncError: string | null;
 }
 
 export async function syncInvoiceToDrive(
   invoice: Invoice,
   customer: Customer,
-): Promise<string> {
+): Promise<DriveSyncResult> {
   const auth = await getGoogleAuth();
   if (!auth?.refreshToken) {
     throw new Error(
@@ -29,7 +30,7 @@ export async function syncInvoiceToDrive(
   }
 
   const pdf = await generateInvoicePdfBlob(invoice, customer);
-  const pdfBase64 = await blobToBase64(pdf);
+  const pdfBase64 = await fileToBase64(pdf);
   const filename = buildInvoiceFilename(invoice, customer);
   const leistung =
     invoice.items
@@ -58,16 +59,20 @@ export async function syncInvoiceToDrive(
     throw new Error(body?.error ?? 'Drive-Sync fehlgeschlagen.');
   }
 
-  const { webViewLink } = (await res.json()) as { webViewLink: string };
+  const { webViewLink, sheetSyncError } = (await res.json()) as {
+    webViewLink: string;
+    sheetSyncError: string | null;
+  };
 
+  // Persist drive URL even when sheet append failed — file IS in Drive.
   await updateInvoice(invoice.id, { driveUrl: webViewLink });
-  return webViewLink;
+  return { webViewLink, sheetSyncError };
 }
 
 export async function syncExpenseToDrive(
   expense: Expense,
   receipt: { file: File } | { url: string; mimeType: string; filename: string },
-): Promise<string> {
+): Promise<DriveSyncResult> {
   const auth = await getGoogleAuth();
   if (!auth?.refreshToken) {
     throw new Error(
@@ -80,14 +85,14 @@ export async function syncExpenseToDrive(
   let receiptMimeType: string;
 
   if ('file' in receipt) {
-    receiptBase64 = await blobToBase64(receipt.file);
+    receiptBase64 = await fileToBase64(receipt.file);
     receiptFilename = receipt.file.name;
     receiptMimeType = receipt.file.type || 'application/octet-stream';
   } else {
     // Fetch the file from the URL (already uploaded to Firebase Storage).
     const r = await fetch(receipt.url);
     const blob = await r.blob();
-    receiptBase64 = await blobToBase64(blob);
+    receiptBase64 = await fileToBase64(blob);
     receiptFilename = receipt.filename;
     receiptMimeType = receipt.mimeType;
   }
@@ -111,7 +116,10 @@ export async function syncExpenseToDrive(
     throw new Error(body?.error ?? 'Drive-Sync fehlgeschlagen.');
   }
 
-  const { webViewLink } = (await res.json()) as { webViewLink: string };
+  const { webViewLink, sheetSyncError } = (await res.json()) as {
+    webViewLink: string;
+    sheetSyncError: string | null;
+  };
   await updateExpense(expense.id, { driveUrl: webViewLink });
-  return webViewLink;
+  return { webViewLink, sheetSyncError };
 }

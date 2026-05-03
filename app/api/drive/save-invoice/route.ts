@@ -31,8 +31,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { webViewLink } = await saveInvoiceToDrive(body);
-    return NextResponse.json({ ok: true, webViewLink });
+    const { webViewLink, sheetSyncError } = await saveInvoiceToDrive(body);
+    return NextResponse.json({ ok: true, webViewLink, sheetSyncError });
   } catch (err) {
     console.error('Drive save invoice error:', err);
     return NextResponse.json(

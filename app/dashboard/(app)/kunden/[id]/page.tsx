@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   getCustomer,
@@ -13,15 +13,26 @@ import { formatEUR, formatDateDE } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 
 export default function KundeDetailPage() {
+  return (
+    <Suspense fallback={<div className="card text-sm text-gray-500">Lädt…</div>}>
+      <KundeDetailInner />
+    </Suspense>
+  );
+}
+
+function KundeDetailInner() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params.id;
+  const updatedName = searchParams.get('updated');
 
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([getCustomer(id), listInvoicesByCustomer(id)])
@@ -31,10 +42,18 @@ export default function KundeDetailPage() {
       })
       .catch((err) => {
         console.error(err);
-        setError('Kunde konnte nicht geladen werden.');
+        setError(`Kunde konnte nicht geladen werden: ${err.message}`);
       })
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!updatedName) return;
+    setSuccessBanner(`✓ "${updatedName}" wurde aktualisiert.`);
+    router.replace(`/dashboard/kunden/${id}`);
+    const t = setTimeout(() => setSuccessBanner(null), 4000);
+    return () => clearTimeout(t);
+  }, [updatedName, router, id]);
 
   const handleDelete = async () => {
     if (!customer) return;
@@ -115,6 +134,12 @@ export default function KundeDetailPage() {
           </div>
         </div>
       </header>
+
+      {successBanner && (
+        <div className="mb-6 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-900">
+          {successBanner}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section className="card lg:col-span-1">

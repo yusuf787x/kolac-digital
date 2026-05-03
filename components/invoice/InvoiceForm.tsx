@@ -8,6 +8,8 @@ import {
   updateInvoice,
   listCustomers,
   getSettings,
+  getInvoice,
+  getGoogleAuth,
 } from '@/lib/firestore';
 import type { Customer, Invoice, InvoiceItem } from '@/lib/types';
 import { formatEUR } from '@/lib/utils';
@@ -61,6 +63,7 @@ export default function InvoiceForm({ initial, mode }: Props) {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
   // Load customers + apply default payment days
   useEffect(() => {
@@ -156,6 +159,39 @@ export default function InvoiceForm({ initial, mode }: Props) {
           paidAt: null,
           items: cleanItems,
         });
+
+        // Drive-Sync if Google Drive is connected — non-blocking.
+        let syncMessage: string | null = null;
+        try {
+          const auth = await getGoogleAuth();
+          if (auth?.refreshToken) {
+            setSyncStatus('Synchronisiere mit Google Drive…');
+            const newInvoice = await getInvoice(id);
+            const customer = customers.find((c) => c.id === customerId);
+            if (newInvoice && customer) {
+              const { syncInvoiceToDrive } = await import('@/lib/drive-sync');
+              const { sheetSyncError } = await syncInvoiceToDrive(
+                newInvoice,
+                customer,
+              );
+              if (sheetSyncError) {
+                syncMessage = `Rechnung auf Drive ✓ — ABER Sheet-Eintrag fehlgeschlagen: ${sheetSyncError}`;
+              } else {
+                syncMessage =
+                  'Auf Google Drive gesichert ✓ (PDF + Sheet-Zeile)';
+              }
+            }
+          }
+        } catch (syncErr) {
+          console.warn('Drive-Sync fehlgeschlagen:', syncErr);
+          syncMessage = `Drive-Sync fehlgeschlagen (${(syncErr as Error).message}). Rechnung wurde lokal gespeichert.`;
+        }
+
+        if (syncMessage) {
+          setSyncStatus(syncMessage);
+          await new Promise((r) => setTimeout(r, 2500));
+        }
+
         router.push(`/dashboard/rechnungen/${id}`);
       } else if (initial) {
         await updateInvoice(initial.id, {
@@ -350,6 +386,12 @@ export default function InvoiceForm({ initial, mode }: Props) {
       {error && (
         <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
           {error}
+        </div>
+      )}
+
+      {syncStatus && (
+        <div className="px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800">
+          {syncStatus}
         </div>
       )}
 

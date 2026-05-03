@@ -161,11 +161,9 @@ export default function RechnungDetailPage() {
     try {
       const { generateInvoicePdfBlob, buildInvoiceFilename } =
         await import('@/lib/pdf-generator');
+      const { fileToBase64 } = await import('@/lib/file-utils');
       const blob = await generateInvoicePdfBlob(invoice, customer);
-      const arrayBuffer = await blob.arrayBuffer();
-      const base64 = btoa(
-        String.fromCharCode(...new Uint8Array(arrayBuffer)),
-      );
+      const base64 = await fileToBase64(blob);
       const filename = buildInvoiceFilename(invoice, customer);
 
       const res = await fetch('/api/email/invoice', {
@@ -208,9 +206,18 @@ export default function RechnungDetailPage() {
     setSyncingDrive(true);
     try {
       const { syncInvoiceToDrive } = await import('@/lib/drive-sync');
-      const link = await syncInvoiceToDrive(invoice, customer);
+      const { webViewLink, sheetSyncError } = await syncInvoiceToDrive(
+        invoice,
+        customer,
+      );
       await refresh();
-      alert(`Auf Google Drive gesichert.\n${link}`);
+      if (sheetSyncError) {
+        alert(
+          `PDF auf Drive gesichert ✓\n${webViewLink}\n\nABER: Sheet-Eintrag fehlgeschlagen — ${sheetSyncError}\n\nDu kannst die Zeile manuell ergänzen.`,
+        );
+      } else {
+        alert(`Auf Google Drive gesichert ✓ (PDF + Sheet-Eintrag)\n${webViewLink}`);
+      }
     } catch (err) {
       console.error(err);
       alert(`Drive-Sync fehlgeschlagen: ${(err as Error).message}`);

@@ -42,23 +42,227 @@ async function uploadToDrive(opts: UploadFileOpts): Promise<{
   };
 }
 
-async function appendSheetRow(
+/**
+ * Parse a German date string ("DD.MM.YYYY", "DD/MM/YYYY", or ISO).
+ */
+function parseGermanDate(input: string): Date | null {
+  if (!input) return null;
+  const str = input.trim();
+  const m = str.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{2,4})$/);
+  if (m) {
+    const [, d, mo, y] = m;
+    const year = y.length === 2 ? 2000 + parseInt(y, 10) : parseInt(y, 10);
+    const date = new Date(year, parseInt(mo, 10) - 1, parseInt(d, 10));
+    if (!isNaN(date.getTime())) return date;
+  }
+  const iso = new Date(str);
+  return isNaN(iso.getTime()) ? null : iso;
+}
+
+const HEADER_KEYWORDS = [
+  'datum',
+  'kunde',
+  'posten',
+  'betrag',
+  'rechnungsnr',
+  'leistung',
+  'link',
+];
+
+interface SheetMeta {
+  sheetId: number;
+  allRows: (string | number)[][];
+  headerRowIndex: number;
+  columns: Map<string, number>;
+}
+
+/**
+ * Read sheet metadata + all values + locate the header row.
+ */
+async function readSheetMeta(
   refreshToken: string,
   sheetName: string,
-  row: (string | number)[],
+): Promise<SheetMeta> {
+  const auth = getOAuthClientForRefresh(refreshToken);
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  const meta = await sheets.spreadsheets.get({
+    spreadsheetId: SPREADSHEET_ID,
+    fields: 'sheets.properties(sheetId,title)',
+  });
+  const sheetMatch = meta.data.sheets?.find(
+    (s) => s.properties?.title === sheetName,
+  );
+  if (!sheetMatch?.properties?.sheetId == null) {
+    throw new Error(`Tab "${sheetName}" wurde im Spreadsheet nicht gefunden.`);
+  }
+  const sheetId = sheetMatch!.properties!.sheetId!;
+
+  const valuesRes = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${sheetName}!A:Z`,
+    valueRenderOption: 'FORMATTED_VALUE',
+  });
+  const allRows = (valuesRes.data.values ?? []) as (string | number)[][];
+
+  let headerRowIndex = -1;
+  let headerRow: (string | number)[] = [];
+  for (let i = 0; i < allRows.length; i++) {
+    const row = allRows[i] ?? [];
+    const blob = row.map((c) => String(c ?? '').toLowerCase().trim());
+    if (blob.some((cell) => HEADER_KEYWORDS.includes(cell))) {
+      headerRowIndex = i;
+      headerRow = row;
+      break;
+    }
+  }
+  if (headerRowIndex < 0) {
+    throw new Error(
+      `Tab "${sheetName}": Header-Zeile mit Spalten-Namen (Datum/Posten/Betrag/...) konnte nicht gefunden werden.`,
+    );
+  }
+
+  const columns = new Map<string, number>();
+  headerRow.forEach((cell, idx) => {
+    const norm = String(cell ?? '').toLowerCase().trim();
+    if (norm) columns.set(norm, idx);
+  });
+
+  return { sheetId, allRows, headerRowIndex, columns };
+}
+
+/**
+ * Find the row index where a new entry with the given date should be
+ * inserted to keep the list sorted ascending by date. Insertion is
+ * "between the last row with date <= newDate and the first row with
+ * date > newDate", which preserves the existing block's order even when
+ * dates aren't perfectly sorted to begin with.
+ */
+function findChronologicalInsertIndex(
+  allRows: (string | number)[][],
+  headerRowIndex: number,
+  datumColIdx: number,
+  newDate: Date,
+): number {
+  const newTime = newDate.getTime();
+  for (let i = headerRowIndex + 1; i < allRows.length; i++) {
+    const row = allRows[i] ?? [];
+    const dateStr = String(row[datumColIdx] ?? '').trim();
+    if (!dateStr) continue;
+    const rowDate = parseGermanDate(dateStr);
+    if (!rowDate) continue;
+    if (rowDate.getTime() > newTime) {
+      return i; // Insert before this row
+    }
+  }
+  // No row with a later date — append at the bottom of the data block.
+  // We use the row just past the last non-empty row to avoid creating
+  // gaps if the sheet has trailing empty rows.
+  let lastDataRow = headerRowIndex;
+  for (let i = headerRowIndex + 1; i < allRows.length; i++) {
+    const row = allRows[i] ?? [];
+    if (row.some((c) => String(c ?? '').trim() !== '')) {
+      lastDataRow = i;
+    }
+  }
+  return lastDataRow + 1;
+}
+
+/**
+ * Insert a new row chronologically by date — does NOT just append at the
+ * bottom. The row's `datum` value is used to find the right position, and
+ * existing rows below are shifted down by Google's `insertDimension` API.
+ */
+async function insertSheetRowChronologically(
+  refreshToken: string,
+  sheetName: string,
+  values: Record<string, string | number>,
+  rowDate: Date,
 ): Promise<void> {
   const auth = getOAuthClientForRefresh(refreshToken);
   const sheets = google.sheets({ version: 'v4', auth });
 
-  await sheets.spreadsheets.values.append({
+  const { sheetId, allRows, headerRowIndex, columns } = await readSheetMeta(
+    refreshToken,
+    sheetName,
+  );
+
+  const datumColIdx = columns.get('datum');
+  if (datumColIdx === undefined) {
+    throw new Error(
+      `Spalte "Datum" in Tab "${sheetName}" nicht gefunden. Vorhandene Spalten: ${Array.from(columns.keys()).join(', ')}.`,
+    );
+  }
+
+  const targetRowIndex = findChronologicalInsertIndex(
+    allRows,
+    headerRowIndex,
+    datumColIdx,
+    rowDate,
+  );
+
+  const maxIdx = Math.max(...columns.values(), 0);
+  const rowValues: (string | number)[] = new Array(maxIdx + 1).fill('');
+  const missingKeys: string[] = [];
+  for (const [key, value] of Object.entries(values)) {
+    const idx = columns.get(key.toLowerCase());
+    if (idx === undefined) {
+      missingKeys.push(key);
+      continue;
+    }
+    rowValues[idx] = value;
+  }
+  if (missingKeys.length === Object.keys(values).length) {
+    throw new Error(
+      `Keine der Spalten (${missingKeys.join(', ')}) im Tab "${sheetName}" gefunden. Verfügbare Spalten: ${Array.from(columns.keys()).join(', ')}.`,
+    );
+  }
+
+  await sheets.spreadsheets.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${sheetName}!A:Z`,
-    valueInputOption: 'USER_ENTERED',
-    insertDataOption: 'INSERT_ROWS',
     requestBody: {
-      values: [row],
+      requests: [
+        {
+          insertDimension: {
+            range: {
+              sheetId,
+              dimension: 'ROWS',
+              startIndex: targetRowIndex,
+              endIndex: targetRowIndex + 1,
+            },
+            inheritFromBefore: false,
+          },
+        },
+        {
+          updateCells: {
+            range: {
+              sheetId,
+              startRowIndex: targetRowIndex,
+              endRowIndex: targetRowIndex + 1,
+              startColumnIndex: 0,
+              endColumnIndex: rowValues.length,
+            },
+            rows: [
+              {
+                values: rowValues.map((v) => ({
+                  userEnteredValue:
+                    typeof v === 'number'
+                      ? { numberValue: v }
+                      : { stringValue: String(v) },
+                })),
+              },
+            ],
+            fields: 'userEnteredValue',
+          },
+        },
+      ],
     },
   });
+}
+
+interface SaveResult {
+  webViewLink: string;
+  sheetSyncError: string | null;
 }
 
 export async function saveInvoiceToDrive(opts: {
@@ -70,7 +274,7 @@ export async function saveInvoiceToDrive(opts: {
   invoiceNumber: string;
   leistung: string;
   amount: number;
-}): Promise<{ webViewLink: string }> {
+}): Promise<SaveResult> {
   const { webViewLink } = await uploadToDrive({
     refreshToken: opts.refreshToken,
     filename: opts.filename,
@@ -79,16 +283,31 @@ export async function saveInvoiceToDrive(opts: {
     folderId: EINNAHMEN_FOLDER,
   });
 
-  await appendSheetRow(opts.refreshToken, 'Einnahmen', [
-    opts.date,
-    opts.customerName,
-    opts.invoiceNumber,
-    opts.leistung,
-    opts.amount.toFixed(2).replace('.', ','),
-    webViewLink,
-  ]);
+  let sheetSyncError: string | null = null;
+  try {
+    const rowDate = parseGermanDate(opts.date);
+    if (!rowDate) {
+      throw new Error(`Datum "${opts.date}" konnte nicht geparst werden.`);
+    }
+    await insertSheetRowChronologically(
+      opts.refreshToken,
+      'Einnahmen',
+      {
+        datum: opts.date,
+        kunde: opts.customerName,
+        rechnungsnr: opts.invoiceNumber,
+        leistung: opts.leistung,
+        betrag: opts.amount.toFixed(2).replace('.', ','),
+        link: webViewLink,
+      },
+      rowDate,
+    );
+  } catch (err) {
+    sheetSyncError = (err as Error).message;
+    console.warn('Sheet-Insert (Einnahmen) fehlgeschlagen:', err);
+  }
 
-  return { webViewLink };
+  return { webViewLink, sheetSyncError };
 }
 
 export async function saveExpenseToDrive(opts: {
@@ -99,7 +318,7 @@ export async function saveExpenseToDrive(opts: {
   date: string; // DD.MM.YYYY
   posten: string;
   amount: number;
-}): Promise<{ webViewLink: string }> {
+}): Promise<SaveResult> {
   const { webViewLink } = await uploadToDrive({
     refreshToken: opts.refreshToken,
     filename: opts.receiptFilename,
@@ -108,12 +327,27 @@ export async function saveExpenseToDrive(opts: {
     folderId: AUSGABEN_FOLDER,
   });
 
-  await appendSheetRow(opts.refreshToken, 'Ausgaben', [
-    opts.date,
-    opts.posten,
-    opts.amount.toFixed(2).replace('.', ','),
-    webViewLink,
-  ]);
+  let sheetSyncError: string | null = null;
+  try {
+    const rowDate = parseGermanDate(opts.date);
+    if (!rowDate) {
+      throw new Error(`Datum "${opts.date}" konnte nicht geparst werden.`);
+    }
+    await insertSheetRowChronologically(
+      opts.refreshToken,
+      'Ausgaben',
+      {
+        datum: opts.date,
+        posten: opts.posten,
+        betrag: opts.amount.toFixed(2).replace('.', ','),
+        link: webViewLink,
+      },
+      rowDate,
+    );
+  } catch (err) {
+    sheetSyncError = (err as Error).message;
+    console.warn('Sheet-Insert (Ausgaben) fehlgeschlagen:', err);
+  }
 
-  return { webViewLink };
+  return { webViewLink, sheetSyncError };
 }

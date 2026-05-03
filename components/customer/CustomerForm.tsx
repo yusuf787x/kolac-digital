@@ -59,15 +59,22 @@ export default function CustomerForm({ initial, mode }: Props) {
     setSubmitting(true);
     try {
       if (mode === 'create') {
-        const id = await createCustomer(data);
-        router.push(`/dashboard/kunden/${id}`);
+        await createCustomer(data);
+        // Land on the list with a success banner — avoids a race where
+        // the detail page tries to read the new doc before Firestore has
+        // propagated it locally.
+        router.push(
+          `/dashboard/kunden?created=${encodeURIComponent(data.company || data.lastName || 'Kunde')}`,
+        );
       } else if (initial) {
         await updateCustomer(initial.id, data);
-        router.push(`/dashboard/kunden/${initial.id}`);
+        router.push(
+          `/dashboard/kunden/${initial.id}?updated=${encodeURIComponent(data.company || data.lastName || 'Kunde')}`,
+        );
       }
     } catch (err) {
       console.error(err);
-      setError('Speichern fehlgeschlagen. Bitte erneut versuchen.');
+      setError(`Speichern fehlgeschlagen: ${(err as Error).message}`);
       setSubmitting(false);
     }
   };

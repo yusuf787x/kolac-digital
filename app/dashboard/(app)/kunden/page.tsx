@@ -1,25 +1,48 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { listCustomers } from '@/lib/firestore';
 import type { Customer } from '@/lib/types';
 
 export default function KundenPage() {
+  return (
+    <Suspense fallback={<div className="card text-sm text-gray-500">Lädt…</div>}>
+      <KundenInner />
+    </Suspense>
+  );
+}
+
+function KundenInner() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const createdName = searchParams.get('created');
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
   useEffect(() => {
     listCustomers()
       .then(setCustomers)
       .catch((err) => {
         console.error(err);
-        setError('Kunden konnten nicht geladen werden.');
+        setError(`Kunden konnten nicht geladen werden: ${err.message}`);
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Show success banner if we just created a customer; clean URL after.
+  useEffect(() => {
+    if (!createdName) return;
+    setSuccessBanner(`✓ Kunde "${createdName}" wurde erfolgreich angelegt.`);
+    router.replace('/dashboard/kunden');
+    const t = setTimeout(() => setSuccessBanner(null), 4000);
+    return () => clearTimeout(t);
+  }, [createdName, router]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -56,6 +79,12 @@ export default function KundenPage() {
           className="input"
         />
       </div>
+
+      {successBanner && (
+        <div className="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-sm text-green-900">
+          {successBanner}
+        </div>
+      )}
 
       {error && (
         <div className="card mb-4 bg-red-50 border-red-200 text-sm text-red-700">

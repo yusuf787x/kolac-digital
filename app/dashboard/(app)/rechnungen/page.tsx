@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { listInvoices, listCustomers } from '@/lib/firestore';
 import type { Invoice, InvoiceStatus, Customer } from '@/lib/types';
 import { formatEUR, formatDateDE, isOverdue, daysOverdue } from '@/lib/utils';
-import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
+import { STATUS_LABELS } from '@/lib/invoice-status';
+import InvoiceStatusSelect from '@/components/invoice/InvoiceStatusSelect';
 
 type FilterStatus = 'all' | InvoiceStatus;
 
@@ -163,14 +164,20 @@ export default function RechnungenPage() {
                     {customer?.company ?? '—'}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded ${STATUS_BADGE_CLASSES[computedStatus]}`}
-                    >
-                      {STATUS_LABELS[computedStatus]}
-                      {computedStatus === 'overdue' && daysLate > 0 && (
-                        <span className="ml-1.5">· {daysLate}d</span>
-                      )}
-                    </span>
+                    <InvoiceStatusSelect
+                      invoice={invoice}
+                      computedStatus={computedStatus}
+                      daysLate={daysLate}
+                      onUpdated={(patch) =>
+                        setInvoices((prev) =>
+                          prev.map((inv) =>
+                            inv.id === invoice.id
+                              ? ({ ...inv, ...patch } as Invoice)
+                              : inv,
+                          ),
+                        )
+                      }
+                    />
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-gray-900">
                     {formatEUR(invoice.totalAmount)}

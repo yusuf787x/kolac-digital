@@ -174,7 +174,27 @@ export async function importFromGoogleSheet(opts?: {
     ausgabenPreview: sheetData.ausgabenPreview,
   };
 
-  const { einnahmen, ausgaben } = sheetData;
+  // Trim a uniformly-empty leading column. The user's sheet has data
+  // starting in column B; column A is a visual padding column.
+  const trimLeadingEmptyColumn = <T,>(rows: T[][]): T[][] => {
+    if (rows.length === 0) return rows;
+    const nonEmpty = rows.filter((r) => r.length > 0);
+    const allStartEmpty =
+      nonEmpty.length > 0 &&
+      nonEmpty.every((r) => r[0] === '' || r[0] == null);
+    if (!allStartEmpty) return rows;
+    return rows.map((r) => r.slice(1));
+  };
+
+  // Header-row detector: row that contains a known column-header keyword.
+  const isHeaderRow = (row: (string | number)[]): boolean => {
+    const blob = row.map((c) => String(c ?? '').toLowerCase().trim());
+    const headerKeywords = ['datum', 'kunde', 'posten', 'betrag', 'rechnungsnr', 'leistung'];
+    return blob.some((cell) => headerKeywords.includes(cell));
+  };
+
+  const einnahmen = trimLeadingEmptyColumn(sheetData.einnahmen);
+  const ausgaben = trimLeadingEmptyColumn(sheetData.ausgaben);
 
   // Pre-fetch existing data for deduplication.
   const [existingCustomers, existingInvoices, existingExpenses] =
@@ -207,11 +227,7 @@ export async function importFromGoogleSheet(opts?: {
     const row = einnahmen[i];
     if (!row || row.length === 0) continue;
 
-    // Skip header row (heuristic: row 0, contains "Datum" oder "Kunde")
-    if (i === 0) {
-      const blob = row.map((c) => String(c ?? '').toLowerCase()).join('|');
-      if (blob.includes('datum') || blob.includes('kunde')) continue;
-    }
+    if (isHeaderRow(row)) continue;
 
     const [datumRaw, kundeRaw, rnrRaw, leistungRaw, betragRaw, linkRaw] = row;
 
@@ -309,10 +325,7 @@ export async function importFromGoogleSheet(opts?: {
     const row = ausgaben[i];
     if (!row || row.length === 0) continue;
 
-    if (i === 0) {
-      const blob = row.map((c) => String(c ?? '').toLowerCase()).join('|');
-      if (blob.includes('datum') || blob.includes('posten')) continue;
-    }
+    if (isHeaderRow(row)) continue;
 
     const [datumRaw, postenRaw, betragRaw, linkRaw] = row;
 
