@@ -65,6 +65,17 @@ export default function InvoiceForm({ initial, mode }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
+  // dueDate flow: starts as invoiceDate + paymentDays, auto-tracks invoiceDate
+  // until the user manually edits the dueDate field (then we stop touching it).
+  const [paymentDays, setPaymentDays] = useState(7);
+  const [dueDateUserSet, setDueDateUserSet] = useState(mode === 'edit');
+
+  const addDays = (isoDate: string, days: number): string => {
+    const d = new Date(isoDate);
+    d.setDate(d.getDate() + days);
+    return dateInputValue(d);
+  };
+
   // Load customers + apply default payment days
   useEffect(() => {
     Promise.all([listCustomers(), getSettings()])
@@ -72,10 +83,9 @@ export default function InvoiceForm({ initial, mode }: Props) {
         setCustomers(cust);
         if (mode === 'create') {
           if (preselectedCustomerId) setCustomerId(preselectedCustomerId);
+          setPaymentDays(settings.defaultPaymentDays);
           if (!dueDate) {
-            const d = new Date();
-            d.setDate(d.getDate() + settings.defaultPaymentDays);
-            setDueDate(dateInputValue(d));
+            setDueDate(addDays(invoiceDate, settings.defaultPaymentDays));
           }
           setClosingText(settings.defaultClosingText);
         }
@@ -87,6 +97,20 @@ export default function InvoiceForm({ initial, mode }: Props) {
       .finally(() => setLoadingCustomers(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // When the user changes the invoice date, slide the due date along with
+  // it — but only as long as the user hasn't manually edited the due date.
+  const handleInvoiceDateChange = (newDate: string) => {
+    setInvoiceDate(newDate);
+    if (mode === 'create' && !dueDateUserSet && newDate) {
+      setDueDate(addDays(newDate, paymentDays));
+    }
+  };
+
+  const handleDueDateChange = (newDate: string) => {
+    setDueDate(newDate);
+    setDueDateUserSet(true);
+  };
 
   const updateItem = (idx: number, key: keyof ItemDraft, value: string) => {
     setItems((prev) => {
@@ -256,7 +280,7 @@ export default function InvoiceForm({ initial, mode }: Props) {
               type="date"
               className="input"
               value={invoiceDate}
-              onChange={(e) => setInvoiceDate(e.target.value)}
+              onChange={(e) => handleInvoiceDateChange(e.target.value)}
               required
             />
           </div>
@@ -266,7 +290,7 @@ export default function InvoiceForm({ initial, mode }: Props) {
               type="date"
               className="input"
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              onChange={(e) => handleDueDateChange(e.target.value)}
               required
             />
           </div>
