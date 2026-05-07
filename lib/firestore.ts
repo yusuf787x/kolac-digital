@@ -90,14 +90,14 @@ export async function listInvoices(): Promise<Invoice[]> {
 export async function listInvoicesByCustomer(
   customerId: string,
 ): Promise<Invoice[]> {
+  // Sort client-side to avoid requiring a composite Firestore index.
   const snap = await getDocs(
-    query(
-      invoicesCol(),
-      where('customerId', '==', customerId),
-      orderBy('invoiceDate', 'desc'),
-    ),
+    query(invoicesCol(), where('customerId', '==', customerId)),
   );
-  return snap.docs.map((d) => fromDoc<Invoice>(d));
+  const list = snap.docs.map((d) => fromDoc<Invoice>(d));
+  return list.sort(
+    (a, b) => b.invoiceDate.toMillis() - a.invoiceDate.toMillis(),
+  );
 }
 
 export async function getInvoice(id: string): Promise<Invoice | null> {
@@ -174,14 +174,12 @@ export async function listQuotes(): Promise<Quote[]> {
 export async function listQuotesByCustomer(
   customerId: string,
 ): Promise<Quote[]> {
+  // Sort client-side to avoid requiring a composite Firestore index.
   const snap = await getDocs(
-    query(
-      quotesCol(),
-      where('customerId', '==', customerId),
-      orderBy('quoteDate', 'desc'),
-    ),
+    query(quotesCol(), where('customerId', '==', customerId)),
   );
-  return snap.docs.map((d) => fromDoc<Quote>(d));
+  const list = snap.docs.map((d) => fromDoc<Quote>(d));
+  return list.sort((a, b) => b.quoteDate.toMillis() - a.quoteDate.toMillis());
 }
 
 export async function getQuote(id: string): Promise<Quote | null> {
