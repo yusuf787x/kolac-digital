@@ -109,6 +109,7 @@ export interface Quote {
   driveUrl: string | null;
   confirmationFileUrl: string | null;
   confirmationFilename: string | null;
+  confirmationDriveUrl: string | null;
   sentAt: Timestamp | null;
   acceptedAt: Timestamp | null;
   rejectedAt: Timestamp | null;

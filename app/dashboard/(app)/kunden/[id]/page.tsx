@@ -7,10 +7,16 @@ import {
   getCustomer,
   deleteCustomer,
   listInvoicesByCustomer,
+  listQuotesByCustomer,
 } from '@/lib/firestore';
-import type { Customer, Invoice } from '@/lib/types';
+import type { Customer, Invoice, Quote } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
+import {
+  computeQuoteStatus,
+  QUOTE_STATUS_LABELS,
+  QUOTE_STATUS_BADGE_CLASSES,
+} from '@/lib/quote-status';
 
 export default function KundeDetailPage() {
   return (
@@ -29,16 +35,22 @@ function KundeDetailInner() {
 
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([getCustomer(id), listInvoicesByCustomer(id)])
-      .then(([c, inv]) => {
+    Promise.all([
+      getCustomer(id),
+      listInvoicesByCustomer(id),
+      listQuotesByCustomer(id),
+    ])
+      .then(([c, inv, qts]) => {
         setCustomer(c);
         setInvoices(inv);
+        setQuotes(qts);
       })
       .catch((err) => {
         console.error(err);
@@ -57,9 +69,13 @@ function KundeDetailInner() {
 
   const handleDelete = async () => {
     if (!customer) return;
-    if (invoices.length > 0) {
+    if (invoices.length > 0 || quotes.length > 0) {
+      const parts: string[] = [];
+      if (invoices.length > 0)
+        parts.push(`${invoices.length} Rechnung(en)`);
+      if (quotes.length > 0) parts.push(`${quotes.length} Angebot(e)`);
       alert(
-        `Kunde hat ${invoices.length} Rechnung(en) und kann nicht gelöscht werden.`,
+        `Kunde hat ${parts.join(' und ')} und kann nicht gelöscht werden.`,
       );
       return;
     }
@@ -121,11 +137,11 @@ function KundeDetailInner() {
             </Link>
             <button
               onClick={handleDelete}
-              disabled={deleting || invoices.length > 0}
+              disabled={deleting || invoices.length > 0 || quotes.length > 0}
               className="btn-secondary text-red-600 hover:bg-red-50 disabled:opacity-50"
               title={
-                invoices.length > 0
-                  ? 'Kunde hat Rechnungen und kann nicht gelöscht werden.'
+                invoices.length > 0 || quotes.length > 0
+                  ? 'Kunde hat Rechnungen oder Angebote und kann nicht gelöscht werden.'
                   : ''
               }
             >
@@ -167,56 +183,111 @@ function KundeDetailInner() {
           </dl>
         </section>
 
-        <section className="card lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-900">
-              Rechnungen ({invoices.length})
-            </h2>
-            <Link
-              href={`/dashboard/rechnungen/neu?customerId=${customer.id}`}
-              className="text-sm text-brand-blue hover:underline font-medium"
-            >
-              + Neue Rechnung
-            </Link>
-          </div>
-
-          {invoices.length === 0 ? (
-            <p className="text-sm text-gray-500">
-              Noch keine Rechnungen für diesen Kunden.
-            </p>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {invoices.map((inv) => (
-                <Link
-                  key={inv.id}
-                  href={`/dashboard/rechnungen/${inv.id}`}
-                  className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {inv.invoiceNumber}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {formatDateDE(inv.invoiceDate.toDate())}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded ${
-                        STATUS_BADGE_CLASSES[inv.status] ?? ''
-                      }`}
-                    >
-                      {STATUS_LABELS[inv.status]}
-                    </span>
-                    <span className="text-sm font-medium text-gray-900 w-24 text-right">
-                      {formatEUR(inv.totalAmount)}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+        <div className="lg:col-span-2 space-y-6">
+          <section className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold text-gray-900">
+                Angebote ({quotes.length})
+              </h2>
+              <Link
+                href={`/dashboard/angebote/neu?customerId=${customer.id}`}
+                className="text-sm text-brand-blue hover:underline font-medium"
+              >
+                + Neues Angebot
+              </Link>
             </div>
-          )}
-        </section>
+
+            {quotes.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                Noch keine Angebote für diesen Kunden.
+              </p>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {quotes.map((q) => {
+                  const cs = computeQuoteStatus(q.status, q.validUntil.toDate());
+                  return (
+                    <Link
+                      key={q.id}
+                      href={`/dashboard/angebote/${q.id}`}
+                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {q.quoteNumber}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {formatDateDE(q.quoteDate.toDate())} · gültig bis{' '}
+                          {formatDateDE(q.validUntil.toDate())}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`text-xs font-medium px-2 py-0.5 rounded ${QUOTE_STATUS_BADGE_CLASSES[cs]}`}
+                        >
+                          {QUOTE_STATUS_LABELS[cs]}
+                        </span>
+                        <span className="text-sm font-medium text-gray-900 w-24 text-right">
+                          {formatEUR(q.totalAmount)}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold text-gray-900">
+                Rechnungen ({invoices.length})
+              </h2>
+              <Link
+                href={`/dashboard/rechnungen/neu?customerId=${customer.id}`}
+                className="text-sm text-brand-blue hover:underline font-medium"
+              >
+                + Neue Rechnung
+              </Link>
+            </div>
+
+            {invoices.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                Noch keine Rechnungen für diesen Kunden.
+              </p>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {invoices.map((inv) => (
+                  <Link
+                    key={inv.id}
+                    href={`/dashboard/rechnungen/${inv.id}`}
+                    className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {inv.invoiceNumber}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatDateDE(inv.invoiceDate.toDate())}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded ${
+                          STATUS_BADGE_CLASSES[inv.status] ?? ''
+                        }`}
+                      >
+                        {STATUS_LABELS[inv.status]}
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 w-24 text-right">
+                        {formatEUR(inv.totalAmount)}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

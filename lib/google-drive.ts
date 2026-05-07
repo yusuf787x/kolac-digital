@@ -5,6 +5,7 @@ import { getOAuthClientForRefresh } from './google-oauth';
 const SPREADSHEET_ID = process.env.GOOGLE_DRIVE_SPREADSHEET_ID!;
 const EINNAHMEN_FOLDER = process.env.GOOGLE_DRIVE_EINNAHMEN_FOLDER_2026!;
 const AUSGABEN_FOLDER = process.env.GOOGLE_DRIVE_AUSGABEN_FOLDER_2026!;
+const AUFTRAEGE_FOLDER = process.env.GOOGLE_DRIVE_AUFTRAEGE_FOLDER ?? '';
 
 interface UploadFileOpts {
   refreshToken: string;
@@ -308,6 +309,33 @@ export async function saveInvoiceToDrive(opts: {
   }
 
   return { webViewLink, sheetSyncError };
+}
+
+/**
+ * Upload an order-confirmation file to the "Aufträge" Drive folder.
+ * No sheet-append — confirmations are not bookkeeping data.
+ */
+export async function saveConfirmationToDrive(opts: {
+  refreshToken: string;
+  fileBase64: string;
+  filename: string;
+  mimeType: string;
+}): Promise<{ webViewLink: string }> {
+  if (!AUFTRAEGE_FOLDER) {
+    throw new Error(
+      'GOOGLE_DRIVE_AUFTRAEGE_FOLDER ist nicht gesetzt. Bitte Folder-ID des "Aufträge"-Ordners in .env.local und Vercel hinterlegen.',
+    );
+  }
+
+  const { webViewLink } = await uploadToDrive({
+    refreshToken: opts.refreshToken,
+    filename: opts.filename,
+    mimeType: opts.mimeType,
+    base64Content: opts.fileBase64,
+    folderId: AUFTRAEGE_FOLDER,
+  });
+
+  return { webViewLink };
 }
 
 export async function saveExpenseToDrive(opts: {

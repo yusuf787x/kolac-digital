@@ -178,6 +178,7 @@ export default function QuoteForm({ initial, mode }: Props) {
           driveUrl: null,
           confirmationFileUrl: null,
           confirmationFilename: null,
+          confirmationDriveUrl: null,
           sentAt: null,
           acceptedAt: null,
           rejectedAt: null,

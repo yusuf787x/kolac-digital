@@ -13,6 +13,7 @@ import {
   deleteFile,
   createInvoiceWithNumber,
   getSettings,
+  getGoogleAuth,
 } from '@/lib/firestore';
 import type { Quote, Customer, InvoiceItem } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
@@ -35,6 +36,10 @@ export default function AngebotDetailPage() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [syncingConfirmation, setSyncingConfirmation] = useState(false);
+  const [confirmationSyncMessage, setConfirmationSyncMessage] = useState<
+    string | null
+  >(null);
 
   const refresh = async () => {
     const q = await getQuote(id);
@@ -109,6 +114,7 @@ export default function AngebotDetailPage() {
 
   const handleUploadConfirmation = async (file: File) => {
     setUploading(true);
+    setConfirmationSyncMessage(null);
     try {
       const safe = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
       const path = `quotes/${quote.id}/confirmation-${Date.now()}-${safe}`;
@@ -129,6 +135,8 @@ export default function AngebotDetailPage() {
       await updateQuote(quote.id, {
         confirmationFileUrl: url,
         confirmationFilename: file.name,
+        // Reset Drive URL — we'll re-upload below if Drive is connected.
+        confirmationDriveUrl: null,
         // If quote was 'sent', auto-promote to 'accepted' on confirmation upload
         ...(quote.status === 'sent'
           ? {
@@ -138,10 +146,39 @@ export default function AngebotDetailPage() {
           : {}),
       });
       await refresh();
+      setUploading(false);
+
+      // Drive-Sync — non-blocking, runs after Storage upload succeeded.
+      if (customer) {
+        try {
+          const auth = await getGoogleAuth();
+          if (auth?.refreshToken) {
+            setSyncingConfirmation(true);
+            setConfirmationSyncMessage(
+              'Synchronisiere mit Google Drive (Aufträge)…',
+            );
+            const { syncConfirmationToDrive } = await import(
+              '@/lib/drive-sync'
+            );
+            await syncConfirmationToDrive(quote, customer, file);
+            await refresh();
+            setConfirmationSyncMessage(
+              'Auch in Drive-Ordner "Aufträge" gesichert ✓',
+            );
+            setTimeout(() => setConfirmationSyncMessage(null), 4000);
+          }
+        } catch (syncErr) {
+          console.warn('Drive-Sync fehlgeschlagen:', syncErr);
+          setConfirmationSyncMessage(
+            `Drive-Sync fehlgeschlagen (${(syncErr as Error).message}). Datei ist im Dashboard verfügbar.`,
+          );
+        } finally {
+          setSyncingConfirmation(false);
+        }
+      }
     } catch (err) {
       console.error(err);
       alert(`Upload fehlgeschlagen: ${(err as Error).message}`);
-    } finally {
       setUploading(false);
     }
   };
@@ -158,9 +195,12 @@ export default function AngebotDetailPage() {
           console.warn('Storage-Datei konnte nicht entfernt werden:', e);
         }
       }
+      // Note: the Drive-Aufträge file is intentionally kept — the user may
+      // want it as backup. Remove it manually in Drive if needed.
       await updateQuote(quote.id, {
         confirmationFileUrl: null,
         confirmationFilename: null,
+        confirmationDriveUrl: null,
       });
       await refresh();
     } catch (err) {
@@ -419,6 +459,16 @@ export default function AngebotDetailPage() {
                 >
                   📎 {quote.confirmationFilename ?? 'Bestätigungs-Datei'}
                 </a>
+                {quote.confirmationDriveUrl && (
+                  <a
+                    href={quote.confirmationDriveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-gray-500 hover:underline block"
+                  >
+                    ↗ In Google Drive (Ordner Aufträge) öffnen
+                  </a>
+                )}
                 <button
                   onClick={handleRemoveConfirmation}
                   className="text-xs text-red-600 hover:underline"
@@ -431,11 +481,13 @@ export default function AngebotDetailPage() {
                 <p className="text-xs text-gray-500 mb-2">
                   Lade die schriftliche Bestätigung des Kunden hoch
                   (Mail-Screenshot, WhatsApp-Screenshot, signierte PDF).
+                  Wird automatisch zusätzlich in Drive-Ordner "Aufträge"
+                  gespeichert, wenn Drive verbunden.
                 </p>
                 <input
                   type="file"
                   accept="image/*,application/pdf"
-                  disabled={uploading}
+                  disabled={uploading || syncingConfirmation}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) handleUploadConfirmation(f);
@@ -446,6 +498,11 @@ export default function AngebotDetailPage() {
                   <p className="mt-1 text-xs text-blue-700">Lädt hoch…</p>
                 )}
               </div>
+            )}
+            {confirmationSyncMessage && (
+              <p className="mt-2 text-xs text-gray-700">
+                {confirmationSyncMessage}
+              </p>
             )}
           </div>
         </section>
