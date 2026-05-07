@@ -100,6 +100,18 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   itemSubline: { fontSize: 9, color: COLORS.gray },
+  summaryRow: {
+    flexDirection: 'row',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+  },
+  summaryLabel: { width: '60%' },
+  summaryUnit: {
+    width: '25%',
+    textAlign: 'right',
+    color: COLORS.gray,
+  },
+  summaryValue: { width: '15%', textAlign: 'right' },
   totalBox: {
     backgroundColor: COLORS.blue,
     flexDirection: 'row',
@@ -291,6 +303,23 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
               </View>
             );
           })}
+
+          {/* Net + USt rows (Kleinunternehmer — analog zur Rechnung) */}
+          <View style={[styles.summaryRow, { marginTop: 6 }]}>
+            <Text style={styles.summaryLabel}>Total netto</Text>
+            <Text style={styles.summaryUnit}>EUR</Text>
+            <Text style={styles.summaryValue}>
+              {quote.totalAmount
+                .toFixed(2)
+                .replace('.', ',')
+                .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+            </Text>
+          </View>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>USt (0%)</Text>
+            <Text style={styles.summaryUnit}>EUR</Text>
+            <Text style={styles.summaryValue}>0,00</Text>
+          </View>
         </View>
 
         {/* Total box */}
@@ -304,17 +333,17 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
           </Text>
         </View>
 
-        {/* Acceptance text in highlighted box */}
+        <Text style={styles.paragraph}>
+          Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
+        </Text>
+
+        {/* Acceptance text in highlighted box (enthält bereits Kontaktwege) */}
         {quote.acceptanceText && (
           <View style={styles.acceptanceBox}>
             <Text style={styles.acceptanceText}>{quote.acceptanceText}</Text>
           </View>
         )}
 
-        <Text style={styles.paragraph}>
-          Bei Rückfragen stehe ich unter der Rufnummer {COMPANY_INFO.phone} oder
-          per E-Mail an {COMPANY_INFO.email} zur Verfügung.
-        </Text>
         <Text style={styles.paragraph}>{quote.closingText}</Text>
 
         {/* Optional signature row (left: Auftraggeber, right: Auftragnehmer) */}
