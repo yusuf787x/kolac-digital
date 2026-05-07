@@ -38,6 +38,15 @@ export function buildInvoiceNumber(
 }
 
 /**
+ * Build a quote number: A-YYYY-NNN format, year-prefixed, 3-digit padded.
+ * Independent counter from invoices.
+ */
+export function buildQuoteNumber(counter: number, quoteDate: Date): string {
+  const year = quoteDate.getFullYear();
+  return `A-${year}-${String(counter).padStart(3, '0')}`;
+}
+
+/**
  * Strip all whitespace from an IBAN — required for EPC/GiroCode payload.
  */
 export function normalizeIBAN(iban: string): string {

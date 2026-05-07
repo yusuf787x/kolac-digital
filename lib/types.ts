@@ -81,6 +81,42 @@ export interface Settings {
   invoiceFormat: 'legacy' | 'new';
   defaultPaymentDays: number;
   defaultClosingText: string;
+  // Quotes
+  nextQuoteNumber: number;
+  defaultQuoteValidDays: number;
+  defaultQuoteAcceptanceText: string;
+}
+
+export type QuoteStatus =
+  | 'draft'
+  | 'sent'
+  | 'accepted'
+  | 'rejected'
+  | 'invoiced'
+  | 'expired';
+
+export interface Quote {
+  id: string;
+  customerId: string;
+  quoteNumber: string;
+  quoteDate: Timestamp;
+  validUntil: Timestamp;
+  status: QuoteStatus;
+  totalAmount: number;
+  closingText: string;
+  acceptanceText: string;
+  pdfUrl: string | null;
+  driveUrl: string | null;
+  confirmationFileUrl: string | null;
+  confirmationFilename: string | null;
+  sentAt: Timestamp | null;
+  acceptedAt: Timestamp | null;
+  rejectedAt: Timestamp | null;
+  invoicedAt: Timestamp | null;
+  invoiceId: string | null;
+  items: InvoiceItem[];
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }
 
 export interface GoogleAuth {

@@ -2,7 +2,8 @@
 
 import { pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/invoice/InvoicePDF';
-import type { Invoice, Customer } from './types';
+import QuotePDF from '@/components/quote/QuotePDF';
+import type { Invoice, Customer, Quote } from './types';
 import { buildInvoiceQrDataUrl } from './qr';
 
 export async function generateInvoicePdfBlob(
@@ -47,4 +48,27 @@ export function buildInvoiceFilename(
   const cust = customer.company || customer.lastName || 'Kunde';
   const safe = cust.replace(/[^a-zA-ZäöüÄÖÜß0-9 -]/g, '').trim();
   return `Rechnung ${invoice.invoiceNumber} ${safe}.pdf`;
+}
+
+export async function generateQuotePdfBlob(
+  quote: Quote,
+  customer: Customer,
+): Promise<Blob> {
+  const logoSrc =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/images/Logo%20Lang%20Schwarz.png`
+      : '/images/Logo%20Lang%20Schwarz.png';
+
+  return pdf(
+    <QuotePDF quote={quote} customer={customer} logoSrc={logoSrc} />,
+  ).toBlob();
+}
+
+export function buildQuoteFilename(
+  quote: Quote,
+  customer: Customer,
+): string {
+  const cust = customer.company || customer.lastName || 'Kunde';
+  const safe = cust.replace(/[^a-zA-ZäöüÄÖÜß0-9 -]/g, '').trim();
+  return `Angebot ${quote.quoteNumber} ${safe}.pdf`;
 }

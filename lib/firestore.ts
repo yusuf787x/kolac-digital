@@ -23,10 +23,11 @@ import type {
   Customer,
   Invoice,
   Expense,
+  Quote,
   Settings,
   GoogleAuth,
 } from './types';
-import { buildInvoiceNumber } from './utils';
+import { buildInvoiceNumber, buildQuoteNumber } from './utils';
 
 const fromDoc = <T>(d: QueryDocumentSnapshot<DocumentData>): T =>
   ({ id: d.id, ...d.data() } as T);
@@ -160,6 +161,85 @@ export async function deleteInvoice(id: string): Promise<void> {
 }
 
 // ===================================================================
+// QUOTES (Angebote)
+// ===================================================================
+
+const quotesCol = () => collection(db, 'quotes');
+
+export async function listQuotes(): Promise<Quote[]> {
+  const snap = await getDocs(query(quotesCol(), orderBy('quoteDate', 'desc')));
+  return snap.docs.map((d) => fromDoc<Quote>(d));
+}
+
+export async function listQuotesByCustomer(
+  customerId: string,
+): Promise<Quote[]> {
+  const snap = await getDocs(
+    query(
+      quotesCol(),
+      where('customerId', '==', customerId),
+      orderBy('quoteDate', 'desc'),
+    ),
+  );
+  return snap.docs.map((d) => fromDoc<Quote>(d));
+}
+
+export async function getQuote(id: string): Promise<Quote | null> {
+  const snap = await getDoc(doc(db, 'quotes', id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as Quote;
+}
+
+/**
+ * Atomically reserve the next quote number from settings/config and create
+ * the quote document.
+ */
+export async function createQuoteWithNumber(
+  data: Omit<Quote, 'id' | 'quoteNumber' | 'createdAt' | 'updatedAt'>,
+): Promise<{ id: string; quoteNumber: string }> {
+  const settingsRef = doc(db, 'settings', 'config');
+  const newRef = doc(quotesCol());
+
+  const quoteNumber = await runTransaction(db, async (tx) => {
+    const settingsSnap = await tx.get(settingsRef);
+    const current = settingsSnap.exists()
+      ? (settingsSnap.data() as Settings).nextQuoteNumber ?? 1
+      : 1;
+
+    const dateObj =
+      data.quoteDate instanceof Timestamp
+        ? data.quoteDate.toDate()
+        : new Date(data.quoteDate as unknown as string);
+    const number = buildQuoteNumber(current, dateObj);
+
+    tx.set(settingsRef, { nextQuoteNumber: current + 1 }, { merge: true });
+    tx.set(newRef, {
+      ...data,
+      quoteNumber: number,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return number;
+  });
+
+  return { id: newRef.id, quoteNumber };
+}
+
+export async function updateQuote(
+  id: string,
+  data: Partial<Omit<Quote, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'quotes', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteQuote(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'quotes', id));
+}
+
+// ===================================================================
 // EXPENSES
 // ===================================================================
 
@@ -208,6 +288,10 @@ export const DEFAULT_SETTINGS: Settings = {
   invoiceFormat: 'legacy',
   defaultPaymentDays: 7,
   defaultClosingText: 'Vielen Dank und liebe Grüße\nYusuf Kolac',
+  nextQuoteNumber: 1,
+  defaultQuoteValidDays: 14,
+  defaultQuoteAcceptanceText:
+    'Bitte bestätigen Sie das Angebot formlos per E-Mail an yusuf@kolac-digital.de oder per WhatsApp an +49 176 95762018. Die Annahme gilt als Auftragserteilung.',
 };
 
 export async function getSettings(): Promise<Settings> {

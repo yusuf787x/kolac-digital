@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { listInvoices, listExpenses, listCustomers } from '@/lib/firestore';
-import type { Invoice, Expense, Customer } from '@/lib/types';
+import { listInvoices, listExpenses, listCustomers, listQuotes } from '@/lib/firestore';
+import type { Invoice, Expense, Customer, Quote } from '@/lib/types';
 import {
   formatEUR,
   formatDateDE,
@@ -11,18 +11,21 @@ import {
   daysOverdue,
 } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
+import { computeQuoteStatus } from '@/lib/quote-status';
 
 export default function DashboardHomePage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
   const [customerMap, setCustomerMap] = useState<Map<string, Customer>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([listInvoices(), listExpenses(), listCustomers()])
-      .then(([inv, exp, cust]) => {
+    Promise.all([listInvoices(), listExpenses(), listCustomers(), listQuotes()])
+      .then(([inv, exp, cust, qts]) => {
         setInvoices(inv);
         setExpenses(exp);
+        setQuotes(qts);
         setCustomerMap(new Map(cust.map((c) => [c.id, c])));
       })
       .catch((err) => console.error(err))
@@ -87,6 +90,16 @@ export default function DashboardHomePage() {
 
     const profitThisMonth = revenueThisMonth - expensesThisMonth;
 
+    let openQuotesCount = 0;
+    let openQuotesAmount = 0;
+    quotes.forEach((q) => {
+      const cs = computeQuoteStatus(q.status, q.validUntil.toDate());
+      if (cs === 'sent' || cs === 'draft') {
+        openQuotesCount++;
+        openQuotesAmount += q.totalAmount;
+      }
+    });
+
     return {
       revenueThisMonth,
       revenueLastMonth,
@@ -97,8 +110,10 @@ export default function DashboardHomePage() {
       overdueAmount,
       expensesThisMonth,
       profitThisMonth,
+      openQuotesCount,
+      openQuotesAmount,
     };
-  }, [invoices, expenses]);
+  }, [invoices, expenses, quotes]);
 
   const recentInvoices = useMemo(
     () =>
@@ -171,6 +186,27 @@ export default function DashboardHomePage() {
               hint={`Gewinn: ${formatEUR(stats.profitThisMonth)}`}
             />
           </div>
+
+          {stats.openQuotesCount > 0 && (
+            <div className="mt-4">
+              <Link
+                href="/dashboard/angebote"
+                className="block card hover:bg-gray-50 transition-colors"
+              >
+                <p className="text-xs uppercase tracking-wider text-gray-500">
+                  Offene Angebote (Sales Pipeline)
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-orange-700">
+                  {formatEUR(stats.openQuotesAmount)}
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  {stats.openQuotesCount}{' '}
+                  {stats.openQuotesCount === 1 ? 'Angebot' : 'Angebote'} warten
+                  auf Antwort →
+                </p>
+              </Link>
+            </div>
+          )}
 
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
             <section className="card">
