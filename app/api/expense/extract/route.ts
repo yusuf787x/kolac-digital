@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@/lib/types';
+import { authenticate, authErrorResponse } from '@/lib/server-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -84,6 +85,10 @@ const SUPPORTED_IMAGE_TYPES = new Set([
 ]);
 
 export async function POST(req: Request) {
+  const auth = await authenticate(req);
+  const errResp = authErrorResponse(auth);
+  if (errResp) return errResp;
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
       { error: 'ANTHROPIC_API_KEY ist nicht gesetzt.' },

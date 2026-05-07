@@ -13,6 +13,7 @@ import {
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@/lib/types';
 import { formatEUR } from '@/lib/utils';
 import { fileToBase64 } from '@/lib/file-utils';
+import { authedFetch } from '@/lib/api-client';
 
 const dateInputValue = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -64,7 +65,7 @@ export default function NeueAusgabePage() {
     setExtracting(true);
     try {
       const base64 = await fileToBase64(file);
-      const res = await fetch('/api/expense/extract', {
+      const res = await authedFetch('/api/expense/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

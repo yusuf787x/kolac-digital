@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { getOAuthClientForRefresh } from '@/lib/google-oauth';
+import { authenticate, authErrorResponse } from '@/lib/server-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -31,6 +32,10 @@ const matchTab = (
 };
 
 export async function POST(req: Request) {
+  const auth = await authenticate(req);
+  const errResp = authErrorResponse(auth);
+  if (errResp) return errResp;
+
   let body: Body;
   try {
     body = (await req.json()) as Body;

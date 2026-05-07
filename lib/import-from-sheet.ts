@@ -18,6 +18,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { buildInvoiceNumber } from './utils';
+import { authedFetch } from './api-client';
 import type { ExpenseCategory } from './types';
 
 export interface ImportResult {
@@ -113,7 +114,7 @@ async function fetchSheet(
   einnahmenTabOverride?: string,
   ausgabenTabOverride?: string,
 ): Promise<SheetResponse> {
-  const res = await fetch('/api/import/read-sheet', {
+  const res = await authedFetch('/api/import/read-sheet', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

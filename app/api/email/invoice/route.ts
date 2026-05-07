@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { buildInvoiceEmail } from '@/lib/email-templates';
+import { authenticate, authErrorResponse } from '@/lib/server-auth';
 
 export const runtime = 'nodejs';
 
@@ -15,6 +16,10 @@ interface Body {
 }
 
 export async function POST(req: Request) {
+  const auth = await authenticate(req);
+  const errResp = authErrorResponse(auth);
+  if (errResp) return errResp;
+
   if (!process.env.RESEND_API_KEY) {
     return NextResponse.json(
       { error: 'RESEND_API_KEY ist nicht gesetzt.' },

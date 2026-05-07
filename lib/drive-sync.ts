@@ -13,6 +13,7 @@ import {
   buildInvoiceFilename,
 } from './pdf-generator';
 import { fileToBase64 } from './file-utils';
+import { authedFetch } from './api-client';
 
 export interface DriveSyncResult {
   webViewLink: string;
@@ -40,7 +41,7 @@ export async function syncInvoiceToDrive(
       .slice(0, 3)
       .join('; ') || '—';
 
-  const res = await fetch('/api/drive/save-invoice', {
+  const res = await authedFetch('/api/drive/save-invoice', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -98,7 +99,7 @@ export async function syncConfirmationToDrive(
   const mimeType = file.type || 'application/octet-stream';
   const fileBase64 = await fileToBase64(file);
 
-  const res = await fetch('/api/drive/save-confirmation', {
+  const res = await authedFetch('/api/drive/save-confirmation', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -147,7 +148,7 @@ export async function syncExpenseToDrive(
     receiptMimeType = receipt.mimeType;
   }
 
-  const res = await fetch('/api/drive/save-expense', {
+  const res = await authedFetch('/api/drive/save-expense', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

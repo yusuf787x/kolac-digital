@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PICKUP_COOKIE } from '@/lib/google-oauth';
+import { authenticate, authErrorResponse } from '@/lib/server-auth';
 
 export const runtime = 'nodejs';
 
@@ -10,6 +11,10 @@ export const runtime = 'nodejs';
  * immediately after read.
  */
 export async function GET(req: NextRequest) {
+  const auth = await authenticate(req);
+  const errResp = authErrorResponse(auth);
+  if (errResp) return errResp;
+
   const cookie = req.cookies.get(PICKUP_COOKIE);
 
   if (!cookie?.value) {

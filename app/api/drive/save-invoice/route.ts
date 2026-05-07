@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { saveInvoiceToDrive } from '@/lib/google-drive';
+import { authenticate, authErrorResponse } from '@/lib/server-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -16,6 +17,10 @@ interface Body {
 }
 
 export async function POST(req: Request) {
+  const auth = await authenticate(req);
+  const errResp = authErrorResponse(auth);
+  if (errResp) return errResp;
+
   let body: Body;
   try {
     body = (await req.json()) as Body;

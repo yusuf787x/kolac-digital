@@ -16,6 +16,7 @@ import {
   inspectGoogleSheet,
   type ImportResult,
 } from '@/lib/import-from-sheet';
+import { authedFetch } from '@/lib/api-client';
 import type { Settings, GoogleAuth } from '@/lib/types';
 
 export default function EinstellungenPage() {
@@ -74,7 +75,7 @@ function EinstellungenInner() {
       (async () => {
         setGoogleStatus('Speichere Verbindung…');
         try {
-          const res = await fetch('/api/auth/google/pickup');
+          const res = await authedFetch('/api/auth/google/pickup');
           if (!res.ok) {
             const body = await res.json().catch(() => ({}));
             throw new Error(body.error ?? `HTTP ${res.status}`);

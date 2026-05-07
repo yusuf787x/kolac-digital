@@ -18,6 +18,7 @@ import {
   daysOverdue,
 } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
+import { authedFetch } from '@/lib/api-client';
 // PDF generator and drive sync are dynamic imports — they pull in
 // @react-pdf/renderer (~500kB) which we only need on-demand.
 
@@ -166,7 +167,7 @@ export default function RechnungDetailPage() {
       const base64 = await fileToBase64(blob);
       const filename = buildInvoiceFilename(invoice, customer);
 
-      const res = await fetch('/api/email/invoice', {
+      const res = await authedFetch('/api/email/invoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -241,7 +242,7 @@ export default function RechnungDetailPage() {
           ? invoice.totalAmount - invoice.paidAmount
           : invoice.totalAmount;
 
-      const res = await fetch('/api/email/reminder', {
+      const res = await authedFetch('/api/email/reminder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
