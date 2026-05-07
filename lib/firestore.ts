@@ -289,7 +289,7 @@ export const DEFAULT_SETTINGS: Settings = {
   nextQuoteNumber: 1,
   defaultQuoteValidDays: 14,
   defaultQuoteAcceptanceText:
-    'Bitte bestätigen Sie das Angebot formlos per E-Mail an yusuf@kolac-digital.de oder per WhatsApp an +49 176 95762018. Die Annahme gilt als Auftragserteilung.',
+    'Bitte bestätigen Sie das Angebot formlos per E-Mail an yusuf@kolac-digital.de oder per WhatsApp an +49 176 95762018 — alternativ können Sie dieses Angebot auch digital unterschrieben zurücksenden. Die Annahme gilt als Auftragserteilung.',
 };
 
 export async function getSettings(): Promise<Settings> {

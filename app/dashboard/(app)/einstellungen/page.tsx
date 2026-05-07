@@ -35,6 +35,8 @@ function EinstellungenInner() {
   const [defaultPaymentDays, setDefaultPaymentDays] = useState('7');
   const [defaultClosingText, setDefaultClosingText] = useState('');
   const [nextInvoiceNumber, setNextInvoiceNumber] = useState('1218');
+  const [defaultQuoteValidDays, setDefaultQuoteValidDays] = useState('14');
+  const [defaultQuoteAcceptanceText, setDefaultQuoteAcceptanceText] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
 
@@ -55,6 +57,8 @@ function EinstellungenInner() {
       setDefaultPaymentDays(String(s.defaultPaymentDays));
       setDefaultClosingText(s.defaultClosingText);
       setNextInvoiceNumber(String(s.nextInvoiceNumber));
+      setDefaultQuoteValidDays(String(s.defaultQuoteValidDays ?? 14));
+      setDefaultQuoteAcceptanceText(s.defaultQuoteAcceptanceText ?? '');
       setGoogleAuth(g);
     });
   }, []);
@@ -124,6 +128,8 @@ function EinstellungenInner() {
         defaultPaymentDays: parseInt(defaultPaymentDays, 10) || 7,
         defaultClosingText,
         nextInvoiceNumber: parseInt(nextInvoiceNumber, 10) || 1218,
+        defaultQuoteValidDays: parseInt(defaultQuoteValidDays, 10) || 14,
+        defaultQuoteAcceptanceText,
       });
       setSettingsMessage('Gespeichert.');
       setTimeout(() => setSettingsMessage(null), 3000);
@@ -270,6 +276,39 @@ function EinstellungenInner() {
               value={defaultClosingText}
               onChange={(e) => setDefaultClosingText(e.target.value)}
             />
+          </div>
+
+          <div className="border-t border-gray-100 pt-4 mt-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Angebots-Defaults
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="label">Standard-Gültigkeit (Tage)</label>
+                <input
+                  type="number"
+                  className="input"
+                  value={defaultQuoteValidDays}
+                  onChange={(e) => setDefaultQuoteValidDays(e.target.value)}
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Akzeptanztext für neue Angebote</label>
+              <textarea
+                className="input min-h-[100px]"
+                value={defaultQuoteAcceptanceText}
+                onChange={(e) =>
+                  setDefaultQuoteAcceptanceText(e.target.value)
+                }
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Erscheint im Akzeptanz-Block jedes neuen Angebots-PDFs.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
