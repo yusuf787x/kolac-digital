@@ -55,7 +55,7 @@
   "about": {
     "label": "ÜBER UNS",
     "headline": "Digital aus Überzeugung",
-    "image": "images/yk.png",
+    "image": "images/yk.webp",
     "text": [
       "Wir sind eine Digitalagentur aus Bielefeld – mitten in Ostwestfalen-Lippe. Statt 50-Mann-Team und endlosen Meetings bekommst du bei Kolac Digital direkte Kommunikation, schnelle Umsetzung und faire Preise – ohne den typischen Agentur-Aufschlag.",
       "Ob Webseiten die konvertieren, Google Ads die performen oder Social Media Content der Reichweite bringt – wir haben es für unsere eigenen Projekte getestet, bevor wir es für dich umsetzen. Unter anderem auch mit einem eigenen Social Media Kanal mit über 40.000 Abonnenten in der Entertainment-Branche.",
@@ -78,8 +78,8 @@
         "company": "Bacara Ästhetik",
         "tag": "Webseite & Social Media",
         "mockupType": "both",
-        "mockupImage": "images/bacara-website.png",
-        "mockupImagePhone": "images/bacara-social.png",
+        "mockupImage": "images/bacara-website.webp",
+        "mockupImagePhone": "images/bacara-social.webp",
         "services": [
           "Webseite mit Online-Buchungssystem",
           "Sprechstundenzeiten mit Live-Update",
@@ -98,7 +98,7 @@
         "company": "MK Automobile",
         "tag": "Social Media",
         "mockupType": "phone",
-        "mockupImage": "images/mk-tiktok.png",
+        "mockupImage": "images/mk-tiktok.webp",
         "services": [
           "Social Media Kanal vereinheitlicht",
           "Ideen, Filmen, Schneiden, Posten",
@@ -115,7 +115,7 @@
         "company": "Mironi",
         "tag": "Onlineshop & Marketing",
         "mockupType": "browser",
-        "mockupImage": "images/mironi-website.png",
+        "mockupImage": "images/mironi-website.webp",
         "services": [
           "E-Commerce Shop mit Bestellstatus-Mails",
           "Automatisierte Mailkampagnen",
@@ -130,7 +130,7 @@
         "company": "AF-Gebäudeservice",
         "tag": "Webseite & Digitalisierung",
         "mockupType": "browser",
-        "mockupImage": "images/AF-Gebäudeservice.png",
+        "mockupImage": "images/AF-Gebäudeservice.webp",
         "services": [
           "Professioneller Webauftritt von Grund auf",
           "Digitales Anfrage- & Angebotsformular",
@@ -146,8 +146,8 @@
         "company": "Die Marke Yuma",
         "tag": "Social Media & App",
         "mockupType": "phone-app",
-        "mockupImage": "images/yuma-tiktok.png",
-        "mockupImageApp": "images/yumaplay-icon.png",
+        "mockupImage": "images/yuma-tiktok.webp",
+        "mockupImageApp": "images/yumaplay-icon.webp",
         "services": [
           "TikTok Entertainment-Kanal aufgebaut & skaliert",
           "YumaPlay Quiz-App selbst entwickelt & im App Store veröffentlicht",
@@ -165,8 +165,8 @@
         "company": "CarHiFi Herford",
         "tag": "Webseite & Social Media",
         "mockupType": "both",
-        "mockupImage": "images/carhifi-herford-website.png",
-        "mockupImagePhone": "images/halim-tiktok.png",
+        "mockupImage": "images/carhifi-herford-website.webp",
+        "mockupImagePhone": "images/halim-tiktok.webp",
         "services": [
           "Webseite mit Custom CMS",
           "Custom Konfigurator für Soundanlagen",
