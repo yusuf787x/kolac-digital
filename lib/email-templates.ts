@@ -48,6 +48,28 @@ export function buildInvoiceEmail(opts: {
   return { from: FROM_EMAIL, replyTo: REPLY_TO, subject, html, text };
 }
 
+/**
+ * Freie Vertriebs-/Akquise-Mail: Betreff + Nachricht kommen vom Nutzer
+ * (ggf. aus einer Vorlage). Klartext wird für die HTML-Variante in
+ * Absätze/Zeilenumbrüche übersetzt.
+ */
+export function buildDealEmail(opts: {
+  subject: string;
+  body: string;
+}): { from: string; replyTo: string; subject: string; html: string; text: string } {
+  const { subject, body } = opts;
+
+  const escaped = body
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  const htmlBody = escaped.replace(/\n/g, '<br/>');
+
+  const html = `<div style="${baseStyles}">${htmlBody}</div>`;
+
+  return { from: FROM_EMAIL, replyTo: REPLY_TO, subject, html, text: body };
+}
+
 export function buildReminderEmail(opts: {
   customerName: string;
   invoiceNumber: string;

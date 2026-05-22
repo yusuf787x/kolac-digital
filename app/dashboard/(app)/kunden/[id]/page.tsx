@@ -8,9 +8,11 @@ import {
   deleteCustomer,
   listInvoicesByCustomer,
   listQuotesByCustomer,
+  listDealsByCustomer,
 } from '@/lib/firestore';
-import type { Customer, Invoice, Quote } from '@/lib/types';
+import type { Customer, Invoice, Quote, Deal } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
+import { stageDef } from '@/lib/sales';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import {
   computeQuoteStatus,
@@ -36,6 +38,7 @@ function KundeDetailInner() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -46,11 +49,13 @@ function KundeDetailInner() {
       getCustomer(id),
       listInvoicesByCustomer(id),
       listQuotesByCustomer(id),
+      listDealsByCustomer(id),
     ])
-      .then(([c, inv, qts]) => {
+      .then(([c, inv, qts, dls]) => {
         setCustomer(c);
         setInvoices(inv);
         setQuotes(qts);
+        setDeals(dls);
       })
       .catch((err) => {
         console.error(err);
@@ -184,6 +189,59 @@ function KundeDetailInner() {
         </section>
 
         <div className="lg:col-span-2 space-y-6">
+          <section className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold text-gray-900">
+                Deals ({deals.length})
+              </h2>
+              <Link
+                href="/dashboard/vertrieb"
+                className="text-sm text-brand-blue hover:underline font-medium"
+              >
+                Zum Vertrieb →
+              </Link>
+            </div>
+
+            {deals.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                Noch keine Deals für diesen Kunden.
+              </p>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {deals.map((d) => {
+                  const sd = stageDef(d.stage);
+                  return (
+                    <Link
+                      key={d.id}
+                      href={`/dashboard/vertrieb/${d.id}`}
+                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {d.title}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {formatDateDE(d.updatedAt.toDate())}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="text-xs font-medium px-2 py-0.5 rounded text-white"
+                          style={{ backgroundColor: sd.color }}
+                        >
+                          {sd.label}
+                        </span>
+                        <span className="text-sm font-medium text-gray-900 w-24 text-right">
+                          {d.value != null ? formatEUR(d.value) : '—'}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
           <section className="card">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-900">

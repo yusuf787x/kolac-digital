@@ -129,6 +129,70 @@ export interface GoogleAuth {
   connectedEmail: string;
 }
 
+// ===================================================================
+// CRM / VERTRIEB (Deals, Aktivitäten, E-Mail-Vorlagen)
+// ===================================================================
+
+export type DealStage =
+  | 'kontaktiert'
+  | 'erstgespraech'
+  | 'angebot_verschickt'
+  | 'vertrag_erhalten'
+  | 'abgeschlossen'
+  | 'verloren';
+
+export type DealSource =
+  | 'empfehlung'
+  | 'google'
+  | 'social_media'
+  | 'kaltakquise'
+  | 'sonstiges';
+
+export interface Deal {
+  id: string;
+  customerId: string;
+  title: string;
+  value: number | null;
+  stage: DealStage;
+  source: DealSource;
+  expectedCloseDate: Timestamp | null;
+  lostReason: string | null;
+  notes: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export type ActivityType =
+  | 'anruf'
+  | 'email'
+  | 'notiz'
+  | 'meeting'
+  | 'angebot'
+  | 'vertrag'
+  | 'sonstiges';
+
+export interface Activity {
+  id: string;
+  dealId: string;
+  type: ActivityType;
+  description: string;
+  emailSubject: string | null;
+  emailBody: string | null;
+  dueDate: Timestamp | null;
+  completed: boolean;
+  completedAt: Timestamp | null;
+  createdAt: Timestamp;
+}
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   'Software/Tools',
   'Werbung/Ads',

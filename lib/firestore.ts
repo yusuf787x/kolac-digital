@@ -26,8 +26,12 @@ import type {
   Quote,
   Settings,
   GoogleAuth,
+  Deal,
+  Activity,
+  EmailTemplate,
 } from './types';
 import { buildInvoiceNumber, buildQuoteNumber } from './utils';
+import { SEED_TEMPLATES } from './sales';
 
 const fromDoc = <T>(d: QueryDocumentSnapshot<DocumentData>): T =>
   ({ id: d.id, ...d.data() } as T);
@@ -273,6 +277,181 @@ export async function updateExpense(
 
 export async function deleteExpense(id: string): Promise<void> {
   await deleteDoc(doc(db, 'expenses', id));
+}
+
+// ===================================================================
+// DEALS (Vertrieb / Pipeline)
+// ===================================================================
+
+const dealsCol = () => collection(db, 'deals');
+
+export async function listDeals(): Promise<Deal[]> {
+  const snap = await getDocs(query(dealsCol(), orderBy('updatedAt', 'desc')));
+  return snap.docs.map((d) => fromDoc<Deal>(d));
+}
+
+export async function listDealsByCustomer(
+  customerId: string,
+): Promise<Deal[]> {
+  // Sort client-side to avoid requiring a composite Firestore index.
+  const snap = await getDocs(
+    query(dealsCol(), where('customerId', '==', customerId)),
+  );
+  const list = snap.docs.map((d) => fromDoc<Deal>(d));
+  return list.sort((a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis());
+}
+
+export async function getDeal(id: string): Promise<Deal | null> {
+  const snap = await getDoc(doc(db, 'deals', id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as Deal;
+}
+
+export async function createDeal(
+  data: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(dealsCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateDeal(
+  id: string,
+  data: Partial<Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'deals', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteDeal(id: string): Promise<void> {
+  // Aktivitäten des Deals mitlöschen.
+  const acts = await getDocs(
+    query(activitiesCol(), where('dealId', '==', id)),
+  );
+  await Promise.all(acts.docs.map((d) => deleteDoc(d.ref)));
+  await deleteDoc(doc(db, 'deals', id));
+}
+
+// ===================================================================
+// AKTIVITÄTEN
+// ===================================================================
+
+const activitiesCol = () => collection(db, 'activities');
+
+export async function listActivitiesByDeal(
+  dealId: string,
+): Promise<Activity[]> {
+  // Sort client-side to avoid requiring a composite Firestore index.
+  const snap = await getDocs(
+    query(activitiesCol(), where('dealId', '==', dealId)),
+  );
+  const list = snap.docs.map((d) => fromDoc<Activity>(d));
+  return list.sort((a, b) => sortKey(b) - sortKey(a));
+}
+
+/** Sortierschlüssel: Fälligkeit, sonst Erstelldatum (neueste oben). */
+function sortKey(a: Activity): number {
+  return (a.dueDate ?? a.createdAt)?.toMillis?.() ?? 0;
+}
+
+/** Alle noch offenen (nicht erledigten) Aktivitäten mit Fälligkeitsdatum. */
+export async function listOpenActivities(): Promise<Activity[]> {
+  const snap = await getDocs(
+    query(activitiesCol(), where('completed', '==', false)),
+  );
+  return snap.docs
+    .map((d) => fromDoc<Activity>(d))
+    .filter((a) => a.dueDate != null);
+}
+
+export async function createActivity(
+  data: Omit<Activity, 'id' | 'createdAt'> & { createdAt?: Timestamp },
+): Promise<string> {
+  const { createdAt, ...rest } = data;
+  const ref = await addDoc(activitiesCol(), {
+    ...rest,
+    createdAt: createdAt ?? serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateActivity(
+  id: string,
+  data: Partial<Omit<Activity, 'id' | 'createdAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'activities', id), data);
+}
+
+export async function deleteActivity(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'activities', id));
+}
+
+// ===================================================================
+// E-MAIL-VORLAGEN
+// ===================================================================
+
+const templatesCol = () => collection(db, 'emailTemplates');
+
+export async function listEmailTemplates(): Promise<EmailTemplate[]> {
+  const snap = await getDocs(query(templatesCol(), orderBy('name')));
+  return snap.docs.map((d) => fromDoc<EmailTemplate>(d));
+}
+
+export async function getEmailTemplate(
+  id: string,
+): Promise<EmailTemplate | null> {
+  const snap = await getDoc(doc(db, 'emailTemplates', id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as EmailTemplate;
+}
+
+export async function createEmailTemplate(
+  data: Omit<EmailTemplate, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(templatesCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateEmailTemplate(
+  id: string,
+  data: Partial<Omit<EmailTemplate, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'emailTemplates', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteEmailTemplate(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'emailTemplates', id));
+}
+
+/**
+ * Legt die Standard-Vorlagen an, falls noch keine existieren.
+ * Gibt die Anzahl neu erstellter Vorlagen zurück.
+ */
+export async function seedEmailTemplates(): Promise<number> {
+  const existing = await getDocs(templatesCol());
+  if (!existing.empty) return 0;
+  await Promise.all(
+    SEED_TEMPLATES.map((t) =>
+      addDoc(templatesCol(), {
+        ...t,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  return SEED_TEMPLATES.length;
 }
 
 // ===================================================================

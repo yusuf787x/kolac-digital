@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { listInvoices } from '@/lib/firestore';
+import { listInvoices, listOpenActivities } from '@/lib/firestore';
 import { isOverdue } from '@/lib/utils';
 import Logo from '@/components/Logo';
 
@@ -18,6 +18,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: '📊' },
   { href: '/dashboard/kunden', label: 'Kunden', icon: '👥' },
+  { href: '/dashboard/vertrieb', label: 'Vertrieb', icon: '🔄' },
   { href: '/dashboard/angebote', label: 'Angebote', icon: '📋' },
   { href: '/dashboard/rechnungen', label: 'Rechnungen', icon: '📄' },
   { href: '/dashboard/ausgaben', label: 'Ausgaben', icon: '💸' },
@@ -29,6 +30,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
   const [overdueCount, setOverdueCount] = useState(0);
+  const [overdueActivityCount, setOverdueActivityCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -43,7 +45,24 @@ export default function Sidebar() {
         setOverdueCount(count);
       })
       .catch(() => setOverdueCount(0));
+
+    listOpenActivities()
+      .then((acts) => {
+        const now = Date.now();
+        const count = acts.filter(
+          (a) => a.dueDate && a.dueDate.toMillis() < now,
+        ).length;
+        setOverdueActivityCount(count);
+      })
+      .catch(() => setOverdueActivityCount(0));
   }, [user, pathname]);
+
+  /** Badge-Zahl für einen Menüpunkt (0 = kein Badge). */
+  const badgeFor = (href: string): number => {
+    if (href === '/dashboard/rechnungen') return overdueCount;
+    if (href === '/dashboard/vertrieb') return overdueActivityCount;
+    return 0;
+  };
 
   const isActive = (href: string) =>
     href === '/dashboard'
@@ -63,8 +82,7 @@ export default function Sidebar() {
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href);
-            const showBadge =
-              item.href === '/dashboard/rechnungen' && overdueCount > 0;
+            const badge = badgeFor(item.href);
             return (
               <Link
                 key={item.href}
@@ -79,9 +97,9 @@ export default function Sidebar() {
                   <span className="text-base">{item.icon}</span>
                   {item.label}
                 </span>
-                {showBadge && (
+                {badge > 0 && (
                   <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-semibold">
-                    {overdueCount}
+                    {badge}
                   </span>
                 )}
               </Link>
@@ -107,11 +125,10 @@ export default function Sidebar() {
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-30">
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-8">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href);
-            const showBadge =
-              item.href === '/dashboard/rechnungen' && overdueCount > 0;
+            const badge = badgeFor(item.href);
             return (
               <Link
                 key={item.href}
@@ -122,9 +139,9 @@ export default function Sidebar() {
               >
                 <span className="text-lg">{item.icon}</span>
                 <span className="truncate max-w-full px-1">{item.label}</span>
-                {showBadge && (
+                {badge > 0 && (
                   <span className="absolute top-1 right-2 inline-flex items-center justify-center min-w-[1rem] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
-                    {overdueCount}
+                    {badge}
                   </span>
                 )}
               </Link>

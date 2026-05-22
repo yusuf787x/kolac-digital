@@ -2,14 +2,29 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { listInvoices, listExpenses, listCustomers, listQuotes } from '@/lib/firestore';
-import type { Invoice, Expense, Customer, Quote } from '@/lib/types';
+import {
+  listInvoices,
+  listExpenses,
+  listCustomers,
+  listQuotes,
+  listDeals,
+  listOpenActivities,
+} from '@/lib/firestore';
+import type {
+  Invoice,
+  Expense,
+  Customer,
+  Quote,
+  Deal,
+  Activity,
+} from '@/lib/types';
 import {
   formatEUR,
   formatDateDE,
   isOverdue,
   daysOverdue,
 } from '@/lib/utils';
+import { activityDef } from '@/lib/sales';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import { computeQuoteStatus } from '@/lib/quote-status';
 
@@ -17,20 +32,45 @@ export default function DashboardHomePage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [customerMap, setCustomerMap] = useState<Map<string, Customer>>(new Map());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([listInvoices(), listExpenses(), listCustomers(), listQuotes()])
-      .then(([inv, exp, cust, qts]) => {
+    Promise.all([
+      listInvoices(),
+      listExpenses(),
+      listCustomers(),
+      listQuotes(),
+      listDeals(),
+      listOpenActivities(),
+    ])
+      .then(([inv, exp, cust, qts, dls, acts]) => {
         setInvoices(inv);
         setExpenses(exp);
         setQuotes(qts);
+        setDeals(dls);
+        setActivities(acts);
         setCustomerMap(new Map(cust.map((c) => [c.id, c])));
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, []);
+
+  const dealMap = useMemo(
+    () => new Map(deals.map((d) => [d.id, d])),
+    [deals],
+  );
+
+  // Heute fällige + überfällige (offene) Aktivitäten, früheste zuerst.
+  const dueActivities = useMemo(() => {
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    return activities
+      .filter((a) => a.dueDate && a.dueDate.toMillis() <= endOfToday.getTime())
+      .sort((a, b) => a.dueDate!.toMillis() - b.dueDate!.toMillis());
+  }, [activities]);
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -206,6 +246,63 @@ export default function DashboardHomePage() {
                 </p>
               </Link>
             </div>
+          )}
+
+          {dueActivities.length > 0 && (
+            <section className="card mt-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-gray-900">
+                  Fällige Aktivitäten
+                </h2>
+                <Link
+                  href="/dashboard/vertrieb"
+                  className="text-xs text-brand-blue hover:underline font-medium"
+                >
+                  Zum Vertrieb →
+                </Link>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {dueActivities.map((a) => {
+                  const deal = dealMap.get(a.dealId);
+                  const def = activityDef(a.type);
+                  const due = a.dueDate!.toDate();
+                  const overdue = a.dueDate!.toMillis() < Date.now();
+                  const days = daysOverdue(due);
+                  const customerName = deal
+                    ? customerMap.get(deal.customerId)?.company ??
+                      `${customerMap.get(deal.customerId)?.firstName ?? ''} ${customerMap.get(deal.customerId)?.lastName ?? ''}`.trim()
+                    : '';
+                  return (
+                    <Link
+                      key={a.id}
+                      href={
+                        deal ? `/dashboard/vertrieb/${deal.id}` : '/dashboard/vertrieb'
+                      }
+                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {def.icon} {a.description}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {customerName || '—'}
+                          {deal?.title ? ` · ${deal.title}` : ''}
+                        </p>
+                      </div>
+                      <span
+                        className={`ml-3 flex-shrink-0 text-xs font-medium ${
+                          overdue ? 'text-red-600' : 'text-gray-500'
+                        }`}
+                      >
+                        {overdue
+                          ? `${days} ${days === 1 ? 'Tag' : 'Tage'} überfällig`
+                          : `heute fällig`}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
           )}
 
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
