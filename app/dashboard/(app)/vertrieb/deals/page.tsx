@@ -9,7 +9,7 @@ import {
 } from '@/lib/firestore';
 import type { Customer, Deal, DealStage } from '@/lib/types';
 import { stageDef } from '@/lib/sales';
-import { formatEUR, formatDateDE } from '@/lib/utils';
+import { formatEUR, formatTsDE, tsToMillis } from '@/lib/utils';
 import DealFormModal from '@/components/vertrieb/DealFormModal';
 
 export default function DealListePage() {
@@ -29,7 +29,8 @@ export default function DealListePage() {
         const now = Date.now();
         const overdue = new Set<string>();
         acts.forEach((a) => {
-          if (a.dueDate && a.dueDate.toMillis() < now) overdue.add(a.dealId);
+          const due = tsToMillis(a.dueDate);
+          if (due > 0 && due < now) overdue.add(a.dealId);
         });
         setOverdueDealIds(overdue);
       })
@@ -163,7 +164,7 @@ export default function DealListePage() {
                       {d.value != null ? formatEUR(d.value) : '—'}
                     </td>
                     <td className="px-4 py-3 text-gray-500">
-                      {formatDateDE(d.updatedAt.toDate())}
+                      {formatTsDE(d.updatedAt)}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link

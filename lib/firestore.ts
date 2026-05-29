@@ -30,7 +30,7 @@ import type {
   Activity,
   EmailTemplate,
 } from './types';
-import { buildInvoiceNumber, buildQuoteNumber } from './utils';
+import { buildInvoiceNumber, buildQuoteNumber, tsToMillis } from './utils';
 import { SEED_TEMPLATES } from './sales';
 
 const fromDoc = <T>(d: QueryDocumentSnapshot<DocumentData>): T =>
@@ -298,7 +298,9 @@ export async function listDealsByCustomer(
     query(dealsCol(), where('customerId', '==', customerId)),
   );
   const list = snap.docs.map((d) => fromDoc<Deal>(d));
-  return list.sort((a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis());
+  return list.sort(
+    (a, b) => tsToMillis(b.updatedAt) - tsToMillis(a.updatedAt),
+  );
 }
 
 export async function getDeal(id: string): Promise<Deal | null> {

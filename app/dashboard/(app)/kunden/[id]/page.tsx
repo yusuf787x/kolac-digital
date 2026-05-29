@@ -11,7 +11,7 @@ import {
   listDealsByCustomer,
 } from '@/lib/firestore';
 import type { Customer, Invoice, Quote, Deal } from '@/lib/types';
-import { formatEUR, formatDateDE } from '@/lib/utils';
+import { formatEUR, formatDateDE, formatTsDE } from '@/lib/utils';
 import { stageDef } from '@/lib/sales';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import {
@@ -221,7 +221,7 @@ function KundeDetailInner() {
                           {d.title}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {formatDateDE(d.updatedAt.toDate())}
+                          {formatTsDE(d.updatedAt)}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">

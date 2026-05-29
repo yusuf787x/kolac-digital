@@ -9,7 +9,7 @@ import {
 } from '@/lib/firestore';
 import type { Customer, Deal } from '@/lib/types';
 import { isOpenStage } from '@/lib/sales';
-import { formatEUR } from '@/lib/utils';
+import { formatEUR, tsToDate, tsToMillis } from '@/lib/utils';
 import PipelineBoard from '@/components/vertrieb/PipelineBoard';
 import DealFormModal from '@/components/vertrieb/DealFormModal';
 
@@ -30,7 +30,8 @@ export default function VertriebPage() {
         const now = Date.now();
         const overdue = new Set<string>();
         acts.forEach((a) => {
-          if (a.dueDate && a.dueDate.toMillis() < now) overdue.add(a.dealId);
+          const due = tsToMillis(a.dueDate);
+          if (due > 0 && due < now) overdue.add(a.dealId);
         });
         setOverdueDealIds(overdue);
       })
@@ -78,10 +79,14 @@ export default function VertriebPage() {
   );
 
   // Letzter Kontakt = updatedAt des Deals (Aktivitäten aktualisieren ihn nicht
-  // direkt, aber Stufenwechsel/Bearbeitungen schon).
+  // direkt, aber Stufenwechsel/Bearbeitungen schon). Defensiv gegen Docs
+  // ohne aufgelösten serverTimestamp().
   const lastContact = useMemo(() => {
     const m = new Map<string, Date>();
-    deals.forEach((d) => m.set(d.id, d.updatedAt.toDate()));
+    deals.forEach((d) => {
+      const date = tsToDate(d.updatedAt) ?? tsToDate(d.createdAt);
+      if (date) m.set(d.id, date);
+    });
     return m;
   }, [deals]);
 

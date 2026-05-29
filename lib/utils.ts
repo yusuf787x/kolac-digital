@@ -11,6 +11,40 @@ export function formatEUR(amount: number): string {
 }
 
 /**
+ * Defensiv: konvertiert einen Firestore-Timestamp in ein Date, oder gibt
+ * null zurück, wenn der Wert fehlt / null ist (z.B. wenn ein Dokument
+ * manuell angelegt wurde oder serverTimestamp() noch nicht aufgelöst hat).
+ *
+ * Nutzbar mit jedem Objekt, das eine `.toDate()`-Methode hat — wir
+ * vermeiden hier den Import von Firestore-Typen, um Zyklen zu vermeiden.
+ */
+export function tsToDate(
+  ts: { toDate: () => Date } | null | undefined,
+): Date | null {
+  if (!ts || typeof ts.toDate !== 'function') return null;
+  try {
+    return ts.toDate();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Defensiv: Timestamp -> Millisekunden, mit Fallback für null/undefined.
+ */
+export function tsToMillis(
+  ts: { toMillis: () => number } | null | undefined,
+  fallback = 0,
+): number {
+  if (!ts || typeof ts.toMillis !== 'function') return fallback;
+  try {
+    return ts.toMillis();
+  } catch {
+    return fallback;
+  }
+}
+
+/**
  * Format a Date as DD.MM.YYYY (German short date).
  */
 export function formatDateDE(date: Date): string {
@@ -19,6 +53,18 @@ export function formatDateDE(date: Date): string {
     month: '2-digit',
     year: 'numeric',
   });
+}
+
+/**
+ * Defensiv: formatiert einen Firestore-Timestamp, oder gibt einen
+ * Fallback ("—") zurück, falls der Wert fehlt.
+ */
+export function formatTsDE(
+  ts: { toDate: () => Date } | null | undefined,
+  fallback = '—',
+): string {
+  const d = tsToDate(ts);
+  return d ? formatDateDE(d) : fallback;
 }
 
 /**

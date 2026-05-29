@@ -30,7 +30,13 @@ import {
   stageDef,
   stageLabel,
 } from '@/lib/sales';
-import { formatEUR, formatDateDE, daysOverdue } from '@/lib/utils';
+import {
+  formatEUR,
+  formatDateDE,
+  formatTsDE,
+  daysOverdue,
+  tsToMillis,
+} from '@/lib/utils';
 import DealFormModal from '@/components/vertrieb/DealFormModal';
 import ActivityModal from '@/components/vertrieb/ActivityModal';
 import EmailComposerModal from '@/components/vertrieb/EmailComposerModal';
@@ -326,16 +332,12 @@ export default function DealDetailPage() {
               />
               <InfoRow
                 label="Erwartetes Abschlussdatum"
-                value={
-                  deal.expectedCloseDate
-                    ? formatDateDE(deal.expectedCloseDate.toDate())
-                    : '—'
-                }
+                value={formatTsDE(deal.expectedCloseDate)}
               />
               <InfoRow label="Quelle" value={sourceLabel(deal.source)} />
               <InfoRow
                 label="Erstellt am"
-                value={formatDateDE(deal.createdAt.toDate())}
+                value={formatTsDE(deal.createdAt)}
               />
               {deal.stage === 'verloren' && deal.lostReason && (
                 <InfoRow label="Verlust-Grund" value={deal.lostReason} />
@@ -465,7 +467,7 @@ export default function DealDetailPage() {
 
       {/* Modals */}
       <DealFormModal
-        key={deal.updatedAt.toMillis()}
+        key={tsToMillis(deal.updatedAt, tsToMillis(deal.createdAt, deal.id.length))}
         open={editOpen}
         onClose={() => setEditOpen(false)}
         mode="edit"
