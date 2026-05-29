@@ -171,10 +171,7 @@ mein Name ist Yusuf Kolac von Kolac Digital. Ich bin auf {{firma}} aufmerksam ge
 
 Wir unterstützen kleine und mittelständische Unternehmen mit professionellen Webseiten, Google Ads und Social Media Content – alles aus einer Hand.
 
-Hätten Sie in den nächsten Tagen Zeit für ein kurzes, unverbindliches Gespräch?
-
-Herzliche Grüße
-Yusuf Kolac`,
+Hätten Sie in den nächsten Tagen Zeit für ein kurzes, unverbindliches Gespräch?`,
     },
     {
       name: 'Follow-up Erstgespräch',
@@ -183,19 +180,13 @@ Yusuf Kolac`,
 
 vielen Dank für das angenehme Gespräch. Wie besprochen sende ich Ihnen in den nächsten Tagen ein konkretes Angebot zu.
 
-Bei Fragen stehe ich Ihnen jederzeit zur Verfügung.
-
-Herzliche Grüße
-Yusuf Kolac`,
+Bei Fragen stehe ich Ihnen jederzeit zur Verfügung.`,
     },
     {
       name: 'Angebot Nachfass',
       subject: 'Rückmeldung zum Angebot – {{firma}}',
       body: `Sehr geehrter {{anrede}} {{nachname}},
 
-ich wollte kurz nachfragen, ob Sie bereits Gelegenheit hatten, sich unser Angebot anzuschauen. Gerne bespreche ich offene Fragen mit Ihnen.
-
-Herzliche Grüße
-Yusuf Kolac`,
+ich wollte kurz nachfragen, ob Sie bereits Gelegenheit hatten, sich unser Angebot anzuschauen. Gerne bespreche ich offene Fragen mit Ihnen.`,
     },
   ];

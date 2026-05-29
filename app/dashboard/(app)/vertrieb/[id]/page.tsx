@@ -41,6 +41,36 @@ import DealFormModal from '@/components/vertrieb/DealFormModal';
 import ActivityModal from '@/components/vertrieb/ActivityModal';
 import EmailComposerModal from '@/components/vertrieb/EmailComposerModal';
 
+function isHtmlBody(body: string): boolean {
+  return /<\/?[a-z][^>]*>/i.test(body);
+}
+
+/** Globaler Style-Injection für E-Mail-Vorschau (Bilder, Links, Listen). */
+function EmailPreviewStyles() {
+  return (
+    <style jsx global>{`
+      .email-body-preview img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 6px;
+      }
+      .email-body-preview a {
+        color: #2563eb;
+        text-decoration: underline;
+        word-break: break-word;
+      }
+      .email-body-preview ul,
+      .email-body-preview ol {
+        padding-left: 1.5em;
+        margin: 0.4em 0;
+      }
+      .email-body-preview p {
+        margin: 0.4em 0;
+      }
+    `}</style>
+  );
+}
+
 function formatDateTimeDE(d: Date): string {
   return d.toLocaleString('de-DE', {
     day: '2-digit',
@@ -222,6 +252,7 @@ export default function DealDetailPage() {
 
   return (
     <div>
+      <EmailPreviewStyles />
       <header className="mb-6">
         <Link
           href="/dashboard/vertrieb"
@@ -567,9 +598,16 @@ function TimelineItem({
               {expanded ? '▲' : '▼'}
             </button>
             {expanded && activity.emailBody && (
-              <pre className="mt-2 whitespace-pre-wrap rounded bg-white border border-gray-200 p-2 font-sans text-gray-700">
-                {activity.emailBody}
-              </pre>
+              isHtmlBody(activity.emailBody) ? (
+                <div
+                  className="mt-2 rounded bg-white border border-gray-200 p-3 text-sm text-gray-700 email-body-preview"
+                  dangerouslySetInnerHTML={{ __html: activity.emailBody }}
+                />
+              ) : (
+                <pre className="mt-2 whitespace-pre-wrap rounded bg-white border border-gray-200 p-2 font-sans text-gray-700">
+                  {activity.emailBody}
+                </pre>
+              )
             )}
           </div>
         )}

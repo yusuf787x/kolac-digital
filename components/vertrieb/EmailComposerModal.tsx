@@ -3,10 +3,20 @@
 import { useState } from 'react';
 import { Timestamp } from 'firebase/firestore';
 import Modal from '@/components/ui/Modal';
+import RichTextEditor from './RichTextEditor';
 import { authedFetch } from '@/lib/api-client';
 import { createActivity } from '@/lib/firestore';
 import { replacePlaceholders } from '@/lib/sales';
 import type { Customer, Deal, EmailTemplate } from '@/lib/types';
+
+/** Klartext mit Zeilenumbrüchen -> simples HTML für den Editor. */
+function plainToHtml(text: string): string {
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return escaped.replace(/\n/g, '<br/>');
+}
 
 interface Props {
   open: boolean;
@@ -45,13 +55,19 @@ export default function EmailComposerModal({
     if (!tpl) return;
     const ctx = { customer, deal };
     setSubject(replacePlaceholders(tpl.subject, ctx));
-    setMessage(replacePlaceholders(tpl.body, ctx));
+    // Vorlagen sind Plaintext in Firestore – für den Rich-Editor umwandeln.
+    setMessage(plainToHtml(replacePlaceholders(tpl.body, ctx)));
   };
+
+  /** Nur sichtbarer Text – verhindert "leere" Nachrichten, die nur aus
+   *  unsichtbaren HTML-Tags bestehen. */
+  const hasContent = (html: string) =>
+    html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!to.trim() || !subject.trim() || !message.trim()) {
+    if (!to.trim() || !subject.trim() || !hasContent(message)) {
       setError('Empfänger, Betreff und Nachricht sind Pflichtfelder.');
       return;
     }
@@ -144,16 +160,16 @@ export default function EmailComposerModal({
 
         <div>
           <label className="label">Nachricht</label>
-          <textarea
-            className="input font-mono text-[13px]"
-            rows={12}
+          <RichTextEditor
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={setMessage}
+            placeholder="Schreibe deine Nachricht… (Bilder kannst du direkt per Einfügen aus der Zwischenablage reinziehen)"
           />
         </div>
 
         <p className="text-xs text-gray-500">
-          Absender: yusuf@kolac-digital.de
+          Absender: yusuf@kolac-digital.de · Signatur (mit Logo &amp; Foto) wird
+          automatisch unten angehängt.
         </p>
 
         <div className="flex justify-end gap-2 pt-2">

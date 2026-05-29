@@ -8,32 +8,64 @@ const REPLY_TO = 'yusuf@kolac-digital.de';
 // CSS-Text als sichtbaren Inhalt rendern.
 const baseStyles = `font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0a0a0a; line-height: 1.6; font-size: 15px;`;
 
-// Optionaler Pfad/URL zum Logo in der Signatur. Wenn nicht gesetzt, wird
-// nur die Text-Signatur ohne Bild gerendert.
-const LOGO_URL = process.env.EMAIL_LOGO_URL ?? '';
+/**
+ * Resolves die Basis-URL der gehosteten App, damit Bilder in der Signatur
+ * vom Mailclient des Empfängers geladen werden können.
+ *
+ *  - APP_BASE_URL              manuelle Override (z.B. "https://app.kolac-digital.de")
+ *  - NEXT_PUBLIC_APP_URL       gängiger Convention-Name
+ *  - VERCEL_PROJECT_PRODUCTION_URL  kanonische Prod-URL auf Vercel
+ *  - VERCEL_URL                aktuelle Deployment-URL auf Vercel
+ */
+function appBaseUrl(): string {
+  if (process.env.APP_BASE_URL) return process.env.APP_BASE_URL;
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return '';
+}
 
 /**
- * HTML-Signaturblock – wird unter jede Vertriebs-E-Mail gehängt.
+ * HTML-Signaturblock – wird unter jede Vertriebs-E-Mail gehängt. Zeigt
+ * Profilbild + Logo links, formatierte Kontaktdaten rechts.
  */
 function signatureHtml(): string {
-  const logoCell = LOGO_URL
-    ? `<td style="vertical-align: top; padding-right: 18px;">
-        <img src="${LOGO_URL}" alt="Kolac Digital" width="80" style="display:block; border:0; width:80px; height:auto;" />
+  const base = appBaseUrl();
+  const photoUrl = base ? `${base}/email/yk.png` : '';
+  const logoUrl = base ? `${base}/email/logo.png` : '';
+
+  const imageCell = base
+    ? `<td style="vertical-align: top; padding-right: 22px; width: 120px;">
+        <img src="${photoUrl}" alt="Yusuf Kolac" width="110" style="display:block; border:0; width:110px; height:auto; border-radius: 8px;" />
+        <img src="${logoUrl}" alt="Kolac Digital" width="110" style="display:block; border:0; width:110px; height:auto; margin-top: 14px;" />
       </td>`
     : '';
+
   return `
-<table cellpadding="0" cellspacing="0" border="0" style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.5; color: #0a0a0a;">
+<table cellpadding="0" cellspacing="0" border="0" style="margin-top: 28px; padding-top: 18px; border-top: 1px solid #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.55; color: #0a0a0a;">
   <tr>
-    ${logoCell}
+    ${imageCell}
     <td style="vertical-align: top;">
-      <div style="font-weight: 600; font-size: 15px;">Yusuf Kolac</div>
-      <div style="color: #6b7280;">Geschäftsführer</div>
-      <div style="margin-top: 8px;">☎&nbsp;&nbsp;+49 176 95762018</div>
-      <div>✉&nbsp;&nbsp;<a href="mailto:yusuf@kolac-digital.de" style="color:#2563eb; text-decoration:none;">yusuf@kolac-digital.de</a></div>
-      <div>🌐&nbsp;&nbsp;<a href="https://www.kolac-digital.de" style="color:#2563eb; text-decoration:none;">www.kolac-digital.de</a></div>
-      <div style="margin-top: 12px; font-weight: 600;">Kolac Digital</div>
-      <div style="color: #6b7280;">Webseiten · Google- &amp; Meta Ads</div>
-      <div style="color: #6b7280;">Social Media · Digitalisierung</div>
+      <div>Beste Grüße</div>
+      <div style="font-weight: 600; font-size: 16px; margin-top: 2px;">Yusuf Kolac</div>
+
+      <div style="margin-top: 14px;">
+        <div style="font-weight: 600;">Kolac Digital</div>
+        <div>Mobil:&nbsp;<a href="tel:+4917695762018" style="color:#0a0a0a; text-decoration:none;">+49 176 95762018</a></div>
+        <div><a href="mailto:yusuf@kolac-digital.de" style="color:#2563eb; text-decoration:none;">yusuf@kolac-digital.de</a></div>
+        <div><a href="https://www.kolac-digital.de" style="color:#2563eb; text-decoration:none;">www.kolac-digital.de</a></div>
+      </div>
+
+      <div style="margin-top: 14px; color: #6b7280; font-size: 13px;">
+        <div><strong style="color:#0a0a0a;">Kolac Digital</strong></div>
+        <div>Geschäftsführer</div>
+        <div>Beckhausstraße 108</div>
+        <div>33611 Bielefeld</div>
+        <div>Yusuf Kolac</div>
+        <div style="margin-top: 4px;">Webseiten · Google- &amp; Meta Ads · Social Media · Digitalisierung</div>
+      </div>
     </td>
   </tr>
 </table>`;
@@ -42,16 +74,53 @@ function signatureHtml(): string {
 /** Plaintext-Signatur (für den text/plain-Teil der E-Mail). */
 const SIGNATURE_TEXT = [
   '--',
+  'Beste Grüße',
   'Yusuf Kolac',
-  'Geschäftsführer',
-  '☎  +49 176 95762018',
-  '✉  yusuf@kolac-digital.de',
-  '🌐  www.kolac-digital.de',
   '',
   'Kolac Digital',
-  'Webseiten · Google- & Meta Ads',
-  'Social Media · Digitalisierung',
+  'Mobil: +49 176 95762018',
+  'yusuf@kolac-digital.de',
+  'www.kolac-digital.de',
+  '',
+  'Kolac Digital',
+  'Geschäftsführer',
+  'Beckhausstraße 108',
+  '33611 Bielefeld',
+  'Yusuf Kolac',
+  'Webseiten · Google- & Meta Ads · Social Media · Digitalisierung',
 ].join('\n');
+
+/** Best-effort HTML -> Text Konvertierung für den text/plain Teil. */
+function htmlToPlain(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|h[1-6])>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '• ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * Markiert einen Body als "HTML" (vom Rich-Text-Editor) vs. "Plain"
+ * (Backward-Compat für alte Aufrufe). Plain-Text wird in <br/>-Form
+ * umgewandelt, HTML bleibt unverändert.
+ */
+function ensureHtmlBody(body: string): string {
+  const looksLikeHtml = /<\/?[a-z][^>]*>/i.test(body);
+  if (looksLikeHtml) return body;
+  return body
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br/>');
+}
 
 export function buildInvoiceEmail(opts: {
   customerName: string;
@@ -102,14 +171,12 @@ export function buildDealEmail(opts: {
 }): { from: string; replyTo: string; subject: string; html: string; text: string } {
   const { subject, body } = opts;
 
-  const escaped = body
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-  const htmlBody = escaped.replace(/\n/g, '<br/>');
-
+  const htmlBody = ensureHtmlBody(body);
   const html = `<div style="${baseStyles}">${htmlBody}${signatureHtml()}</div>`;
-  const text = `${body}\n\n${SIGNATURE_TEXT}`;
+
+  // Plaintext-Variante – HTML wird best-effort runtergebrochen.
+  const plainBody = /<\/?[a-z][^>]*>/i.test(body) ? htmlToPlain(body) : body;
+  const text = `${plainBody}\n\n${SIGNATURE_TEXT}`;
 
   return { from: FROM_EMAIL, replyTo: REPLY_TO, subject, html, text };
 }
