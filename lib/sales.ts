@@ -157,6 +157,9 @@ export const TEMPLATE_PLACEHOLDERS: { token: string; description: string }[] = [
 // SEED-VORLAGEN (beim ersten Setup anlegen)
 // ===================================================================
 
+// Hinweis: Die Signatur (Kontaktdaten + Firmen-Footer) wird automatisch von
+// buildDealEmail() unter jede ausgehende Mail gehängt – deshalb enden diese
+// Vorlagen-Bodies nur bei der Grußformel.
 export const SEED_TEMPLATES: { name: string; subject: string; body: string }[] =
   [
     {
@@ -171,10 +174,7 @@ Wir unterstützen kleine und mittelständische Unternehmen mit professionellen W
 Hätten Sie in den nächsten Tagen Zeit für ein kurzes, unverbindliches Gespräch?
 
 Herzliche Grüße
-Yusuf Kolac
-Kolac Digital
-+49 176 95762018
-www.kolac-digital.de`,
+Yusuf Kolac`,
     },
     {
       name: 'Follow-up Erstgespräch',
@@ -186,9 +186,7 @@ vielen Dank für das angenehme Gespräch. Wie besprochen sende ich Ihnen in den 
 Bei Fragen stehe ich Ihnen jederzeit zur Verfügung.
 
 Herzliche Grüße
-Yusuf Kolac
-Kolac Digital
-+49 176 95762018`,
+Yusuf Kolac`,
     },
     {
       name: 'Angebot Nachfass',
@@ -198,8 +196,6 @@ Kolac Digital
 ich wollte kurz nachfragen, ob Sie bereits Gelegenheit hatten, sich unser Angebot anzuschauen. Gerne bespreche ich offene Fragen mit Ihnen.
 
 Herzliche Grüße
-Yusuf Kolac
-Kolac Digital
-+49 176 95762018`,
+Yusuf Kolac`,
     },
   ];
