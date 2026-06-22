@@ -472,6 +472,16 @@ textarea {
   .floating-elements {
     display: none;
   }
+
+  /* Mobile Hero: kein vertikales Zentrieren, sonst überlappt der
+     Content bei align-items: center die Padding-Zone und rutscht
+     unter die fixe Navbar. flex-start sorgt dafür, dass padding-top
+     wirklich Abstand schafft. */
+  .hero {
+    align-items: flex-start;
+    padding-top: 160px;
+    min-height: auto;
+  }
 }
 
 .float-el {
