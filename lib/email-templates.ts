@@ -181,6 +181,53 @@ export function buildDealEmail(opts: {
   return { from: FROM_EMAIL, replyTo: REPLY_TO, subject, html, text };
 }
 
+/**
+ * Benachrichtigung für neue Anfragen aus dem Kontaktformular auf
+ * /webseiten. Wird an yusuf@kolac-digital.de gesendet.
+ */
+export function buildContactNotificationEmail(opts: {
+  name: string;
+  phone: string;
+  email: string;
+  message: string;
+  source: string;
+}): { from: string; replyTo: string; subject: string; html: string; text: string } {
+  const { name, phone, email, message, source } = opts;
+  const safe = (s: string) =>
+    s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  const subject = `Neue Anfrage von ${name || 'Unbekannt'} (${source})`;
+
+  const html = `<div style="${baseStyles}">
+    <p>Neue Anfrage über das Kontaktformular.</p>
+    <table cellpadding="6" cellspacing="0" border="0" style="border-collapse: collapse; margin: 12px 0;">
+      <tr><td style="color:#6b7280;">Name</td><td><strong>${safe(name)}</strong></td></tr>
+      <tr><td style="color:#6b7280;">Telefon</td><td><a href="tel:${safe(phone)}" style="color:#2563eb;">${safe(phone)}</a></td></tr>
+      <tr><td style="color:#6b7280;">E-Mail</td><td><a href="mailto:${safe(email)}" style="color:#2563eb;">${safe(email)}</a></td></tr>
+      <tr><td style="color:#6b7280;">Quelle</td><td>${safe(source)}</td></tr>
+    </table>
+    ${message ? `<p style="color:#6b7280; margin-bottom:6px;">Nachricht</p><div style="background:#f9fafb; border-left:3px solid #2563eb; padding:10px 12px; border-radius:4px;">${safe(message).replace(/\n/g, '<br/>')}</div>` : ''}
+    <p style="margin-top:18px; color:#6b7280; font-size:13px;">Antworte direkt auf diese Mail oder rufe an.</p>
+  </div>`;
+
+  const text = [
+    'Neue Anfrage über das Kontaktformular.',
+    '',
+    `Name: ${name}`,
+    `Telefon: ${phone}`,
+    `E-Mail: ${email}`,
+    `Quelle: ${source}`,
+    '',
+    message ? `Nachricht:\n${message}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return { from: FROM_EMAIL, replyTo: email || REPLY_TO, subject, html, text };
+}
+
 export function buildReminderEmail(opts: {
   customerName: string;
   invoiceNumber: string;
