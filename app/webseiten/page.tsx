@@ -365,9 +365,9 @@ function Hero() {
                 />
               </div>
 
-              {/* Schwebendes Dashboard-Mockup als Backend-Symbol */}
+              {/* Schwebendes Dashboard-Mockup als Backend-Symbol — nur Desktop */}
               <div
-                className="pointer-events-none absolute -bottom-10 -left-8 z-10 w-40 drop-shadow-2xl animate-float-slow sm:-bottom-12 sm:-left-12 sm:w-56 lg:w-64"
+                className="pointer-events-none absolute -bottom-12 -left-12 z-10 hidden w-56 drop-shadow-2xl animate-float-slow lg:block lg:w-64"
                 aria-hidden
               >
                 <Image
