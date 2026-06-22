@@ -937,6 +937,35 @@ textarea {
   transition: transform 0.2s ease;
 }
 
+.about-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+  padding: 14px 28px;
+  background: var(--color-blue);
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.25);
+}
+
+.about-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 113, 227, 0.35);
+}
+
+.about-cta-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.about-cta-btn:hover svg {
+  transform: translateX(4px);
+}
+
 .leistungen-extra {
   text-align: center;
   padding: 56px 40px;
@@ -2312,6 +2341,11 @@ textarea {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  /* Featured Service Card spannt die volle Breite */
+  .service-card-featured {
+    grid-column: 1 / -1;
+  }
+
   /* About */
   .about {
     padding: 80px 0;
@@ -2486,7 +2520,7 @@ textarea {
   }
 
   .services-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 28px;
   }
 

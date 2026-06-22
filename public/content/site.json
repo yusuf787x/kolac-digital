@@ -6,92 +6,95 @@
   "hero": {
     "rotatingHeadlines": [
       "Webseiten, die für dein Geschäft arbeiten.",
-      "Software, die sich dir anpasst — nicht andersrum.",
+      "Software, die sich dir anpasst. Nicht andersrum.",
       "Vorne Webseite. Hinten dein System."
     ],
-    "subline": "Wir bauen Webseiten mit System, die dir im Arbeitsalltag den Rücken freihalten. Vorne professionell und bei Google ganz oben. Hinten ein Backend, das wir individuell auf dein Geschäft zuschneiden — kein Baukasten, kein 'mach es so wie alle anderen'. Sondern ein Werkzeug, das deinem Takt folgt.",
+    "subline": "Wir bauen Webseiten mit System, die dir im Arbeitsalltag den Rücken freihalten. Vorne professionell und bei Google ganz oben. Hinten ein Backend, das wir individuell auf dein Geschäft zuschneiden. Kein Baukasten, kein 'mach es so wie alle anderen'. Sondern ein Werkzeug, das deinem Takt folgt.",
     "buttonPrimary": "Projekt starten",
     "buttonSecondary": "Unsere Arbeit"
   },
   "leistungen": {
     "label": "LEISTUNGEN",
     "headline": "Was wir für dich tun",
-    "intro": "Eine Webseite ist heute mehr als ein digitales Schaufenster — sie kann dein Werkzeug für den Alltag sein. Vorne stark, hinten individuell auf dein Geschäft zugeschnitten. Plus Google Ads und Videocontent, wenn deine Basis steht und du in die Breite skalieren willst.",
+    "intro": "Eine Webseite ist heute mehr als ein digitales Schaufenster. Sie kann dein Werkzeug für den Alltag sein. Vorne stark, hinten individuell auf dein Geschäft zugeschnitten. Plus Google Ads und Videocontent, wenn deine Basis steht und du in die Breite skalieren willst.",
     "services": [
       {
         "title": "Webseiten mit System",
         "icon": "monitor",
-        "description": "Vorne ein Auftritt, der bei Google rankt. Hinten ein Backend, das wir für deinen Betrieb maßschneidern. Anfragen, Termine, Angebote, Berichte — die Software passt sich an dich an, nicht umgekehrt.",
+        "featured": true,
+        "description": "Vorne ein Auftritt, der bei Google rankt. Hinten ein Backend, das wir für deinen Betrieb maßschneidern. Anfragen, Termine, Angebote, Berichte. Die Software passt sich an dich an, nicht umgekehrt.",
         "features": [
-          "Conversion-starkes Frontend mit SEO",
-          "Anfragen-Verwaltung im Backend",
+          "Starkes Frontend mit SEO ab Tag eins",
+          "Verwaltung der Anfragen im Backend",
           "Termine, Buchungen und Bestellungen automatisch",
           "Angebote und Rechnungen aus dem System",
           "Dashboard mit deinen wichtigsten Zahlen",
           "Individuell auf deinen Betrieb zugeschnitten"
         ],
         "link": "/webseiten",
-        "linkText": "Mehr zu Webseiten"
+        "linkText": "Mehr zu Webseiten mit System"
       },
       {
-        "title": "Google & Meta Ads",
+        "title": "Google und Meta Ads",
         "icon": "search",
         "description": "Wenn deine Webseite steht und Anfragen reinholt, helfen wir dir auch bei der bezahlten Sichtbarkeit. Damit du nicht warten musst, bis organisch was passiert.",
         "features": [
-          "Google Suchkampagnen & Shopping",
-          "Meta Ads (Facebook & Instagram)",
-          "Conversion-Tracking sauber aufgesetzt",
+          "Google Suchkampagnen und Shopping",
+          "Meta Ads für Facebook und Instagram",
+          "Conversion Tracking sauber aufgesetzt",
           "Laufende Optimierung"
         ]
       },
       {
-        "title": "Videocontent & Social Media",
+        "title": "Videocontent und Social Media",
         "icon": "video",
         "description": "Kurzvideos, die Aufmerksamkeit erzeugen. Vor allem dann, wenn deine Webseite und deine Prozesse schon laufen und du in die Breite skalieren willst.",
         "features": [
-          "Reels, TikToks & Shorts",
-          "Skripte & Konzeption",
-          "Dreh & Postproduktion"
+          "Reels, TikToks und Shorts",
+          "Skripte und Konzeption",
+          "Dreh und Postproduktion"
         ]
       }
     ],
-    "extra": "Und wenn du sonst noch was brauchst — Logos, Flyer, Produktfotografie — bekommst du das auch. Unser Schwerpunkt liegt aber klar auf Webseiten mit System."
+    "extra": "Und wenn du sonst noch was brauchst, etwa Logos, Flyer oder Produktfotografie, bekommst du das auch. Unser Schwerpunkt liegt aber klar auf Webseiten mit System."
   },
   "about": {
     "label": "ÜBER UNS",
     "headline": "Warum Webseiten mit System?",
     "image": "images/yk.webp",
     "text": [
-      "Eine Beobachtung hat alles verändert. Die meisten Unternehmer sind richtig gut in dem, was sie tun. Aber das Drumherum frisst sie auf — Anfragen werden im E-Mail-Postfach vergessen, Termine geraten durcheinander, Rechnungen schreiben sich nicht von selbst, am Monatsende fehlt der Überblick über Einnahmen und Ausgaben. Und die fertige Software, die das lösen soll? Zwingt einen oft in Prozesse, die nicht zum eigenen Geschäft passen. Statt zu helfen, wird das Werkzeug zur Bremse.",
-      "Genau hier setzen wir an. Wir bauen Webseiten, die mehr sind als ein digitales Schaufenster — wir bauen Werkzeuge für den Arbeitsalltag. Vorne präsentiert sich dein Geschäft professionell, rankt bei Google für die richtigen Suchbegriffe und holt Anfragen rein. Hinten arbeitet ein Backend, das wir individuell auf deinen Betrieb zuschneiden. Wie ein Maßanzug — die Software passt sich dir an, nicht du dich der Software.",
-      "Wie das konkret aussieht? Da gibt es kein Schema F. Für ein Restaurant bauen wir eine interaktive Speisekarte mit eigener Bestellfunktion — du sparst die 30 Prozent, die Lieferplattformen sich nehmen. Für eine Werkstatt einen Konfigurator, der Anfragen direkt mit Foto aufs Tablet bringt. Für einen Dienstleister ein Dashboard mit Umsatz, Gewinn, offenen Posten und automatischer Rechnungserstellung. Für einen Friseur ein Buchungssystem, das auch im Salon auf dem Tablet läuft. Es gibt kein Unternehmen, das nicht von so einem System profitiert. Auf welche Art genau, finden wir in einem Gespräch heraus.",
-      "Neben Webseiten mit System machen wir auch Google Ads und Videocontent für Social Media. Das ist aber der kleinere Teil unserer Arbeit. Unser Schwerpunkt sind individuell gebaute digitale Werkzeuge — aus Bielefeld für Firmen in OWL, Nordrhein-Westfalen und ganz Deutschland."
+      "Eine Beobachtung hat alles verändert. Die meisten Unternehmer sind richtig gut in ihrem Geschäft. Aber das Drumherum frisst sie auf. Anfragen verschwinden im Postfach, Termine geraten durcheinander, am Monatsende fehlt der Überblick. Statt zu helfen, wird die fertige Software zur Bremse.",
+      "Genau hier setzen wir an. Wir bauen Webseiten, die mehr sind als ein Schaufenster. Vorne ein professioneller Auftritt. Hinten ein Backend, das wir wie einen Maßanzug auf deinen Betrieb zuschneiden. Die Software passt sich dir an, nicht andersrum."
     ],
     "tags": [
       "Webseiten mit System",
       "Individuell zugeschnitten",
       "Direkter Draht zum Inhaber",
       "Faire Preise"
-    ]
+    ],
+    "cta": {
+      "text": "Mehr zu Webseiten mit System",
+      "link": "/webseiten"
+    }
   },
   "referenzen": {
     "label": "UNSERE ARBEIT",
     "headline": "Ergebnisse, die sprechen",
-    "subline": "Ausgewählte Projekte – mit echten Ergebnissen.",
+    "subline": "Ausgewählte Projekte mit echten Ergebnissen.",
     "projects": [
       {
         "company": "Bacara Ästhetik",
-        "tag": "Webseite & Social Media",
+        "tag": "Webseite und Social Media",
         "mockupType": "both",
         "mockupImage": "images/bacara-website.webp",
         "mockupImagePhone": "images/bacara-social.webp",
         "services": [
-          "Webseite mit Online-Buchungssystem",
-          "Sprechstundenzeiten mit Live-Update",
+          "Webseite mit Onlinebuchungssystem",
+          "Sprechstundenzeiten in Echtzeit gepflegt",
           "Automatische Rechnungsstellung",
           "Kundengewinnung durch Social Media"
         ],
-        "keyWin": "800+ Termine gebucht über die Webseite – Tendenz steigend.",
+        "keyWin": "800+ Termine gebucht über die Webseite. Tendenz steigend.",
         "link": "https://www.bacara-aesthetik.de",
         "linkText": "Website ansehen",
         "linkIcon": "website",
@@ -109,7 +112,7 @@
           "Ideen, Filmen, Schneiden, Posten",
           "Kunde fokussiert sich aufs Kerngeschäft"
         ],
-        "keyWin": "Durch TikTok erfolgreich Autos vermittelt – organische Reichweite direkt in echte Verkäufe umgewandelt.",
+        "keyWin": "Durch TikTok erfolgreich Autos vermittelt. Organische Reichweite direkt in echte Verkäufe umgewandelt.",
         "link": null,
         "linkText": null,
         "socialLink": "https://www.tiktok.com/@mkautomobileherford",
@@ -118,45 +121,45 @@
       },
       {
         "company": "Mironi",
-        "tag": "Onlineshop & Marketing",
+        "tag": "Onlineshop und Marketing",
         "mockupType": "browser",
         "mockupImage": "images/mironi-website.webp",
         "services": [
-          "E-Commerce Shop mit Bestellstatus-Mails",
+          "Onlineshop mit Mails zum Bestellstatus",
           "Automatisierte Mailkampagnen",
-          "Google Ads, Meta Ads & Social Media"
+          "Google Ads, Meta Ads und Social Media"
         ],
-        "keyWin": "Marketing komplett ausgelagert – mehr Zeit fürs Strategische, weniger Stress.",
+        "keyWin": "Marketing komplett ausgelagert. Mehr Zeit fürs Strategische, weniger Stress.",
         "link": "https://mironi.de",
         "linkText": "Shop ansehen",
         "linkIcon": "shop"
       },
       {
         "company": "AF-Gebäudeservice",
-        "tag": "Webseite & Digitalisierung",
+        "tag": "Webseite und Digitalisierung",
         "mockupType": "browser",
         "mockupImage": "images/AF-Gebäudeservice.webp",
         "services": [
           "Professioneller Webauftritt von Grund auf",
-          "Digitales Anfrage- & Angebotsformular",
+          "Digitales Anfrage und Angebotsformular",
           "Google My Business Optimierung",
-          "Lokale SEO & strukturierte Unternehmensdarstellung"
+          "Lokale SEO und strukturierte Unternehmensdarstellung"
         ],
-        "keyWin": "Anfragen laufen jetzt digital rein – kein verpasster Auftrag mehr durch fehlende Erreichbarkeit.",
+        "keyWin": "Anfragen laufen jetzt digital rein. Kein verpasster Auftrag mehr durch fehlende Erreichbarkeit.",
         "link": "https://www.af-gebaeudeservice.de",
         "linkText": "Website ansehen",
         "linkIcon": "website"
       },
       {
         "company": "Die Marke Yuma",
-        "tag": "Social Media & App",
+        "tag": "Social Media und App",
         "mockupType": "phone-app",
         "mockupImage": "images/yuma-tiktok.webp",
         "mockupImageApp": "images/yumaplay-icon.webp",
         "services": [
-          "TikTok Entertainment-Kanal aufgebaut & skaliert",
-          "YumaPlay Quiz-App selbst entwickelt & im App Store veröffentlicht",
-          "Community-Aufbau durch interaktiven & viralen Content"
+          "TikTok Entertainment Kanal aufgebaut und skaliert",
+          "YumaPlay Quiz App selbst entwickelt und im App Store veröffentlicht",
+          "Community Aufbau durch interaktiven und viralen Content"
         ],
         "keyWin": "Über 90.000.000 Aufrufe, 4.700.000 Likes und 40.000 Abonnenten generiert.",
         "link": "https://yusuf787x.github.io/yumaplay-web/",
@@ -168,16 +171,16 @@
       },
       {
         "company": "CarHiFi Herford",
-        "tag": "Webseite & Social Media",
+        "tag": "Webseite und Social Media",
         "mockupType": "both",
         "mockupImage": "images/carhifi-herford-website.webp",
         "mockupImagePhone": "images/halim-tiktok.webp",
         "services": [
-          "Webseite mit individuellem Backend & Admin-Dashboard",
-          "Custom Konfigurator für Soundanlagen",
+          "Webseite mit individuellem Backend und eigenem Dashboard",
+          "Konfigurator für Soundanlagen",
           "Anfragen, Komponenten und Fahrzeugbaum zentral verwalten"
         ],
-        "keyWin": "Leadgenerierung +74% – plus ein Backend, das den kompletten Arbeitsalltag des Inhabers organisiert.",
+        "keyWin": "Leadgenerierung plus 74 Prozent. Dazu ein Backend, das den kompletten Arbeitsalltag des Inhabers organisiert.",
         "link": "https://www.carhifi-herford.de/",
         "linkText": "Website ansehen",
         "linkIcon": "website",
@@ -195,31 +198,31 @@
       {
         "name": "Dr. Bugrahan Bacara",
         "company": "Bacara Ästhetik",
-        "quote": "Kolac Digital hat unsere Online-Präsenz komplett transformiert. Die Buchungen über die Website haben sich verdreifacht.",
+        "quote": "Kolac Digital hat unsere Online Präsenz komplett transformiert. Die Buchungen über die Website haben sich verdreifacht.",
         "rating": 5
       },
       {
         "name": "Mert Külah",
         "company": "MK Automobile",
-        "quote": "Endlich jemand, der Social Media versteht. Die Videos bringen echte Kunden – nicht nur Likes.",
+        "quote": "Endlich jemand, der Social Media versteht. Die Videos bringen echte Kunden. Nicht nur Likes.",
         "rating": 5
       },
       {
         "name": "Selim Ö.",
         "company": "Mironi",
-        "quote": "Von der Webseite bis zu Google Ads – alles aus einer Hand. Schnell, zuverlässig und mit echten Ergebnissen.",
+        "quote": "Von der Webseite bis zu Google Ads, alles aus einer Hand. Schnell, zuverlässig und mit echten Ergebnissen.",
         "rating": 5
       },
       {
         "name": "Halim Ö.",
         "company": "CarHiFi Herford",
-        "quote": "Das Backend hält meinen ganzen Tag zusammen. Anfragen, Komponenten, Fahrzeuge — alles an einem Ort. Ich verstehe nicht, wie ich vorher gearbeitet habe.",
+        "quote": "Das Backend hält meinen ganzen Tag zusammen. Anfragen, Komponenten, Fahrzeuge, alles an einem Ort. Ich verstehe nicht, wie ich vorher gearbeitet habe.",
         "rating": 5
       },
       {
         "name": "Alessandro F.",
         "company": "AF-Gebäudeservice",
-        "quote": "Seit der neuen Website kommen Anfragen automatisch rein – kein Anruf mehr nötig. Professionell, schnell und genau das, was wir gebraucht haben.",
+        "quote": "Seit der neuen Website kommen Anfragen automatisch rein. Kein Anruf mehr nötig. Professionell, schnell und genau das, was wir gebraucht haben.",
         "rating": 5
       }
     ]

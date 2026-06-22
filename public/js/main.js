@@ -100,7 +100,8 @@
       grid.innerHTML = '';
       d.services.forEach((service, i) => {
         const card = document.createElement('div');
-        card.className = `service-card reveal reveal-delay-${i + 1}`;
+        const featuredClass = service.featured ? ' service-card-featured' : '';
+        card.className = `service-card reveal reveal-delay-${i + 1}${featuredClass}`;
         const linkHTML = service.link
           ? `<a href="${service.link}" class="service-card-link">${service.linkText || 'Mehr erfahren'} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>`
           : '';
@@ -160,11 +161,15 @@
     if (textContainer) {
       const textHTML = d.text.map(p => `<p>${p}</p>`).join('');
       const tagsHTML = d.tags.map(t => `<span class="about-tag">${t}</span>`).join('');
+      const ctaHTML = d.cta
+        ? `<a href="${d.cta.link}" class="about-cta-btn">${d.cta.text} <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>`
+        : '';
       textContainer.innerHTML = `
         <div class="section-label"><span></span>${d.label}</div>
         <h2 class="section-headline">${d.headline}</h2>
         ${textHTML}
         <div class="about-tags">${tagsHTML}</div>
+        ${ctaHTML}
       `;
     }
   }

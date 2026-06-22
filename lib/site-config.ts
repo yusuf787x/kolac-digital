@@ -1,8 +1,9 @@
 /**
  * Zentrale Konstanten der öffentlichen Marketing-Seite.
  *
- * Texte bewusst simpel gehalten. Keine Bindestriche im Fließtext
- * (E-Mail bleibt mit Bindestrich, das ist die Schreibung). Du-Form.
+ * Texte bewusst simpel gehalten. Keine Bindestriche oder Gedankenstriche
+ * im Fließtext. Ausnahme: Eigennamen (Nordrhein-Westfalen, AF-Gebäudeservice
+ * usw.) und E-Mail. Du-Form.
  */
 
 export const site = {
@@ -127,25 +128,25 @@ export const includedBonuses: IncludedBonus[] = [
     title: 'Professionelle Fotos für deine Firma',
     value: 'Wert ca. 600 €',
     description:
-      'Bei jeder Webseite kommt ein Foto-Shooting vor Ort dazu. Du bekommst hochwertige Bilder für deine Webseite, dein Google-Profil und Social Media. Kein Stock-Foto-Look mehr.',
+      'Bei jeder Webseite kommt ein Fotoshooting vor Ort dazu. Du bekommst hochwertige Bilder für deine Webseite, dein Google Profil und Social Media. Kein Stockfoto Look mehr.',
   },
   {
     icon: 'nfc',
-    title: 'Google-NFC-Tag für mehr Bewertungen',
+    title: 'Google NFC Tag für mehr Bewertungen',
     value: 'Wert ca. 80 €',
     description:
-      'Du bekommst ein Google-NFC-Tag von uns geschenkt. Kunde hält sein Handy dran, ist sofort auf deiner Bewertungsseite. Sammle Bewertungen ganz nebenbei, ohne fragen zu müssen.',
+      'Du bekommst ein Google NFC Tag von uns geschenkt. Kunde hält sein Handy dran, ist sofort auf deiner Bewertungsseite. Sammle Bewertungen ganz nebenbei, ohne fragen zu müssen.',
   },
   {
     icon: 'seo',
-    title: 'SEO-Optimierung von Anfang an',
+    title: 'SEO Optimierung von Anfang an',
     value: 'Wert ca. 500 €',
     description:
-      'Hohes Ranking bei Google für relevante Suchbegriffe rund um dein Unternehmen — ohne dafür extra Werbegeld auszugeben. Wir bauen die Seite so, dass Suchmaschinen sie verstehen und vorne zeigen.',
+      'Hohes Ranking bei Google für relevante Suchbegriffe rund um dein Unternehmen, ohne dafür extra Werbegeld auszugeben. Wir bauen die Seite so, dass Suchmaschinen sie verstehen und vorne zeigen.',
   },
   {
     icon: 'ai',
-    title: 'Auch von ChatGPT und KI-Suchen gefunden',
+    title: 'Auch von ChatGPT und KI Suchen gefunden',
     value: 'Neu im Jahr 2026',
     description:
       'Immer mehr Kunden fragen ChatGPT, Claude oder Google AI nach Empfehlungen. Wir bereiten deine Webseite so vor, dass die KI dich kennt und vorschlägt. Damit bist du den meisten voraus.',
@@ -153,7 +154,7 @@ export const includedBonuses: IncludedBonus[] = [
 ];
 
 // =====================================================================
-// REFERENZEN (echte Projekte aus site.json)
+// REFERENZEN
 // =====================================================================
 
 export type MockupType = 'both' | 'browser' | 'phone';
@@ -177,13 +178,13 @@ export interface Reference {
 export const references: Reference[] = [
   {
     company: 'Bacara Ästhetik',
-    tag: 'Webseite & Social Media',
+    tag: 'Webseite und Social Media',
     mockupType: 'both',
     mockupImage: '/images/bacara-website.webp',
     mockupImagePhone: '/images/bacara-social.webp',
     services: [
-      'Webseite mit Online-Buchungssystem',
-      'Sprechstundenzeiten mit Live-Update',
+      'Webseite mit Onlinebuchungssystem',
+      'Sprechstundenzeiten in Echtzeit gepflegt',
       'Automatische Rechnungsstellung',
       'Kundengewinnung durch Social Media',
     ],
@@ -197,7 +198,7 @@ export const references: Reference[] = [
   },
   {
     company: 'CarHiFi Herford',
-    tag: 'Webseite & Social Media',
+    tag: 'Webseite und Social Media',
     mockupType: 'both',
     mockupImage: '/images/carhifi-herford-website.webp',
     mockupImagePhone: '/images/halim-tiktok.webp',
@@ -206,7 +207,7 @@ export const references: Reference[] = [
       'Konfigurator für Soundanlagen',
       'TikTok Strategie und Umsetzung',
     ],
-    keyWin: 'Leadgenerierung plus 74 Prozent. Dazu starkes Abonnenten-Wachstum.',
+    keyWin: 'Leadgenerierung plus 74 Prozent. Dazu starkes Abonnenten Wachstum.',
     link: 'https://www.carhifi-herford.de',
     linkText: 'Website ansehen',
     linkIcon: 'website',
@@ -216,7 +217,7 @@ export const references: Reference[] = [
   },
   {
     company: 'Mironi',
-    tag: 'Onlineshop & Marketing',
+    tag: 'Onlineshop und Marketing',
     mockupType: 'browser',
     mockupImage: '/images/mironi-website.webp',
     services: [
@@ -232,12 +233,12 @@ export const references: Reference[] = [
   },
   {
     company: 'AF Gebäudeservice',
-    tag: 'Webseite & Digitalisierung',
+    tag: 'Webseite und Digitalisierung',
     mockupType: 'browser',
     mockupImage: '/images/AF-Gebäudeservice.webp',
     services: [
       'Professioneller Webauftritt von Grund auf',
-      'Digitales Anfrage- und Angebotsformular',
+      'Digitales Anfrage und Angebotsformular',
       'Google My Business Optimierung',
       'Lokale SEO und sauberer Aufbau',
     ],
@@ -250,7 +251,7 @@ export const references: Reference[] = [
 ];
 
 // =====================================================================
-// GOOGLE REVIEWS (echte Texte aus dem Screenshot)
+// GOOGLE REVIEWS
 // =====================================================================
 
 export interface Review {
@@ -304,17 +305,17 @@ export const faqs: FaqItem[] = [
   {
     question: 'Was kostet eine Webseite bei euch?',
     answer:
-      'Eine Basis-Webseite startet ab 1.000 € Einrichtung plus ab 99 € im Monat. Im Monatspreis sind Hosting, Wartung und kleine Änderungen direkt mit drin. Du musst dir also nicht für jede Kleinigkeit Sorgen um eine extra Rechnung machen. Den Monatsbeitrag startest du außerdem erst, wenn deine Seite live ist und du grünes Licht gibst. Bis dahin gehst du nicht in Vorleistung. Wenn dein Projekt größer ist, sage ich dir vorher genau was es kostet. Du bekommst nie eine Überraschung auf der Rechnung.',
+      'Eine Basis Webseite startet ab 1.000 € Einrichtung plus ab 99 € im Monat. Im Monatspreis sind Hosting, Wartung und kleine Änderungen direkt mit drin. Du musst dir also nicht für jede Kleinigkeit Sorgen um eine extra Rechnung machen. Den Monatsbeitrag startest du außerdem erst, wenn deine Seite live ist und du grünes Licht gibst. Bis dahin gehst du nicht in Vorleistung. Wenn dein Projekt größer ist, sage ich dir vorher genau was es kostet. Du bekommst nie eine Überraschung auf der Rechnung.',
   },
   {
     question: 'Wie lange dauert das?',
     answer:
-      'Eine Basis-Webseite ist ab dem ersten Kontaktpunkt in der Regel in einer Woche fertig und live. Je nach Auslastung kann das auch mal zwei Wochen dauern. Das klären wir im Gespräch, weil Transparenz für uns wichtig ist. Bei größeren Projekten mit Datenbank oder eigenen Funktionen brauchen wir ein paar Wochen mehr. Wir setzen uns einmal kurz zusammen und planen den Ablauf gemeinsam.',
+      'Eine Basis Webseite ist ab dem ersten Kontaktpunkt in der Regel in einer Woche fertig und live. Je nach Auslastung kann das auch mal zwei Wochen dauern. Das klären wir im Gespräch, weil Transparenz für uns wichtig ist. Bei größeren Projekten mit Datenbank oder eigenen Funktionen brauchen wir ein paar Wochen mehr. Wir setzen uns einmal kurz zusammen und planen den Ablauf gemeinsam.',
   },
   {
     question: 'Kann ich meine alten Daten und Inhalte mitnehmen?',
     answer:
-      'Ja, das machen wir fast immer. Egal ob alte Webseite, alter Online-Shop oder ein Programm das du seit Jahren nutzt. Ich übernehme deine Texte, Bilder, Kundendaten und alles was du behalten möchtest. So fängst du nicht bei Null an und verlierst nichts. Wenn du willst, baue ich auch eine Verbindung zu deinem alten System, damit beides weiterläuft.',
+      'Ja, das machen wir fast immer. Egal ob alte Webseite, alter Onlineshop oder ein Programm das du seit Jahren nutzt. Ich übernehme deine Texte, Bilder, Kundendaten und alles was du behalten möchtest. So fängst du nicht bei Null an und verlierst nichts. Wenn du willst, baue ich auch eine Verbindung zu deinem alten System, damit beides weiterläuft.',
   },
   {
     question: 'Warum nehmt ihr nur 4 Kunden parallel an?',
@@ -324,22 +325,22 @@ export const faqs: FaqItem[] = [
   {
     question: 'Arbeitet ihr nur in OWL oder auch deutschlandweit?',
     answer:
-      'Ich arbeite deutschlandweit. Über die Hälfte meiner Kunden sehe ich nie persönlich. Wir treffen uns online über Video-Call und alles läuft trotzdem reibungslos. Wenn du persönlich Hand schütteln möchtest und in OWL sitzt, komme ich gerne vorbei.',
+      'Ich arbeite deutschlandweit. Über die Hälfte meiner Kunden sehe ich nie persönlich. Wir treffen uns online über Video Call und alles läuft trotzdem reibungslos. Wenn du persönlich Hand schütteln möchtest und in OWL sitzt, komme ich gerne vorbei.',
   },
   {
     question: 'Bekomme ich wirklich kostenlose professionelle Fotos dazu?',
     answer:
-      'Ja. Bei jedem Webseiten-Paket kommt ein Foto-Termin bei dir vor Ort dazu. Wir bringen die Kamera mit und fotografieren dein Team, deine Räume und deine Produkte. Die fertigen Bilder darfst du komplett behalten und auch außerhalb der Webseite nutzen, zum Beispiel für Google, Instagram oder Flyer. Falls du außerhalb von OWL sitzt, sprechen wir kurz über die An- und Abfahrt. Du musst dir kein extra Foto-Shooting für 500 € oder mehr buchen.',
+      'Ja. Bei jedem Webseiten Paket kommt ein Fototermin bei dir vor Ort dazu. Wir bringen die Kamera mit und fotografieren dein Team, deine Räume und deine Produkte. Die fertigen Bilder darfst du komplett behalten und auch außerhalb der Webseite nutzen, zum Beispiel für Google, Instagram oder Flyer. Falls du außerhalb von OWL sitzt, sprechen wir kurz über die Anfahrt. Du musst dir kein extra Fotoshooting für 500 € oder mehr buchen.',
   },
   {
-    question: 'Was bringt mir das Google-NFC-Tag genau?',
+    question: 'Was bringt mir das Google NFC Tag genau?',
     answer:
-      'Das NFC-Tag ist eine kleine Plakette für deinen Tresen oder dein Auto. Dein Kunde hält sein Handy einmal dran und landet sofort auf deiner Google-Bewertungsseite. Keine Suche, kein Eintippen. Mehr Bewertungen bedeuten bei Google ein besseres Ranking und mehr Vertrauen bei neuen Kunden. Das Tag bekommst du von uns geschenkt, wenn du eine Webseite bei uns baust.',
+      'Das NFC Tag ist eine kleine Plakette für deinen Tresen oder dein Auto. Dein Kunde hält sein Handy einmal dran und landet sofort auf deiner Google Bewertungsseite. Keine Suche, kein Eintippen. Mehr Bewertungen bedeuten bei Google ein besseres Ranking und mehr Vertrauen bei neuen Kunden. Das Tag bekommst du von uns geschenkt, wenn du eine Webseite bei uns baust.',
   },
   {
     question: 'Werde ich bei Google und auch bei ChatGPT gefunden?',
     answer:
-      'Genau dafür sorgen wir. Wir bauen deine Seite technisch so, dass Google sie leicht lesen kann und für relevante Suchbegriffe rund um dein Geschäft weit oben zeigt. Zusätzlich bereiten wir die Inhalte für die neuen KI-Suchmaschinen wie ChatGPT, Claude und Google AI vor. Diese Systeme empfehlen immer öfter Firmen direkt im Chat, ohne dass jemand klassisch googelt. Wer dafür bereit ist, hat einen riesigen Vorsprung.',
+      'Genau dafür sorgen wir. Wir bauen deine Seite technisch so, dass Google sie leicht lesen kann und für relevante Suchbegriffe rund um dein Geschäft weit oben zeigt. Zusätzlich bereiten wir die Inhalte für die neuen KI Suchmaschinen wie ChatGPT, Claude und Google AI vor. Diese Systeme empfehlen immer öfter Firmen direkt im Chat, ohne dass jemand klassisch googelt. Wer dafür bereit ist, hat einen riesigen Vorsprung.',
   },
   {
     question: 'Was passiert wenn nach dem Start etwas nicht klappt?',
@@ -354,7 +355,7 @@ export const faqs: FaqItem[] = [
 ];
 
 // =====================================================================
-// SERVICE-REGIONEN (lokale Sichtbarkeit + bundesweit)
+// SERVICE-REGIONEN
 // =====================================================================
 
 export const serviceAreas = [

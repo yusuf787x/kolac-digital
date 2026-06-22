@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title:
     'Individuelle Webseiten aus Bielefeld | Kolac Digital für OWL, NRW & deutschlandweit',
   description:
-    'Wir bauen für dich individuelle Webseiten mit System. Inklusive professioneller Fotos, Google-NFC-Tag, SEO und KI-Suchmaschinen-Optimierung. Ab 1.000 €. Nur 4 Projekte parallel.',
+    'Wir bauen für dich individuelle Webseiten mit System. Inklusive professioneller Fotos, Google NFC Tag, SEO und KI Optimierung. Ab 1.000 €. Nur 4 Projekte parallel.',
   alternates: {
     canonical: `${site.baseUrl}/webseiten`,
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     url: `${site.baseUrl}/webseiten`,
     title: 'Individuelle Webseiten aus Bielefeld | Kolac Digital',
     description:
-      'Webseiten die mehr können als nur schön aussehen. Inklusive Fotos, NFC-Tag, SEO und KI-Findability. Ab 1.000 €.',
+      'Webseiten die mehr können als nur schön aussehen. Inklusive Fotos, NFC Tag, SEO und Findability bei KI Suchen. Ab 1.000 €.',
     siteName: 'Kolac Digital',
     images: [
       {
@@ -306,6 +306,114 @@ function Hero() {
   );
 }
 
+function PainSolution() {
+  const painPoints = [
+    'Anfragen verschwinden im E-Mail Postfach',
+    'Termine werden doppelt gebucht oder vergessen',
+    'Angebote und Rechnungen schreiben kostet Stunden',
+    'Am Monatsende kein klarer Blick auf Einnahmen, Ausgaben und Gewinn',
+    'Fertige Software zwingt dich in fremde Prozesse',
+  ];
+
+  const solutionPoints = [
+    'Anfragen landen sortiert in deinem Dashboard',
+    'Kunden buchen Termine selbst, ohne Hin und Her',
+    'Angebote und Rechnungen erstellst du in zwei Klicks',
+    'Live Zahlen zu Umsatz, Gewinn und offenen Posten',
+    'Das System ist auf deinen Betrieb zugeschnitten',
+  ];
+
+  return (
+    <section className="bg-white py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <header className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
+            Das Problem
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+            Kennst du das?
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-gray-600 sm:text-lg">
+            Dein Geschäft läuft gut. Du bist gut in dem, was du tust. Aber
+            das Drumherum frisst dich auf. Du verbringst mehr Zeit mit
+            Verwaltung als mit dem, was du eigentlich machen willst. Und die
+            Software, die das lösen soll, zwingt dich in Prozesse, die
+            einfach nicht zu deinem Betrieb passen.
+          </p>
+        </header>
+
+        <div className="mt-12 grid gap-6 md:grid-cols-2">
+          {/* Vorher */}
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:p-8">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center rounded-full bg-gray-200 px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-700">
+                Vorher
+              </span>
+              <span className="text-sm text-gray-500">Das Chaos</span>
+            </div>
+            <h3 className="mt-4 text-xl font-semibold text-gray-900">
+              So sieht der Alltag in vielen Firmen aus.
+            </h3>
+            <ul className="mt-5 space-y-3">
+              {painPoints.map((p) => (
+                <li key={p} className="flex items-start gap-3">
+                  <span
+                    aria-hidden
+                    className="mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-gray-200 text-xs font-bold text-gray-600"
+                  >
+                    ×
+                  </span>
+                  <span className="text-sm text-gray-700">{p}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Mit System */}
+          <div className="rounded-2xl border-2 border-brand-blue/40 bg-gradient-to-br from-brand-blue/5 to-white p-6 shadow-sm sm:p-8">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center rounded-full bg-brand-blue px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                Mit System
+              </span>
+              <span className="text-sm font-medium text-brand-blue">
+                Der Maßanzug
+              </span>
+            </div>
+            <h3 className="mt-4 text-xl font-semibold text-gray-900">
+              So sieht er aus, wenn deine Webseite ein System dahinter hat.
+            </h3>
+            <ul className="mt-5 space-y-3">
+              {solutionPoints.map((s) => (
+                <li key={s} className="flex items-start gap-3">
+                  <span
+                    aria-hidden
+                    className="mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-brand-blue text-xs font-bold text-white"
+                  >
+                    ✓
+                  </span>
+                  <span className="text-sm text-gray-800">{s}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Brücke zur Lösung */}
+        <div className="mx-auto mt-10 max-w-3xl text-center">
+          <p className="text-base leading-relaxed text-gray-700">
+            Wir bauen Webseiten, die mehr sind als ein Schaufenster. Vorne
+            präsentiert sich dein Geschäft. Hinten arbeitet ein Backend, das
+            wir wie einen Maßanzug auf deinen Betrieb zuschneiden.{' '}
+            <strong className="text-gray-900">
+              Die Software passt sich dir an, nicht andersrum.
+            </strong>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function TrustStrip() {
   return (
     <section className="border-b border-gray-100 bg-white">
@@ -405,7 +513,7 @@ function Leistungen() {
       text: 'Wir bauen die Seite so, dass Google sie versteht und für deine Suchbegriffe vorne zeigt.',
     },
     {
-      title: 'Findbar bei KI-Suchen',
+      title: 'Findbar bei KI Suchen',
       text: 'Auch ChatGPT, Claude und Google AI sollen dich kennen. Wir bereiten die Seite darauf vor.',
     },
     {
@@ -759,7 +867,7 @@ function Pricing() {
           <p className="mt-3 text-base text-gray-600">
             Du siehst hier ab welchem Preis es losgeht. Den genauen Preis
             für dein Projekt sagen wir dir nach dem ersten Gespräch.
-            Foto-Shooting, NFC-Tag und SEO sind in jedem Paket schon mit
+            Fotoshooting, NFC Tag und SEO sind in jedem Paket schon mit
             drin.
           </p>
         </header>
@@ -818,7 +926,7 @@ function Pricing() {
               {p.highlight && (
                 <div className="mt-5 rounded-lg border border-green-200 bg-green-50 p-3">
                   <p className="text-xs font-semibold text-green-900">
-                    Faire Risiko-Umkehr
+                    Faire Risikoumkehr
                   </p>
                   <p className="mt-0.5 text-xs text-green-900">
                     Den Monatsbeitrag startest du erst, wenn die Webseite
@@ -845,7 +953,7 @@ function Pricing() {
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="max-w-xl">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-200/70 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-900">
-                <span>➕</span> Add-On zum Basis-Paket
+                <span>➕</span> Add On zur Basis Webseite
               </span>
               <h3 className="mt-3 text-2xl font-semibold text-gray-900">
                 {bausteinAddOn.name}
@@ -907,7 +1015,7 @@ function Bonuses() {
             Warte … da ist noch mehr.
           </h2>
           <p className="mt-3 text-base text-gray-600">
-            Vier Sachen bekommst du bei jedem Webseiten-Paket automatisch oben
+            Vier Sachen bekommst du bei jeder Webseite automatisch oben
             drauf. Ohne Aufpreis. Im Gesamtwert von über 1.000 €.
           </p>
         </header>
@@ -980,7 +1088,7 @@ function About() {
               ganz Deutschland.
             </p>
             <p className="mt-3 text-base leading-relaxed text-gray-700">
-              Bei mir bekommst du keinen Vertrieb, keinen Account-Manager
+              Bei mir bekommst du keinen Vertrieb, keinen Account Manager
               und keinen Zwischenhändler. Du sprichst direkt mit der Person
               die deine Webseite kennt und gebaut hat. Das spart Zeit, Nerven
               und am Ende auch Geld.
@@ -1127,6 +1235,7 @@ export default function WebseitenPage() {
       <StructuredData />
       <Hero />
       <TrustStrip />
+      <PainSolution />
       <Benefits />
       <Leistungen />
       <Process />
