@@ -465,6 +465,15 @@ textarea {
   pointer-events: none;
 }
 
+/* Floating-Mockups auf Mobile komplett ausblenden — sie kollidieren
+   sonst mit der Headline und machen die Hero-Section auf kleinen
+   Screens unleserlich. Erst ab Tablet (768px) wieder sichtbar. */
+@media (max-width: 767px) {
+  .floating-elements {
+    display: none;
+  }
+}
+
 .float-el {
   position: absolute;
   border-radius: var(--radius);
