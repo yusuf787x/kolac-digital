@@ -4,6 +4,7 @@ import {
   bausteinAddOn,
   faqs,
   includedBonuses,
+  industries,
   packages,
   references,
   reviewHighlights,
@@ -14,9 +15,9 @@ import ContactForm from './ContactForm';
 
 export const metadata: Metadata = {
   title:
-    'Individuelle Webseiten aus Bielefeld | Kolac Digital für OWL, NRW & deutschlandweit',
+    'Webagentur Bielefeld · Webseiten mit System ab 1.500 € | Kolac Digital',
   description:
-    'Wir bauen für dich individuelle Webseiten mit System. Inklusive professioneller Fotos, Google NFC Tag, SEO und KI Optimierung. Ab 1.500 €. Nur 4 Projekte parallel.',
+    'Webagentur aus Bielefeld baut deine Webseite mit System. Vorne SEO-stark bei Google. Hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten. Für KMU in OWL, NRW und ganz Deutschland. Ab 1.500 €.',
   alternates: {
     canonical: `${site.baseUrl}/webseiten`,
   },
@@ -24,41 +25,63 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'de_DE',
     url: `${site.baseUrl}/webseiten`,
-    title: 'Individuelle Webseiten aus Bielefeld | Kolac Digital',
+    title:
+      'Webagentur Bielefeld · Webseiten mit System ab 1.500 € | Kolac Digital',
     description:
-      'Webseiten die mehr können als nur schön aussehen. Inklusive Fotos, NFC Tag, SEO und Findability bei KI Suchen. Ab 1.500 €.',
+      'Webseite mit System aus Bielefeld. Vorne SEO-stark, hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten. Ab 1.500 €.',
     siteName: 'Kolac Digital',
     images: [
       {
         url: '/images/bacara-website.webp',
         width: 1200,
         height: 630,
-        alt: 'Beispiel Webseite von Kolac Digital aus Bielefeld',
+        alt: 'Webagentur Kolac Digital aus Bielefeld baut individuelle Webseiten mit System',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Individuelle Webseiten aus Bielefeld | Kolac Digital',
+    title:
+      'Webagentur Bielefeld · Webseiten mit System ab 1.500 € | Kolac Digital',
     description:
-      'Webseiten und digitale Systeme aus Bielefeld. Schnell, fair und mit Plan.',
+      'Individuelle Webseite mit Backend. Anfragen, Termine, Angebote, Berichte. Aus Bielefeld für KMU in OWL, NRW und ganz Deutschland.',
     images: ['/images/bacara-website.webp'],
   },
   keywords: [
-    'Webseite Bielefeld',
+    'Webagentur Bielefeld',
     'Webseite erstellen Bielefeld',
-    'Webseite OWL',
-    'Webseite Nordrhein-Westfalen',
-    'Webseite Deutschland',
+    'Webseite mit System',
+    'Webseite mit Backend',
     'individuelle Webseite',
     'Webdesign Bielefeld',
-    'Webagentur Bielefeld',
+    'Webentwicklung Bielefeld',
+    'Homepage erstellen Bielefeld',
+    'Internetagentur Bielefeld',
+    'Digitalagentur Bielefeld',
+    'Webagentur OWL',
+    'Webagentur Nordrhein-Westfalen',
+    'Webagentur Deutschland',
+    'Webseite mit Terminbuchung',
+    'Webseite mit Buchungssystem',
+    'Webseite mit Kundenverwaltung',
     'Webseite für Handwerker',
     'Webseite für Restaurants',
     'Webseite für Praxen',
-    'Hosting Bielefeld',
-    'Webseite mit System',
-    'KI-Suchmaschinen-Optimierung',
+    'Webseite für Dienstleister',
+    'Webseite für Coaches',
+    'Webseite für Friseure',
+    'Onlineshop erstellen OWL',
+    'Custom Webentwicklung',
+    'maßgeschneiderte Webseite',
+    'Webdesign Herford',
+    'Webdesign Gütersloh',
+    'Webdesign Paderborn',
+    'Webagentur Minden',
+    'Webagentur Münster',
+    'Webagentur Osnabrück',
+    'KI Suchmaschinen Optimierung',
+    'GEO Optimierung',
+    'Webseite ChatGPT findbar',
   ],
 };
 
@@ -92,6 +115,7 @@ function StructuredData() {
       name: a,
     })),
     founder: { '@type': 'Person', name: site.founder },
+    sameAs: [site.googleReviewsUrl],
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue: site.rating.value,
@@ -181,6 +205,41 @@ function StructuredData() {
     ],
   };
 
+  const howTo = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'So bauen wir deine Webseite mit System',
+    description:
+      'In drei Schritten von der ersten Anfrage zur fertigen Webseite mit individuellem Backend.',
+    totalTime: 'P7D',
+    estimatedCost: {
+      '@type': 'MonetaryAmount',
+      currency: 'EUR',
+      value: 1500,
+    },
+    step: [
+      {
+        '@type': 'HowToStep',
+        position: 1,
+        name: 'Kostenloses Erstgespräch',
+        text: 'Du erzählst uns, woran du arbeitest und was dich im Alltag bremst. Wir sagen dir, wie ein System aussehen kann, das wirklich zu deinem Betrieb passt.',
+        url: `${pageUrl}#kontakt`,
+      },
+      {
+        '@type': 'HowToStep',
+        position: 2,
+        name: 'Individueller Entwurf',
+        text: 'Nach wenigen Tagen siehst du, wie deine Webseite aussehen wird. Du sagst uns, was bleiben soll und was wir anpassen.',
+      },
+      {
+        '@type': 'HowToStep',
+        position: 3,
+        name: 'Live-Gang in einer Woche',
+        text: 'Sobald alles passt, geht deine Seite mit System online. In der Regel eine Woche nach dem ersten Gespräch. Hosting, Wartung und kleine Änderungen laufen weiter.',
+      },
+    ],
+  };
+
   return (
     <>
       <script
@@ -198,6 +257,10 @@ function StructuredData() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howTo) }}
       />
     </>
   );
@@ -253,7 +316,7 @@ function Hero() {
               Aktuell {site.freeSlots} freie Plätze für neue Projekte
             </span>
             <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              Individuelle Webseiten aus {site.city}, die dir Anfragen bringen.
+              Webseite mit System aus {site.city}, die für dein Geschäft arbeitet.
             </h1>
             <p className="mt-5 max-w-xl text-base text-gray-600 sm:text-lg">
               Du bekommst keine Vorlage von der Stange. Du bekommst eine
@@ -1225,6 +1288,122 @@ function Kontakt() {
   );
 }
 
+function Industries() {
+  return (
+    <section className="bg-white py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <header className="max-w-2xl">
+          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
+            Branchen
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+            Webseiten für deine Branche.
+          </h2>
+          <p className="mt-3 text-base text-gray-600">
+            Wir bauen das System auf deinen Betrieb zu. Hier ein paar
+            Beispiele, wie das in verschiedenen Branchen aussieht.
+          </p>
+        </header>
+
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {industries.map((b) => (
+            <article
+              key={b.title}
+              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+            >
+              <div className="text-3xl" aria-hidden>
+                {b.icon}
+              </div>
+              <h3 className="mt-3 text-base font-semibold text-gray-900">
+                {b.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                {b.description}
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <p className="mt-8 text-center text-sm text-gray-600">
+          Deine Branche ist nicht dabei? Kein Problem. Wir bauen das System
+          für jeden Betrieb, der seine Prozesse digital im Griff haben will.
+          <a
+            href="#kontakt"
+            className="ml-2 font-semibold text-brand-blue hover:underline"
+          >
+            Jetzt Erstgespräch sichern →
+          </a>
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function Regions() {
+  const cities = [
+    'Bielefeld',
+    'Herford',
+    'Bünde',
+    'Gütersloh',
+    'Paderborn',
+    'Detmold',
+    'Minden',
+    'Lemgo',
+    'Lippstadt',
+    'Münster',
+    'Osnabrück',
+    'Dortmund',
+    'Hannover',
+    'Hamm',
+  ];
+
+  return (
+    <section className="bg-gray-50 py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <header className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
+            Regionen
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+            Webagentur für OWL, NRW und ganz Deutschland.
+          </h2>
+          <p className="mt-3 text-base text-gray-600">
+            Unser Schwerpunkt liegt in Ostwestfalen-Lippe und Nordrhein-Westfalen.
+            Über die Hälfte unserer Kunden treffen wir aber nie persönlich.
+            Wir bauen Webseiten mit System für Firmen in ganz Deutschland.
+          </p>
+        </header>
+
+        <ul className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-2">
+          {cities.map((c) => (
+            <li key={c}>
+              <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 shadow-sm">
+                <span aria-hidden className="mr-1.5 text-brand-blue">
+                  📍
+                </span>
+                Webagentur {c}
+              </span>
+            </li>
+          ))}
+          <li>
+            <span className="inline-flex items-center rounded-full border border-brand-blue/30 bg-brand-blue/5 px-4 py-1.5 text-sm font-medium text-brand-blue shadow-sm">
+              <span aria-hidden className="mr-1.5">
+                🇩🇪
+              </span>
+              Webagentur deutschlandweit
+            </span>
+          </li>
+        </ul>
+
+        <p className="mt-8 text-center text-sm text-gray-500">
+          Du kommst von woanders her? Kein Problem. Wir arbeiten remote über
+          Video Call mit Kunden in ganz Deutschland.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 // =====================================================================
 // Seite
 // =====================================================================
@@ -1237,6 +1416,7 @@ export default function WebseitenPage() {
       <TrustStrip />
       <PainSolution />
       <Benefits />
+      <Industries />
       <Leistungen />
       <Process />
       <References />
@@ -1244,6 +1424,7 @@ export default function WebseitenPage() {
       <Pricing />
       <Bonuses />
       <About />
+      <Regions />
       <Faq />
       <Kontakt />
     </>

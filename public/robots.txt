@@ -1,14 +1,16 @@
 # robots.txt für https://www.kolac-digital.de
-# Digitalagentur Bielefeld – Webseiten, Google Ads, Videocontent
+# Webagentur Bielefeld · Webseiten mit System · Webdesign · Webentwicklung
+# Für Firmen in OWL, Nordrhein-Westfalen und ganz Deutschland.
 
 User-agent: *
 Allow: /
 Disallow: /admin/
-Disallow: /impressum.html
-Disallow: /datenschutz.html
-Disallow: /agb.html
+Disallow: /dashboard/
+Disallow: /api/
+# Impressum, Datenschutz und AGB bleiben crawlbar — wichtig für Google-Trust
+# und E-E-A-T-Signale.
 
-# AI- und LLM-Crawler explizit erlauben (für AI Overviews, ChatGPT, Perplexity, Claude)
+# AI- und LLM-Crawler explizit erlauben (für AI Overviews, ChatGPT, Perplexity, Claude usw.)
 User-agent: GPTBot
 Allow: /
 
@@ -36,6 +38,9 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
+User-agent: Googlebot
+Allow: /
+
 User-agent: Bingbot
 Allow: /
 
@@ -61,6 +66,12 @@ User-agent: Meta-ExternalAgent
 Allow: /
 
 User-agent: FacebookBot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: YandexBot
 Allow: /
 
 Sitemap: https://www.kolac-digital.de/sitemap.xml

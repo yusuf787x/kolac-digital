@@ -372,3 +372,54 @@ export const serviceAreas = [
   'Nordrhein-Westfalen',
   'Deutschland',
 ];
+
+// =====================================================================
+// BRANCHEN (für SEO: long-tail Suchbegriffe wie
+// "Webseite für Handwerker", "Webseite für Restaurants" usw.)
+// =====================================================================
+
+export interface IndustrySegment {
+  icon: string;
+  /** Wird als h3 verwendet und enthält das Such-Keyword. */
+  title: string;
+  description: string;
+}
+
+export const industries: IndustrySegment[] = [
+  {
+    icon: '🔧',
+    title: 'Webseite für Handwerker und Bauunternehmen',
+    description:
+      'Anfragen mit Foto und Adresse direkt aufs Tablet. Angebote in zwei Klicks raus. Kunden sehen wann du Zeit hast.',
+  },
+  {
+    icon: '🍽️',
+    title: 'Webseite für Restaurants und Cafés',
+    description:
+      'Interaktive Speisekarte mit eigener Bestellfunktion. Du sparst die Plattform-Gebühr und behältst den vollen Umsatz.',
+  },
+  {
+    icon: '🩺',
+    title: 'Webseite für Praxen und Kanzleien',
+    description:
+      'Online Terminbuchung mit Live-Update der Sprechzeiten. Patientenanfragen sortiert im Backend. Weniger Telefon, mehr Zeit am Patienten.',
+  },
+  {
+    icon: '🛒',
+    title: 'Webseite für Onlineshops und Händler',
+    description:
+      'Shop mit automatischen Bestellstatus-Mails. Anbindung an dein Warenwirtschaftssystem. Verkaufs-Dashboard für den Überblick.',
+  },
+  {
+    icon: '💇',
+    title: 'Webseite für Friseure und Beauty',
+    description:
+      'Salon-Buchungssystem auf dem Tablet. Kunden buchen selbst. Du siehst auf einen Blick was heute ansteht.',
+  },
+  {
+    icon: '🎯',
+    title: 'Webseite für Coaches und Berater',
+    description:
+      'Verkaufsseite mit klarem Angebot. Buchungssystem für Erstgespräche. Automatische Onboarding-Mails an neue Kunden.',
+  },
+];

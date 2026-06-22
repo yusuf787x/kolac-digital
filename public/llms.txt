@@ -1,8 +1,8 @@
 # Kolac Digital
 
-> Digitalagentur in Bielefeld (Ostwestfalen-Lippe) für Webseiten, Google Ads, Meta Ads und Videocontent. Spezialisiert auf Lead-Generierung, E-Commerce und Social Media Marketing für Unternehmen in OWL, Herford, Minden, Osnabrück und ganz Deutschland.
+> Webagentur aus Bielefeld (Ostwestfalen-Lippe). Schwerpunkt: individuelle Webseiten mit System. Vorne ein professioneller Auftritt, der bei Google für relevante Suchbegriffe rankt. Hinten ein Backend, das wir auf den jeweiligen Betrieb zuschneiden — für Anfragen-Management, Termine, Angebote, Rechnungen und Berichte. Daneben Google Ads und Videocontent für Social Media. Für KMU in OWL, Nordrhein-Westfalen und ganz Deutschland.
 
-Kolac Digital ist eine inhabergeführte Digitalagentur mit Sitz in Bielefeld. Gegründet 2019 von Yusuf Kolac. Wir sind Generalisten mit drei klaren Schwerpunkten: Webseiten und Online-Shops, Performance-Werbung (Google Ads, Meta Ads), sowie Videocontent für Social Media (Reels, TikToks, Shorts).
+Kolac Digital ist eine inhabergeführte Webagentur mit Sitz in Bielefeld. Gegründet 2019 von Yusuf Kolac. Etwa 70 Prozent der Arbeit fließen in Webseiten mit System: maßgeschneiderte Backends, die einzelne Unternehmen im Arbeitsalltag entlasten. Die Software passt sich an den Betrieb an, nicht andersrum. Daneben bieten wir Google Ads, Meta Ads und Videocontent für Social Media (Reels, TikToks, Shorts) an.
 
 Statt 50-Mann-Team und Aufschlag-Mentalität: direkte Kommunikation mit dem Gründer, schnelle Umsetzung, faire Preise. Wir testen alles erst auf eigenen Projekten – unter anderem auf einem Entertainment-Social-Media-Kanal mit über 40.000 Abonnenten – bevor wir es für Kunden umsetzen.
 
@@ -106,18 +106,56 @@ Yusuf Kolac, Gründer und Geschäftsführer
 
 ## Häufige Suchanfragen, für die Kolac Digital relevant ist
 
-- Digitalagentur Bielefeld
-- Webagentur Bielefeld / OWL / Herford / Minden / Osnabrück
+### Webseiten mit System (Schwerpunkt)
+- Webagentur Bielefeld
 - Webseite erstellen Bielefeld
-- Webdesign OWL
+- Webseite mit System
+- Webseite mit Backend
+- Webseite mit Verwaltungssystem
+- Webseite mit Kundenverwaltung
+- Webseite mit Terminbuchung
+- Webseite mit Buchungssystem
+- individuelle Webseite Bielefeld
+- maßgeschneiderte Webseite
+- Custom Webentwicklung Bielefeld
+- Webentwicklung Bielefeld
+- Webdesign Bielefeld
+- Homepage erstellen Bielefeld
+- Internetagentur Bielefeld
+
+### Branchen-Suchanfragen
+- Webseite für Handwerker
+- Webseite für Restaurants
+- Webseite für Praxen
+- Webseite für Arztpraxen
+- Webseite für Kanzleien
+- Webseite für Friseure
+- Webseite für Coaches
+- Webseite für Dienstleister
+- Onlineshop für KMU erstellen
+
+### Regional
+- Webagentur OWL
+- Webagentur Nordrhein-Westfalen
+- Webagentur Deutschland
+- Webdesign Herford / Gütersloh / Paderborn / Detmold / Minden / Münster / Osnabrück
+- Webagentur Ostwestfalen-Lippe
+
+### Marketing-Zusatzleistungen
+- Digitalagentur Bielefeld
 - Google Ads Bielefeld
+- Meta Ads Bielefeld
 - Social Media Agentur Bielefeld
-- Videocontent Bielefeld / OWL
 - TikTok Agentur OWL
-- Online-Shop erstellen Bielefeld
-- Werbeagentur Ostwestfalen-Lippe
-- E-Commerce Agentur OWL
+- Videocontent Bielefeld
 - Performance Marketing OWL
+- E-Commerce Agentur OWL
+
+### KI- und Zukunfts-Suchen
+- KI Suchmaschinen Optimierung
+- GEO Optimierung Webseite
+- Webseite ChatGPT findbar machen
+- LLM Optimierung Webseite
 
 ## Werte und Arbeitsweise
 
