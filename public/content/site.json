@@ -5,27 +5,30 @@
   },
   "hero": {
     "rotatingHeadlines": [
-      "Neue Kunden durch gezieltes Marketing.",
-      "Leadgenerierung durch digitale Präsenz.",
-      "Sichtbarkeit, die sich auszahlt."
+      "Webseiten, die für dein Geschäft arbeiten.",
+      "Software, die sich dir anpasst — nicht andersrum.",
+      "Vorne Webseite. Hinten dein System."
     ],
-    "subline": "Webseiten, Google Ads und Videocontent – alles aus einer Hand. Digitalagentur aus Bielefeld für Unternehmen in OWL, Herford, Minden, Osnabrück und ganz Deutschland.",
+    "subline": "Wir bauen Webseiten mit System, die dir im Arbeitsalltag den Rücken freihalten. Vorne professionell und bei Google ganz oben. Hinten ein Backend, das wir individuell auf dein Geschäft zuschneiden — kein Baukasten, kein 'mach es so wie alle anderen'. Sondern ein Werkzeug, das deinem Takt folgt.",
     "buttonPrimary": "Projekt starten",
     "buttonSecondary": "Unsere Arbeit"
   },
   "leistungen": {
     "label": "LEISTUNGEN",
     "headline": "Was wir für dich tun",
-    "intro": "Webseiten, Google Ads und Videocontent – mit klarem Fokus auf Ergebnisse. Kein Schnickschnack, sondern das, was dein Business in Bielefeld, OWL oder bundesweit nach vorne bringt.",
+    "intro": "Eine Webseite ist heute mehr als ein digitales Schaufenster — sie kann dein Werkzeug für den Alltag sein. Vorne stark, hinten individuell auf dein Geschäft zugeschnitten. Plus Google Ads und Videocontent, wenn deine Basis steht und du in die Breite skalieren willst.",
     "services": [
       {
-        "title": "Webseiten",
+        "title": "Webseiten mit System",
         "icon": "monitor",
-        "description": "Professionelle Websites, die verkaufen – egal ob Onlineshop, Buchungsseite oder Unternehmensauftritt.",
+        "description": "Vorne ein Auftritt, der bei Google rankt. Hinten ein Backend, das wir für deinen Betrieb maßschneidern. Anfragen, Termine, Angebote, Berichte — die Software passt sich an dich an, nicht umgekehrt.",
         "features": [
-          "E-Commerce & Onlineshops",
-          "Buchungssysteme & Kalender",
-          "Landingpages & Firmenseiten"
+          "Conversion-starkes Frontend mit SEO",
+          "Anfragen-Verwaltung im Backend",
+          "Termine, Buchungen und Bestellungen automatisch",
+          "Angebote und Rechnungen aus dem System",
+          "Dashboard mit deinen wichtigsten Zahlen",
+          "Individuell auf deinen Betrieb zugeschnitten"
         ],
         "link": "/webseiten",
         "linkText": "Mehr zu Webseiten"
@@ -33,18 +36,18 @@
       {
         "title": "Google & Meta Ads",
         "icon": "search",
-        "description": "Gezielte Werbeanzeigen auf Google und Meta, die genau die Menschen erreichen, die nach deinem Angebot suchen.",
+        "description": "Wenn deine Webseite steht und Anfragen reinholt, helfen wir dir auch bei der bezahlten Sichtbarkeit. Damit du nicht warten musst, bis organisch was passiert.",
         "features": [
           "Google Suchkampagnen & Shopping",
           "Meta Ads (Facebook & Instagram)",
-          "Conversion-Tracking",
+          "Conversion-Tracking sauber aufgesetzt",
           "Laufende Optimierung"
         ]
       },
       {
-        "title": "Videocontent",
+        "title": "Videocontent & Social Media",
         "icon": "video",
-        "description": "Kurzvideos, die Aufmerksamkeit erzeugen – von der Idee bis zum fertigen Schnitt.",
+        "description": "Kurzvideos, die Aufmerksamkeit erzeugen. Vor allem dann, wenn deine Webseite und deine Prozesse schon laufen und du in die Breite skalieren willst.",
         "features": [
           "Reels, TikToks & Shorts",
           "Skripte & Konzeption",
@@ -52,23 +55,23 @@
         ]
       }
     ],
-    "extra": "Und wenn du mehr brauchst? Wir unterstützen auch bei Logos, Flyern, Produktfotografie und mehr."
+    "extra": "Und wenn du sonst noch was brauchst — Logos, Flyer, Produktfotografie — bekommst du das auch. Unser Schwerpunkt liegt aber klar auf Webseiten mit System."
   },
   "about": {
     "label": "ÜBER UNS",
-    "headline": "Digital aus Überzeugung",
+    "headline": "Warum Webseiten mit System?",
     "image": "images/yk.webp",
     "text": [
-      "Wir sind eine Digitalagentur aus Bielefeld – mitten in Ostwestfalen-Lippe. Statt 50-Mann-Team und endlosen Meetings bekommst du bei Kolac Digital direkte Kommunikation, schnelle Umsetzung und faire Preise – ohne den typischen Agentur-Aufschlag.",
-      "Ob Webseiten die konvertieren, Google Ads die performen oder Social Media Content der Reichweite bringt – wir haben es für unsere eigenen Projekte getestet, bevor wir es für dich umsetzen. Unter anderem auch mit einem eigenen Social Media Kanal mit über 40.000 Abonnenten in der Entertainment-Branche.",
-      "Unsere Kunden sitzen in Bielefeld, Herford, Bünde, Minden, Osnabrück und ganz Deutschland – von Ästhetik-Praxen über Onlineshops bis hin zu Gebäudeservice und Automobilbetrieben.",
-      "Keine Theorie, sondern Praxis. Keine Ausreden, sondern Ergebnisse."
+      "Eine Beobachtung hat alles verändert. Die meisten Unternehmer sind richtig gut in dem, was sie tun. Aber das Drumherum frisst sie auf — Anfragen werden im E-Mail-Postfach vergessen, Termine geraten durcheinander, Rechnungen schreiben sich nicht von selbst, am Monatsende fehlt der Überblick über Einnahmen und Ausgaben. Und die fertige Software, die das lösen soll? Zwingt einen oft in Prozesse, die nicht zum eigenen Geschäft passen. Statt zu helfen, wird das Werkzeug zur Bremse.",
+      "Genau hier setzen wir an. Wir bauen Webseiten, die mehr sind als ein digitales Schaufenster — wir bauen Werkzeuge für den Arbeitsalltag. Vorne präsentiert sich dein Geschäft professionell, rankt bei Google für die richtigen Suchbegriffe und holt Anfragen rein. Hinten arbeitet ein Backend, das wir individuell auf deinen Betrieb zuschneiden. Wie ein Maßanzug — die Software passt sich dir an, nicht du dich der Software.",
+      "Wie das konkret aussieht? Da gibt es kein Schema F. Für ein Restaurant bauen wir eine interaktive Speisekarte mit eigener Bestellfunktion — du sparst die 30 Prozent, die Lieferplattformen sich nehmen. Für eine Werkstatt einen Konfigurator, der Anfragen direkt mit Foto aufs Tablet bringt. Für einen Dienstleister ein Dashboard mit Umsatz, Gewinn, offenen Posten und automatischer Rechnungserstellung. Für einen Friseur ein Buchungssystem, das auch im Salon auf dem Tablet läuft. Es gibt kein Unternehmen, das nicht von so einem System profitiert. Auf welche Art genau, finden wir in einem Gespräch heraus.",
+      "Neben Webseiten mit System machen wir auch Google Ads und Videocontent für Social Media. Das ist aber der kleinere Teil unserer Arbeit. Unser Schwerpunkt sind individuell gebaute digitale Werkzeuge — aus Bielefeld für Firmen in OWL, Nordrhein-Westfalen und ganz Deutschland."
     ],
     "tags": [
-      "Marketing & Strategie",
-      "Faire Preise",
-      "Schnelle Reaktionszeit",
-      "Alles aus einer Hand"
+      "Webseiten mit System",
+      "Individuell zugeschnitten",
+      "Direkter Draht zum Inhaber",
+      "Faire Preise"
     ]
   },
   "referenzen": {
@@ -170,11 +173,11 @@
         "mockupImage": "images/carhifi-herford-website.webp",
         "mockupImagePhone": "images/halim-tiktok.webp",
         "services": [
-          "Webseite mit Custom CMS",
+          "Webseite mit individuellem Backend & Admin-Dashboard",
           "Custom Konfigurator für Soundanlagen",
-          "TikTok Content-Strategie & Umsetzung"
+          "Anfragen, Komponenten und Fahrzeugbaum zentral verwalten"
         ],
-        "keyWin": "Leadgenerierung +74% – dazu starkes Social Media Abonnenten-Wachstum.",
+        "keyWin": "Leadgenerierung +74% – plus ein Backend, das den kompletten Arbeitsalltag des Inhabers organisiert.",
         "link": "https://www.carhifi-herford.de/",
         "linkText": "Website ansehen",
         "linkIcon": "website",
@@ -210,7 +213,7 @@
       {
         "name": "Halim Ö.",
         "company": "CarHiFi Herford",
-        "quote": "Innerhalb weniger Wochen von 0 auf über 2000 Follower. Die Content-Strategie hat voll eingeschlagen.",
+        "quote": "Das Backend hält meinen ganzen Tag zusammen. Anfragen, Komponenten, Fahrzeuge — alles an einem Ort. Ich verstehe nicht, wie ich vorher gearbeitet habe.",
         "rating": 5
       },
       {
@@ -224,12 +227,12 @@
   "kontakt": {
     "label": "KONTAKT",
     "headline": "Lass uns über dein Projekt sprechen",
-    "subline": "Schreib uns oder ruf an – wir melden uns innerhalb von 24 Stunden.",
+    "subline": "Sag uns kurz, woran du arbeitest. Im ersten Gespräch finden wir gemeinsam heraus, wie ein System aussieht, das wirklich zu deinem Geschäft passt. Kostenlos und unverbindlich. Wir melden uns innerhalb von 24 Stunden.",
     "email": "yusuf@kolac-digital.de",
     "phone": "+49 176 95762018",
     "formButton": "Nachricht senden"
   },
   "footer": {
-    "copyright": "© 2019–2026 Kolac Digital · Beckhausstraße 108, 33611 Bielefeld · Alle Rechte vorbehalten."
+    "copyright": "© 2019–2026 Kolac Digital · Alle Rechte vorbehalten."
   }
 }
