@@ -15,10 +15,71 @@
       Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
   body {
     @apply bg-white text-gray-900;
+  }
+}
+
+/* Scroll-Reveal Animation für Marketing-Sektionen */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+[data-reveal].in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Schwebende Elemente (Hero-Illustrationen) */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-3deg);
+  }
+  50% {
+    transform: translate(0, -14px) rotate(-2deg);
+  }
+}
+
+@keyframes float-slow-alt {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(4deg);
+  }
+  50% {
+    transform: translate(0, -10px) rotate(3deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-float-slow-alt {
+  animation: float-slow-alt 7s ease-in-out infinite;
+}
+
+/* Accessibility: reduzierte Bewegung respektieren */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .animate-float-slow,
+  .animate-float-slow-alt {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
   }
 }
 

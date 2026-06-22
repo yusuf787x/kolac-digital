@@ -104,7 +104,7 @@ export const bausteinAddOn = {
   examples: [
     { icon: '📅', label: 'Online Buchungsformular' },
     { icon: '🛒', label: 'Anbindung an deinen Shop' },
-    { icon: '📆', label: 'Termin Kalender für Kunden' },
+    { icon: '🔗', label: 'Schnittstelle zu Fachanwendungen' },
     { icon: '📧', label: 'Anfragen direkt ins Postfach' },
     { icon: '🔌', label: 'Anbindung an dein bestehendes System' },
     { icon: '💳', label: 'Online Zahlungen und Rechnungen' },

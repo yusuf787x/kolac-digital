@@ -12,6 +12,7 @@ import {
   site,
 } from '@/lib/site-config';
 import ContactForm from './ContactForm';
+import Reveal from '@/components/marketing/Reveal';
 
 export const metadata: Metadata = {
   title:
@@ -310,7 +311,7 @@ function Hero() {
     <section className="relative overflow-hidden border-b border-gray-100 bg-gradient-to-b from-white to-gray-50">
       <div className="mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pt-16 lg:pb-24 lg:pt-24">
         <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
+          <Reveal>
             <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
               Aktuell {site.freeSlots} freie Plätze für neue Projekte
@@ -348,21 +349,37 @@ function Hero() {
               <span>·</span>
               <span>Kostenloses Gespräch</span>
             </div>
-          </div>
+          </Reveal>
 
-          <div className="relative">
-            <div className="absolute inset-0 -z-10 rounded-[2rem] bg-gradient-to-tr from-brand-blue/20 via-blue-100 to-white blur-2xl" />
-            <div className="relative rounded-2xl border border-gray-100 bg-white p-3 shadow-xl">
-              <Image
-                src="/images/bacara-website.webp"
-                alt="Beispiel einer Webseite von Kolac Digital"
-                width={900}
-                height={620}
-                className="rounded-xl"
-                priority
-              />
+          <Reveal delay={150}>
+            <div className="relative">
+              <div className="absolute inset-0 -z-10 rounded-[2rem] bg-gradient-to-tr from-brand-blue/20 via-blue-100 to-white blur-2xl" />
+              <div className="relative rounded-2xl border border-gray-100 bg-white p-3 shadow-xl">
+                <Image
+                  src="/images/bacara-website.webp"
+                  alt="Beispiel einer Webseite mit System von Kolac Digital aus Bielefeld"
+                  width={900}
+                  height={620}
+                  className="rounded-xl"
+                  priority
+                />
+              </div>
+
+              {/* Schwebendes Dashboard-Mockup als Backend-Symbol */}
+              <div
+                className="pointer-events-none absolute -bottom-10 -left-8 z-10 w-40 drop-shadow-2xl animate-float-slow sm:-bottom-12 sm:-left-12 sm:w-56 lg:w-64"
+                aria-hidden
+              >
+                <Image
+                  src="/images/svg-elements/dashboard-mockup.svg"
+                  alt=""
+                  width={264}
+                  height={165}
+                  className="h-auto w-full"
+                />
+              </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>
@@ -389,6 +406,7 @@ function PainSolution() {
   return (
     <section className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <Reveal>
         <header className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
             Das Problem
@@ -404,7 +422,9 @@ function PainSolution() {
             einfach nicht zu deinem Betrieb passen.
           </p>
         </header>
+        </Reveal>
 
+        <Reveal delay={120}>
         <div className="mt-12 grid gap-6 md:grid-cols-2">
           {/* Vorher */}
           <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:p-8">
@@ -461,17 +481,21 @@ function PainSolution() {
           </div>
         </div>
 
+        </Reveal>
+
         {/* Brücke zur Lösung */}
-        <div className="mx-auto mt-10 max-w-3xl text-center">
-          <p className="text-base leading-relaxed text-gray-700">
-            Wir bauen Webseiten, die mehr sind als ein Schaufenster. Vorne
-            präsentiert sich dein Geschäft. Hinten arbeitet ein Backend, das
-            wir wie einen Maßanzug auf deinen Betrieb zuschneiden.{' '}
-            <strong className="text-gray-900">
-              Die Software passt sich dir an, nicht andersrum.
-            </strong>
-          </p>
-        </div>
+        <Reveal delay={200}>
+          <div className="mx-auto mt-10 max-w-3xl text-center">
+            <p className="text-base leading-relaxed text-gray-700">
+              Wir bauen Webseiten, die mehr sind als ein Schaufenster. Vorne
+              präsentiert sich dein Geschäft. Hinten arbeitet ein Backend,
+              das wir wie einen Maßanzug auf deinen Betrieb zuschneiden.{' '}
+              <strong className="text-gray-900">
+                Die Software passt sich dir an, nicht andersrum.
+              </strong>
+            </p>
+          </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -948,6 +972,7 @@ function Pricing() {
         </div>
 
         {/* Haupt-Pakete: 2 Karten */}
+        <Reveal delay={100}>
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           {packages.map((p) => (
             <div
@@ -1010,8 +1035,10 @@ function Pricing() {
             </div>
           ))}
         </div>
+        </Reveal>
 
         {/* Add-On: Funktionsbausteine — visuell deutlich getrennt */}
+        <Reveal delay={150}>
         <div className="mt-10 overflow-hidden rounded-2xl border-2 border-dashed border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-white p-6 sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="max-w-xl">
@@ -1050,6 +1077,7 @@ function Pricing() {
             ))}
           </div>
         </div>
+        </Reveal>
 
         <p className="mt-6 text-center text-xs text-gray-500">
           Alle Preise sind Nettopreise und verstehen sich zuzüglich der
@@ -1122,6 +1150,7 @@ function About() {
   return (
     <section className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <Reveal>
         <div className="grid items-center gap-10 md:grid-cols-[auto_1fr]">
           <div className="mx-auto md:mx-0">
             <div className="relative h-56 w-56 overflow-hidden rounded-full bg-gradient-to-br from-blue-100 to-white p-1.5 shadow-lg ring-4 ring-brand-blue/30 sm:h-72 sm:w-72">
@@ -1179,6 +1208,7 @@ function About() {
             </div>
           </div>
         </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -1305,24 +1335,26 @@ function Industries() {
           </p>
         </header>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {industries.map((b) => (
-            <article
-              key={b.title}
-              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-            >
-              <div className="text-3xl" aria-hidden>
-                {b.icon}
-              </div>
-              <h3 className="mt-3 text-base font-semibold text-gray-900">
-                {b.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                {b.description}
-              </p>
-            </article>
-          ))}
-        </div>
+        <Reveal delay={100}>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {industries.map((b) => (
+              <article
+                key={b.title}
+                className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <div className="text-3xl" aria-hidden>
+                  {b.icon}
+                </div>
+                <h3 className="mt-3 text-base font-semibold text-gray-900">
+                  {b.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                  {b.description}
+                </p>
+              </article>
+            ))}
+          </div>
+        </Reveal>
 
         <p className="mt-8 text-center text-sm text-gray-600">
           Deine Branche ist nicht dabei? Kein Problem. Wir bauen das System
