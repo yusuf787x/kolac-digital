@@ -49,7 +49,7 @@ Statt 50-Mann-Team und Aufschlag-Mentalität: direkte Kommunikation mit dem Grü
 
 ### Preise auf /webseiten (immer "ab", nie Fixpreis)
 
-- **Basis Webseite:** ab 1.000 € Einrichtung plus ab 99 € im Monat. Individuell gebaut, Hosting, Wartung und kleine Änderungen im Monatspreis dabei.
+- **Basis Webseite:** ab 1.500 € Einrichtung plus ab 99 € im Monat. Individuell gebaut, Hosting, Wartung und kleine Änderungen im Monatspreis dabei.
 - **Funktionsbausteine:** ab 500 €. Zum Beispiel Onlinebuchung, Termin Kalender oder Anbindung an einen Shop.
 - **Individualprojekte:** ab 3.000 €. Komplexe Systeme mit eigener Datenbank, individueller Logik und Datenübernahme aus alten Systemen. Je nach Umfang auch deutlich mehr.
 

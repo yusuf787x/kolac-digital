@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title:
     'Individuelle Webseiten aus Bielefeld | Kolac Digital für OWL, NRW & deutschlandweit',
   description:
-    'Wir bauen für dich individuelle Webseiten mit System. Inklusive professioneller Fotos, Google NFC Tag, SEO und KI Optimierung. Ab 1.000 €. Nur 4 Projekte parallel.',
+    'Wir bauen für dich individuelle Webseiten mit System. Inklusive professioneller Fotos, Google NFC Tag, SEO und KI Optimierung. Ab 1.500 €. Nur 4 Projekte parallel.',
   alternates: {
     canonical: `${site.baseUrl}/webseiten`,
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     url: `${site.baseUrl}/webseiten`,
     title: 'Individuelle Webseiten aus Bielefeld | Kolac Digital',
     description:
-      'Webseiten die mehr können als nur schön aussehen. Inklusive Fotos, NFC Tag, SEO und Findability bei KI Suchen. Ab 1.000 €.',
+      'Webseiten die mehr können als nur schön aussehen. Inklusive Fotos, NFC Tag, SEO und Findability bei KI Suchen. Ab 1.500 €.',
     siteName: 'Kolac Digital',
     images: [
       {

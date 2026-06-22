@@ -56,7 +56,7 @@ export const packages: PackageTier[] = [
     id: 'basis',
     name: 'Basis Webseite',
     pricePrefix: 'ab',
-    priceMain: '1.000 €',
+    priceMain: '1.500 €',
     priceSub: 'plus ab 99 € im Monat',
     description:
       'Eine moderne Webseite für deine Firma. Komplett für dich gebaut und sofort startklar.',
@@ -70,7 +70,7 @@ export const packages: PackageTier[] = [
     ],
     badge: 'Empfohlen',
     highlight: true,
-    priceLow: 1000,
+    priceLow: 1500,
     priceCurrency: 'EUR',
   },
   {
@@ -305,7 +305,7 @@ export const faqs: FaqItem[] = [
   {
     question: 'Was kostet eine Webseite bei euch?',
     answer:
-      'Eine Basis Webseite startet ab 1.000 € Einrichtung plus ab 99 € im Monat. Im Monatspreis sind Hosting, Wartung und kleine Änderungen direkt mit drin. Du musst dir also nicht für jede Kleinigkeit Sorgen um eine extra Rechnung machen. Den Monatsbeitrag startest du außerdem erst, wenn deine Seite live ist und du grünes Licht gibst. Bis dahin gehst du nicht in Vorleistung. Wenn dein Projekt größer ist, sage ich dir vorher genau was es kostet. Du bekommst nie eine Überraschung auf der Rechnung.',
+      'Eine Basis Webseite startet ab 1.500 € Einrichtung plus ab 99 € im Monat. Im Monatspreis sind Hosting, Wartung und kleine Änderungen direkt mit drin. Du musst dir also nicht für jede Kleinigkeit Sorgen um eine extra Rechnung machen. Den Monatsbeitrag startest du außerdem erst, wenn deine Seite live ist und du grünes Licht gibst. Bis dahin gehst du nicht in Vorleistung. Wenn dein Projekt größer ist, sage ich dir vorher genau was es kostet. Du bekommst nie eine Überraschung auf der Rechnung.',
   },
   {
     question: 'Wie lange dauert das?',
