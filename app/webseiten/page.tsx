@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import {
+  bausteinAddOn,
   faqs,
   includedBonuses,
   packages,
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   title:
     'Individuelle Webseiten aus Bielefeld | Kolac Digital für OWL, NRW & deutschlandweit',
   description:
-    'Wir bauen für dich individuelle Webseiten mit System. Inklusive professioneller Fotos, Google-NFC-Tag, SEO und KI-Suchmaschinen-Optimierung. Ab 1.000 €. Aus Bielefeld für OWL, NRW und ganz Deutschland.',
+    'Wir bauen für dich individuelle Webseiten mit System. Inklusive professioneller Fotos, Google-NFC-Tag, SEO und KI-Suchmaschinen-Optimierung. Ab 1.000 €. Nur 4 Projekte parallel.',
   alternates: {
     canonical: `${site.baseUrl}/webseiten`,
   },
@@ -110,6 +111,21 @@ function StructuredData() {
     })),
   };
 
+  const allOffers = [
+    ...packages.map((p) => ({
+      name: p.name,
+      description: p.description,
+      price: p.priceLow,
+      currency: p.priceCurrency,
+    })),
+    {
+      name: bausteinAddOn.name,
+      description: bausteinAddOn.description,
+      price: bausteinAddOn.priceLow,
+      currency: bausteinAddOn.priceCurrency,
+    },
+  ];
+
   const service = {
     '@context': 'https://schema.org',
     '@type': 'Service',
@@ -118,17 +134,17 @@ function StructuredData() {
     areaServed: serviceAreas,
     description:
       'Individuelle Webseiten mit System. Inklusive professioneller Fotos, Google-NFC-Tag, SEO und KI-Suchmaschinen-Optimierung.',
-    offers: packages.map((p) => ({
+    offers: allOffers.map((o) => ({
       '@type': 'Offer',
-      name: p.name,
-      description: p.description,
-      priceCurrency: p.priceCurrency,
-      price: p.priceLow,
+      name: o.name,
+      description: o.description,
+      priceCurrency: o.currency,
+      price: o.price,
       priceSpecification: {
         '@type': 'PriceSpecification',
-        priceCurrency: p.priceCurrency,
-        price: p.priceLow,
-        minPrice: p.priceLow,
+        priceCurrency: o.currency,
+        price: o.price,
+        minPrice: o.price,
         valueAddedTaxIncluded: false,
       },
       availability: 'https://schema.org/InStock',
@@ -234,16 +250,17 @@ function Hero() {
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-              Frei für neue Projekte aus {site.city}, OWL und deutschlandweit
+              Aktuell {site.freeSlots} freie Plätze für neue Projekte
             </span>
             <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              Individuelle Webseiten aus {site.city}, die für dich mitdenken.
+              Individuelle Webseiten aus {site.city}, die dir Anfragen bringen.
             </h1>
             <p className="mt-5 max-w-xl text-base text-gray-600 sm:text-lg">
               Du bekommst keine Vorlage von der Stange. Du bekommst eine
-              Webseite die dir Anfragen reinholt und dir Arbeit abnimmt.
-              Sauber gebaut, klar geplant und mit echtem Plan dahinter. Für
-              Firmen in OWL, Nordrhein-Westfalen und ganz Deutschland.
+              Webseite, die dir Anfragen reinholt, Termine sortiert und dir
+              Arbeit abnimmt. In der Regel eine Woche vom ersten Gespräch bis
+              live. Für Firmen in OWL, Nordrhein-Westfalen und ganz
+              Deutschland.
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -294,14 +311,12 @@ function TrustStrip() {
     <section className="border-b border-gray-100 bg-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-gray-600 sm:px-6">
         <span className="flex items-center gap-2">
-          <span aria-hidden>📍</span> Kunden in{' '}
-          <strong className="text-gray-900">
-            Bielefeld, Herford, Gütersloh, Paderborn
-          </strong>{' '}
-          und deutschlandweit
+          <span aria-hidden>🇩🇪</span> Wir arbeiten für Firmen in OWL, NRW und
+          deutschlandweit
         </span>
         <span className="flex items-center gap-2">
-          <span aria-hidden>⚡</span> Webseite in ein bis zwei Wochen fertig
+          <span aria-hidden>⚡</span> In der Regel eine Woche von Erstgespräch
+          bis live
         </span>
         <span className="flex items-center gap-2">
           <span aria-hidden>🤝</span> Du sprichst direkt mit dem Inhaber
@@ -387,7 +402,7 @@ function Leistungen() {
     },
     {
       title: 'Findbar bei Google',
-      text: 'Wir bauen die Seite so, dass Google sie versteht und vorne zeigt.',
+      text: 'Wir bauen die Seite so, dass Google sie versteht und für deine Suchbegriffe vorne zeigt.',
     },
     {
       title: 'Findbar bei KI-Suchen',
@@ -440,71 +455,6 @@ function Leistungen() {
   );
 }
 
-function Bonuses() {
-  const icons = {
-    camera: '📸',
-    nfc: '📲',
-    seo: '🔍',
-    ai: '🤖',
-  };
-  return (
-    <section className="relative overflow-hidden bg-white py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <header className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
-            Geschenke bei jeder Webseite
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            Du bekommst mehr als nur eine Webseite.
-          </h2>
-          <p className="mt-3 text-base text-gray-600">
-            Vier Dinge bekommst du bei jedem Webseiten-Paket automatisch mit
-            dazu. Ohne Aufpreis. Im Gesamtwert von über 1.000 €.
-          </p>
-        </header>
-
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
-          {includedBonuses.map((b) => (
-            <div
-              key={b.title}
-              className="relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-blue-50/50 p-6 shadow-sm transition-shadow hover:shadow-md"
-            >
-              <div className="flex items-start gap-4">
-                <div className="grid h-14 w-14 flex-shrink-0 place-items-center rounded-2xl bg-brand-blue/10 text-3xl">
-                  {icons[b.icon]}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {b.title}
-                    </h3>
-                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-green-800">
-                      {b.value}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                    {b.description}
-                  </p>
-                </div>
-              </div>
-              <span className="pointer-events-none absolute -bottom-6 -right-6 grid h-20 w-20 place-items-center rounded-full bg-brand-blue text-xs font-bold uppercase tracking-wider text-white shadow-lg">
-                Gratis
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-brand-blue/20 bg-brand-blue/5 p-5 text-center">
-          <p className="text-sm font-medium text-gray-900">
-            Diese vier Boni gibt es nur, wenn du eine Webseite bei uns
-            buchst. Sie sind in den Preisen unten schon inklusive.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function Process() {
   const steps = [
     {
@@ -520,11 +470,11 @@ function Process() {
     {
       n: '03',
       title: 'Wir gehen live',
-      text: 'Sobald alles passt geht deine Seite online. Hosting, Wartung und kleine Änderungen laufen weiter über mich.',
+      text: 'Sobald alles passt, geht deine Seite online. In der Regel eine Woche nach dem ersten Kontaktpunkt. Je nach Auslastung kann es auch mal zwei Wochen dauern, das klären wir vorher offen. Danach laufen Hosting, Wartung und kleine Änderungen weiter über mich.',
     },
   ];
   return (
-    <section className="bg-gray-50 py-16 sm:py-20">
+    <section className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <header className="max-w-2xl">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
@@ -600,7 +550,6 @@ function ReferenceCard({
 
   return (
     <article className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:p-7">
-      {/* Mockup: Browser + optional Phone Overlay */}
       <div className="relative">
         <a
           href={r.link ?? '#'}
@@ -644,7 +593,6 @@ function ReferenceCard({
         )}
       </div>
 
-      {/* Inhalt */}
       <div className="mt-6">
         <span className="inline-flex items-center rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-semibold text-brand-blue">
           {r.tag}
@@ -811,12 +759,25 @@ function Pricing() {
           <p className="mt-3 text-base text-gray-600">
             Du siehst hier ab welchem Preis es losgeht. Den genauen Preis
             für dein Projekt sagen wir dir nach dem ersten Gespräch.
-            Foto-Shooting, NFC-Tag und SEO sind in jedem Webseiten-Paket
-            schon mit drin.
+            Foto-Shooting, NFC-Tag und SEO sind in jedem Paket schon mit
+            drin.
           </p>
         </header>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
+        {/* Scarcity-Hinweis – dezent, mit Reason Why (Hormozi) */}
+        <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-gray-200 bg-gray-50 p-5 text-sm text-gray-700 sm:text-center">
+          <p>
+            <strong className="text-gray-900">
+              Aktuell {site.freeSlots} freie Plätze.
+            </strong>{' '}
+            Wir nehmen bewusst nur eine begrenzte Anzahl Projekte gleichzeitig
+            an. Damit jeder Kunde die volle Aufmerksamkeit bekommt und du
+            nicht in einer Warteschlange landest.
+          </p>
+        </div>
+
+        {/* Haupt-Pakete: 2 Karten */}
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
           {packages.map((p) => (
             <div
               key={p.id}
@@ -855,11 +816,14 @@ function Pricing() {
               </ul>
 
               {p.highlight && (
-                <div className="mt-5 rounded-lg border border-green-200 bg-green-50 p-3 text-xs text-green-900">
-                  <p className="font-semibold">Inklusive Geschenke:</p>
-                  <p className="mt-0.5">
-                    Profi-Fotos vor Ort, Google-NFC-Tag und SEO-Setup im Wert
-                    von über 1.000 €.
+                <div className="mt-5 rounded-lg border border-green-200 bg-green-50 p-3">
+                  <p className="text-xs font-semibold text-green-900">
+                    Faire Risiko-Umkehr
+                  </p>
+                  <p className="mt-0.5 text-xs text-green-900">
+                    Den Monatsbeitrag startest du erst, wenn die Webseite
+                    live ist und du grünes Licht gibst. Bis dahin trägst du
+                    kein Risiko.
                   </p>
                 </div>
               )}
@@ -876,6 +840,46 @@ function Pricing() {
           ))}
         </div>
 
+        {/* Add-On: Funktionsbausteine — visuell deutlich getrennt */}
+        <div className="mt-10 overflow-hidden rounded-2xl border-2 border-dashed border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-white p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-6">
+            <div className="max-w-xl">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-200/70 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-900">
+                <span>➕</span> Add-On zum Basis-Paket
+              </span>
+              <h3 className="mt-3 text-2xl font-semibold text-gray-900">
+                {bausteinAddOn.name}
+              </h3>
+              <p className="mt-2 text-sm text-gray-700">
+                {bausteinAddOn.description}
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-xs text-amber-900">
+                {bausteinAddOn.pricePrefix}
+              </span>
+              <p className="text-3xl font-semibold text-amber-900">
+                {bausteinAddOn.priceMain}
+              </p>
+              <p className="text-xs text-amber-800">{bausteinAddOn.priceNote}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {bausteinAddOn.examples.map((ex) => (
+              <div
+                key={ex.label}
+                className="flex items-center gap-2 rounded-lg border border-amber-100 bg-white/80 px-3 py-2 text-sm text-gray-800"
+              >
+                <span className="text-base" aria-hidden>
+                  {ex.icon}
+                </span>
+                <span>{ex.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <p className="mt-6 text-center text-xs text-gray-500">
           Alle Preise sind Nettopreise und verstehen sich zuzüglich der
           gesetzlichen Mehrwertsteuer.
@@ -885,9 +889,67 @@ function Pricing() {
   );
 }
 
+function Bonuses() {
+  const icons = {
+    camera: '📸',
+    nfc: '📲',
+    seo: '🔍',
+    ai: '🤖',
+  };
+  return (
+    <section className="relative overflow-hidden bg-gray-50 py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <header className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
+            Bonus
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+            Warte … da ist noch mehr.
+          </h2>
+          <p className="mt-3 text-base text-gray-600">
+            Vier Sachen bekommst du bei jedem Webseiten-Paket automatisch oben
+            drauf. Ohne Aufpreis. Im Gesamtwert von über 1.000 €.
+          </p>
+        </header>
+
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
+          {includedBonuses.map((b) => (
+            <div
+              key={b.title}
+              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+            >
+              <div className="flex items-start gap-4">
+                <div className="grid h-14 w-14 flex-shrink-0 place-items-center rounded-2xl bg-brand-blue/10 text-3xl">
+                  {icons[b.icon]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {b.title}
+                  </h3>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-brand-blue px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">
+                      Gratis
+                    </span>
+                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-green-800">
+                      {b.value}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                    {b.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function About() {
   return (
-    <section className="bg-gray-50 py-16 sm:py-20">
+    <section className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="grid items-center gap-10 md:grid-cols-[auto_1fr]">
           <div className="mx-auto md:mx-0">
@@ -913,9 +975,9 @@ function About() {
             </h2>
             <p className="mt-4 text-base leading-relaxed text-gray-700">
               Ich komme aus Bielefeld und baue seit Jahren Webseiten für
-              kleine und mittelgroße Firmen. Mein Schwerpunkt liegt klar in
-              OWL und Nordrhein-Westfalen. Ich arbeite aber genauso für
-              Kunden in ganz Deutschland.
+              kleine und mittelgroße Firmen. Mein Schwerpunkt liegt in OWL
+              und Nordrhein-Westfalen. Ich arbeite aber genauso für Kunden in
+              ganz Deutschland.
             </p>
             <p className="mt-3 text-base leading-relaxed text-gray-700">
               Bei mir bekommst du keinen Vertrieb, keinen Account-Manager
@@ -939,7 +1001,7 @@ function About() {
               <span>·</span>
               <a
                 href={`mailto:${site.email}`}
-                className="font-medium text-brand-blue hover:underline"
+                className="font-medium text-brand-blue hover:underline break-all"
               >
                 ✉ {site.email}
               </a>
@@ -953,7 +1015,7 @@ function About() {
 
 function Faq() {
   return (
-    <section id="faq" className="bg-white py-16 sm:py-20">
+    <section id="faq" className="bg-gray-50 py-16 sm:py-20">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <header>
           <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
@@ -1029,17 +1091,18 @@ function Kontakt() {
                 </span>
                 <a
                   href={`mailto:${site.email}`}
-                  className="font-medium hover:underline"
+                  className="font-medium hover:underline break-all"
                 >
                   {site.email}
                 </a>
               </div>
               <div className="flex items-center gap-3">
                 <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15">
-                  📍
+                  ⏱️
                 </span>
                 <span>
-                  {site.street}, {site.zip} {site.city}
+                  Aktuell {site.freeSlots} freie Plätze · Antwort innerhalb
+                  von 24 Stunden
                 </span>
               </div>
             </div>
@@ -1066,11 +1129,11 @@ export default function WebseitenPage() {
       <TrustStrip />
       <Benefits />
       <Leistungen />
-      <Bonuses />
       <Process />
       <References />
       <Reviews />
       <Pricing />
+      <Bonuses />
       <About />
       <Faq />
       <Kontakt />

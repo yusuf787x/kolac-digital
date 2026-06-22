@@ -14,6 +14,7 @@ export const site = {
   phoneE164: '+4917695762018',
   city: 'Bielefeld',
   region: 'Nordrhein-Westfalen',
+  /** Wird nur in strukturierten Daten (JSON-LD) verwendet, nicht im sichtbaren Inhalt. */
   street: 'Beckhausstraße 108',
   zip: '33611',
   founder: 'Yusuf Kolac',
@@ -22,6 +23,8 @@ export const site = {
     value: 5.0,
     count: 7,
   },
+  /** Bewusste Kapazitätsgrenze. Hormozi-Style Scarcity ohne Druck. */
+  freeSlots: 4,
 } as const;
 
 // =====================================================================
@@ -43,6 +46,10 @@ export interface PackageTier {
   priceCurrency: 'EUR';
 }
 
+/**
+ * Nur die beiden Haupt-Pakete kommen in das Pricing-Raster. Die
+ * Funktionsbausteine werden separat als Add-On präsentiert.
+ */
 export const packages: PackageTier[] = [
   {
     id: 'basis',
@@ -54,12 +61,11 @@ export const packages: PackageTier[] = [
       'Eine moderne Webseite für deine Firma. Komplett für dich gebaut und sofort startklar.',
     bullets: [
       'Wir bauen alles individuell für dich',
-      'Bei Google und ChatGPT gut findbar',
-      'KI-Suchmaschinen verstehen deine Inhalte',
+      'Hohes Ranking bei Google und ChatGPT für relevante Suchbegriffe',
       'Hosting und Wartung sind dabei',
       'Kleine Änderungen jeden Monat inklusive',
       'Sieht auf Handy und PC top aus',
-      'Fertig in ein bis zwei Wochen',
+      'In der Regel in einer Woche live',
     ],
     badge: 'Empfohlen',
     highlight: true,
@@ -67,25 +73,8 @@ export const packages: PackageTier[] = [
     priceCurrency: 'EUR',
   },
   {
-    id: 'baustein',
-    name: 'Funktionsbausteine',
-    pricePrefix: 'ab',
-    priceMain: '500 €',
-    description:
-      'Du brauchst eine bestimmte Funktion zusätzlich? Ich baue sie dir genau passend dazu.',
-    bullets: [
-      'Online-Buchungsformular',
-      'Anbindung an deinen Shop',
-      'Termin-Kalender für deine Kunden',
-      'Anfragen direkt in dein Postfach',
-      'Anbindung an dein bestehendes System',
-    ],
-    priceLow: 500,
-    priceCurrency: 'EUR',
-  },
-  {
     id: 'individual',
-    name: 'Individualprojekte',
+    name: 'Individualprojekt',
     pricePrefix: 'ab',
     priceMain: '3.000 €',
     priceSub: 'je nach Umfang auch mehr',
@@ -102,6 +91,27 @@ export const packages: PackageTier[] = [
     priceCurrency: 'EUR',
   },
 ];
+
+/** Add-On Funktionsbausteine. Wird separat angezeigt, nicht als drittes Paket. */
+export const bausteinAddOn = {
+  name: 'Funktionsbausteine',
+  pricePrefix: 'ab',
+  priceMain: '500 €',
+  priceNote: 'on top zur Basis Webseite',
+  description:
+    'Du brauchst eine bestimmte Funktion zusätzlich? Wir bauen sie dir individuell oben drauf. Den genauen Preis besprechen wir nach deinem Bedarf.',
+  examples: [
+    { icon: '📅', label: 'Online Buchungsformular' },
+    { icon: '🛒', label: 'Anbindung an deinen Shop' },
+    { icon: '📆', label: 'Termin Kalender für Kunden' },
+    { icon: '📧', label: 'Anfragen direkt ins Postfach' },
+    { icon: '🔌', label: 'Anbindung an dein bestehendes System' },
+    { icon: '💳', label: 'Online Zahlungen und Rechnungen' },
+  ],
+  /** Für Schema.org */
+  priceLow: 500,
+  priceCurrency: 'EUR' as const,
+};
 
 /** Boni die in jedem Webseiten-Paket dabei sind. Verkaufspsychologie. */
 export interface IncludedBonus {
@@ -131,7 +141,7 @@ export const includedBonuses: IncludedBonus[] = [
     title: 'SEO-Optimierung von Anfang an',
     value: 'Wert ca. 500 €',
     description:
-      'Wir bauen deine Seite so, dass Google sie versteht und weit oben zeigt. Lokale Suche in Bielefeld und OWL inklusive. Du wirst gefunden, ohne dafür extra zu zahlen.',
+      'Hohes Ranking bei Google für relevante Suchbegriffe rund um dein Unternehmen — ohne dafür extra Werbegeld auszugeben. Wir bauen die Seite so, dass Suchmaschinen sie verstehen und vorne zeigen.',
   },
   {
     icon: 'ai',
@@ -294,12 +304,12 @@ export const faqs: FaqItem[] = [
   {
     question: 'Was kostet eine Webseite bei euch?',
     answer:
-      'Eine Basis-Webseite startet ab 1.000 € Einrichtung plus ab 99 € im Monat. Im Monatspreis sind Hosting, Wartung und kleine Änderungen direkt mit drin. Du musst dir also nicht für jede Kleinigkeit Sorgen um eine extra Rechnung machen. Wenn dein Projekt größer ist, sage ich dir vorher genau was es kostet. Du bekommst nie eine Überraschung auf der Rechnung. Wir reden vorher in Ruhe darüber, was du wirklich brauchst, damit du nichts zahlst was du nicht nutzt.',
+      'Eine Basis-Webseite startet ab 1.000 € Einrichtung plus ab 99 € im Monat. Im Monatspreis sind Hosting, Wartung und kleine Änderungen direkt mit drin. Du musst dir also nicht für jede Kleinigkeit Sorgen um eine extra Rechnung machen. Den Monatsbeitrag startest du außerdem erst, wenn deine Seite live ist und du grünes Licht gibst. Bis dahin gehst du nicht in Vorleistung. Wenn dein Projekt größer ist, sage ich dir vorher genau was es kostet. Du bekommst nie eine Überraschung auf der Rechnung.',
   },
   {
     question: 'Wie lange dauert das?',
     answer:
-      'Eine Basis-Webseite ist meistens in ein bis zwei Wochen fertig. Bei größeren Projekten mit Datenbank oder eigenen Funktionen brauchen wir ein paar Wochen mehr, manchmal zwei bis drei Monate. Wichtig ist mir: Du weißt vorher genau wann was passiert. Wir setzen uns einmal kurz zusammen und planen den Ablauf gemeinsam. Du musst nichts unterschreiben bevor wir uns einig sind.',
+      'Eine Basis-Webseite ist ab dem ersten Kontaktpunkt in der Regel in einer Woche fertig und live. Je nach Auslastung kann das auch mal zwei Wochen dauern. Das klären wir im Gespräch, weil Transparenz für uns wichtig ist. Bei größeren Projekten mit Datenbank oder eigenen Funktionen brauchen wir ein paar Wochen mehr. Wir setzen uns einmal kurz zusammen und planen den Ablauf gemeinsam.',
   },
   {
     question: 'Kann ich meine alten Daten und Inhalte mitnehmen?',
@@ -307,9 +317,14 @@ export const faqs: FaqItem[] = [
       'Ja, das machen wir fast immer. Egal ob alte Webseite, alter Online-Shop oder ein Programm das du seit Jahren nutzt. Ich übernehme deine Texte, Bilder, Kundendaten und alles was du behalten möchtest. So fängst du nicht bei Null an und verlierst nichts. Wenn du willst, baue ich auch eine Verbindung zu deinem alten System, damit beides weiterläuft.',
   },
   {
-    question: 'Arbeitet ihr nur in Bielefeld und OWL oder auch deutschlandweit?',
+    question: 'Warum nehmt ihr nur 4 Kunden parallel an?',
     answer:
-      'Mein Schwerpunkt liegt klar auf Bielefeld, Herford, Gütersloh, Paderborn und ganz Ostwestfalen. Das ist meine Heimat und ich kenne den Markt hier sehr gut. Ich arbeite aber auch deutschlandweit. Über die Hälfte meiner Kunden sehe ich nie persönlich. Wir treffen uns online über Video-Call und alles läuft trotzdem reibungslos. Wenn du persönlich Hand schütteln möchtest, komme ich gerne vorbei.',
+      'Damit wir uns auf jedes Projekt voll konzentrieren können. Wir wollen, dass du in einer Woche live gehst und nicht in einer Warteschlange landest. Wenn die vier Plätze vergeben sind, machen wir die Tür zu und nehmen erst wieder Anfragen an, wenn ein Platz frei wird. Lieber wenige Projekte richtig gut, als viele halbherzig.',
+  },
+  {
+    question: 'Arbeitet ihr nur in OWL oder auch deutschlandweit?',
+    answer:
+      'Ich arbeite deutschlandweit. Über die Hälfte meiner Kunden sehe ich nie persönlich. Wir treffen uns online über Video-Call und alles läuft trotzdem reibungslos. Wenn du persönlich Hand schütteln möchtest und in OWL sitzt, komme ich gerne vorbei.',
   },
   {
     question: 'Bekomme ich wirklich kostenlose professionelle Fotos dazu?',
@@ -324,7 +339,7 @@ export const faqs: FaqItem[] = [
   {
     question: 'Werde ich bei Google und auch bei ChatGPT gefunden?',
     answer:
-      'Genau dafür sorgen wir. Wir bauen deine Seite technisch so, dass Google sie leicht lesen kann und in den lokalen Suchen weit oben zeigt. Zusätzlich bereiten wir die Inhalte für die neuen KI-Suchmaschinen wie ChatGPT, Claude und Google AI vor. Diese Systeme empfehlen immer öfter Firmen direkt im Chat, ohne dass jemand klassisch googelt. Wer dafür bereit ist, hat einen riesigen Vorsprung.',
+      'Genau dafür sorgen wir. Wir bauen deine Seite technisch so, dass Google sie leicht lesen kann und für relevante Suchbegriffe rund um dein Geschäft weit oben zeigt. Zusätzlich bereiten wir die Inhalte für die neuen KI-Suchmaschinen wie ChatGPT, Claude und Google AI vor. Diese Systeme empfehlen immer öfter Firmen direkt im Chat, ohne dass jemand klassisch googelt. Wer dafür bereit ist, hat einen riesigen Vorsprung.',
   },
   {
     question: 'Was passiert wenn nach dem Start etwas nicht klappt?',
