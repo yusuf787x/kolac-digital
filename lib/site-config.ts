@@ -1,7 +1,8 @@
 /**
  * Zentrale Konstanten der öffentlichen Marketing-Seite.
  *
- * Texte bewusst simpel gehalten. Keine Bindestriche. Du Form.
+ * Texte bewusst simpel gehalten. Keine Bindestriche im Fließtext
+ * (E-Mail bleibt mit Bindestrich, das ist die Schreibung). Du-Form.
  */
 
 export const site = {
@@ -23,7 +24,10 @@ export const site = {
   },
 } as const;
 
-/** Pakete und Preise. Immer mit "ab", nie Fixpreis. */
+// =====================================================================
+// PAKETE / PREISE
+// =====================================================================
+
 export interface PackageTier {
   id: string;
   name: string;
@@ -33,6 +37,7 @@ export interface PackageTier {
   description: string;
   bullets: string[];
   highlight?: boolean;
+  badge?: string;
   /** Schema.org Offer Preise */
   priceLow: number;
   priceCurrency: 'EUR';
@@ -46,15 +51,17 @@ export const packages: PackageTier[] = [
     priceMain: '1.000 €',
     priceSub: 'plus ab 99 € im Monat',
     description:
-      'Eine moderne Webseite für deine Firma. Komplett für dich gebaut.',
+      'Eine moderne Webseite für deine Firma. Komplett für dich gebaut und sofort startklar.',
     bullets: [
       'Wir bauen alles individuell für dich',
+      'Bei Google und ChatGPT gut findbar',
+      'KI-Suchmaschinen verstehen deine Inhalte',
       'Hosting und Wartung sind dabei',
-      'Kleine Änderungen sind im Monatspreis drin',
-      'Du kannst Texte und Bilder selbst pflegen',
-      'Sieht auf Handy und PC gut aus',
+      'Kleine Änderungen jeden Monat inklusive',
+      'Sieht auf Handy und PC top aus',
       'Fertig in ein bis zwei Wochen',
     ],
+    badge: 'Empfohlen',
     highlight: true,
     priceLow: 1000,
     priceCurrency: 'EUR',
@@ -65,12 +72,12 @@ export const packages: PackageTier[] = [
     pricePrefix: 'ab',
     priceMain: '500 €',
     description:
-      'Wenn du eine bestimmte Funktion brauchst, baue ich sie dir dazu.',
+      'Du brauchst eine bestimmte Funktion zusätzlich? Ich baue sie dir genau passend dazu.',
     bullets: [
-      'Online Buchungsformular',
+      'Online-Buchungsformular',
       'Anbindung an deinen Shop',
-      'Termin Kalender für deine Kunden',
-      'Anfragen werden direkt in dein E Mail Postfach geschickt',
+      'Termin-Kalender für deine Kunden',
+      'Anfragen direkt in dein Postfach',
       'Anbindung an dein bestehendes System',
     ],
     priceLow: 500,
@@ -83,7 +90,7 @@ export const packages: PackageTier[] = [
     priceMain: '3.000 €',
     priceSub: 'je nach Umfang auch mehr',
     description:
-      'Für alle die ein eigenes System brauchen. Mit Datenbank und eigener Logik.',
+      'Für alle die ein eigenes System brauchen. Mit Datenbank, eigener Logik und voller Verknüpfung.',
     bullets: [
       'Komplette eigene Software für dein Geschäft',
       'Übernahme der Daten aus deinem alten System',
@@ -96,74 +103,188 @@ export const packages: PackageTier[] = [
   },
 ];
 
-/** Echte Referenz-Projekte. Bilder liegen unter public/images/. */
+/** Boni die in jedem Webseiten-Paket dabei sind. Verkaufspsychologie. */
+export interface IncludedBonus {
+  icon: 'camera' | 'nfc' | 'seo' | 'ai';
+  title: string;
+  value: string;
+  description: string;
+}
+
+export const includedBonuses: IncludedBonus[] = [
+  {
+    icon: 'camera',
+    title: 'Professionelle Fotos für deine Firma',
+    value: 'Wert ca. 600 €',
+    description:
+      'Bei jeder Webseite kommt ein Foto-Shooting vor Ort dazu. Du bekommst hochwertige Bilder für deine Webseite, dein Google-Profil und Social Media. Kein Stock-Foto-Look mehr.',
+  },
+  {
+    icon: 'nfc',
+    title: 'Google-NFC-Tag für mehr Bewertungen',
+    value: 'Wert ca. 80 €',
+    description:
+      'Du bekommst ein Google-NFC-Tag von uns geschenkt. Kunde hält sein Handy dran, ist sofort auf deiner Bewertungsseite. Sammle Bewertungen ganz nebenbei, ohne fragen zu müssen.',
+  },
+  {
+    icon: 'seo',
+    title: 'SEO-Optimierung von Anfang an',
+    value: 'Wert ca. 500 €',
+    description:
+      'Wir bauen deine Seite so, dass Google sie versteht und weit oben zeigt. Lokale Suche in Bielefeld und OWL inklusive. Du wirst gefunden, ohne dafür extra zu zahlen.',
+  },
+  {
+    icon: 'ai',
+    title: 'Auch von ChatGPT und KI-Suchen gefunden',
+    value: 'Neu im Jahr 2026',
+    description:
+      'Immer mehr Kunden fragen ChatGPT, Claude oder Google AI nach Empfehlungen. Wir bereiten deine Webseite so vor, dass die KI dich kennt und vorschlägt. Damit bist du den meisten voraus.',
+  },
+];
+
+// =====================================================================
+// REFERENZEN (echte Projekte aus site.json)
+// =====================================================================
+
+export type MockupType = 'both' | 'browser' | 'phone';
+
 export interface Reference {
-  name: string;
-  industry: string;
-  image: string;
-  blurb: string;
+  company: string;
+  tag: string;
+  mockupType: MockupType;
+  mockupImage: string;
+  mockupImagePhone?: string;
+  services: string[];
+  keyWin: string;
+  link?: string;
+  linkText?: string;
+  linkIcon?: 'website' | 'shop' | 'app';
+  socialLink?: string;
+  socialLinkText?: string;
+  socialIcon?: 'instagram' | 'tiktok';
 }
 
 export const references: Reference[] = [
   {
-    name: 'Carhifi Herford',
-    industry: 'Auto und Hifi in Herford',
-    image: '/images/carhifi-herford-website.webp',
-    blurb:
-      'Neue Webseite mit Galerie für die Werkstatt in Herford. Mehr Anrufe in den ersten Wochen.',
+    company: 'Bacara Ästhetik',
+    tag: 'Webseite & Social Media',
+    mockupType: 'both',
+    mockupImage: '/images/bacara-website.webp',
+    mockupImagePhone: '/images/bacara-social.webp',
+    services: [
+      'Webseite mit Online-Buchungssystem',
+      'Sprechstundenzeiten mit Live-Update',
+      'Automatische Rechnungsstellung',
+      'Kundengewinnung durch Social Media',
+    ],
+    keyWin: '800+ Termine gebucht über die Webseite. Tendenz steigend.',
+    link: 'https://www.bacara-aesthetik.de',
+    linkText: 'Website ansehen',
+    linkIcon: 'website',
+    socialLink: 'https://www.instagram.com/bacaraasthetik/?hl=de',
+    socialLinkText: 'Instagram ansehen',
+    socialIcon: 'instagram',
   },
   {
-    name: 'Bacara',
-    industry: 'Restaurant in Bielefeld',
-    image: '/images/bacara-website.webp',
-    blurb:
-      'Stilvolle Webseite mit Speisekarte und direkten Reservierungen.',
+    company: 'CarHiFi Herford',
+    tag: 'Webseite & Social Media',
+    mockupType: 'both',
+    mockupImage: '/images/carhifi-herford-website.webp',
+    mockupImagePhone: '/images/halim-tiktok.webp',
+    services: [
+      'Webseite mit eigenem CMS',
+      'Konfigurator für Soundanlagen',
+      'TikTok Strategie und Umsetzung',
+    ],
+    keyWin: 'Leadgenerierung plus 74 Prozent. Dazu starkes Abonnenten-Wachstum.',
+    link: 'https://www.carhifi-herford.de',
+    linkText: 'Website ansehen',
+    linkIcon: 'website',
+    socialLink: 'https://www.tiktok.com/@carhifi.herford',
+    socialLinkText: 'TikTok ansehen',
+    socialIcon: 'tiktok',
   },
   {
-    name: 'Mironi',
-    industry: 'Mode und Lifestyle',
-    image: '/images/mironi-website.webp',
-    blurb:
-      'Webseite mit Verknüpfung zum Shop. Sauber, schnell und mobil zuerst.',
+    company: 'Mironi',
+    tag: 'Onlineshop & Marketing',
+    mockupType: 'browser',
+    mockupImage: '/images/mironi-website.webp',
+    services: [
+      'Shop mit Bestellstatus per E-Mail',
+      'Automatische Mailkampagnen',
+      'Google Ads, Meta Ads und Social Media',
+    ],
+    keyWin:
+      'Marketing komplett ausgelagert. Mehr Zeit fürs Wesentliche, weniger Stress.',
+    link: 'https://mironi.de',
+    linkText: 'Shop ansehen',
+    linkIcon: 'shop',
   },
   {
-    name: 'AF Gebäudeservice',
-    industry: 'Handwerk in OWL',
-    image: '/images/AF-Gebäudeservice.webp',
-    blurb:
-      'Klare Webseite die Vertrauen aufbaut. Anfragen kommen direkt aufs Handy.',
+    company: 'AF Gebäudeservice',
+    tag: 'Webseite & Digitalisierung',
+    mockupType: 'browser',
+    mockupImage: '/images/AF-Gebäudeservice.webp',
+    services: [
+      'Professioneller Webauftritt von Grund auf',
+      'Digitales Anfrage- und Angebotsformular',
+      'Google My Business Optimierung',
+      'Lokale SEO und sauberer Aufbau',
+    ],
+    keyWin:
+      'Anfragen kommen jetzt digital rein. Kein verpasster Auftrag mehr durch fehlende Erreichbarkeit.',
+    link: 'https://www.af-gebaeudeservice.de',
+    linkText: 'Website ansehen',
+    linkIcon: 'website',
   },
 ];
 
-/**
- * Highlight Zitate aus den 7 Google Bewertungen. Platzhalter Texte die
- * realistisch klingen. Vor dem ersten Live Gang gegen die echten Texte
- * von share.google/wT7bMHxCV7NSDWkVp tauschen.
- */
+// =====================================================================
+// GOOGLE REVIEWS (echte Texte aus dem Screenshot)
+// =====================================================================
+
 export interface Review {
   author: string;
+  date: string;
   text: string;
+  rating: number;
 }
 
 export const reviewHighlights: Review[] = [
   {
-    author: 'Cem',
+    author: 'Bugrahan Bacara',
+    date: 'vor 2 Wochen',
+    rating: 5,
     text:
-      'Yusuf hat unsere Webseite in einer Woche neu gebaut. Wir bekommen seit dem deutlich mehr Anrufe. Klare Empfehlung.',
+      'Sehr professionell, wirklich perfekt abgestimmt auf Bedürfnisse, langfristige Betreuung und allen Anforderungen mehr als gerecht geworden. Als Arztpraxis wurde hier alles mit Bravur durchgeführt. Wir sind sehr zufrieden, vielen Dank!',
   },
   {
-    author: 'Selina',
+    author: 'Kaan',
+    date: 'vor 2 Wochen',
+    rating: 5,
     text:
-      'Endlich eine Webseite die ich auch selbst pflegen kann. Yusuf erklärt alles in Ruhe und ohne Fachchinesisch.',
+      'Kolac Digital hat unsere Erwartungen ehrlich gesagt übertroffen. Von der ersten Beratung bis zur Umsetzung lief alles strukturiert und professionell ab. Man merkt, dass hier nicht nur Fachwissen vorhanden ist, sondern auch echtes Interesse daran, das Unternehmen des Kunden voranzubringen. Die Erreichbarkeit, die Qualität der Arbeit und die schnelle Umsetzung waren top. Würde jederzeit wieder mit dem Team zusammenarbeiten.',
   },
   {
-    author: 'Daniel',
+    author: 'Martin Koebe',
+    date: 'vor 2 Wochen',
+    rating: 5,
     text:
-      'Schnell, freundlich, fair im Preis. Die Anbindung an unser System hat sofort geklappt. Sehr gerne wieder.',
+      'Die Zusammenarbeit war von Anfang an professionell und unkompliziert. Unsere Wünsche wurden schnell verstanden und kreativ umgesetzt, sodass wir mit dem Ergebnis sehr zufrieden sind. Besonders hervorzuheben ist Herr Kolac gute Kommunikation und die zuverlässige Umsetzung des Projekts. Jederzeit gerne wieder.',
+  },
+  {
+    author: 'may52',
+    date: 'vor 2 Wochen',
+    rating: 5,
+    text:
+      'Wir können Kolac Digital absolut weiterempfehlen. Von der Webseitenerstellung bis zum Social-Media-Marketing wurden wir professionell und zuverlässig betreut. Besonders überzeugt haben uns die schnelle Erreichbarkeit, kreative Ideen und die angenehme Zusammenarbeit. Vielen Dank an Herrn Kolac und sein Team!',
   },
 ];
 
-/** Häufige Fragen. Auch für FAQPage Schema. */
+// =====================================================================
+// FAQ
+// =====================================================================
+
 export interface FaqItem {
   question: string;
   answer: string;
@@ -171,43 +292,56 @@ export interface FaqItem {
 
 export const faqs: FaqItem[] = [
   {
-    question: 'Was kostet eine Webseite bei dir?',
+    question: 'Was kostet eine Webseite bei euch?',
     answer:
-      'Eine Basis Webseite startet ab 1.000 € Einrichtung und ab 99 € im Monat. Wenn du mehr willst sage ich dir vorher genau was es kostet. Du bekommst nie eine Rechnung die du nicht erwartet hast.',
+      'Eine Basis-Webseite startet ab 1.000 € Einrichtung plus ab 99 € im Monat. Im Monatspreis sind Hosting, Wartung und kleine Änderungen direkt mit drin. Du musst dir also nicht für jede Kleinigkeit Sorgen um eine extra Rechnung machen. Wenn dein Projekt größer ist, sage ich dir vorher genau was es kostet. Du bekommst nie eine Überraschung auf der Rechnung. Wir reden vorher in Ruhe darüber, was du wirklich brauchst, damit du nichts zahlst was du nicht nutzt.',
   },
   {
     question: 'Wie lange dauert das?',
     answer:
-      'Eine Basis Webseite ist in ein bis zwei Wochen fertig. Größere Projekte brauchen ein paar Wochen mehr. Wir reden vorher genau über deinen Zeitplan.',
+      'Eine Basis-Webseite ist meistens in ein bis zwei Wochen fertig. Bei größeren Projekten mit Datenbank oder eigenen Funktionen brauchen wir ein paar Wochen mehr, manchmal zwei bis drei Monate. Wichtig ist mir: Du weißt vorher genau wann was passiert. Wir setzen uns einmal kurz zusammen und planen den Ablauf gemeinsam. Du musst nichts unterschreiben bevor wir uns einig sind.',
   },
   {
-    question: 'Kann ich meine alte Seite und meine alten Daten behalten?',
+    question: 'Kann ich meine alten Daten und Inhalte mitnehmen?',
     answer:
-      'Ja. Ich übernehme deine Texte, Bilder und Daten aus deiner alten Seite oder deinem alten System. Du fängst nicht bei Null an.',
+      'Ja, das machen wir fast immer. Egal ob alte Webseite, alter Online-Shop oder ein Programm das du seit Jahren nutzt. Ich übernehme deine Texte, Bilder, Kundendaten und alles was du behalten möchtest. So fängst du nicht bei Null an und verlierst nichts. Wenn du willst, baue ich auch eine Verbindung zu deinem alten System, damit beides weiterläuft.',
   },
   {
-    question: 'Funktioniert das auch bei mir vor Ort?',
+    question: 'Arbeitet ihr nur in Bielefeld und OWL oder auch deutschlandweit?',
     answer:
-      'Ja. Ich arbeite mit Firmen in ganz Bielefeld, Herford, Gütersloh, Paderborn und im Rest von Nordrhein Westfalen. Wir treffen uns wenn du willst oder reden online.',
+      'Mein Schwerpunkt liegt klar auf Bielefeld, Herford, Gütersloh, Paderborn und ganz Ostwestfalen. Das ist meine Heimat und ich kenne den Markt hier sehr gut. Ich arbeite aber auch deutschlandweit. Über die Hälfte meiner Kunden sehe ich nie persönlich. Wir treffen uns online über Video-Call und alles läuft trotzdem reibungslos. Wenn du persönlich Hand schütteln möchtest, komme ich gerne vorbei.',
   },
   {
-    question: 'Kann ich die Webseite später selbst ändern?',
+    question: 'Bekomme ich wirklich kostenlose professionelle Fotos dazu?',
     answer:
-      'Ja. Du bekommst einen eigenen Zugang. Du kannst Texte, Bilder und Termine selbst ändern. Wenn du Hilfe brauchst bin ich da.',
+      'Ja. Bei jedem Webseiten-Paket kommt ein Foto-Termin bei dir vor Ort dazu. Wir bringen die Kamera mit und fotografieren dein Team, deine Räume und deine Produkte. Die fertigen Bilder darfst du komplett behalten und auch außerhalb der Webseite nutzen, zum Beispiel für Google, Instagram oder Flyer. Falls du außerhalb von OWL sitzt, sprechen wir kurz über die An- und Abfahrt. Du musst dir kein extra Foto-Shooting für 500 € oder mehr buchen.',
   },
   {
-    question: 'Was passiert wenn etwas nicht klappt?',
+    question: 'Was bringt mir das Google-NFC-Tag genau?',
     answer:
-      'Ich kümmere mich. Hosting und Wartung sind im Monatspreis dabei. Du brauchst keinen extra Techniker.',
+      'Das NFC-Tag ist eine kleine Plakette für deinen Tresen oder dein Auto. Dein Kunde hält sein Handy einmal dran und landet sofort auf deiner Google-Bewertungsseite. Keine Suche, kein Eintippen. Mehr Bewertungen bedeuten bei Google ein besseres Ranking und mehr Vertrauen bei neuen Kunden. Das Tag bekommst du von uns geschenkt, wenn du eine Webseite bei uns baust.',
   },
   {
-    question: 'Wie geht es nach dem Formular weiter?',
+    question: 'Werde ich bei Google und auch bei ChatGPT gefunden?',
     answer:
-      'Ich melde mich innerhalb von 24 Stunden bei dir. Wir reden kurz über dein Projekt. Das Gespräch ist kostenlos und unverbindlich.',
+      'Genau dafür sorgen wir. Wir bauen deine Seite technisch so, dass Google sie leicht lesen kann und in den lokalen Suchen weit oben zeigt. Zusätzlich bereiten wir die Inhalte für die neuen KI-Suchmaschinen wie ChatGPT, Claude und Google AI vor. Diese Systeme empfehlen immer öfter Firmen direkt im Chat, ohne dass jemand klassisch googelt. Wer dafür bereit ist, hat einen riesigen Vorsprung.',
+  },
+  {
+    question: 'Was passiert wenn nach dem Start etwas nicht klappt?',
+    answer:
+      'Ich kümmere mich. Hosting, Wartung und kleine Anpassungen sind im Monatspreis schon dabei. Du brauchst keinen extra Techniker und keinen Vertrag mit einem dritten Anbieter. Wenn du anrufst, gehe ich selbst ran. Du sprichst direkt mit der Person die deine Webseite kennt und gebaut hat. Das spart Zeit und Nerven.',
+  },
+  {
+    question: 'Wie geht es weiter wenn ich das Formular abschicke?',
+    answer:
+      'Ich melde mich innerhalb von 24 Stunden bei dir, in der Regel deutlich schneller. Wir reden in Ruhe am Telefon über dein Projekt, was du brauchst und was möglich ist. Dieses Gespräch ist komplett kostenlos und du musst danach nichts kaufen. Erst wenn du sagst, lass uns das machen, geht es weiter. Du hast also nichts zu verlieren.',
   },
 ];
 
-/** Service-Regionen. Für lokale Sichtbarkeit. */
+// =====================================================================
+// SERVICE-REGIONEN (lokale Sichtbarkeit + bundesweit)
+// =====================================================================
+
 export const serviceAreas = [
   'Bielefeld',
   'Herford',
@@ -219,5 +353,6 @@ export const serviceAreas = [
   'Münster',
   'Dortmund',
   'OWL',
-  'Nordrhein Westfalen',
+  'Nordrhein-Westfalen',
+  'Deutschland',
 ];

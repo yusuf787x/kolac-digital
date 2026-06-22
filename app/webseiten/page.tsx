@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import {
   faqs,
+  includedBonuses,
   packages,
   references,
   reviewHighlights,
@@ -12,9 +13,9 @@ import ContactForm from './ContactForm';
 
 export const metadata: Metadata = {
   title:
-    'Individuelle Webseiten aus Bielefeld | Kolac Digital für OWL und NRW',
+    'Individuelle Webseiten aus Bielefeld | Kolac Digital für OWL, NRW & deutschlandweit',
   description:
-    'Wir bauen für dich individuelle Webseiten in Bielefeld, OWL und ganz Nordrhein Westfalen. Schnell mit KI gebaut. Mit System. Hosting, Wartung und Pflege dabei. Ab 1.000 €.',
+    'Wir bauen für dich individuelle Webseiten mit System. Inklusive professioneller Fotos, Google-NFC-Tag, SEO und KI-Suchmaschinen-Optimierung. Ab 1.000 €. Aus Bielefeld für OWL, NRW und ganz Deutschland.',
   alternates: {
     canonical: `${site.baseUrl}/webseiten`,
   },
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     url: `${site.baseUrl}/webseiten`,
     title: 'Individuelle Webseiten aus Bielefeld | Kolac Digital',
     description:
-      'Wir bauen Webseiten die mehr können als nur schön aussehen. Für Firmen in OWL und ganz Nordrhein Westfalen. Ab 1.000 €.',
+      'Webseiten die mehr können als nur schön aussehen. Inklusive Fotos, NFC-Tag, SEO und KI-Findability. Ab 1.000 €.',
     siteName: 'Kolac Digital',
     images: [
       {
@@ -46,21 +47,22 @@ export const metadata: Metadata = {
     'Webseite Bielefeld',
     'Webseite erstellen Bielefeld',
     'Webseite OWL',
-    'Webseite Nordrhein Westfalen',
-    'Webseite mit KI',
+    'Webseite Nordrhein-Westfalen',
+    'Webseite Deutschland',
     'individuelle Webseite',
     'Webdesign Bielefeld',
     'Webagentur Bielefeld',
     'Webseite für Handwerker',
     'Webseite für Restaurants',
-    'Webseite günstig',
+    'Webseite für Praxen',
     'Hosting Bielefeld',
     'Webseite mit System',
+    'KI-Suchmaschinen-Optimierung',
   ],
 };
 
 // =====================================================================
-// JSON LD Strukturierte Daten
+// JSON-LD Strukturierte Daten
 // =====================================================================
 
 function StructuredData() {
@@ -96,6 +98,16 @@ function StructuredData() {
       bestRating: 5,
       worstRating: 1,
     },
+    review: reviewHighlights.map((r) => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: r.author },
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: r.rating,
+        bestRating: 5,
+      },
+      reviewBody: r.text,
+    })),
   };
 
   const service = {
@@ -105,7 +117,7 @@ function StructuredData() {
     provider: { '@id': `${site.baseUrl}/#business` },
     areaServed: serviceAreas,
     description:
-      'Wir bauen für dich individuelle Webseiten und digitale Systeme. Schnell mit KI. Mit System. Inklusive Hosting, Wartung und Pflege.',
+      'Individuelle Webseiten mit System. Inklusive professioneller Fotos, Google-NFC-Tag, SEO und KI-Suchmaschinen-Optimierung.',
     offers: packages.map((p) => ({
       '@type': 'Offer',
       name: p.name,
@@ -176,6 +188,41 @@ function StructuredData() {
 }
 
 // =====================================================================
+// Hilfs-Komponenten
+// =====================================================================
+
+function Stars({ count = 5 }: { count?: number }) {
+  return (
+    <span className="inline-flex text-yellow-500">
+      {Array.from({ length: count }).map((_, i) => (
+        <span key={i} aria-hidden>
+          ★
+        </span>
+      ))}
+      <span className="sr-only">{count} von 5 Sternen</span>
+    </span>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg
+      className="h-4 w-4 text-brand-blue"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+}
+
+// =====================================================================
 // Sections
 // =====================================================================
 
@@ -187,27 +234,24 @@ function Hero() {
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-              Frei für neue Projekte in {site.city} und OWL
+              Frei für neue Projekte aus {site.city}, OWL und deutschlandweit
             </span>
             <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
               Individuelle Webseiten aus {site.city}, die für dich mitdenken.
             </h1>
             <p className="mt-5 max-w-xl text-base text-gray-600 sm:text-lg">
-              Du bekommst keine 08/15 Vorlage. Du bekommst eine Webseite die
-              dir Anfragen reinholt und dir Arbeit abnimmt. Schnell gebaut mit
-              KI. Klug geplant mit Plan. Für Firmen in OWL und ganz
-              Nordrhein Westfalen.
+              Du bekommst keine Vorlage von der Stange. Du bekommst eine
+              Webseite die dir Anfragen reinholt und dir Arbeit abnimmt.
+              Sauber gebaut, klar geplant und mit echtem Plan dahinter. Für
+              Firmen in OWL, Nordrhein-Westfalen und ganz Deutschland.
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
               <a href="#kontakt" className="btn-primary px-5 py-3 text-base">
                 Anfrage starten
               </a>
-              <a
-                href="#leistungen"
-                className="btn-secondary px-5 py-3 text-base"
-              >
-                Was du bekommst
+              <a href="#preise" className="btn-secondary px-5 py-3 text-base">
+                Preise ansehen
               </a>
             </div>
 
@@ -250,17 +294,17 @@ function TrustStrip() {
     <section className="border-b border-gray-100 bg-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-sm text-gray-600 sm:px-6">
         <span className="flex items-center gap-2">
-          <span aria-hidden>📍</span> Wir arbeiten für Firmen in{' '}
+          <span aria-hidden>📍</span> Kunden in{' '}
           <strong className="text-gray-900">
             Bielefeld, Herford, Gütersloh, Paderborn
           </strong>{' '}
-          und ganz NRW
+          und deutschlandweit
         </span>
         <span className="flex items-center gap-2">
           <span aria-hidden>⚡</span> Webseite in ein bis zwei Wochen fertig
         </span>
         <span className="flex items-center gap-2">
-          <span aria-hidden>🤝</span> Persönlicher Ansprechpartner
+          <span aria-hidden>🤝</span> Du sprichst direkt mit dem Inhaber
         </span>
       </div>
     </section>
@@ -322,20 +366,16 @@ function Benefits() {
 function Leistungen() {
   const items = [
     {
-      title: 'Komplett für dich gebaut',
-      text: 'Keine Vorlage. Wir bauen genau das was du brauchst.',
+      title: 'Komplett individuell gebaut',
+      text: 'Keine Vorlage, kein Baukasten. Wir bauen genau das was du brauchst.',
     },
     {
       title: 'Hosting und Wartung dabei',
       text: 'Du musst dich um nichts kümmern. Wir halten die Seite am Laufen.',
     },
     {
-      title: 'Du kannst alles selbst pflegen',
-      text: 'Texte, Bilder, Termine. Du änderst alles mit ein paar Klicks.',
-    },
-    {
-      title: 'Sieht auf Handy gut aus',
-      text: 'Über die Hälfte deiner Kunden öffnen die Seite am Handy. Wir denken das von Anfang an mit.',
+      title: 'Sieht auf Handy top aus',
+      text: 'Über die Hälfte deiner Kunden öffnen die Seite am Handy. Das denken wir von Anfang an mit.',
     },
     {
       title: 'Anbindung an deine Tools',
@@ -350,8 +390,12 @@ function Leistungen() {
       text: 'Wir bauen die Seite so, dass Google sie versteht und vorne zeigt.',
     },
     {
-      title: 'Findbar bei KI Suchen',
-      text: 'Auch ChatGPT und Google AI sollen dich finden. Wir bereiten die Seite darauf vor.',
+      title: 'Findbar bei KI-Suchen',
+      text: 'Auch ChatGPT, Claude und Google AI sollen dich kennen. Wir bereiten die Seite darauf vor.',
+    },
+    {
+      title: 'Persönlicher Ansprechpartner',
+      text: 'Du rufst an und sprichst direkt mit Yusuf. Kein Callcenter, kein Verkäufer.',
     },
   ];
 
@@ -396,6 +440,71 @@ function Leistungen() {
   );
 }
 
+function Bonuses() {
+  const icons = {
+    camera: '📸',
+    nfc: '📲',
+    seo: '🔍',
+    ai: '🤖',
+  };
+  return (
+    <section className="relative overflow-hidden bg-white py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <header className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
+            Geschenke bei jeder Webseite
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+            Du bekommst mehr als nur eine Webseite.
+          </h2>
+          <p className="mt-3 text-base text-gray-600">
+            Vier Dinge bekommst du bei jedem Webseiten-Paket automatisch mit
+            dazu. Ohne Aufpreis. Im Gesamtwert von über 1.000 €.
+          </p>
+        </header>
+
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
+          {includedBonuses.map((b) => (
+            <div
+              key={b.title}
+              className="relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-blue-50/50 p-6 shadow-sm transition-shadow hover:shadow-md"
+            >
+              <div className="flex items-start gap-4">
+                <div className="grid h-14 w-14 flex-shrink-0 place-items-center rounded-2xl bg-brand-blue/10 text-3xl">
+                  {icons[b.icon]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {b.title}
+                    </h3>
+                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-semibold tracking-wider text-green-800">
+                      {b.value}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                    {b.description}
+                  </p>
+                </div>
+              </div>
+              <span className="pointer-events-none absolute -bottom-6 -right-6 grid h-20 w-20 place-items-center rounded-full bg-brand-blue text-xs font-bold uppercase tracking-wider text-white shadow-lg">
+                Gratis
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-brand-blue/20 bg-brand-blue/5 p-5 text-center">
+          <p className="text-sm font-medium text-gray-900">
+            Diese vier Boni gibt es nur, wenn du eine Webseite bei uns
+            buchst. Sie sind in den Preisen unten schon inklusive.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Process() {
   const steps = [
     {
@@ -415,7 +524,7 @@ function Process() {
     },
   ];
   return (
-    <section className="bg-white py-16 sm:py-20">
+    <section className="bg-gray-50 py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <header className="max-w-2xl">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
@@ -449,9 +558,157 @@ function Process() {
   );
 }
 
+function ReferenceCard({
+  r,
+}: {
+  r: (typeof references)[number];
+}) {
+  const linkIcons = {
+    website: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    ),
+    shop: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <path d="M16 10a4 4 0 0 1-8 0" />
+      </svg>
+    ),
+    instagram: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+      </svg>
+    ),
+    tiktok: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V9.05a8.15 8.15 0 0 0 4.77 1.52V7.12a4.85 4.85 0 0 1-1-.43z" />
+      </svg>
+    ),
+    app: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+        <line x1="12" y1="18" x2="12.01" y2="18" />
+      </svg>
+    ),
+  };
+
+  const showPhone = r.mockupType === 'both' && r.mockupImagePhone;
+
+  return (
+    <article className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:p-7">
+      {/* Mockup: Browser + optional Phone Overlay */}
+      <div className="relative">
+        <a
+          href={r.link ?? '#'}
+          target={r.link ? '_blank' : undefined}
+          rel="noopener noreferrer"
+          className="block overflow-hidden rounded-xl bg-gray-100"
+          aria-label={`${r.company} Webseite ansehen`}
+        >
+          <div className="bg-gray-200 px-3 py-2">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-400" />
+            <span className="ml-1.5 inline-block h-2.5 w-2.5 rounded-full bg-yellow-400" />
+            <span className="ml-1.5 inline-block h-2.5 w-2.5 rounded-full bg-green-400" />
+          </div>
+          <div className="relative aspect-[16/10] w-full">
+            <Image
+              src={r.mockupImage}
+              alt={`Webseite von ${r.company}`}
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              className="object-cover"
+            />
+          </div>
+        </a>
+
+        {showPhone && (
+          <a
+            href={r.socialLink ?? r.link ?? '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute -right-2 bottom-[-8px] aspect-[9/19] w-[26%] max-w-[120px] overflow-hidden rounded-[1.4rem] border-[3px] border-gray-900 bg-gray-900 shadow-xl"
+            aria-label={`${r.company} Social Media ansehen`}
+          >
+            <Image
+              src={r.mockupImagePhone!}
+              alt={`${r.company} Social Media`}
+              fill
+              sizes="120px"
+              className="object-cover"
+            />
+          </a>
+        )}
+      </div>
+
+      {/* Inhalt */}
+      <div className="mt-6">
+        <span className="inline-flex items-center rounded-full bg-brand-blue/10 px-3 py-1 text-xs font-semibold text-brand-blue">
+          {r.tag}
+        </span>
+        <h3 className="mt-3 text-2xl font-semibold text-gray-900">
+          {r.company}
+        </h3>
+
+        <ul className="mt-4 space-y-2">
+          {r.services.map((s) => (
+            <li key={s} className="flex items-start gap-2 text-sm text-gray-700">
+              <span className="mt-1 flex-shrink-0 text-brand-blue">
+                <ArrowIcon />
+              </span>
+              <span>{s}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-5 rounded-lg border-l-[3px] border-brand-blue bg-brand-blue/5 p-3">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-brand-blue">
+            Key Win
+          </p>
+          <p className="mt-1 text-sm font-medium text-gray-900">{r.keyWin}</p>
+        </div>
+
+        {(r.link || r.socialLink) && (
+          <div className="mt-5 flex flex-wrap gap-2">
+            {r.link && (
+              <a
+                href={r.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue-hover"
+              >
+                {linkIcons[r.linkIcon ?? 'website']}
+                {r.linkText ?? 'Website ansehen'}
+              </a>
+            )}
+            {r.socialLink && (
+              <a
+                href={r.socialLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-white ${
+                  r.socialIcon === 'instagram'
+                    ? 'bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600'
+                    : 'bg-black'
+                }`}
+              >
+                {linkIcons[r.socialIcon ?? 'instagram']}
+                {r.socialLinkText ?? 'Profil ansehen'}
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
 function References() {
   return (
-    <section id="referenzen" className="bg-gray-50 py-16 sm:py-20">
+    <section id="referenzen" className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <header className="max-w-2xl">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
@@ -461,37 +718,14 @@ function References() {
             Sieh dir an was wir gemacht haben.
           </h2>
           <p className="mt-3 text-base text-gray-600">
-            Echte Projekte für echte Firmen aus der Region.
+            Echte Projekte für echte Firmen. Klick rein und schau dir die
+            Live-Seiten an.
           </p>
         </header>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div className="mt-10 grid gap-8 lg:grid-cols-2">
           {references.map((r) => (
-            <article
-              key={r.name}
-              className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md"
-            >
-              <div className="relative aspect-[16/10] w-full bg-gray-100">
-                <Image
-                  src={r.image}
-                  alt={`Webseite von ${r.name} aus ${r.industry}`}
-                  fill
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="p-5">
-                <p className="text-xs uppercase tracking-wider text-gray-500">
-                  {r.industry}
-                </p>
-                <h3 className="mt-1 text-lg font-semibold text-gray-900">
-                  {r.name}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                  {r.blurb}
-                </p>
-              </div>
-            </article>
+            <ReferenceCard key={r.company} r={r} />
           ))}
         </div>
       </div>
@@ -501,7 +735,7 @@ function References() {
 
 function Reviews() {
   return (
-    <section className="bg-white py-16 sm:py-20">
+    <section className="bg-gray-50 py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <header className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div className="max-w-xl">
@@ -525,26 +759,36 @@ function Reviews() {
             rel="noopener noreferrer"
             className="btn-secondary"
           >
-            Alle {site.rating.count} Bewertungen ansehen
+            Alle Bewertungen ansehen
           </a>
         </header>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 md:grid-cols-2">
           {reviewHighlights.map((r) => (
             <figure
               key={r.author}
-              className="rounded-2xl border border-gray-100 bg-gray-50 p-6"
+              className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
             >
-              <div className="flex items-center justify-between">
-                <Stars />
-                <span className="text-xs text-gray-500">Google</span>
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-blue/10 text-base font-semibold text-brand-blue">
+                  {r.author.charAt(0)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {r.author}
+                  </p>
+                  <p className="text-xs text-gray-500">{r.date}</p>
+                </div>
+                <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  Google
+                </span>
+              </div>
+              <div className="mt-3">
+                <Stars count={r.rating} />
               </div>
               <blockquote className="mt-3 text-sm leading-relaxed text-gray-700">
-                „{r.text}“
+                „{r.text}"
               </blockquote>
-              <figcaption className="mt-4 text-sm font-medium text-gray-900">
-                {r.author}
-              </figcaption>
             </figure>
           ))}
         </div>
@@ -555,7 +799,7 @@ function Reviews() {
 
 function Pricing() {
   return (
-    <section id="preise" className="bg-gray-50 py-16 sm:py-20">
+    <section id="preise" className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <header className="max-w-2xl">
           <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
@@ -565,8 +809,10 @@ function Pricing() {
             Faire Preise. Keine Überraschungen.
           </h2>
           <p className="mt-3 text-base text-gray-600">
-            Du siehst hier ab welchem Preis es losgeht. Den genauen Preis für
-            dein Projekt sagen wir dir nach dem ersten Gespräch.
+            Du siehst hier ab welchem Preis es losgeht. Den genauen Preis
+            für dein Projekt sagen wir dir nach dem ersten Gespräch.
+            Foto-Shooting, NFC-Tag und SEO sind in jedem Webseiten-Paket
+            schon mit drin.
           </p>
         </header>
 
@@ -580,9 +826,9 @@ function Pricing() {
                   : 'border-gray-100'
               }`}
             >
-              {p.highlight && (
+              {p.badge && (
                 <span className="absolute -top-3 left-6 inline-flex items-center rounded-full bg-brand-blue px-3 py-1 text-xs font-semibold tracking-wider text-white">
-                  Empfohlen
+                  {p.badge}
                 </span>
               )}
               <h3 className="text-lg font-semibold text-gray-900">{p.name}</h3>
@@ -608,6 +854,16 @@ function Pricing() {
                 ))}
               </ul>
 
+              {p.highlight && (
+                <div className="mt-5 rounded-lg border border-green-200 bg-green-50 p-3 text-xs text-green-900">
+                  <p className="font-semibold">Inklusive Geschenke:</p>
+                  <p className="mt-0.5">
+                    Profi-Fotos vor Ort, Google-NFC-Tag und SEO-Setup im Wert
+                    von über 1.000 €.
+                  </p>
+                </div>
+              )}
+
               <a
                 href="#kontakt"
                 className={`mt-6 ${
@@ -631,17 +887,22 @@ function Pricing() {
 
 function About() {
   return (
-    <section className="bg-white py-16 sm:py-20">
+    <section className="bg-gray-50 py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="grid items-center gap-10 md:grid-cols-2">
-          <div className="relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-2xl bg-gray-100">
-            <Image
-              src="/email/yk.png"
-              alt="Yusuf Kolac, Geschäftsführer von Kolac Digital aus Bielefeld"
-              fill
-              sizes="(min-width: 768px) 400px, 80vw"
-              className="object-cover"
-            />
+        <div className="grid items-center gap-10 md:grid-cols-[auto_1fr]">
+          <div className="mx-auto md:mx-0">
+            <div className="relative h-56 w-56 overflow-hidden rounded-full bg-gradient-to-br from-blue-100 to-white p-1.5 shadow-lg ring-4 ring-brand-blue/30 sm:h-72 sm:w-72">
+              <div className="relative h-full w-full overflow-hidden rounded-full bg-white">
+                <Image
+                  src="/email/yk.png"
+                  alt="Yusuf Kolac, Geschäftsführer von Kolac Digital aus Bielefeld"
+                  fill
+                  sizes="(min-width: 640px) 288px, 224px"
+                  className="object-cover object-center"
+                  style={{ objectPosition: '50% 30%' }}
+                />
+              </div>
+            </div>
           </div>
           <div>
             <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
@@ -652,17 +913,20 @@ function About() {
             </h2>
             <p className="mt-4 text-base leading-relaxed text-gray-700">
               Ich komme aus Bielefeld und baue seit Jahren Webseiten für
-              kleine und mittelgroße Firmen in OWL und ganz Nordrhein
-              Westfalen.
+              kleine und mittelgroße Firmen. Mein Schwerpunkt liegt klar in
+              OWL und Nordrhein-Westfalen. Ich arbeite aber genauso für
+              Kunden in ganz Deutschland.
             </p>
             <p className="mt-3 text-base leading-relaxed text-gray-700">
-              Mit KI bin ich heute viel schneller geworden. Du bekommst eine
-              fertige Webseite in Tagen statt Monaten. Ohne dass die Qualität
-              darunter leidet.
+              Bei mir bekommst du keinen Vertrieb, keinen Account-Manager
+              und keinen Zwischenhändler. Du sprichst direkt mit der Person
+              die deine Webseite kennt und gebaut hat. Das spart Zeit, Nerven
+              und am Ende auch Geld.
             </p>
             <p className="mt-3 text-base leading-relaxed text-gray-700">
-              Wenn du mich anrufst sprichst du direkt mit mir. Kein
-              Callcenter. Kein Verkäufer. Einfach jemand der dir hilft.
+              Mein Anspruch ist einfach. Du sollst nach dem Live-Gang mehr
+              Anfragen haben, weniger im Alltag erklären müssen und mit
+              ruhigem Gefühl auf deine eigene Webseite schauen können.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-gray-600">
@@ -689,7 +953,7 @@ function About() {
 
 function Faq() {
   return (
-    <section id="faq" className="bg-gray-50 py-16 sm:py-20">
+    <section id="faq" className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <header>
           <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
@@ -742,9 +1006,9 @@ function Kontakt() {
               Sag mir kurz was du brauchst.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-blue-100">
-              Trag deinen Namen und deine Nummer ein. Ich rufe dich innerhalb
-              von 24 Stunden zurück. Wir reden in Ruhe über dein Projekt. Du
-              musst nichts entscheiden und nichts kaufen.
+              Trag deinen Namen und deine Nummer ein. Ich rufe dich
+              innerhalb von 24 Stunden zurück. Wir reden in Ruhe über dein
+              Projekt. Du musst nichts entscheiden und nichts kaufen.
             </p>
 
             <div className="mt-8 space-y-3 text-sm">
@@ -790,19 +1054,6 @@ function Kontakt() {
   );
 }
 
-function Stars() {
-  return (
-    <span className="inline-flex text-yellow-500">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} aria-hidden>
-          ★
-        </span>
-      ))}
-      <span className="sr-only">5 von 5 Sternen</span>
-    </span>
-  );
-}
-
 // =====================================================================
 // Seite
 // =====================================================================
@@ -815,6 +1066,7 @@ export default function WebseitenPage() {
       <TrustStrip />
       <Benefits />
       <Leistungen />
+      <Bonuses />
       <Process />
       <References />
       <Reviews />

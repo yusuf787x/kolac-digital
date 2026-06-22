@@ -101,6 +101,9 @@
       d.services.forEach((service, i) => {
         const card = document.createElement('div');
         card.className = `service-card reveal reveal-delay-${i + 1}`;
+        const linkHTML = service.link
+          ? `<a href="${service.link}" class="service-card-link">${service.linkText || 'Mehr erfahren'} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>`
+          : '';
         card.innerHTML = `
           <div class="service-icon">${getServiceIcon(service.icon)}</div>
           <h3>${service.title}</h3>
@@ -108,6 +111,7 @@
           <ul class="service-features">
             ${service.features.map(f => `<li>${f}</li>`).join('')}
           </ul>
+          ${linkHTML}
         `;
         grid.appendChild(card);
       });
