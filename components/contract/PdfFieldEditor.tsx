@@ -52,11 +52,11 @@ const FIELD_TYPES: FieldTypeDef[] = [
   },
   {
     type: 'date',
-    label: 'Datum (auto)',
-    shortLabel: 'Datum',
+    label: 'Ort + Datum (auto)',
+    shortLabel: 'Ort & Datum',
     color: '#b45309',
     bgColor: 'rgba(245, 158, 11, 0.12)',
-    defaultWidth: 0.18,
+    defaultWidth: 0.32,
     defaultHeight: 0.03,
   },
 ];

@@ -246,6 +246,8 @@ export interface Contract {
     firstName: string;
     lastName: string;
     email: string;
+    /** Stadt des Kunden — wird im Datumsfeld als „Ort, Datum" gerendert. */
+    city?: string;
   };
   typeId: string; // ID des Vertragstyps (siehe contractTypes)
   typeLabel: string; // Snapshot für Anzeige in Listen

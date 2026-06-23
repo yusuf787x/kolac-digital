@@ -145,6 +145,7 @@ function NeuerVertragInner() {
           firstName: customer.firstName,
           lastName: customer.lastName,
           email: customer.email,
+          city: customer.city,
         },
         typeId,
         typeLabel: type.label,

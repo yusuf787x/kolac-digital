@@ -117,7 +117,7 @@ function PreviewField({ field }: { field: ContractField }) {
         style={{ ...style, border: '1px dashed #d97706' }}
         className="flex items-center justify-center text-[10px] text-amber-700"
       >
-        Datum (automatisch)
+        Ort + Datum (automatisch)
       </div>
     );
   }

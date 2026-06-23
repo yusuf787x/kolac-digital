@@ -122,7 +122,9 @@ export async function POST(req: Request) {
     ? await pdfDoc.embedPng(kolacSignatureBytes)
     : null;
 
-  const dateString = formatDateDDMMYYYY(new Date());
+  const today = formatDateDDMMYYYY(new Date());
+  const city = (data.customerSnapshot?.city ?? '').trim();
+  const dateString = city ? `${city}, ${today}` : today;
 
   for (const field of fields) {
     const pageIndex = field.page - 1;

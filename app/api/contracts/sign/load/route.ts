@@ -83,7 +83,9 @@ export async function GET(req: Request) {
     typeLabel: data.typeLabel,
     customerCompany: data.customerSnapshot?.company ?? '',
     fields: data.fields ?? [],
-    originalPdfUrl: data.originalPdfUrl,
+    // Eigene Proxy-URL statt direkte Firebase-Storage-URL, damit
+    // react-pdf das PDF cross-origin sauber per fetch laden kann.
+    originalPdfUrl: `/api/contracts/sign/pdf?token=${encodeURIComponent(token)}`,
     expiresAt: expiresAtMs,
   });
 }

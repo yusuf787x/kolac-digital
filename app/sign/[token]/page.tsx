@@ -154,7 +154,7 @@ export default function SignPage() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
-              src="/logo.png"
+              src="/images/logo.png"
               alt="Kolac Digital"
               className="h-8 w-auto"
             />
@@ -250,7 +250,7 @@ export default function SignPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
-                  placeholder="z.B. Halim Özdemir"
+                  placeholder="Max Mustermann"
                   autoComplete="name"
                 />
               </div>
