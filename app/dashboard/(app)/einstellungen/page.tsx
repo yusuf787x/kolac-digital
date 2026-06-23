@@ -18,6 +18,7 @@ import {
 } from '@/lib/import-from-sheet';
 import { authedFetch } from '@/lib/api-client';
 import type { Settings, GoogleAuth } from '@/lib/types';
+import ContractTypesManager from '@/components/contract/ContractTypesManager';
 
 export default function EinstellungenPage() {
   return (
@@ -500,6 +501,18 @@ function EinstellungenInner() {
               )}
             </div>
           )}
+        </section>
+
+        <section className="card">
+          <h2 className="text-base font-semibold text-gray-900 mb-2">
+            Vertragstypen
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Welche Vertragsarten kannst du im Vertragsmodul auswählen? Du
+            kannst neue Typen anlegen (z.B. NDA, Wartungsvertrag) und
+            bestehende deaktivieren.
+          </p>
+          <ContractTypesManager />
         </section>
 
         <section className="card">

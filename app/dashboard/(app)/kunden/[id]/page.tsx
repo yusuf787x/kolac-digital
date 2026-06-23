@@ -9,8 +9,14 @@ import {
   listInvoicesByCustomer,
   listQuotesByCustomer,
   listDealsByCustomer,
+  listContractsByCustomer,
 } from '@/lib/firestore';
-import type { Customer, Invoice, Quote, Deal } from '@/lib/types';
+import type { Customer, Invoice, Quote, Deal, Contract } from '@/lib/types';
+import {
+  CONTRACT_STATUS_LABELS,
+  CONTRACT_STATUS_BADGE_CLASSES,
+  computeContractStatus,
+} from '@/lib/contract-status';
 import { formatEUR, formatDateDE, formatTsDE } from '@/lib/utils';
 import { stageDef } from '@/lib/sales';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
@@ -39,6 +45,7 @@ function KundeDetailInner() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -50,12 +57,14 @@ function KundeDetailInner() {
       listInvoicesByCustomer(id),
       listQuotesByCustomer(id),
       listDealsByCustomer(id),
+      listContractsByCustomer(id),
     ])
-      .then(([c, inv, qts, dls]) => {
+      .then(([c, inv, qts, dls, ctr]) => {
         setCustomer(c);
         setInvoices(inv);
         setQuotes(qts);
         setDeals(dls);
+        setContracts(ctr);
       })
       .catch((err) => {
         console.error(err);
@@ -288,6 +297,58 @@ function KundeDetailInner() {
                           {formatEUR(q.totalAmount)}
                         </span>
                       </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold text-gray-900">
+                Verträge ({contracts.length})
+              </h2>
+              <Link
+                href={`/dashboard/vertraege/neu?customerId=${customer.id}`}
+                className="text-sm text-brand-blue hover:underline font-medium"
+              >
+                + Neuer Vertrag
+              </Link>
+            </div>
+
+            {contracts.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                Noch keine Verträge für diesen Kunden.
+              </p>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {contracts.map((c) => {
+                  const cs = computeContractStatus(c);
+                  return (
+                    <Link
+                      key={c.id}
+                      href={`/dashboard/vertraege/${c.id}`}
+                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {c.title}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {c.typeLabel}
+                          {c.signedAt
+                            ? ` · signiert ${formatTsDE(c.signedAt)}`
+                            : c.sentAt
+                              ? ` · versendet ${formatTsDE(c.sentAt)}`
+                              : ' · Entwurf'}
+                        </p>
+                      </div>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded ${CONTRACT_STATUS_BADGE_CLASSES[cs]}`}
+                      >
+                        {CONTRACT_STATUS_LABELS[cs]}
+                      </span>
                     </Link>
                   );
                 })}

@@ -300,60 +300,105 @@ textarea {
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* Mobile Menu */
+/* Mobile Menu — eleganter Overlay mit Fade + sanftem Scale-Easing.
+   Frosted Glass, Hairline-Trenner zwischen den Links, Brand-Blue-CTA. */
 .mobile-menu {
   position: fixed;
-  top: 0;
-  right: -100%;
+  inset: 0;
   width: 100%;
   height: 100vh;
   height: 100dvh;
-  background: rgba(245, 245, 247, 0.97);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  background: rgba(252, 252, 253, 0.92);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  gap: 32px;
-  transition: right var(--transition-slow);
+  gap: 0;
+  padding: 96px 28px 56px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(1.04);
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.45s;
   z-index: 999;
 }
 
 .mobile-menu.open {
-  right: 0;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: scale(1);
 }
 
 .mobile-menu a {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--color-black);
+  padding: 18px 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: left;
+  text-decoration: none;
   opacity: 0;
-  transform: translateX(30px);
-  transition: all 0.4s ease;
+  transform: translateY(14px);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.2s ease;
+}
+
+.mobile-menu a:not(.btn):hover,
+.mobile-menu a:not(.btn):active {
+  color: #2563EB;
 }
 
 .mobile-menu.open a {
   opacity: 1;
-  transform: translateX(0);
-}
-
-.mobile-menu.open a:nth-child(1) { transition-delay: 0.1s; }
-.mobile-menu.open a:nth-child(2) { transition-delay: 0.15s; }
-.mobile-menu.open a:nth-child(3) { transition-delay: 0.2s; }
-.mobile-menu.open a:nth-child(4) { transition-delay: 0.25s; }
-.mobile-menu.open a:nth-child(5) { transition-delay: 0.3s; }
-
-.mobile-menu .btn-primary {
-  margin-top: 16px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.4s ease 0.35s;
-}
-
-.mobile-menu.open .btn-primary {
-  opacity: 1;
   transform: translateY(0);
+}
+
+.mobile-menu.open a:nth-child(1) { transition-delay: 0.08s; }
+.mobile-menu.open a:nth-child(2) { transition-delay: 0.14s; }
+.mobile-menu.open a:nth-child(3) { transition-delay: 0.20s; }
+.mobile-menu.open a:nth-child(4) { transition-delay: 0.26s; }
+.mobile-menu.open a:nth-child(5) { transition-delay: 0.32s; }
+.mobile-menu.open a:nth-child(6) { transition-delay: 0.42s; }
+
+/* CTA: elegante blaue Pille statt schwarzes Rechteck. */
+.mobile-menu .btn-primary {
+  margin-top: 32px;
+  background: #2563EB;
+  color: #ffffff;
+  border: none;
+  border-bottom: none;
+  padding: 16px 24px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.01em;
+  box-shadow:
+    0 10px 24px rgba(37, 99, 235, 0.22),
+    0 2px 6px rgba(37, 99, 235, 0.10);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.mobile-menu .btn-primary:hover,
+.mobile-menu .btn-primary:active {
+  background: #1d4ed8;
+  color: #ffffff;
+  box-shadow:
+    0 14px 28px rgba(37, 99, 235, 0.30),
+    0 2px 6px rgba(37, 99, 235, 0.12);
 }
 
 /* ==========================================================================
@@ -2600,9 +2645,10 @@ textarea {
    MOBILE ONLY – max 767px
    ========================================================================== */
 @media (max-width: 767px) {
-  /* Floating hero elements – visible on mobile */
+  /* Floating hero elements – komplett ausblenden auf Mobile.
+     Kollidieren sonst mit der Headline und überlagern den Text. */
   .floating-elements {
-    display: block;
+    display: none;
   }
 
   /* Camera still hidden – too complex for small screen */
@@ -2735,11 +2781,12 @@ textarea {
     gap: 4px;
   }
 
-  /* Tighter hero padding */
+  /* Hero auf Mobile: top-aligned mit großzügigem Abstand zur fixen Navbar
+     (~76px hoch). Sonst rutscht die Headline unter den Header. */
   .hero {
-    padding: 80px 0 40px;
-    min-height: 70vh;
-    min-height: 70dvh;
+    align-items: flex-start;
+    padding: 170px 0 48px;
+    min-height: auto;
   }
 
   /* Smaller hero buttons */

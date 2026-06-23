@@ -365,13 +365,13 @@ function Hero() {
                 />
               </div>
 
-              {/* Schwebendes Dashboard-Mockup als Backend-Symbol — nur Desktop */}
+              {/* Schwebendes Browser-Mockup als Webseiten-Symbol — nur Desktop */}
               <div
                 className="pointer-events-none absolute -bottom-12 -left-12 z-10 hidden w-56 drop-shadow-2xl animate-float-slow lg:block lg:w-64"
                 aria-hidden
               >
                 <Image
-                  src="/images/svg-elements/dashboard-mockup.svg"
+                  src="/images/svg-elements/browser-mockup.svg"
                   alt=""
                   width={264}
                   height={165}

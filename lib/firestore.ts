@@ -29,6 +29,8 @@ import type {
   Deal,
   Activity,
   EmailTemplate,
+  Contract,
+  ContractType,
 } from './types';
 import { buildInvoiceNumber, buildQuoteNumber, tsToMillis } from './utils';
 import { SEED_TEMPLATES } from './sales';
@@ -517,6 +519,121 @@ export async function saveGoogleAuth(
 
 export async function deleteGoogleAuth(): Promise<void> {
   await deleteDoc(GOOGLE_AUTH_DOC);
+}
+
+// ===================================================================
+// VERTRÄGE (Contracts)
+// ===================================================================
+
+const contractsCol = () => collection(db, 'contracts');
+const contractTypesCol = () => collection(db, 'contractTypes');
+
+export async function listContracts(): Promise<Contract[]> {
+  const snap = await getDocs(query(contractsCol(), orderBy('createdAt', 'desc')));
+  return snap.docs.map((d) => fromDoc<Contract>(d));
+}
+
+export async function listContractsByCustomer(
+  customerId: string,
+): Promise<Contract[]> {
+  const snap = await getDocs(
+    query(contractsCol(), where('customerId', '==', customerId)),
+  );
+  const list = snap.docs.map((d) => fromDoc<Contract>(d));
+  return list.sort(
+    (a, b) => tsToMillis(b.createdAt) - tsToMillis(a.createdAt),
+  );
+}
+
+export async function getContract(id: string): Promise<Contract | null> {
+  const snap = await getDoc(doc(db, 'contracts', id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as Contract;
+}
+
+export async function createContract(
+  data: Omit<Contract, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(contractsCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateContract(
+  id: string,
+  data: Partial<Omit<Contract, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'contracts', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteContract(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'contracts', id));
+}
+
+export async function listContractTypes(): Promise<ContractType[]> {
+  const snap = await getDocs(query(contractTypesCol(), orderBy('label')));
+  return snap.docs.map((d) => fromDoc<ContractType>(d));
+}
+
+export async function createContractType(
+  data: Omit<ContractType, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(contractTypesCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateContractType(
+  id: string,
+  data: Partial<Omit<ContractType, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'contractTypes', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteContractType(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'contractTypes', id));
+}
+
+/** Legt die Standard-Vertragstypen an, falls keine existieren. */
+export async function seedContractTypes(): Promise<number> {
+  const existing = await getDocs(contractTypesCol());
+  if (!existing.empty) return 0;
+  const defaults: Array<Omit<ContractType, 'id' | 'createdAt' | 'updatedAt'>> = [
+    {
+      label: 'Dienstleistungsvertrag',
+      shortLabel: 'DSV',
+      description: 'Vertrag über die Erstellung und Wartung einer Website.',
+      active: true,
+    },
+    {
+      label: 'Auftragsverarbeitungsvertrag',
+      shortLabel: 'AVV',
+      description: 'DSGVO-AVV gemäß Art. 28 für Hosting und Wartung.',
+      active: true,
+    },
+  ];
+  await Promise.all(
+    defaults.map((d) =>
+      addDoc(contractTypesCol(), {
+        ...d,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  return defaults.length;
 }
 
 // ===================================================================

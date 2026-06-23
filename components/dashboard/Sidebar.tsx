@@ -4,8 +4,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { listInvoices, listOpenActivities } from '@/lib/firestore';
+import {
+  listInvoices,
+  listOpenActivities,
+  listContracts,
+} from '@/lib/firestore';
+import { tsToMillis } from '@/lib/utils';
 import { isOverdue } from '@/lib/utils';
+import type { Contract } from '@/lib/types';
 import Logo from '@/components/Logo';
 
 interface NavItem {
@@ -20,6 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/kunden', label: 'Kunden', icon: '👥' },
   { href: '/dashboard/vertrieb', label: 'Vertrieb', icon: '🔄' },
   { href: '/dashboard/angebote', label: 'Angebote', icon: '📋' },
+  { href: '/dashboard/vertraege', label: 'Verträge', icon: '✍️' },
   { href: '/dashboard/rechnungen', label: 'Rechnungen', icon: '📄' },
   { href: '/dashboard/ausgaben', label: 'Ausgaben', icon: '💸' },
   { href: '/dashboard/berichte', label: 'Berichte', icon: '📈' },
@@ -31,6 +38,7 @@ export default function Sidebar() {
   const { user, signOut } = useAuth();
   const [overdueCount, setOverdueCount] = useState(0);
   const [overdueActivityCount, setOverdueActivityCount] = useState(0);
+  const [overdueContractCount, setOverdueContractCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -55,12 +63,28 @@ export default function Sidebar() {
         setOverdueActivityCount(count);
       })
       .catch(() => setOverdueActivityCount(0));
+
+    listContracts()
+      .then((contracts: Contract[]) => {
+        const now = Date.now();
+        const count = contracts.filter((c) => {
+          if (c.status !== 'sent') return false;
+          if (!c.reminderEnabled) return false;
+          const sent = tsToMillis(c.sentAt);
+          if (!sent) return false;
+          const due = sent + c.reminderDays * 24 * 60 * 60 * 1000;
+          return now > due;
+        }).length;
+        setOverdueContractCount(count);
+      })
+      .catch(() => setOverdueContractCount(0));
   }, [user, pathname]);
 
   /** Badge-Zahl für einen Menüpunkt (0 = kein Badge). */
   const badgeFor = (href: string): number => {
     if (href === '/dashboard/rechnungen') return overdueCount;
     if (href === '/dashboard/vertrieb') return overdueActivityCount;
+    if (href === '/dashboard/vertraege') return overdueContractCount;
     return 0;
   };
 
@@ -125,7 +149,7 @@ export default function Sidebar() {
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-30">
-        <div className="grid grid-cols-8">
+        <div className="grid grid-cols-9">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href);
             const badge = badgeFor(item.href);

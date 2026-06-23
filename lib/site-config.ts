@@ -318,9 +318,9 @@ export const faqs: FaqItem[] = [
       'Ja, das machen wir fast immer. Egal ob alte Webseite, alter Onlineshop oder ein Programm das du seit Jahren nutzt. Ich übernehme deine Texte, Bilder, Kundendaten und alles was du behalten möchtest. So fängst du nicht bei Null an und verlierst nichts. Wenn du willst, baue ich auch eine Verbindung zu deinem alten System, damit beides weiterläuft.',
   },
   {
-    question: 'Warum nehmt ihr nur 4 Kunden parallel an?',
+    question: 'Warum nehmt ihr nur begrenzt Kunden parallel auf?',
     answer:
-      'Damit wir uns auf jedes Projekt voll konzentrieren können. Wir wollen, dass du in einer Woche live gehst und nicht in einer Warteschlange landest. Wenn die vier Plätze vergeben sind, machen wir die Tür zu und nehmen erst wieder Anfragen an, wenn ein Platz frei wird. Lieber wenige Projekte richtig gut, als viele halbherzig.',
+      'Damit wir uns auf jedes Projekt voll konzentrieren können. Wir wollen, dass du in einer Woche live gehst und nicht in einer Warteschlange landest. Wenn unsere Kapazität voll ist, machen wir die Tür zu und nehmen erst wieder neue Anfragen an, wenn ein Platz frei wird. Lieber wenige Projekte richtig gut, als viele halbherzig.',
   },
   {
     question: 'Arbeitet ihr nur in OWL oder auch deutschlandweit?',

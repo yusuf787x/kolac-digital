@@ -193,6 +193,96 @@ export interface EmailTemplate {
   updatedAt: Timestamp;
 }
 
+// ===================================================================
+// VERTRÄGE (Contracts)
+// ===================================================================
+
+export type ContractStatus =
+  | 'draft'
+  | 'sent'
+  | 'signed'
+  | 'expired'
+  | 'cancelled';
+
+export type ContractFieldType =
+  | 'customer_signature'
+  | 'date'
+  | 'kolac_signature';
+
+/**
+ * Position eines Markierungsfeldes auf dem PDF. Koordinaten sind in
+ * Prozent (0-1) relativ zur Seitengröße, damit verschiedene
+ * Display-Auflösungen das gleiche Layout liefern. Origin oben-links.
+ */
+export interface ContractField {
+  type: ContractFieldType;
+  page: number; // 1-basiert
+  x: number; // 0-1, links
+  y: number; // 0-1, oben
+  width: number; // 0-1
+  height: number; // 0-1
+}
+
+export interface ContractAuditEntry {
+  at: Timestamp;
+  event:
+    | 'created'
+    | 'sent'
+    | 'viewed'
+    | 'signed'
+    | 'reminder_sent'
+    | 'manual_signed'
+    | 'cancelled';
+  ip?: string;
+  userAgent?: string;
+  note?: string;
+}
+
+export interface Contract {
+  id: string;
+  customerId: string;
+  customerSnapshot: {
+    company: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  typeId: string; // ID des Vertragstyps (siehe contractTypes)
+  typeLabel: string; // Snapshot für Anzeige in Listen
+  title: string; // freier Titel, z.B. "DSV CarHifi-Herford"
+  status: ContractStatus;
+  originalPdfPath: string; // Storage-Pfad
+  originalPdfUrl: string; // Download-URL
+  originalSha256: string; // Hash zur Manipulationsprüfung
+  pageCount: number;
+  fields: ContractField[];
+  signingToken: string; // URL-Token, eindeutig
+  signingExpiresAt: Timestamp;
+  signedPdfPath: string | null;
+  signedPdfUrl: string | null;
+  reminderEnabled: boolean;
+  reminderDays: number; // nach wie vielen Tagen ohne Signing erinnern
+  lastReminderAt: Timestamp | null;
+  sentAt: Timestamp | null;
+  signedAt: Timestamp | null;
+  signedByName: string | null; // Name, den der Kunde im Signing-Flow eingibt
+  signedFromIp: string | null;
+  signedFromUserAgent: string | null;
+  audit: ContractAuditEntry[];
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface ContractType {
+  id: string;
+  label: string; // z.B. "Dienstleistungsvertrag"
+  shortLabel: string; // z.B. "DSV"
+  description: string;
+  active: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   'Software/Tools',
   'Werbung/Ads',
