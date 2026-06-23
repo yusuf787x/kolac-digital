@@ -273,7 +273,7 @@ export default function AufgabenPage() {
 
   return (
     <div>
-      <header className="flex items-center justify-between mb-6">
+      <header className="flex items-start justify-between gap-4 mb-6 flex-wrap">
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">Aufgaben</h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -285,6 +285,21 @@ export default function AufgabenPage() {
             )}
           </p>
         </div>
+        {creatingColumn ? (
+          <div className="w-full sm:w-80">
+            <NewColumnInline
+              onCreate={handleAddColumn}
+              onCancel={() => setCreatingColumn(false)}
+            />
+          </div>
+        ) : (
+          <button
+            onClick={() => setCreatingColumn(true)}
+            className="btn-secondary"
+          >
+            + Neue Spalte
+          </button>
+        )}
       </header>
 
       <DndContext
@@ -294,7 +309,7 @@ export default function AufgabenPage() {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-4 overflow-x-auto pb-4">
           {columns.map((column) => {
             const cTasks = tasksByColumn.get(column.id) ?? [];
             return (
@@ -311,22 +326,6 @@ export default function AufgabenPage() {
               />
             );
           })}
-
-          <div className="w-72 shrink-0">
-            {creatingColumn ? (
-              <NewColumnInline
-                onCreate={handleAddColumn}
-                onCancel={() => setCreatingColumn(false)}
-              />
-            ) : (
-              <button
-                onClick={() => setCreatingColumn(true)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 text-sm text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors"
-              >
-                + Neue Spalte
-              </button>
-            )}
-          </div>
         </div>
 
         <DragOverlay>
@@ -381,7 +380,7 @@ function Column({
   const { setNodeRef, isOver } = useSortable({ id: column.id });
 
   return (
-    <div className="w-72 shrink-0">
+    <div className="flex-1 min-w-[240px] max-w-[360px]">
       <div
         className={`rounded-xl border border-gray-200 ${COLUMN_TINT[column.color]} flex flex-col`}
       >
