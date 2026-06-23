@@ -31,6 +31,8 @@ import type {
   EmailTemplate,
   Contract,
   ContractType,
+  Task,
+  TaskColumn,
 } from './types';
 import { buildInvoiceNumber, buildQuoteNumber, tsToMillis } from './utils';
 import { SEED_TEMPLATES } from './sales';
@@ -627,6 +629,98 @@ export async function seedContractTypes(): Promise<number> {
   await Promise.all(
     defaults.map((d) =>
       addDoc(contractTypesCol(), {
+        ...d,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }),
+    ),
+  );
+  return defaults.length;
+}
+
+// ===================================================================
+// AUFGABEN (Tasks Kanban)
+// ===================================================================
+
+const taskColumnsCol = () => collection(db, 'taskColumns');
+const tasksCol = () => collection(db, 'tasks');
+
+export async function listTaskColumns(): Promise<TaskColumn[]> {
+  const snap = await getDocs(query(taskColumnsCol(), orderBy('order')));
+  return snap.docs.map((d) => fromDoc<TaskColumn>(d));
+}
+
+export async function createTaskColumn(
+  data: Omit<TaskColumn, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(taskColumnsCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateTaskColumn(
+  id: string,
+  data: Partial<Omit<TaskColumn, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'taskColumns', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteTaskColumn(id: string): Promise<void> {
+  // Tasks der Spalte ebenfalls löschen, damit keine Waisen übrig bleiben.
+  const tasks = await getDocs(query(tasksCol(), where('columnId', '==', id)));
+  await Promise.all(tasks.docs.map((d) => deleteDoc(d.ref)));
+  await deleteDoc(doc(db, 'taskColumns', id));
+}
+
+export async function listTasks(): Promise<Task[]> {
+  const snap = await getDocs(query(tasksCol(), orderBy('order')));
+  return snap.docs.map((d) => fromDoc<Task>(d));
+}
+
+export async function createTask(
+  data: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(tasksCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateTask(
+  id: string,
+  data: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'tasks', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteTask(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'tasks', id));
+}
+
+/** Legt die Standard-Spalten an, falls noch keine existieren. */
+export async function seedTaskColumns(): Promise<number> {
+  const existing = await getDocs(taskColumnsCol());
+  if (!existing.empty) return 0;
+  const defaults: Array<Omit<TaskColumn, 'id' | 'createdAt' | 'updatedAt'>> = [
+    { label: 'Hoch', color: 'high', order: 0 },
+    { label: 'Mittel', color: 'medium', order: 1 },
+    { label: 'Niedrig', color: 'low', order: 2 },
+    { label: 'Ideen', color: 'idea', order: 3 },
+  ];
+  await Promise.all(
+    defaults.map((d) =>
+      addDoc(taskColumnsCol(), {
         ...d,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),

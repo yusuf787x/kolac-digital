@@ -5,6 +5,10 @@ import { Resend } from 'resend';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
+import {
+  saveContractToDrive,
+  buildContractFilename,
+} from '@/lib/google-drive';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -196,6 +200,38 @@ export async function POST(req: Request) {
     note: `Signiert von ${body.signedByName}`,
   });
 
+  // Drive-Backup (best-effort) — Vertrag in Partnerverträge-Ordner ablegen.
+  let driveUrl: string | null = null;
+  try {
+    const authSnap = await adminDb()
+      .collection('settings')
+      .doc('google_auth')
+      .get();
+    const refreshToken = authSnap.exists
+      ? (authSnap.data()?.refreshToken as string | undefined)
+      : undefined;
+    if (refreshToken) {
+      const filename = buildContractFilename({
+        signedAt,
+        customerCompany: data.customerSnapshot?.company ?? '',
+        typeLabel: data.typeLabel ?? 'Vertrag',
+      });
+      const pdfBase64 = Buffer.from(finalBytes).toString('base64');
+      const driveRes = await saveContractToDrive({
+        refreshToken,
+        pdfBase64,
+        filename,
+      });
+      driveUrl = driveRes.webViewLink;
+    } else {
+      console.info(
+        'Drive-Backup übersprungen: kein Google-Refresh-Token in settings/google_auth.',
+      );
+    }
+  } catch (err) {
+    console.error('Drive-Backup fehlgeschlagen:', err);
+  }
+
   await docSnap.ref.update({
     status: 'signed',
     signedAt: Timestamp.now(),
@@ -204,6 +240,7 @@ export async function POST(req: Request) {
     signedFromUserAgent: ua || null,
     signedPdfPath: signedPath,
     signedPdfUrl: signedUrl,
+    driveUrl,
     audit,
     updatedAt: Timestamp.now(),
   });
@@ -216,6 +253,7 @@ export async function POST(req: Request) {
     signedByName: body.signedByName,
     signedAt,
     signedPdfUrl: signedUrl,
+    driveUrl,
   });
 
   return NextResponse.json({
@@ -382,6 +420,7 @@ async function notifyYusufBestEffort(opts: {
   signedByName: string;
   signedAt: Date;
   signedPdfUrl: string;
+  driveUrl: string | null;
 }) {
   try {
     if (!process.env.RESEND_API_KEY) return;
@@ -403,7 +442,11 @@ async function notifyYusufBestEffort(opts: {
               Signiertes PDF öffnen
             </a>
           </p>
-          <p style="color:#6b7280;font-size:13px;">Liegt auch direkt im Dashboard unter Verträge.</p>
+          ${
+            opts.driveUrl
+              ? `<p style="color:#6b7280;font-size:13px;">Liegt automatisch im Drive-Ordner Partnerverträge: <a href="${opts.driveUrl}" style="color:#2563eb;">öffnen</a></p>`
+              : `<p style="color:#6b7280;font-size:13px;">Liegt auch direkt im Dashboard unter Verträge.</p>`
+          }
         </div>
       `,
       text: [
@@ -413,7 +456,10 @@ async function notifyYusufBestEffort(opts: {
         `Zeitpunkt: ${formatDateTimeDE(opts.signedAt)}`,
         '',
         `Signiertes PDF: ${opts.signedPdfUrl}`,
-      ].join('\n'),
+        opts.driveUrl ? `Drive-Backup: ${opts.driveUrl}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n'),
     });
   } catch (err) {
     console.error('Mail-Notification fehlgeschlagen:', err);

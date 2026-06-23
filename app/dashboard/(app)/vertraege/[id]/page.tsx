@@ -272,6 +272,16 @@ function VertragDetailInner() {
                   hat.
                 </p>
               )}
+              {contract.driveUrl && (
+                <a
+                  href={contract.driveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100"
+                >
+                  📁 In Google Drive öffnen (Partnerverträge)
+                </a>
+              )}
             </div>
           </section>
 

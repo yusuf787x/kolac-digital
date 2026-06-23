@@ -6,6 +6,11 @@ const SPREADSHEET_ID = process.env.GOOGLE_DRIVE_SPREADSHEET_ID!;
 const EINNAHMEN_FOLDER = process.env.GOOGLE_DRIVE_EINNAHMEN_FOLDER_2026!;
 const AUSGABEN_FOLDER = process.env.GOOGLE_DRIVE_AUSGABEN_FOLDER_2026!;
 const AUFTRAEGE_FOLDER = process.env.GOOGLE_DRIVE_AUFTRAEGE_FOLDER ?? '';
+// Partnerverträge — signierte DSV/AVV/etc. werden hier abgelegt.
+// Folder-ID vom User vorgegeben, per Env Var override-bar.
+const CONTRACTS_FOLDER =
+  process.env.GOOGLE_DRIVE_CONTRACTS_FOLDER ??
+  '12xfJ3Vq9Yan_08oA0mmlzR0u8qA1hEfs';
 
 interface UploadFileOpts {
   refreshToken: string;
@@ -336,6 +341,63 @@ export async function saveConfirmationToDrive(opts: {
   });
 
   return { webViewLink };
+}
+
+/**
+ * Lädt das signierte Vertrags-PDF in den Partnerverträge-Ordner hoch.
+ * Dateiname wird systematisch gebildet, damit alle Verträge gleich
+ * aussehen und chronologisch sortierbar sind:
+ *
+ *   2026-06-23 - CarHifi-Herford - Dienstleistungsvertrag.pdf
+ */
+export async function saveContractToDrive(opts: {
+  refreshToken: string;
+  pdfBase64: string;
+  filename: string;
+}): Promise<{ webViewLink: string }> {
+  if (!CONTRACTS_FOLDER) {
+    throw new Error(
+      'GOOGLE_DRIVE_CONTRACTS_FOLDER ist nicht gesetzt und kein Default vorhanden.',
+    );
+  }
+
+  const { webViewLink } = await uploadToDrive({
+    refreshToken: opts.refreshToken,
+    filename: opts.filename,
+    mimeType: 'application/pdf',
+    base64Content: opts.pdfBase64,
+    folderId: CONTRACTS_FOLDER,
+  });
+
+  return { webViewLink };
+}
+
+/**
+ * Baut einen einheitlichen Dateinamen für Vertrags-PDFs im Drive-Ordner.
+ * Format: "YYYY-MM-DD - {Kundenfirma} - {Vertragstyp}.pdf"
+ * Sonderzeichen werden entfernt, damit der Name plattformübergreifend
+ * funktioniert.
+ */
+export function buildContractFilename(opts: {
+  signedAt: Date;
+  customerCompany: string;
+  typeLabel: string;
+}): string {
+  const y = opts.signedAt.getFullYear();
+  const m = String(opts.signedAt.getMonth() + 1).padStart(2, '0');
+  const d = String(opts.signedAt.getDate()).padStart(2, '0');
+  const datePrefix = `${y}-${m}-${d}`;
+
+  const cleanName = (s: string) =>
+    (s || '')
+      .replace(/[^a-zA-Z0-9äöüÄÖÜß\-_ ]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const customer = cleanName(opts.customerCompany) || 'Kunde';
+  const type = cleanName(opts.typeLabel) || 'Vertrag';
+
+  return `${datePrefix} - ${customer} - ${type}.pdf`;
 }
 
 export async function saveExpenseToDrive(opts: {

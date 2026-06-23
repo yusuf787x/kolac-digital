@@ -262,6 +262,8 @@ export interface Contract {
   signingExpiresAt: Timestamp;
   signedPdfPath: string | null;
   signedPdfUrl: string | null;
+  /** Drive-Backup URL des signierten PDFs (best-effort, kann null sein). */
+  driveUrl?: string | null;
   reminderEnabled: boolean;
   reminderDays: number; // nach wie vielen Tagen ohne Signing erinnern
   lastReminderAt: Timestamp | null;
@@ -281,6 +283,35 @@ export interface ContractType {
   shortLabel: string; // z.B. "DSV"
   description: string;
   active: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+// ===================================================================
+// AUFGABEN (Personal Kanban)
+// ===================================================================
+
+export type TaskPriority = 'high' | 'medium' | 'low' | 'idea' | 'custom';
+
+export interface TaskColumn {
+  id: string;
+  label: string;
+  /** Tailwind-Farbklasse für den Akzent-Strich oben. */
+  color: TaskPriority;
+  order: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface Task {
+  id: string;
+  columnId: string;
+  title: string;
+  description: string;
+  /** Optional — Deadline für die Aufgabe. */
+  deadline: Timestamp | null;
+  /** Sortierung innerhalb der Spalte (niedrigster Wert = oben). */
+  order: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

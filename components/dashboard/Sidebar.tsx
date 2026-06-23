@@ -23,6 +23,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+  { href: '/dashboard/aufgaben', label: 'Aufgaben', icon: '✅' },
   { href: '/dashboard/kunden', label: 'Kunden', icon: '👥' },
   { href: '/dashboard/vertrieb', label: 'Vertrieb', icon: '🔄' },
   { href: '/dashboard/angebote', label: 'Angebote', icon: '📋' },
@@ -149,7 +150,7 @@ export default function Sidebar() {
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-30">
-        <div className="grid grid-cols-9">
+        <div className="grid grid-cols-10">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href);
             const badge = badgeFor(item.href);
