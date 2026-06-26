@@ -11,7 +11,11 @@ import {
   uploadFile,
 } from '@/lib/firestore';
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@/lib/types';
-import { formatEUR } from '@/lib/utils';
+import {
+  formatEUR,
+  defaultVatRateForDate,
+  grossToNet,
+} from '@/lib/utils';
 import { fileToBase64 } from '@/lib/file-utils';
 import { authedFetch } from '@/lib/api-client';
 
@@ -33,9 +37,22 @@ export default function NeueAusgabePage() {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<ExpenseCategory>('Software/Tools');
   const [supplier, setSupplier] = useState('');
+  const [vatRate, setVatRate] = useState<number>(
+    defaultVatRateForDate(new Date()),
+  );
+  const [vatRateUserSet, setVatRateUserSet] = useState(false);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // VAT-Default auch beim Datum-Wechsel nachziehen, solange Nutzer
+  // den Satz nicht manuell gesetzt hat.
+  useEffect(() => {
+    if (!vatRateUserSet && date) {
+      setVatRate(defaultVatRateForDate(date));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date]);
 
   const [extracting, setExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
@@ -129,6 +146,7 @@ export default function NeueAusgabePage() {
         date: Timestamp.fromDate(new Date(date)),
         description: description.trim(),
         amount: numericAmount,
+        vatRate,
         category,
         supplier: supplier.trim(),
         receiptUrl,
@@ -251,7 +269,7 @@ export default function NeueAusgabePage() {
               />
             </div>
             <div>
-              <label className="label">Betrag (EUR) *</label>
+              <label className="label">Brutto-Betrag (EUR) *</label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -261,6 +279,58 @@ export default function NeueAusgabePage() {
                 placeholder="z.B. 12,34"
                 required
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label">MwSt-Satz auf dem Beleg</label>
+              <select
+                className="input"
+                value={String(vatRate)}
+                onChange={(e) => {
+                  setVatRate(parseFloat(e.target.value));
+                  setVatRateUserSet(true);
+                }}
+              >
+                <option value="0.19">19 % (Regelsatz)</option>
+                <option value="0.07">7 % (ermäßigt)</option>
+                <option value="0">0 % (keine MwSt)</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Default kommt aus dem Datum: vor 01.07.2026 = 0 % (Kleinunternehmer), danach 19 %.
+              </p>
+            </div>
+            <div className="flex items-end">
+              {(() => {
+                const n = parseFloat(amount.replace(',', '.'));
+                if (!amount || isNaN(n)) return null;
+                const split = grossToNet(n, vatRate);
+                return (
+                  <div className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-sm space-y-0.5">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Netto</span>
+                      <span className="text-gray-900 font-medium">
+                        {formatEUR(split.net)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">
+                        Vorsteuer ({Math.round(vatRate * 100)} %)
+                      </span>
+                      <span className="text-gray-900 font-medium">
+                        {formatEUR(split.vat)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between pt-1 border-t border-gray-200">
+                      <span className="text-gray-500">Brutto</span>
+                      <span className="text-gray-900 font-semibold">
+                        {formatEUR(split.gross)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 

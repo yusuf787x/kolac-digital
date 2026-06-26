@@ -49,6 +49,13 @@ export interface Invoice {
   status: InvoiceStatus;
   paidAmount: number;
   totalAmount: number;
+  /**
+   * Mehrwertsteuersatz als Dezimalzahl (0.19 = 19%). Optional, weil
+   * Legacy-Rechnungen vor MwSt-Einführung das Feld nicht haben. Fehlt
+   * der Wert -> 0 (Kleinunternehmer-Regel § 19 UStG).
+   * `totalAmount` ist immer der NETTO-Betrag; Brutto = totalAmount * (1 + vatRate).
+   */
+  vatRate?: number;
   closingText: string;
   pdfUrl: string | null;
   driveUrl: string | null;
@@ -78,7 +85,10 @@ export interface Expense {
   id: string;
   date: Timestamp;
   description: string;
+  /** Brutto-Betrag — das was tatsaechlich bezahlt wurde (Belegsumme). */
   amount: number;
+  /** Mehrwertsteuer-Satz auf dem Beleg (z.B. 0.19). Optional fuer Legacy. */
+  vatRate?: number;
   category: ExpenseCategory;
   supplier: string;
   receiptUrl: string | null;
@@ -91,6 +101,8 @@ export interface Settings {
   invoiceFormat: 'legacy' | 'new';
   defaultPaymentDays: number;
   defaultClosingText: string;
+  /** Default-MwSt-Satz für neue Rechnungen (0.19 = 19%). */
+  defaultVatRate?: number;
   // Quotes
   nextQuoteNumber: number;
   defaultQuoteValidDays: number;

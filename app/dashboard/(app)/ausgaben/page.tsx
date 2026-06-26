@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { listExpenses, deleteExpense, deleteFile } from '@/lib/firestore';
 import type { Expense, ExpenseCategory } from '@/lib/types';
 import { EXPENSE_CATEGORIES } from '@/lib/types';
-import { formatEUR, formatDateDE } from '@/lib/utils';
+import { formatEUR, formatDateDE, grossToNet } from '@/lib/utils';
 
 export default function AusgabenPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -57,7 +57,23 @@ export default function AusgabenPage() {
     });
   }, [expenses, search, categoryFilter, monthFilter]);
 
-  const totalFiltered = filtered.reduce((acc, e) => acc + e.amount, 0);
+  const totals = useMemo(() => {
+    let gross = 0;
+    let vat = 0;
+    let net = 0;
+    for (const e of filtered) {
+      const split = grossToNet(e.amount, e.vatRate ?? 0);
+      gross += split.gross;
+      vat += split.vat;
+      net += split.net;
+    }
+    return {
+      gross: Math.round(gross * 100) / 100,
+      vat: Math.round(vat * 100) / 100,
+      net: Math.round(net * 100) / 100,
+    };
+  }, [filtered]);
+  const totalFiltered = totals.gross;
 
   const handleDelete = async (e: Expense) => {
     if (!confirm(`Ausgabe "${e.description}" wirklich löschen?`)) return;
@@ -87,12 +103,26 @@ export default function AusgabenPage() {
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">Ausgaben</h1>
           <p className="mt-1 text-sm text-gray-500">
-            {filtered.length} Einträge · gesamt {formatEUR(totalFiltered)}
+            {filtered.length} Einträge · brutto {formatEUR(totals.gross)}
+            {totals.vat > 0 && (
+              <>
+                {' '}
+                · netto {formatEUR(totals.net)} · Vorsteuer{' '}
+                <span className="text-green-700 font-medium">
+                  {formatEUR(totals.vat)}
+                </span>
+              </>
+            )}
           </p>
         </div>
-        <Link href="/dashboard/ausgaben/neu" className="btn-primary">
-          + Neue Ausgabe
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard/berichte/ustva" className="btn-secondary">
+            UStVA-Übersicht
+          </Link>
+          <Link href="/dashboard/ausgaben/neu" className="btn-primary">
+            + Neue Ausgabe
+          </Link>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">

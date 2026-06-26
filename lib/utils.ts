@@ -150,3 +150,51 @@ export function daysOverdue(
   const diff = now.getTime() - dueDate.getTime();
   return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
 }
+
+/**
+ * Stichtag fuer den Wechsel von Kleinunternehmer (§ 19 UStG, 0% USt)
+ * zur Regelbesteuerung mit 19% USt. Vor diesem Datum laufen Belege
+ * weiterhin ohne MwSt, danach mit Regelsatz.
+ */
+export const VAT_REGULAR_START = new Date('2026-07-01T00:00:00');
+
+/**
+ * Default-MwSt-Satz fuer ein Datum:
+ *   - vor 01.07.2026  -> 0 (Kleinunternehmer)
+ *   - ab  01.07.2026  -> 0.19 (Regelsatz)
+ */
+export function defaultVatRateForDate(d: Date | string): number {
+  const date = typeof d === 'string' ? new Date(d) : d;
+  if (Number.isNaN(date.getTime())) return 0;
+  return date.getTime() >= VAT_REGULAR_START.getTime() ? 0.19 : 0;
+}
+
+/**
+ * Mehrwertsteuer-Berechnung aus einem Netto-Betrag. Rundet auf 2
+ * Nachkommastellen, damit z.B. 99 * 0.19 nicht als 18.81000000001
+ * rumliegt.
+ */
+export function computeVat(
+  netAmount: number,
+  vatRate: number | null | undefined,
+): { net: number; vat: number; gross: number; rate: number } {
+  const rate = vatRate ?? 0;
+  const net = Math.round(netAmount * 100) / 100;
+  const vat = Math.round(net * rate * 100) / 100;
+  const gross = Math.round((net + vat) * 100) / 100;
+  return { net, vat, gross, rate };
+}
+
+/**
+ * Umkehrung: aus einem Brutto-Betrag den Netto-Betrag bei gegebenem
+ * MwSt-Satz herausrechnen (z.B. fuer GoCardless-Einzug, der brutto ist).
+ */
+export function grossToNet(
+  grossAmount: number,
+  vatRate: number,
+): { net: number; vat: number; gross: number } {
+  const gross = Math.round(grossAmount * 100) / 100;
+  const net = Math.round((gross / (1 + vatRate)) * 100) / 100;
+  const vat = Math.round((gross - net) * 100) / 100;
+  return { net, vat, gross };
+}

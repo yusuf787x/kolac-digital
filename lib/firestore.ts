@@ -471,6 +471,7 @@ export const DEFAULT_SETTINGS: Settings = {
   invoiceFormat: 'legacy',
   defaultPaymentDays: 7,
   defaultClosingText: 'Vielen Dank und liebe Grüße\nYusuf Kolac',
+  defaultVatRate: 0.19,
   nextQuoteNumber: 1,
   defaultQuoteValidDays: 14,
   defaultQuoteAcceptanceText:

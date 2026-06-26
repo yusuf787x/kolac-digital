@@ -17,6 +17,8 @@ import { saveInvoiceToDrive } from '@/lib/google-drive';
 import {
   buildInvoiceNumber,
   formatDateDE,
+  defaultVatRateForDate,
+  grossToNet,
 } from '@/lib/utils';
 import type { Invoice, Customer, InvoiceItem } from '@/lib/types';
 
@@ -192,24 +194,27 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<HandlerResult> {
     customer.lastName?.trim() ||
     customer.company ||
     '';
+  // Mail zeigt den Brutto-Betrag (was tatsächlich abgebucht wurde),
+  // nicht den Netto-Anteil von totalAmount.
+  const grossAmount = centsToEuros(payment.amount);
   await sendInvoiceMail({
     to: recipient,
     customerName: greetingName,
     invoiceNumber: invoice.invoiceNumber,
-    totalAmount: invoice.totalAmount,
+    totalAmount: grossAmount,
     chargedAt: new Date(payment.charge_date),
     pdfBuffer,
     pdfFilename: `Rechnung ${invoice.invoiceNumber}.pdf`,
   });
 
   await notifyAdmin({
-    subject: `✓ Lastschrift eingezogen: ${customer.company} ${formatEur(invoice.totalAmount)}`,
+    subject: `✓ Lastschrift eingezogen: ${customer.company} ${formatEur(grossAmount)}`,
     html: `
       <p>Lastschrift wurde erfolgreich eingezogen, Rechnung automatisch erstellt und an den Kunden verschickt.</p>
       <ul>
         <li>Kunde: <strong>${escapeHtml(customer.company)}</strong></li>
         <li>Rechnungsnummer: <strong>${invoice.invoiceNumber}</strong></li>
-        <li>Betrag: <strong>${formatEur(invoice.totalAmount)}</strong></li>
+        <li>Brutto eingezogen: <strong>${formatEur(grossAmount)}</strong>${invoice.vatRate ? ` (Netto ${formatEur(invoice.totalAmount)} + ${Math.round((invoice.vatRate ?? 0) * 100)} % USt)` : ''}</li>
         <li>Charge-Datum: ${formatDateDE(new Date(payment.charge_date))}</li>
         <li>Match-Modus: ${match.mode}</li>
       </ul>
@@ -302,7 +307,14 @@ async function createPaidInvoice(
   const settingsRef = db.collection('settings').doc('config');
   const newRef = db.collection('invoices').doc();
   const chargedAt = new Date(payment.charge_date);
-  const totalAmount = centsToEuros(payment.amount);
+  // GoCardless zieht den Brutto-Betrag ein. Je nach Charge-Datum
+  // entweder mit 0% (Kleinunternehmer bis 30.06.26) oder 19% USt.
+  const vatRate = defaultVatRateForDate(chargedAt);
+  const gross = centsToEuros(payment.amount);
+  const split = grossToNet(gross, vatRate);
+  // totalAmount auf Rechnungen ist immer NETTO (Item-Sum); Brutto wird
+  // beim Anzeigen aus totalAmount * (1 + vatRate) berechnet.
+  const totalAmount = split.net;
 
   // Atomare Nummernvergabe — gleicher Counter wie manuelle Rechnungen.
   const invoiceNumber = await db.runTransaction(async (tx) => {
@@ -339,14 +351,15 @@ async function createPaidInvoice(
   // Hier nur die Gruss-Formel.
   const closingText = 'Vielen Dank und liebe Grüße\nYusuf Kolac';
 
-  await newRef.set({
+  const invoiceDoc = {
     customerId: customer.id,
     invoiceNumber,
     invoiceDate: Timestamp.fromDate(chargedAt),
     dueDate: Timestamp.fromDate(chargedAt),
-    status: 'paid',
+    status: 'paid' as const,
     paidAmount: totalAmount,
     totalAmount,
+    vatRate,
     closingText,
     pdfUrl: null,
     driveUrl: null,
@@ -357,28 +370,9 @@ async function createPaidInvoice(
     gocardlessChargedAt: Timestamp.fromDate(chargedAt),
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now(),
-  });
-
-  return {
-    id: newRef.id,
-    customerId: customer.id,
-    invoiceNumber,
-    invoiceDate: Timestamp.fromDate(chargedAt),
-    dueDate: Timestamp.fromDate(chargedAt),
-    status: 'paid',
-    paidAmount: totalAmount,
-    totalAmount,
-    closingText,
-    pdfUrl: null,
-    driveUrl: null,
-    sentAt: Timestamp.now(),
-    paidAt: Timestamp.fromDate(chargedAt),
-    items,
-    gocardlessPaymentId: payment.id,
-    gocardlessChargedAt: Timestamp.fromDate(chargedAt),
-    createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now(),
-  } as Invoice;
+  };
+  await newRef.set(invoiceDoc);
+  return { id: newRef.id, ...invoiceDoc } as unknown as Invoice;
 }
 
 async function uploadInvoicePdf(

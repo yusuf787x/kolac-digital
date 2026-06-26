@@ -12,7 +12,7 @@ import {
   getGoogleAuth,
 } from '@/lib/firestore';
 import type { Customer, Invoice, InvoiceItem } from '@/lib/types';
-import { formatEUR } from '@/lib/utils';
+import { formatEUR, computeVat, defaultVatRateForDate } from '@/lib/utils';
 
 interface ItemDraft {
   description: string;
@@ -60,6 +60,15 @@ export default function InvoiceForm({ initial, mode }: Props) {
   const [closingText, setClosingText] = useState(
     initial?.closingText ?? 'Vielen Dank und liebe Grüße\nYusuf Kolac',
   );
+  // MwSt-Satz als Dezimal (0.19 = 19%). Default haengt vom Rechnungsdatum
+  // ab: Kleinunternehmer (0%) bis 30.06.2026, danach 19%. Bei Edit wird
+  // der gespeicherte Wert behalten (auch wenn er evtl. 0 ist).
+  const [vatRate, setVatRate] = useState<number>(
+    initial?.vatRate ?? defaultVatRateForDate(invoiceDate),
+  );
+  // Hat der Nutzer den VAT-Satz manuell gesetzt? Wenn ja, nicht mehr
+  // automatisch beim Datum-Wechsel ueberschreiben.
+  const [vatRateUserSet, setVatRateUserSet] = useState(mode === 'edit');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +97,8 @@ export default function InvoiceForm({ initial, mode }: Props) {
             setDueDate(addDays(invoiceDate, settings.defaultPaymentDays));
           }
           setClosingText(settings.defaultClosingText);
+          // VAT-Default kommt aus dem Datum, nicht aus settings — der
+          // Kleinunternehmer-Wechsel ist date-basiert.
         }
       })
       .catch((err) => {
@@ -100,11 +111,21 @@ export default function InvoiceForm({ initial, mode }: Props) {
 
   // When the user changes the invoice date, slide the due date along with
   // it — but only as long as the user hasn't manually edited the due date.
+  // Auch den VAT-Default an das neue Datum anpassen (Kleinunternehmer vs.
+  // Regelsatz), solange der Nutzer den Satz nicht manuell gesetzt hat.
   const handleInvoiceDateChange = (newDate: string) => {
     setInvoiceDate(newDate);
     if (mode === 'create' && !dueDateUserSet && newDate) {
       setDueDate(addDays(newDate, paymentDays));
     }
+    if (mode === 'create' && !vatRateUserSet && newDate) {
+      setVatRate(defaultVatRateForDate(newDate));
+    }
+  };
+
+  const handleVatRateChange = (rate: number) => {
+    setVatRate(rate);
+    setVatRateUserSet(true);
   };
 
   const handleDueDateChange = (newDate: string) => {
@@ -143,6 +164,7 @@ export default function InvoiceForm({ initial, mode }: Props) {
   };
 
   const grandTotal = items.reduce((acc, i) => acc + itemTotal(i), 0);
+  const vatCalc = computeVat(grandTotal, vatRate);
 
   const selectedCustomer = customers.find((c) => c.id === customerId);
 
@@ -176,6 +198,7 @@ export default function InvoiceForm({ initial, mode }: Props) {
           status: 'draft',
           paidAmount: 0,
           totalAmount: grandTotal,
+          vatRate,
           closingText,
           pdfUrl: null,
           driveUrl: null,
@@ -223,6 +246,7 @@ export default function InvoiceForm({ initial, mode }: Props) {
           invoiceDate: Timestamp.fromDate(new Date(invoiceDate)),
           dueDate: Timestamp.fromDate(new Date(dueDate)),
           totalAmount: grandTotal,
+          vatRate,
           closingText,
           items: cleanItems,
         });
@@ -381,14 +405,28 @@ export default function InvoiceForm({ initial, mode }: Props) {
           ))}
         </div>
 
-        <div className="flex justify-end pt-2 border-t border-gray-100">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pt-2 border-t border-gray-100">
+          <div className="sm:w-48">
+            <label className="label">MwSt-Satz</label>
+            <select
+              className="input"
+              value={String(vatRate)}
+              onChange={(e) => handleVatRateChange(parseFloat(e.target.value))}
+            >
+              <option value="0.19">19 % (Regelsatz)</option>
+              <option value="0.07">7 % (ermäßigt)</option>
+              <option value="0">0 % (Kleinunternehmer § 19 UStG)</option>
+            </select>
+          </div>
           <div className="text-right space-y-1">
             <div className="text-sm text-gray-500">
-              Total netto: {formatEUR(grandTotal)}
+              Total netto: {formatEUR(vatCalc.net)}
             </div>
-            <div className="text-sm text-gray-500">USt (0%): {formatEUR(0)}</div>
+            <div className="text-sm text-gray-500">
+              USt ({Math.round(vatRate * 100)} %): {formatEUR(vatCalc.vat)}
+            </div>
             <div className="text-lg font-semibold text-gray-900">
-              Gesamt: {formatEUR(grandTotal)}
+              Gesamt brutto: {formatEUR(vatCalc.gross)}
             </div>
           </div>
         </div>
@@ -401,10 +439,17 @@ export default function InvoiceForm({ initial, mode }: Props) {
           value={closingText}
           onChange={(e) => setClosingText(e.target.value)}
         />
-        <p className="text-xs text-gray-500">
-          Kleinunternehmer-Hinweis nach § 19 UStG wird automatisch auf der Rechnung
-          ergänzt. USt wird nicht ausgewiesen.
-        </p>
+        {vatRate === 0 ? (
+          <p className="text-xs text-gray-500">
+            Kleinunternehmer-Hinweis nach § 19 UStG wird automatisch auf der
+            Rechnung ergänzt. USt wird nicht ausgewiesen.
+          </p>
+        ) : (
+          <p className="text-xs text-gray-500">
+            USt ({Math.round(vatRate * 100)} %) wird auf der Rechnung
+            ausgewiesen. Einzelpreise bitte als Netto angeben.
+          </p>
+        )}
       </section>
 
       {error && (

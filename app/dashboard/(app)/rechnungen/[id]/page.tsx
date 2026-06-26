@@ -16,6 +16,7 @@ import {
   formatDateDE,
   isOverdue,
   daysOverdue,
+  computeVat,
 } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import { authedFetch } from '@/lib/api-client';
@@ -494,30 +495,47 @@ export default function RechnungDetailPage() {
               ))}
             </tbody>
             <tfoot>
-              <tr className="border-t border-gray-200">
-                <td colSpan={3} className="py-2 text-right text-sm text-gray-500">
-                  Total netto
-                </td>
-                <td className="py-2 text-right text-sm text-gray-700">
-                  {formatEUR(invoice.totalAmount)}
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={3} className="py-1 text-right text-sm text-gray-500">
-                  USt (0%)
-                </td>
-                <td className="py-1 text-right text-sm text-gray-700">
-                  {formatEUR(0)}
-                </td>
-              </tr>
-              <tr>
-                <td colSpan={3} className="py-2 text-right font-semibold">
-                  Gesamtbetrag
-                </td>
-                <td className="py-2 text-right font-semibold text-brand-blue">
-                  {formatEUR(invoice.totalAmount)}
-                </td>
-              </tr>
+              {(() => {
+                const v = computeVat(invoice.totalAmount, invoice.vatRate);
+                const pct = Math.round(v.rate * 100);
+                return (
+                  <>
+                    <tr className="border-t border-gray-200">
+                      <td
+                        colSpan={3}
+                        className="py-2 text-right text-sm text-gray-500"
+                      >
+                        Total netto
+                      </td>
+                      <td className="py-2 text-right text-sm text-gray-700">
+                        {formatEUR(v.net)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="py-1 text-right text-sm text-gray-500"
+                      >
+                        USt ({pct} %)
+                      </td>
+                      <td className="py-1 text-right text-sm text-gray-700">
+                        {formatEUR(v.vat)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="py-2 text-right font-semibold"
+                      >
+                        Gesamtbetrag brutto
+                      </td>
+                      <td className="py-2 text-right font-semibold text-brand-blue">
+                        {formatEUR(v.gross)}
+                      </td>
+                    </tr>
+                  </>
+                );
+              })()}
             </tfoot>
           </table>
 

@@ -14,7 +14,7 @@ import {
   StyleSheet,
 } from '@react-pdf/renderer';
 import type { Invoice, Customer } from '@/lib/types';
-import { formatEUR, formatDateDE, tsToDate } from '@/lib/utils';
+import { formatEUR, formatDateDE, tsToDate, computeVat } from '@/lib/utils';
 import { COMPANY_BANK, COMPANY_INFO } from '@/lib/qr';
 
 const COLORS = {
@@ -231,6 +231,15 @@ interface Props {
   qrCodeDataUrl: string;
 }
 
+/** Formatiert einen Betrag im de-DE-Stil OHNE Waehrungssymbol (Tausender
+ *  -Trennzeichen Punkt, Dezimal-Trenner Komma) — fuer die Summary-Tabelle,
+ *  in der die Waehrung in einer separaten Spalte steht. */
+const germanAmount = (n: number): string =>
+  n
+    .toFixed(2)
+    .replace('.', ',')
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
 const salutationGreeting = (c: Customer): string => {
   const last = c.lastName?.trim() || c.company?.trim() || '';
   if (c.salutation === 'Frau') return `Sehr geehrte Frau ${last},`;
@@ -249,6 +258,10 @@ export default function InvoicePDF({
   const isDirectDebit = Boolean(invoice.gocardlessPaymentId);
   const chargedAt =
     tsToDate(invoice.gocardlessChargedAt) ?? tsToDate(invoice.paidAt);
+  // MwSt — vatRate fehlt bei Legacy-Rechnungen, dann 0 (Kleinunternehmer).
+  const vatCalc = computeVat(invoice.totalAmount, invoice.vatRate);
+  const vatPercent = Math.round(vatCalc.rate * 100);
+  const isKleinunternehmer = vatCalc.rate === 0;
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -363,35 +376,27 @@ export default function InvoicePDF({
           <View style={[styles.summaryRow, { marginTop: 6 }]}>
             <Text style={styles.summaryLabel}>Total netto</Text>
             <Text style={styles.summaryUnit}>EUR</Text>
-            <Text style={styles.summaryValue}>
-              {invoice.totalAmount
-                .toFixed(2)
-                .replace('.', ',')
-                .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-            </Text>
+            <Text style={styles.summaryValue}>{germanAmount(vatCalc.net)}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>USt (0%)</Text>
+            <Text style={styles.summaryLabel}>USt ({vatPercent}%)</Text>
             <Text style={styles.summaryUnit}>EUR</Text>
-            <Text style={styles.summaryValue}>0,00</Text>
+            <Text style={styles.summaryValue}>{germanAmount(vatCalc.vat)}</Text>
           </View>
         </View>
 
         {/* Total box */}
         <View style={styles.totalBox}>
           <Text style={styles.totalLabel}>EUR</Text>
-          <Text style={styles.totalValue}>
-            {invoice.totalAmount
-              .toFixed(2)
-              .replace('.', ',')
-              .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-          </Text>
+          <Text style={styles.totalValue}>{germanAmount(vatCalc.gross)}</Text>
         </View>
 
         {/* Notes */}
-        <Text style={styles.paragraph}>
-          Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
-        </Text>
+        {isKleinunternehmer && (
+          <Text style={styles.paragraph}>
+            Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
+          </Text>
+        )}
         {isDirectDebit ? (
           <Text style={styles.paragraph}>
             Der Rechnungsbetrag wurde am{' '}

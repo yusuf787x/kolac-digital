@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { listInvoices, listExpenses, listCustomers } from '@/lib/firestore';
 import type { Invoice, Expense, Customer } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
@@ -140,17 +141,26 @@ export default function BerichtePage() {
             EÜR-Übersicht für das Geschäftsjahr.
           </p>
         </div>
-        <select
-          value={year}
-          onChange={(e) => setYear(Number(e.target.value))}
-          className="input max-w-[140px]"
-        >
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/berichte/ustva"
+            className="btn-secondary"
+            title="Umsatzsteuer-Voranmeldung"
+          >
+            UStVA
+          </Link>
+          <select
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+            className="input max-w-[140px]"
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
       </header>
 
       {loading ? (
