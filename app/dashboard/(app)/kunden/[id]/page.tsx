@@ -172,30 +172,74 @@ function KundeDetailInner() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section className="card lg:col-span-1">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">
-            Adresse & Kontakt
-          </h2>
-          <dl className="space-y-3 text-sm">
-            <DetailRow label="Anrede" value={customer.salutation} />
-            <DetailRow
-              label="Adresse"
-              value={
-                customer.street || customer.zip || customer.city
-                  ? `${customer.street}\n${customer.zip} ${customer.city}`.trim()
-                  : '—'
-              }
-            />
-            <DetailRow label="E-Mail" value={customer.email || '—'} />
-            <DetailRow label="Telefon" value={customer.phone || '—'} />
-            {customer.taxId && (
-              <DetailRow label="Steuernr. / USt-ID" value={customer.taxId} />
+        <div className="lg:col-span-1 space-y-6">
+          <section className="card">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">
+              Adresse & Kontakt
+            </h2>
+            <dl className="space-y-3 text-sm">
+              <DetailRow label="Anrede" value={customer.salutation} />
+              <DetailRow
+                label="Adresse"
+                value={
+                  customer.street || customer.zip || customer.city
+                    ? `${customer.street}\n${customer.zip} ${customer.city}`.trim()
+                    : '—'
+                }
+              />
+              <DetailRow label="E-Mail" value={customer.email || '—'} />
+              <DetailRow label="Telefon" value={customer.phone || '—'} />
+              {customer.taxId && (
+                <DetailRow label="Steuernr. / USt-ID" value={customer.taxId} />
+              )}
+              {customer.notes && (
+                <DetailRow label="Notizen" value={customer.notes} />
+              )}
+            </dl>
+          </section>
+
+          <section className="card">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold text-gray-900">
+                GoCardless / Lastschrift
+              </h2>
+              <Link
+                href={`/dashboard/kunden/${customer.id}/edit`}
+                className="text-xs text-brand-blue hover:underline font-medium"
+              >
+                Bearbeiten →
+              </Link>
+            </div>
+            {customer.gocardlessCustomerId ? (
+              <dl className="space-y-3 text-sm">
+                <DetailRow
+                  label="Customer ID"
+                  value={customer.gocardlessCustomerId}
+                />
+                {customer.retainerInvoiceEmail && (
+                  <DetailRow
+                    label="Rechnungs-Mail"
+                    value={customer.retainerInvoiceEmail}
+                  />
+                )}
+                {customer.retainerInvoiceTemplate && (
+                  <DetailRow
+                    label="Rechnungstext (Template)"
+                    value={customer.retainerInvoiceTemplate}
+                  />
+                )}
+              </dl>
+            ) : (
+              <div className="text-sm text-gray-500">
+                <p>Noch nicht verknüpft.</p>
+                <p className="mt-1.5 text-xs">
+                  Lege bei Bearbeiten die GoCardless Customer ID an, dann
+                  laufen Lastschrift-Rechnungen automatisch.
+                </p>
+              </div>
             )}
-            {customer.notes && (
-              <DetailRow label="Notizen" value={customer.notes} />
-            )}
-          </dl>
-        </section>
+          </section>
+        </div>
 
         <div className="lg:col-span-2 space-y-6">
           <section className="card">
