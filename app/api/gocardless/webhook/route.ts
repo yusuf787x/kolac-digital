@@ -177,11 +177,20 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<HandlerResult> {
     updatedAt: Timestamp.now(),
   });
 
+  // Empfaenger-Reihenfolge:
+  //   1. retainerInvoiceEmail (manueller Override im Dashboard)
+  //   2. Mail aus dem GoCardless-Kundeneintrag
+  //   3. Dashboard-Stammdaten-Mail (Fallback)
+  const recipient =
+    customer.retainerInvoiceEmail?.trim() ||
+    gcCustomer.email?.trim() ||
+    customer.email;
   await sendInvoiceMail({
-    to:
-      customer.retainerInvoiceEmail?.trim() ||
-      customer.email,
-    customerName: customer.company || `${customer.firstName} ${customer.lastName}`.trim(),
+    to: recipient,
+    customerName:
+      customer.company ||
+      `${customer.firstName} ${customer.lastName}`.trim() ||
+      [gcCustomer.given_name, gcCustomer.family_name].filter(Boolean).join(' '),
     invoiceNumber: invoice.invoiceNumber,
     totalAmount: invoice.totalAmount,
     chargedAt: new Date(payment.charge_date),
@@ -438,22 +447,25 @@ async function sendInvoiceMail(opts: {
   const html = `
     <div style="font-family:-apple-system,sans-serif;color:#0a0a0a;line-height:1.6;font-size:15px;">
       <p>Hallo ${escapeHtml(opts.customerName)},</p>
-      <p>im Anhang findest du die Rechnung <strong>${opts.invoiceNumber}</strong> ueber
-      <strong>${formatEur(opts.totalAmount)}</strong>.</p>
+      <p>danke für die laufende Zusammenarbeit. Im Anhang findest du die Rechnung
+      <strong>${opts.invoiceNumber}</strong> über <strong>${formatEur(opts.totalAmount)}</strong>.</p>
       <p>Der Betrag wurde am <strong>${formatDateDE(opts.chargedAt)}</strong> per
-      SEPA-Lastschrift von deinem hinterlegten Konto eingezogen.
-      Keine weitere Aktion noetig.</p>
-      <p>Vielen Dank und liebe Gruesse<br/>Yusuf Kolac<br/>Kolac Digital</p>
+      SEPA-Lastschrift von deinem hinterlegten Konto eingezogen — du musst nichts
+      weiter tun.</p>
+      <p>Bei Rückfragen einfach kurz Bescheid geben.</p>
+      <p>Liebe Grüße<br/>Yusuf Kolac<br/>Kolac Digital</p>
     </div>
   `;
   const text = [
     `Hallo ${opts.customerName},`,
     '',
-    `im Anhang findest du die Rechnung ${opts.invoiceNumber} ueber ${formatEur(opts.totalAmount)}.`,
-    `Der Betrag wurde am ${formatDateDE(opts.chargedAt)} per SEPA-Lastschrift eingezogen.`,
-    'Keine weitere Aktion noetig.',
+    `danke für die laufende Zusammenarbeit. Im Anhang findest du die Rechnung ${opts.invoiceNumber} über ${formatEur(opts.totalAmount)}.`,
     '',
-    'Vielen Dank und liebe Gruesse',
+    `Der Betrag wurde am ${formatDateDE(opts.chargedAt)} per SEPA-Lastschrift eingezogen — du musst nichts weiter tun.`,
+    '',
+    'Bei Rückfragen einfach kurz Bescheid geben.',
+    '',
+    'Liebe Grüße',
     'Yusuf Kolac',
     'Kolac Digital',
   ].join('\n');
