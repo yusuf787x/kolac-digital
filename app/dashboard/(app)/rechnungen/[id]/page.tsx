@@ -491,6 +491,33 @@ export default function RechnungDetailPage() {
           )}
         </section>
       </div>
+
+      {/* PDF-Vorschau in voller Breite, sofern bereits ein PDF in
+          Storage liegt (z.B. nach manueller Generierung oder bei
+          automatisch erstellten Lastschrift-Rechnungen). */}
+      {invoice.pdfUrl && (
+        <section className="card mt-6 p-0 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+            <h2 className="text-base font-semibold text-gray-900">
+              PDF-Vorschau
+            </h2>
+            <a
+              href={invoice.pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-brand-blue hover:underline font-medium"
+            >
+              In neuem Tab öffnen ↗
+            </a>
+          </div>
+          <iframe
+            src={`${invoice.pdfUrl}#toolbar=0&navpanes=0`}
+            title={`Rechnung ${invoice.invoiceNumber}`}
+            className="w-full block"
+            style={{ height: 'min(1100px, 80vh)', border: 0 }}
+          />
+        </section>
+      )}
     </div>
   );
 }
