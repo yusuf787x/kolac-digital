@@ -1,5 +1,9 @@
 /* eslint-disable jsx-a11y/alt-text */
-'use client';
+// Bewusst KEIN 'use client' — diese Komponente nutzt nur deklarative
+// @react-pdf/renderer-Elemente (kein React-DOM, keine Hooks) und muss
+// auch von Server-Routes importierbar sein (GoCardless-Webhook). Mit
+// 'use client' wuerde Next.js einen Client-Component-Reference statt
+// der echten Funktion liefern und der PDF-Renderer wirft React #130.
 
 import {
   Document,
