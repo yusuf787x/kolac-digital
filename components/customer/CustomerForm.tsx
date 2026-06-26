@@ -19,7 +19,14 @@ const EMPTY: CustomerFormData = {
   phone: '',
   taxId: '',
   notes: '',
+  gocardlessCustomerId: '',
+  retainerInvoiceEmail: '',
+  retainerInvoiceTemplate: '',
 };
+
+const DEFAULT_RETAINER_TEMPLATE = `Systempflege {monat_jahr}
+inklusive Software-Updates, Wartung und Serverhosting.
+DSGVO-konformes Hosting in der EU, automatische Backups, schnelle Reaktionszeiten.`;
 
 interface Props {
   initial?: Customer;
@@ -42,6 +49,9 @@ export default function CustomerForm({ initial, mode }: Props) {
           phone: initial.phone,
           taxId: initial.taxId ?? '',
           notes: initial.notes ?? '',
+          gocardlessCustomerId: initial.gocardlessCustomerId ?? '',
+          retainerInvoiceEmail: initial.retainerInvoiceEmail ?? '',
+          retainerInvoiceTemplate: initial.retainerInvoiceTemplate ?? '',
         }
       : EMPTY,
   );
@@ -180,6 +190,59 @@ export default function CustomerForm({ initial, mode }: Props) {
               onChange={(e) => update('phone', e.target.value)}
             />
           </div>
+        </div>
+      </section>
+
+      <section className="card space-y-4">
+        <h2 className="text-base font-semibold text-gray-900">
+          GoCardless / Lastschrift
+        </h2>
+        <p className="text-xs text-gray-500 -mt-2">
+          Wenn dieser Kunde per SEPA-Lastschrift bezahlt, läuft die Rechnung
+          automatisch raus, sobald GoCardless eine Zahlung bestätigt.
+        </p>
+
+        <div>
+          <label className="label">GoCardless Customer ID (optional, Hardlink)</label>
+          <input
+            className="input font-mono text-sm"
+            value={data.gocardlessCustomerId ?? ''}
+            onChange={(e) => update('gocardlessCustomerId', e.target.value)}
+            placeholder="z.B. CU000123ABCDEFG"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Wenn gesetzt, hat das Vorrang vor dem Domain-Match. Brauchst du
+            nur in Sonderfällen (z.B. mehrere Kunden teilen sich eine Domain).
+          </p>
+        </div>
+
+        <div>
+          <label className="label">Rechnungs-Mail (optional)</label>
+          <input
+            type="email"
+            className="input"
+            value={data.retainerInvoiceEmail ?? ''}
+            onChange={(e) => update('retainerInvoiceEmail', e.target.value)}
+            placeholder="z.B. rechnungen@carhifi-herford.de"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Falls Rechnungen an eine andere Adresse als die Haupt-Mail sollen.
+            Domain-Match prüft beide Adressen.
+          </p>
+        </div>
+
+        <div>
+          <label className="label">Rechnungstext (Template)</label>
+          <textarea
+            className="input min-h-[100px] font-mono text-sm"
+            value={data.retainerInvoiceTemplate ?? ''}
+            onChange={(e) => update('retainerInvoiceTemplate', e.target.value)}
+            placeholder={DEFAULT_RETAINER_TEMPLATE}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Variablen: {'{monat}'}, {'{jahr}'}, {'{monat_jahr}'},{' '}
+            {'{kunde_firma}'}, {'{betrag}'}. Leer lassen für Default.
+          </p>
         </div>
       </section>
 

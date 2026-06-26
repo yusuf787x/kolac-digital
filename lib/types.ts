@@ -15,6 +15,12 @@ export interface Customer {
   phone: string;
   taxId?: string;
   notes?: string;
+  /** Optionaler Hardlink zu einem GoCardless-Kunden. Hat Vorrang vor Domain-Match. */
+  gocardlessCustomerId?: string;
+  /** Rechnungsempfänger-Mail für Lastschrift-Rechnungen, falls abweichend von `email`. */
+  retainerInvoiceEmail?: string;
+  /** Template-Text für die Auto-Rechnung. Unterstützt {monat}, {jahr}, {monat_jahr}, {kunde_firma}, {betrag}. */
+  retainerInvoiceTemplate?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -49,6 +55,10 @@ export interface Invoice {
   sentAt: Timestamp | null;
   paidAt: Timestamp | null;
   items: InvoiceItem[];
+  /** Optional: ID des GoCardless-Payments, der diese Rechnung ausgelöst hat. */
+  gocardlessPaymentId?: string;
+  /** Optional: GoCardless-Charge-Datum (Lastschrift gezogen am). */
+  gocardlessChargedAt?: Timestamp;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
