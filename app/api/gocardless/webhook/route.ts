@@ -185,12 +185,16 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<HandlerResult> {
     customer.retainerInvoiceEmail?.trim() ||
     gcCustomer.email?.trim() ||
     customer.email;
+  // Persoenliche Ansprache: Vorname > GC-Vorname > Nachname > Firma.
+  const greetingName =
+    customer.firstName?.trim() ||
+    gcCustomer.given_name?.trim() ||
+    customer.lastName?.trim() ||
+    customer.company ||
+    '';
   await sendInvoiceMail({
     to: recipient,
-    customerName:
-      customer.company ||
-      `${customer.firstName} ${customer.lastName}`.trim() ||
-      [gcCustomer.given_name, gcCustomer.family_name].filter(Boolean).join(' '),
+    customerName: greetingName,
     invoiceNumber: invoice.invoiceNumber,
     totalAmount: invoice.totalAmount,
     chargedAt: new Date(payment.charge_date),
