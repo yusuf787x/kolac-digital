@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from '@react-pdf/renderer';
 import type { Invoice, Customer } from '@/lib/types';
-import { formatEUR, formatDateDE } from '@/lib/utils';
+import { formatEUR, formatDateDE, tsToDate } from '@/lib/utils';
 import { COMPANY_BANK, COMPANY_INFO } from '@/lib/qr';
 
 const COLORS = {
@@ -240,6 +240,11 @@ export default function InvoicePDF({
   logoSrc,
   qrCodeDataUrl,
 }: Props) {
+  // Lastschrift-Rechnung: Geld wurde bereits eingezogen. Kein Ueberweisungs-
+  // Hinweis, kein GiroCode noetig.
+  const isDirectDebit = Boolean(invoice.gocardlessPaymentId);
+  const chargedAt =
+    tsToDate(invoice.gocardlessChargedAt) ?? tsToDate(invoice.paidAt);
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -383,12 +388,23 @@ export default function InvoicePDF({
         <Text style={styles.paragraph}>
           Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
         </Text>
-        <Text style={styles.paragraph}>
-          Bitte den gesamten Betrag unter Angabe der Rechnungsnummer bis zum
-          Zahlungsziel auf das Konto von {COMPANY_BANK.recipientName},{' '}
-          <Text style={styles.bold}>{COMPANY_BANK.iban}</Text> überweisen. Die
-          vollständigen Kontodaten finden Sie unten.
-        </Text>
+        {isDirectDebit ? (
+          <Text style={styles.paragraph}>
+            Der Rechnungsbetrag wurde am{' '}
+            <Text style={styles.bold}>
+              {chargedAt ? formatDateDE(chargedAt) : formatDateDE(invoice.invoiceDate.toDate())}
+            </Text>{' '}
+            per SEPA-Lastschrift von deinem hinterlegten Konto eingezogen.
+            Keine weitere Aktion notwendig.
+          </Text>
+        ) : (
+          <Text style={styles.paragraph}>
+            Bitte den gesamten Betrag unter Angabe der Rechnungsnummer bis zum
+            Zahlungsziel auf das Konto von {COMPANY_BANK.recipientName},{' '}
+            <Text style={styles.bold}>{COMPANY_BANK.iban}</Text> überweisen. Die
+            vollständigen Kontodaten finden Sie unten.
+          </Text>
+        )}
         <Text style={styles.paragraph}>
           Bei Rückfragen stehe ich unter der Rufnummer {COMPANY_INFO.phone} zur
           Verfügung.
@@ -411,10 +427,12 @@ export default function InvoicePDF({
             </Text>
           </View>
 
-          <View style={styles.qrBox}>
-            <Image style={styles.qrImage} src={qrCodeDataUrl} />
-            <Text style={styles.qrLabel}>Mit Banking-App scannen</Text>
-          </View>
+          {!isDirectDebit && (
+            <View style={styles.qrBox}>
+              <Image style={styles.qrImage} src={qrCodeDataUrl} />
+              <Text style={styles.qrLabel}>Mit Banking-App scannen</Text>
+            </View>
+          )}
 
           <View>
             <Text style={styles.footerRight}>DANKE FÜR IHR VERTRAUEN</Text>

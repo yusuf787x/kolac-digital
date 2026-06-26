@@ -322,8 +322,9 @@ async function createPaidInvoice(
     },
   ];
 
-  const closingText =
-    'Der Betrag wurde per SEPA-Lastschrift eingezogen. Keine weitere Aktion noetig.\n\nVielen Dank und liebe Gruesse\nYusuf Kolac';
+  // Lastschrift-Hinweis kommt aus dem PDF-Template selbst (mit Datum).
+  // Hier nur die Gruss-Formel.
+  const closingText = 'Vielen Dank und liebe Grüße\nYusuf Kolac';
 
   await newRef.set({
     customerId: customer.id,
