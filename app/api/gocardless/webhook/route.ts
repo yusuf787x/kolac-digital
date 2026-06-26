@@ -63,31 +63,55 @@ export async function POST(req: Request) {
   const results: Array<{ id: string; action: string; status: string; note?: string }> = [];
 
   for (const event of payload.events ?? []) {
+    let processStatus: 'ok' | 'ignored' | 'error' = 'ignored';
+    let processNote: string | undefined;
+    let invoiceId: string | undefined;
+    let customerId: string | undefined;
+
     try {
       await logEvent(event);
 
       if (event.resource_type === 'payments' && event.action === 'confirmed') {
-        const note = await handlePaymentConfirmed(event);
-        results.push({ id: event.id, action: event.action, status: 'ok', note });
+        const res = await handlePaymentConfirmed(event);
+        processStatus = 'ok';
+        processNote = res.note;
+        invoiceId = res.invoiceId;
+        customerId = res.customerId;
       } else if (event.resource_type === 'payments' && event.action === 'failed') {
-        const note = await handlePaymentFailed(event);
-        results.push({ id: event.id, action: event.action, status: 'ok', note });
+        const res = await handlePaymentFailed(event);
+        processStatus = 'ok';
+        processNote = res.note;
       } else {
-        results.push({
-          id: event.id,
-          action: `${event.resource_type}.${event.action}`,
-          status: 'ignored',
-        });
+        processNote = `${event.resource_type}.${event.action} wird nicht verarbeitet`;
       }
     } catch (err) {
       console.error('GoCardless event error:', event.id, err);
-      results.push({
-        id: event.id,
-        action: event.action,
-        status: 'error',
-        note: (err as Error).message,
-      });
+      processStatus = 'error';
+      processNote = (err as Error).message;
     }
+
+    // Verarbeitungsergebnis zum geloggten Event hinzufuegen, damit das
+    // UI im Dashboard sieht was passiert ist.
+    await adminDb()
+      .collection('gocardlessEvents')
+      .doc(event.id)
+      .set(
+        {
+          processStatus,
+          processNote: processNote ?? null,
+          processedAt: Timestamp.now(),
+          invoiceId: invoiceId ?? null,
+          customerId: customerId ?? null,
+        },
+        { merge: true },
+      );
+
+    results.push({
+      id: event.id,
+      action: `${event.resource_type}.${event.action}`,
+      status: processStatus,
+      note: processNote,
+    });
   }
 
   return NextResponse.json({ ok: true, results });
@@ -97,9 +121,15 @@ export async function POST(req: Request) {
 // Event-Handler
 // ===================================================================
 
-async function handlePaymentConfirmed(event: GcEvent): Promise<string> {
+interface HandlerResult {
+  note: string;
+  invoiceId?: string;
+  customerId?: string;
+}
+
+async function handlePaymentConfirmed(event: GcEvent): Promise<HandlerResult> {
   const paymentId = event.links?.payment;
-  if (!paymentId) return 'kein payment-link';
+  if (!paymentId) return { note: 'kein payment-link' };
 
   // Idempotenz: Rechnung schon vorhanden?
   const existing = await adminDb()
@@ -108,7 +138,10 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<string> {
     .limit(1)
     .get();
   if (!existing.empty) {
-    return `bereits verarbeitet (${existing.docs[0].id})`;
+    return {
+      note: `bereits verarbeitet (${existing.docs[0].id})`,
+      invoiceId: existing.docs[0].id,
+    };
   }
 
   const payment = await getPayment(paymentId);
@@ -117,13 +150,13 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<string> {
 
   if (match.mode !== 'hardlink' && match.mode !== 'domain') {
     await notifyMatchProblem(gcCustomer, payment, match);
-    return `kein eindeutiger Kunde (${match.mode})`;
+    return { note: `kein eindeutiger Kunde (${match.mode})` };
   }
 
   const customer = await loadCustomer(match.customer!.id);
   if (!customer) {
     await notifyMatchProblem(gcCustomer, payment, match);
-    return 'Kunde im Dashboard nicht ladbar';
+    return { note: 'Kunde im Dashboard nicht ladbar' };
   }
 
   const invoice = await createPaidInvoice(customer, payment);
@@ -173,12 +206,16 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<string> {
     `,
   });
 
-  return `Rechnung ${invoice.invoiceNumber} erstellt`;
+  return {
+    note: `Rechnung ${invoice.invoiceNumber} erstellt`,
+    invoiceId: invoice.id,
+    customerId: customer.id,
+  };
 }
 
-async function handlePaymentFailed(event: GcEvent): Promise<string> {
+async function handlePaymentFailed(event: GcEvent): Promise<HandlerResult> {
   const paymentId = event.links?.payment;
-  if (!paymentId) return 'kein payment-link';
+  if (!paymentId) return { note: 'kein payment-link' };
   const payment = await getPayment(paymentId);
   const { customer: gcCustomer } = await getCustomerForPayment(payment);
   const match = await matchCustomer(gcCustomer);
@@ -198,7 +235,7 @@ async function handlePaymentFailed(event: GcEvent): Promise<string> {
       </ul>
     `,
   });
-  return 'Yusuf informiert';
+  return { note: 'Yusuf per Mail informiert', customerId: match.customer?.id };
 }
 
 // ===================================================================

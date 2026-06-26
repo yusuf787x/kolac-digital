@@ -93,9 +93,18 @@ export default function RechnungenPage() {
             )}
           </p>
         </div>
-        <Link href="/dashboard/rechnungen/neu" className="btn-primary">
-          + Neue Rechnung
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/rechnungen/gocardless"
+            className="btn-secondary"
+            title="Webhook-Log aller GoCardless-Events"
+          >
+            GoCardless-Log
+          </Link>
+          <Link href="/dashboard/rechnungen/neu" className="btn-primary">
+            + Neue Rechnung
+          </Link>
+        </div>
       </header>
 
       <div className="flex flex-wrap gap-2 mb-4">

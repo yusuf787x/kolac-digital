@@ -731,6 +731,43 @@ export async function seedTaskColumns(): Promise<number> {
 }
 
 // ===================================================================
+// GOCARDLESS EVENTS (Webhook-Audit-Log)
+// ===================================================================
+
+export interface GocardlessEventDoc {
+  id: string;
+  resource_type: string;
+  action: string;
+  created_at: string;
+  links?: Record<string, string>;
+  details?: {
+    origin?: string;
+    cause?: string;
+    description?: string;
+    reason_code?: string;
+  };
+  receivedAt: Timestamp;
+  processedAt?: Timestamp;
+  processStatus?: 'ok' | 'ignored' | 'error';
+  processNote?: string | null;
+  invoiceId?: string | null;
+  customerId?: string | null;
+}
+
+export async function listGocardlessEvents(
+  max = 200,
+): Promise<GocardlessEventDoc[]> {
+  const snap = await getDocs(
+    query(
+      collection(db, 'gocardlessEvents'),
+      orderBy('receivedAt', 'desc'),
+      limit(max),
+    ),
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as GocardlessEventDoc);
+}
+
+// ===================================================================
 // FILE STORAGE (Firebase Storage)
 // ===================================================================
 
