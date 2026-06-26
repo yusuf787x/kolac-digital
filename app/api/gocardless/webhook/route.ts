@@ -13,9 +13,7 @@ import {
 } from '@/lib/gocardless';
 import { matchCustomer, type MatchResult } from '@/lib/server-customer-matching';
 import { generateInvoicePdfBuffer } from '@/lib/server-pdf';
-import {
-  saveContractToDrive,
-} from '@/lib/google-drive';
+import { saveInvoiceToDrive } from '@/lib/google-drive';
 import {
   buildInvoiceNumber,
   formatDateDE,
@@ -404,14 +402,21 @@ async function syncToDrive(
   const filename = `Rechnung ${invoice.invoiceNumber} ${cleanForFilename(customer.company || customer.lastName || 'Kunde')}.pdf`;
   const pdfBase64 = pdfBuffer.toString('base64');
 
-  // Lastschrift-Rechnungen landen im Standard-Auftraege-Ordner (existierende
-  // Konvention). saveContractToDrive nutzen wir hier um den gleichen
-  // Upload-Pfad zu nehmen — der "Partnerverträge"-Folder ist passend.
-  // Falls du sie woanders willst, ENV GOOGLE_DRIVE_CONTRACTS_FOLDER ueberschreiben.
-  const { webViewLink } = await saveContractToDrive({
+  // Wie manuell erstellte Rechnungen: in den Einnahmen-Drive-Ordner +
+  // Eintrag in die Buchhaltungs-Tabelle (chronologisch).
+  const leistung =
+    invoice.items?.map((i) => i.description.split('\n')[0]).join('; ') ||
+    'Lastschrift-Retainer';
+
+  const { webViewLink } = await saveInvoiceToDrive({
     refreshToken,
     pdfBase64,
     filename,
+    date: formatDateDE(invoice.invoiceDate.toDate()),
+    customerName: customer.company || customer.lastName || '—',
+    invoiceNumber: invoice.invoiceNumber,
+    leistung,
+    amount: invoice.totalAmount,
   });
   return webViewLink;
 }
