@@ -36,6 +36,13 @@ export default function RechnungDetailPage() {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingDrive, setSyncingDrive] = useState(false);
 
+  // Live-Vorschau: PDF wird beim Laden der Seite einmal client-seitig
+  // gerendert und als Blob-URL in einem Iframe angezeigt. So funktioniert
+  // die Vorschau auch fuer aelte Rechnungen, fuer die kein pdfUrl in
+  // Storage liegt.
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
   const refresh = async () => {
     const inv = await getInvoice(id);
     setInvoice(inv);
@@ -55,6 +62,36 @@ export default function RechnungDetailPage() {
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  // PDF live im Browser rendern, sobald Invoice + Kunde geladen sind.
+  // Existierende Blob-URL beim Wechsel/Unmount aufraeumen.
+  useEffect(() => {
+    if (!invoice || !customer) return;
+    let cancelled = false;
+    let createdUrl: string | null = null;
+    setPreviewError(null);
+    (async () => {
+      try {
+        const { generateInvoicePdfBlob } = await import(
+          '@/lib/pdf-generator'
+        );
+        const blob = await generateInvoicePdfBlob(invoice, customer);
+        if (cancelled) return;
+        createdUrl = URL.createObjectURL(blob);
+        setPreviewUrl(createdUrl);
+      } catch (err) {
+        console.error(err);
+        if (!cancelled)
+          setPreviewError(
+            `Vorschau konnte nicht gerendert werden: ${(err as Error).message}`,
+          );
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (createdUrl) URL.revokeObjectURL(createdUrl);
+    };
+  }, [invoice, customer]);
 
   if (loading) return <div className="card text-sm text-gray-500">Lädt…</div>;
 
@@ -492,32 +529,40 @@ export default function RechnungDetailPage() {
         </section>
       </div>
 
-      {/* PDF-Vorschau in voller Breite, sofern bereits ein PDF in
-          Storage liegt (z.B. nach manueller Generierung oder bei
-          automatisch erstellten Lastschrift-Rechnungen). */}
-      {invoice.pdfUrl && (
-        <section className="card mt-6 p-0 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-            <h2 className="text-base font-semibold text-gray-900">
-              PDF-Vorschau
-            </h2>
+      {/* PDF-Vorschau in voller Breite — wird live client-seitig aus
+          den aktuellen Daten gerendert, damit jede Rechnung (auch
+          bestehende ohne hochgeladenes PDF) eine Vorschau hat. */}
+      <section className="card mt-6 p-0 overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+          <h2 className="text-base font-semibold text-gray-900">
+            PDF-Vorschau
+          </h2>
+          {previewUrl && (
             <a
-              href={invoice.pdfUrl}
+              href={previewUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-brand-blue hover:underline font-medium"
             >
               In neuem Tab öffnen ↗
             </a>
+          )}
+        </div>
+        {previewError ? (
+          <div className="p-5 text-sm text-red-700 bg-red-50">
+            {previewError}
           </div>
+        ) : previewUrl ? (
           <iframe
-            src={`${invoice.pdfUrl}#toolbar=0&navpanes=0`}
+            src={`${previewUrl}#toolbar=0&navpanes=0`}
             title={`Rechnung ${invoice.invoiceNumber}`}
             className="w-full block"
             style={{ height: 'min(1100px, 80vh)', border: 0 }}
           />
-        </section>
-      )}
+        ) : (
+          <div className="p-5 text-sm text-gray-500">PDF wird gerendert…</div>
+        )}
+      </section>
     </div>
   );
 }
