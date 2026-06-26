@@ -470,7 +470,7 @@ async function sendInvoiceMail(opts: {
     'Kolac Digital',
   ].join('\n');
 
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM_EMAIL,
     to: opts.to,
     replyTo: 'yusuf@kolac-digital.de',
@@ -484,6 +484,15 @@ async function sendInvoiceMail(opts: {
       },
     ],
   });
+
+  // Resend wirft NICHT bei API-Fehlern (z.B. unverifizierte Domain,
+  // Domain-Selbstversand etc.) — der Fehler steht im result.error.
+  // Sichtbar machen, damit das nicht im Verborgenen verloren geht.
+  if (result.error) {
+    throw new Error(
+      `Resend Mail an ${opts.to} fehlgeschlagen: ${result.error.message ?? JSON.stringify(result.error)}`,
+    );
+  }
 }
 
 async function notifyAdmin(opts: { subject: string; html: string }) {
