@@ -41,6 +41,7 @@ export default function NeueAusgabePage() {
     defaultVatRateForDate(new Date()),
   );
   const [vatRateUserSet, setVatRateUserSet] = useState(false);
+  const [reverseCharge, setReverseCharge] = useState(false);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,6 +148,7 @@ export default function NeueAusgabePage() {
         description: description.trim(),
         amount: numericAmount,
         vatRate,
+        reverseCharge,
         category,
         supplier: supplier.trim(),
         receiptUrl,
@@ -269,7 +271,11 @@ export default function NeueAusgabePage() {
               />
             </div>
             <div>
-              <label className="label">Brutto-Betrag (EUR) *</label>
+              <label className="label">
+                {reverseCharge
+                  ? 'Rechnungsbetrag netto (EUR) *'
+                  : 'Brutto-Betrag (EUR) *'}
+              </label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -282,9 +288,32 @@ export default function NeueAusgabePage() {
             </div>
           </div>
 
+          <label className="flex items-start gap-3 p-3 rounded-lg border border-amber-200 bg-amber-50/60 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={reverseCharge}
+              onChange={(e) => setReverseCharge(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-amber-600"
+            />
+            <span className="text-sm text-gray-800">
+              <strong>Reverse Charge (§ 13b UStG)</strong> — Rechnung aus dem
+              EU-Ausland ohne ausgewiesene MwSt. (z.B. Meta Ireland, Google
+              Ireland, Canva, Anthropic).
+              <span className="block text-xs text-gray-600 mt-1">
+                Ich deklariere die fiktive USt als geschuldete Steuer UND
+                ziehe sie sofort als Vorsteuer ab. Netto-Effekt für dich:
+                null.
+              </span>
+            </span>
+          </label>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label">MwSt-Satz auf dem Beleg</label>
+              <label className="label">
+                {reverseCharge
+                  ? 'Fiktiver MwSt-Satz (für Reverse Charge)'
+                  : 'MwSt-Satz auf dem Beleg'}
+              </label>
               <select
                 className="input"
                 value={String(vatRate)}
@@ -298,13 +327,43 @@ export default function NeueAusgabePage() {
                 <option value="0">0 % (keine MwSt)</option>
               </select>
               <p className="mt-1 text-xs text-gray-500">
-                Default kommt aus dem Datum: vor 01.07.2026 = 0 % (Kleinunternehmer), danach 19 %.
+                {reverseCharge
+                  ? 'In Deutschland üblich: 19 %. Wird beidseitig in der UStVA deklariert.'
+                  : 'Default kommt aus dem Datum: vor 01.07.2026 = 0 % (Kleinunternehmer), danach 19 %.'}
               </p>
             </div>
             <div className="flex items-end">
               {(() => {
                 const n = parseFloat(amount.replace(',', '.'));
                 if (!amount || isNaN(n)) return null;
+                if (reverseCharge) {
+                  const net = Math.round(n * 100) / 100;
+                  const fictiveVat = Math.round(net * vatRate * 100) / 100;
+                  return (
+                    <div className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-sm space-y-0.5">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Netto (Rechnungsbetrag)</span>
+                        <span className="text-gray-900 font-medium">
+                          {formatEUR(net)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">
+                          Fiktive USt ({Math.round(vatRate * 100)} %)
+                        </span>
+                        <span className="text-gray-900 font-medium">
+                          {formatEUR(fictiveVat)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between pt-1 border-t border-gray-200 text-xs">
+                        <span className="text-gray-500">Netto-Effekt UStVA</span>
+                        <span className="text-green-700 font-semibold">
+                          {formatEUR(0)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }
                 const split = grossToNet(n, vatRate);
                 return (
                   <div className="w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-sm space-y-0.5">

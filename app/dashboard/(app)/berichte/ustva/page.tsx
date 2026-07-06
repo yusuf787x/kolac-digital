@@ -90,30 +90,56 @@ export default function UStVAPage() {
       });
     }
 
-    // Input VAT: Vorsteuer aus Belegen
+    // Input VAT: Vorsteuer aus regulaeren Belegen (Brutto → Netto + Vorsteuer)
     let inputNet = 0;
     let inputVat = 0;
     let inputGross = 0;
     const inputByRate = new Map<number, { net: number; vat: number; gross: number }>();
+
+    // Reverse Charge: EU-Ausland ohne MwSt. Netto-Betrag geht in
+    // Kennzahl 46, fiktive USt in 47 (geschuldet) und 67 (Vorsteuer).
+    let rcNet = 0;
+    let rcVat = 0;
+    const rcExpenses: Expense[] = [];
+    const rcByRate = new Map<number, { net: number; vat: number }>();
+
     for (const e of monthExpenses) {
-      const split = grossToNet(e.amount, e.vatRate ?? 0);
-      const rate = e.vatRate ?? 0;
-      inputNet += split.net;
-      inputVat += split.vat;
-      inputGross += split.gross;
-      const prev = inputByRate.get(rate) ?? { net: 0, vat: 0, gross: 0 };
-      inputByRate.set(rate, {
-        net: prev.net + split.net,
-        vat: prev.vat + split.vat,
-        gross: prev.gross + split.gross,
-      });
+      if (e.reverseCharge) {
+        const rate = e.vatRate ?? 0;
+        const net = Math.round(e.amount * 100) / 100;
+        const fictiveVat = Math.round(net * rate * 100) / 100;
+        rcNet += net;
+        rcVat += fictiveVat;
+        rcExpenses.push(e);
+        const prev = rcByRate.get(rate) ?? { net: 0, vat: 0 };
+        rcByRate.set(rate, {
+          net: prev.net + net,
+          vat: prev.vat + fictiveVat,
+        });
+      } else {
+        const split = grossToNet(e.amount, e.vatRate ?? 0);
+        const rate = e.vatRate ?? 0;
+        inputNet += split.net;
+        inputVat += split.vat;
+        inputGross += split.gross;
+        const prev = inputByRate.get(rate) ?? { net: 0, vat: 0, gross: 0 };
+        inputByRate.set(rate, {
+          net: prev.net + split.net,
+          vat: prev.vat + split.vat,
+          gross: prev.gross + split.gross,
+        });
+      }
     }
 
-    const zahllast = outputVat - inputVat;
+    // Zahllast: geschuldete USt (Umsatz + RC) - abziehbare Vorsteuer
+    // (regulaer + RC). Fuer reine RC hebt sich das gegenseitig auf.
+    const zahllast = outputVat + rcVat - inputVat - rcVat;
+    const regularExpenses = monthExpenses.filter((e) => !e.reverseCharge);
 
     return {
       monthInvoices,
       monthExpenses,
+      regularExpenses,
       outputNet: round2(outputNet),
       outputVat: round2(outputVat),
       outputGross: round2(outputGross),
@@ -122,6 +148,10 @@ export default function UStVAPage() {
       inputVat: round2(inputVat),
       inputGross: round2(inputGross),
       inputByRate,
+      rcNet: round2(rcNet),
+      rcVat: round2(rcVat),
+      rcExpenses,
+      rcByRate,
       zahllast: round2(zahllast),
     };
   }, [invoices, expenses, month]);
@@ -167,22 +197,43 @@ export default function UStVAPage() {
         'Posten',
         'Kategorie',
         'Lieferant',
+        'Reverse Charge',
         'Netto (EUR)',
         'USt-Satz (%)',
-        'Vorsteuer (EUR)',
-        'Brutto (EUR)',
+        'USt/Vorsteuer (EUR)',
+        'Brutto bezahlt (EUR)',
+        'ELSTER-Kennzahl',
       ],
       ...monthData.monthExpenses.map((e) => {
+        if (e.reverseCharge) {
+          const rate = e.vatRate ?? 0;
+          const net = Math.round(e.amount * 100) / 100;
+          const vat = Math.round(net * rate * 100) / 100;
+          return [
+            formatDateDE(e.date.toDate()),
+            e.description,
+            e.category,
+            e.supplier || '—',
+            'ja (§ 13b UStG)',
+            fmtCsv(net),
+            String(Math.round(rate * 100)),
+            fmtCsv(vat),
+            fmtCsv(net),
+            '46 / 47 / 67',
+          ];
+        }
         const split = grossToNet(e.amount, e.vatRate ?? 0);
         return [
           formatDateDE(e.date.toDate()),
           e.description,
           e.category,
           e.supplier || '—',
+          'nein',
           fmtCsv(split.net),
           String(Math.round((e.vatRate ?? 0) * 100)),
           fmtCsv(split.vat),
           fmtCsv(split.gross),
+          '',
         ];
       }),
     ];
@@ -223,7 +274,28 @@ export default function UStVAPage() {
         fmtCsv(monthData.inputGross),
       ],
       [],
-      ['USt-Zahllast (Output − Vorsteuer)', '', fmtCsv(monthData.zahllast), ''],
+      ['Reverse Charge (§ 13b UStG)', '', '', ''],
+      ['ELSTER-Kennzahl', 'Bezeichnung', 'Betrag (EUR)', ''],
+      ['KZ 46', 'Bemessungsgrundlage (Netto)', fmtCsv(monthData.rcNet), ''],
+      [
+        'KZ 47',
+        'Geschuldete USt (Steuerschuld)',
+        fmtCsv(monthData.rcVat),
+        '',
+      ],
+      [
+        'KZ 67',
+        'Abziehbare Vorsteuer nach § 13b',
+        fmtCsv(monthData.rcVat),
+        '',
+      ],
+      [],
+      [
+        'USt-Zahllast (Umsatz-USt + RC-USt − Vorsteuer − RC-Vorsteuer)',
+        '',
+        fmtCsv(monthData.zahllast),
+        '',
+      ],
     ];
     downloadCsv(`UStVA_Uebersicht_${month}.csv`, rows);
   };
@@ -361,11 +433,11 @@ export default function UStVAPage() {
             )}
           </section>
 
-          {/* Input: Expenses */}
+          {/* Input: Expenses (regulaer, Vorsteuer aus Belegen) */}
           <section className="card">
             <h2 className="text-base font-semibold text-gray-900 mb-3">
-              Ausgaben ({monthData.monthExpenses.length} Beleg
-              {monthData.monthExpenses.length === 1 ? '' : 'e'})
+              Ausgaben — reguläre Vorsteuer ({monthData.regularExpenses.length}{' '}
+              Beleg{monthData.regularExpenses.length === 1 ? '' : 'e'})
             </h2>
             <SummaryByRate byRate={monthData.inputByRate} label="Vorsteuer" />
             <Totals
@@ -381,10 +453,10 @@ export default function UStVAPage() {
             >
               CSV: Ausgaben-Liste
             </button>
-            {monthData.monthExpenses.length > 0 && (
+            {monthData.regularExpenses.length > 0 && (
               <details className="mt-3">
                 <summary className="cursor-pointer text-xs text-gray-500">
-                  Details ({monthData.monthExpenses.length})
+                  Details ({monthData.regularExpenses.length})
                 </summary>
                 <table className="w-full text-xs mt-2">
                   <thead className="text-gray-500 uppercase tracking-wider">
@@ -398,7 +470,7 @@ export default function UStVAPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {monthData.monthExpenses.map((e) => {
+                    {monthData.regularExpenses.map((e) => {
                       const split = grossToNet(e.amount, e.vatRate ?? 0);
                       return (
                         <tr key={e.id}>
@@ -424,6 +496,84 @@ export default function UStVAPage() {
               </details>
             )}
           </section>
+
+          {/* Reverse Charge § 13b UStG */}
+          {monthData.rcExpenses.length > 0 && (
+            <section className="card border-amber-200 bg-amber-50/30">
+              <div className="flex items-start justify-between mb-3 gap-2 flex-wrap">
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900">
+                    Reverse Charge (§ 13b UStG) — {monthData.rcExpenses.length}{' '}
+                    Rechnung{monthData.rcExpenses.length === 1 ? '' : 'en'}
+                  </h2>
+                  <p className="text-xs text-gray-600 mt-1">
+                    EU-Ausland ohne MwSt. Fiktive USt wird als Steuerschuld
+                    UND als Vorsteuer deklariert — Netto-Effekt null.
+                  </p>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-1 rounded bg-amber-100 text-amber-800">
+                  ELSTER KZ 46 / 47 / 67
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
+                <RcMetric
+                  kz="46"
+                  label="Bemessungsgrundlage (netto)"
+                  value={monthData.rcNet}
+                />
+                <RcMetric
+                  kz="47"
+                  label="Geschuldete USt (Steuerschuld)"
+                  value={monthData.rcVat}
+                />
+                <RcMetric
+                  kz="67"
+                  label="Abziehbare Vorsteuer (§ 13b)"
+                  value={monthData.rcVat}
+                />
+              </div>
+
+              <details className="mt-4">
+                <summary className="cursor-pointer text-xs text-gray-500">
+                  Details ({monthData.rcExpenses.length})
+                </summary>
+                <table className="w-full text-xs mt-2">
+                  <thead className="text-gray-500 uppercase tracking-wider">
+                    <tr>
+                      <th className="text-left py-1.5">Datum</th>
+                      <th className="text-left py-1.5">Posten</th>
+                      <th className="text-left py-1.5">Lieferant</th>
+                      <th className="text-right py-1.5">Netto</th>
+                      <th className="text-right py-1.5">Fiktive USt</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {monthData.rcExpenses.map((e) => {
+                      const rate = e.vatRate ?? 0;
+                      const net = Math.round(e.amount * 100) / 100;
+                      const vat = Math.round(net * rate * 100) / 100;
+                      return (
+                        <tr key={e.id}>
+                          <td className="py-1.5">
+                            {formatDateDE(e.date.toDate())}
+                          </td>
+                          <td className="py-1.5">{e.description}</td>
+                          <td className="py-1.5">{e.supplier || '—'}</td>
+                          <td className="py-1.5 text-right">
+                            {formatEUR(net)}
+                          </td>
+                          <td className="py-1.5 text-right">
+                            {formatEUR(vat)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </details>
+            </section>
+          )}
 
           {/* Summary CSV */}
           <section className="card">
@@ -458,6 +608,14 @@ export default function UStVAPage() {
               <li>
                 Belege müssen 10 Jahre aufbewahrt werden — sind alle in Drive
                 gespeichert.
+              </li>
+              <li>
+                <strong>Reverse Charge (§ 13b UStG)</strong>: Kennzahl 46 =
+                Bemessungsgrundlage, 47 = geschuldete USt, 67 = abziehbare
+                Vorsteuer. Betragsmäßig gleich — hebt sich in der Zahllast
+                auf, muss aber in der UStVA deklariert werden. Für USt-IdNr.
+                bei EU-Lieferanten (Meta, Google, Canva) hinterlegen, sobald
+                dir das Finanzamt eine ausstellt.
               </li>
             </ul>
           </section>
@@ -514,6 +672,32 @@ function SummaryByRate({
           ))}
       </tbody>
     </table>
+  );
+}
+
+/** Kleine Kennzahl-Metrik-Kachel fuer die Reverse-Charge-Section. Zeigt
+ *  ELSTER-Kennzahl gross, Label darunter, Betrag rechts. */
+function RcMetric({
+  kz,
+  label,
+  value,
+}: {
+  kz: string;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-lg bg-white border border-amber-200 p-3">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+          KZ {kz}
+        </span>
+        <span className="text-sm font-semibold text-gray-900">
+          {formatEUR(value)}
+        </span>
+      </div>
+      <p className="mt-2 text-xs text-gray-600 leading-tight">{label}</p>
+    </div>
   );
 }
 

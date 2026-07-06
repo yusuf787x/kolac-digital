@@ -89,6 +89,16 @@ export interface Expense {
   amount: number;
   /** Mehrwertsteuer-Satz auf dem Beleg (z.B. 0.19). Optional fuer Legacy. */
   vatRate?: number;
+  /**
+   * Reverse-Charge-Verfahren (§ 13b UStG): EU/Auslands-Rechnung ohne
+   * ausgewiesene MwSt. Wenn true, ist `amount` der Netto-Betrag (nichts
+   * wurde vom Lieferant an USt einbehalten). Wir deklarieren dann die
+   * "fiktive" USt aus vatRate als geschuldete Steuer UND ziehen sie
+   * gleichzeitig als Vorsteuer ab — Netto-Effekt: null.
+   *
+   * Praxis: Meta Ireland, Google Ireland, Canva, Anthropic etc.
+   */
+  reverseCharge?: boolean;
   category: ExpenseCategory;
   supplier: string;
   receiptUrl: string | null;

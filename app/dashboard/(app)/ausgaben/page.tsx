@@ -61,16 +61,31 @@ export default function AusgabenPage() {
     let gross = 0;
     let vat = 0;
     let net = 0;
+    let rcNet = 0;
+    let rcVat = 0;
     for (const e of filtered) {
-      const split = grossToNet(e.amount, e.vatRate ?? 0);
-      gross += split.gross;
-      vat += split.vat;
-      net += split.net;
+      if (e.reverseCharge) {
+        // amount ist Netto, MwSt wird fiktiv berechnet und beidseitig
+        // deklariert -> zaehlt nicht zur "echten" Vorsteuer, aber zaehlt
+        // trotzdem zu den ausgegebenen Cash-Flows.
+        const rate = e.vatRate ?? 0;
+        rcNet += e.amount;
+        rcVat += Math.round(e.amount * rate * 100) / 100;
+        gross += e.amount; // fuer Cash-Sicht: was wurde bezahlt
+        net += e.amount;
+      } else {
+        const split = grossToNet(e.amount, e.vatRate ?? 0);
+        gross += split.gross;
+        vat += split.vat;
+        net += split.net;
+      }
     }
     return {
       gross: Math.round(gross * 100) / 100,
       vat: Math.round(vat * 100) / 100,
       net: Math.round(net * 100) / 100,
+      rcNet: Math.round(rcNet * 100) / 100,
+      rcVat: Math.round(rcVat * 100) / 100,
     };
   }, [filtered]);
   const totalFiltered = totals.gross;
@@ -112,6 +127,11 @@ export default function AusgabenPage() {
                   {formatEUR(totals.vat)}
                 </span>
               </>
+            )}
+            {totals.rcNet > 0 && (
+              <span className="ml-2 text-amber-700">
+                · Reverse Charge {formatEUR(totals.rcNet)} netto (§ 13b)
+              </span>
             )}
           </p>
         </div>
@@ -196,6 +216,14 @@ export default function AusgabenPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-900 font-medium">
                     {e.description}
+                    {e.reverseCharge && (
+                      <span
+                        className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800"
+                        title="Reverse Charge (§ 13b UStG) — EU-Ausland ohne MwSt."
+                      >
+                        RC § 13b
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-gray-700">{e.category}</td>
                   <td className="px-4 py-3 text-gray-700">{e.supplier || '—'}</td>
