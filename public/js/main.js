@@ -74,9 +74,18 @@
     const subline = document.querySelector('.hero-subline');
     if (subline) subline.textContent = d.subline;
 
-    // Buttons
+    // Buttons — primary kann auch als externer Terminlink konfiguriert
+    // sein (neuer Tab). Wenn `buttonPrimaryLink` gesetzt ist, wird href
+    // + target/rel entsprechend gesetzt.
     const btnPrimary = document.querySelector('.hero-btn-primary');
-    if (btnPrimary) btnPrimary.textContent = d.buttonPrimary;
+    if (btnPrimary) {
+      btnPrimary.textContent = d.buttonPrimary;
+      if (d.buttonPrimaryLink) {
+        btnPrimary.href = d.buttonPrimaryLink;
+        btnPrimary.setAttribute('target', '_blank');
+        btnPrimary.setAttribute('rel', 'noopener noreferrer');
+      }
+    }
 
     const btnSecondary = document.querySelector('.hero-btn-secondary');
     if (btnSecondary) btnSecondary.textContent = d.buttonSecondary;

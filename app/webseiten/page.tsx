@@ -328,22 +328,25 @@ function Hero() {
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
-              <a href="#kontakt" className="btn-primary px-5 py-3 text-base">
-                Anfrage starten
+              <a
+                href={site.meetingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary px-5 py-3 text-base"
+              >
+                📅 Termin buchen
               </a>
               <a href="#preise" className="btn-secondary px-5 py-3 text-base">
                 Preise ansehen
               </a>
             </div>
             <p className="mt-3 text-sm text-gray-600">
-              Oder direkt{' '}
+              Oder{' '}
               <a
-                href={site.meetingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="#kontakt"
                 className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
               >
-                Termin für 30-min-Erstgespräch buchen ↗
+                Formular ausfüllen und Rückruf anfordern
               </a>
             </p>
 
@@ -1036,12 +1039,14 @@ function Pricing() {
               )}
 
               <a
-                href="#kontakt"
+                href={site.meetingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={`mt-6 ${
                   p.highlight ? 'btn-primary' : 'btn-secondary'
                 } w-full justify-center py-3`}
               >
-                Anfrage starten
+                📅 Termin buchen
               </a>
             </div>
           ))}
