@@ -13,6 +13,8 @@ export const site = {
   email: 'yusuf@kolac-digital.de',
   phone: '+49 176 95762018',
   phoneE164: '+4917695762018',
+  /** Google-Calendar-Reservierungslink fuer 30min-Erstgespraech per Meet. */
+  meetingUrl: 'https://calendar.app.google/98kp1D3NhowkBDiD9',
   city: 'Bielefeld',
   region: 'Nordrhein-Westfalen',
   /** Wird nur in strukturierten Daten (JSON-LD) verwendet, nicht im sichtbaren Inhalt. */

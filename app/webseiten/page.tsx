@@ -335,6 +335,17 @@ function Hero() {
                 Preise ansehen
               </a>
             </div>
+            <p className="mt-3 text-sm text-gray-600">
+              Oder direkt{' '}
+              <a
+                href={site.meetingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
+              >
+                Termin für 30-min-Erstgespräch buchen ↗
+              </a>
+            </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
               <span className="flex items-center gap-1.5">
@@ -1273,6 +1284,17 @@ function Kontakt() {
               innerhalb von 24 Stunden zurück. Wir reden in Ruhe über dein
               Projekt. Du musst nichts entscheiden und nichts kaufen.
             </p>
+
+            <a
+              href={site.meetingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2.5 text-sm font-medium text-white ring-1 ring-white/25 backdrop-blur-sm hover:bg-white/25 transition-colors"
+            >
+              <span aria-hidden>📅</span>
+              Termin direkt online buchen
+              <span aria-hidden>↗</span>
+            </a>
 
             <div className="mt-8 space-y-3 text-sm">
               <div className="flex items-center gap-3">

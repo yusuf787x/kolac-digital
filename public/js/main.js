@@ -324,6 +324,18 @@
 
     const submitBtn = document.querySelector('.form-submit');
     if (submitBtn) submitBtn.textContent = d.formButton;
+
+    // Meet-Reservierungslink — dezent unter den Kontaktinfos platzieren.
+    if (d.meetingUrl) {
+      const meetEl = document.querySelector('.kontakt-meeting');
+      if (meetEl) {
+        meetEl.href = d.meetingUrl;
+        meetEl.textContent = d.meetingLabel || 'Termin direkt online buchen';
+        meetEl.setAttribute('target', '_blank');
+        meetEl.setAttribute('rel', 'noopener noreferrer');
+        meetEl.style.display = '';
+      }
+    }
   }
 
   function renderKundenstimmen() {
