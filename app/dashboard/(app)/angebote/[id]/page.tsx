@@ -17,6 +17,7 @@ import {
 } from '@/lib/firestore';
 import type { Quote, Customer, InvoiceItem } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 import {
   computeQuoteStatus,
   QUOTE_STATUS_LABELS,
@@ -530,10 +531,10 @@ export default function AngebotDetailPage() {
                     {item.quantity}
                   </td>
                   <td className="py-3 text-right text-gray-700">
-                    {formatEUR(item.unitPrice)}
+                    <SensitiveValue>{formatEUR(item.unitPrice)}</SensitiveValue>
                   </td>
                   <td className="py-3 text-right font-medium text-gray-900">
-                    {formatEUR(item.totalPrice)}
+                    <SensitiveValue>{formatEUR(item.totalPrice)}</SensitiveValue>
                   </td>
                 </tr>
               ))}
@@ -544,7 +545,7 @@ export default function AngebotDetailPage() {
                   Gesamtbetrag
                 </td>
                 <td className="py-2 text-right font-semibold text-brand-blue">
-                  {formatEUR(quote.totalAmount)}
+                  <SensitiveValue>{formatEUR(quote.totalAmount)}</SensitiveValue>
                 </td>
               </tr>
             </tfoot>

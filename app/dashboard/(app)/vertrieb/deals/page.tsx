@@ -11,6 +11,7 @@ import type { Customer, Deal, DealStage } from '@/lib/types';
 import { stageDef } from '@/lib/sales';
 import { formatEUR, formatTsDE, tsToMillis } from '@/lib/utils';
 import DealFormModal from '@/components/vertrieb/DealFormModal';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 export default function DealListePage() {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -161,7 +162,11 @@ export default function DealListePage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right text-gray-900">
-                      {d.value != null ? formatEUR(d.value) : '—'}
+                      {d.value != null ? (
+                        <SensitiveValue>{formatEUR(d.value)}</SensitiveValue>
+                      ) : (
+                        '—'
+                      )}
                     </td>
                     <td className="px-4 py-3 text-gray-500">
                       {formatTsDE(d.updatedAt)}

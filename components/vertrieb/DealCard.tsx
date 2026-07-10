@@ -5,6 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useRouter } from 'next/navigation';
 import type { Customer, Deal } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 interface Props {
   deal: Deal;
@@ -68,7 +69,11 @@ export default function DealCard({
 
       <div className="mt-2 flex items-center justify-between">
         <span className="text-sm font-medium text-gray-900">
-          {deal.value != null ? formatEUR(deal.value) : '—'}
+          {deal.value != null ? (
+            <SensitiveValue>{formatEUR(deal.value)}</SensitiveValue>
+          ) : (
+            '—'
+          )}
         </span>
         {lastContact && (
           <span className="text-[11px] text-gray-400">

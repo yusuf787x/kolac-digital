@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { listInvoices, listExpenses, listCustomers } from '@/lib/firestore';
 import type { Invoice, Expense, Customer } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 const MONTHS_DE = [
   'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
@@ -173,7 +174,7 @@ export default function BerichtePage() {
                 Einnahmen {year}
               </p>
               <p className="mt-2 text-2xl font-semibold text-green-700">
-                {formatEUR(data.totalRevenue)}
+                <SensitiveValue>{formatEUR(data.totalRevenue)}</SensitiveValue>
               </p>
             </div>
             <div className="card">
@@ -181,7 +182,7 @@ export default function BerichtePage() {
                 Ausgaben {year}
               </p>
               <p className="mt-2 text-2xl font-semibold text-orange-700">
-                {formatEUR(data.totalExpense)}
+                <SensitiveValue>{formatEUR(data.totalExpense)}</SensitiveValue>
               </p>
             </div>
             <div className="card">
@@ -193,7 +194,7 @@ export default function BerichtePage() {
                   data.profit >= 0 ? 'text-gray-900' : 'text-red-700'
                 }`}
               >
-                {formatEUR(data.profit)}
+                <SensitiveValue>{formatEUR(data.profit)}</SensitiveValue>
               </p>
             </div>
           </div>
@@ -238,7 +239,7 @@ export default function BerichtePage() {
                           profit >= 0 ? 'text-gray-900' : 'text-red-700'
                         }`}
                       >
-                        {formatEUR(profit)}
+                        <SensitiveValue>{formatEUR(profit)}</SensitiveValue>
                       </td>
                     </tr>
                   );
@@ -270,7 +271,7 @@ export default function BerichtePage() {
                           <Bar value={amount} max={data.totalExpense} color="bg-blue-500" />
                         </td>
                         <td className="py-2 text-right font-medium text-gray-900 w-32">
-                          {formatEUR(amount)}
+                          <SensitiveValue>{formatEUR(amount)}</SensitiveValue>
                         </td>
                         <td className="py-2 text-right text-xs text-gray-500 w-16">
                           {pct.toFixed(1)}%
@@ -327,7 +328,7 @@ function Bar({
         />
       </div>
       <span className="text-xs text-gray-700 tabular-nums w-20 text-right">
-        {formatEUR(value)}
+        <SensitiveValue>{formatEUR(value)}</SensitiveValue>
       </span>
     </div>
   );

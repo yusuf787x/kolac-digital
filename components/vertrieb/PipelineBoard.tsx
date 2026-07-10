@@ -19,6 +19,7 @@ import { createActivity, updateDeal } from '@/lib/firestore';
 import { ALL_STAGES, stageLabel } from '@/lib/sales';
 import { formatEUR } from '@/lib/utils';
 import type { Customer, Deal, DealStage } from '@/lib/types';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 interface Props {
   deals: Deal[];
@@ -171,7 +172,9 @@ function Column({
             {count}
           </span>
         </div>
-        <p className="text-xs text-white/80">{formatEUR(sum)}</p>
+        <p className="text-xs text-white/80">
+          <SensitiveValue>{formatEUR(sum)}</SensitiveValue>
+        </p>
       </div>
       <div
         ref={setNodeRef}

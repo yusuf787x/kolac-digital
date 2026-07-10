@@ -12,6 +12,7 @@ import { isOpenStage } from '@/lib/sales';
 import { formatEUR, tsToDate, tsToMillis } from '@/lib/utils';
 import PipelineBoard from '@/components/vertrieb/PipelineBoard';
 import DealFormModal from '@/components/vertrieb/DealFormModal';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 export default function VertriebPage() {
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -98,7 +99,7 @@ export default function VertriebPage() {
           <p className="mt-1 text-sm text-gray-500">
             Offene Pipeline:{' '}
             <span className="font-medium text-gray-900">
-              {formatEUR(openValue)}
+              <SensitiveValue>{formatEUR(openValue)}</SensitiveValue>
             </span>
           </p>
         </div>

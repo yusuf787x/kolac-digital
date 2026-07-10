@@ -83,6 +83,28 @@
   }
 }
 
+/* Privacy-Modus: sensible Werte werden geblurred + mit dezentem
+   Akzent hinterlegt. .privacy-blurred wird von <SensitiveValue>
+   gesetzt sobald der Privacy-Toggle im Header aktiv ist. */
+.privacy-blurred {
+  filter: blur(6px);
+  background: rgba(37, 99, 235, 0.09);
+  border-radius: 4px;
+  padding: 0 4px;
+  user-select: none;
+  cursor: default;
+  transition:
+    filter 0.18s ease,
+    background 0.18s ease;
+}
+.privacy-blurred:hover {
+  filter: blur(4px);
+  background: rgba(37, 99, 235, 0.16);
+}
+svg text.privacy-blurred {
+  filter: blur(4px);
+}
+
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center px-4 py-2 rounded-lg

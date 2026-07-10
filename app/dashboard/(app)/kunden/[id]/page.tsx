@@ -18,6 +18,7 @@ import {
   computeContractStatus,
 } from '@/lib/contract-status';
 import { formatEUR, formatDateDE, formatTsDE } from '@/lib/utils';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 import { stageDef } from '@/lib/sales';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import {
@@ -285,7 +286,11 @@ function KundeDetailInner() {
                           {sd.label}
                         </span>
                         <span className="text-sm font-medium text-gray-900 w-24 text-right">
-                          {d.value != null ? formatEUR(d.value) : '—'}
+                          {d.value != null ? (
+                            <SensitiveValue>{formatEUR(d.value)}</SensitiveValue>
+                          ) : (
+                            '—'
+                          )}
                         </span>
                       </div>
                     </Link>
@@ -338,7 +343,7 @@ function KundeDetailInner() {
                           {QUOTE_STATUS_LABELS[cs]}
                         </span>
                         <span className="text-sm font-medium text-gray-900 w-24 text-right">
-                          {formatEUR(q.totalAmount)}
+                          <SensitiveValue>{formatEUR(q.totalAmount)}</SensitiveValue>
                         </span>
                       </div>
                     </Link>
@@ -442,7 +447,7 @@ function KundeDetailInner() {
                         {STATUS_LABELS[inv.status]}
                       </span>
                       <span className="text-sm font-medium text-gray-900 w-24 text-right">
-                        {formatEUR(inv.totalAmount)}
+                        <SensitiveValue>{formatEUR(inv.totalAmount)}</SensitiveValue>
                       </span>
                     </div>
                   </Link>

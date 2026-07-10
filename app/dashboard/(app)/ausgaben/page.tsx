@@ -6,6 +6,7 @@ import { listExpenses, deleteExpense, deleteFile } from '@/lib/firestore';
 import type { Expense, ExpenseCategory } from '@/lib/types';
 import { EXPENSE_CATEGORIES } from '@/lib/types';
 import { formatEUR, formatDateDE, grossToNet } from '@/lib/utils';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 export default function AusgabenPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -118,19 +119,24 @@ export default function AusgabenPage() {
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">Ausgaben</h1>
           <p className="mt-1 text-sm text-gray-500">
-            {filtered.length} Einträge · brutto {formatEUR(totals.gross)}
+            {filtered.length} Einträge · brutto{' '}
+            <SensitiveValue>{formatEUR(totals.gross)}</SensitiveValue>
             {totals.vat > 0 && (
               <>
                 {' '}
-                · netto {formatEUR(totals.net)} · Vorsteuer{' '}
+                · netto{' '}
+                <SensitiveValue>{formatEUR(totals.net)}</SensitiveValue> ·
+                Vorsteuer{' '}
                 <span className="text-green-700 font-medium">
-                  {formatEUR(totals.vat)}
+                  <SensitiveValue>{formatEUR(totals.vat)}</SensitiveValue>
                 </span>
               </>
             )}
             {totals.rcNet > 0 && (
               <span className="ml-2 text-amber-700">
-                · Reverse Charge {formatEUR(totals.rcNet)} netto (§ 13b)
+                · Reverse Charge{' '}
+                <SensitiveValue>{formatEUR(totals.rcNet)}</SensitiveValue>{' '}
+                netto (§ 13b)
               </span>
             )}
           </p>
@@ -228,7 +234,7 @@ export default function AusgabenPage() {
                   <td className="px-4 py-3 text-gray-700">{e.category}</td>
                   <td className="px-4 py-3 text-gray-700">{e.supplier || '—'}</td>
                   <td className="px-4 py-3 text-right font-medium text-gray-900">
-                    {formatEUR(e.amount)}
+                    <SensitiveValue>{formatEUR(e.amount)}</SensitiveValue>
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
                     {(e.receiptUrl || e.driveUrl) && (

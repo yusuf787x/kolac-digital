@@ -7,6 +7,7 @@ import type { Quote, QuoteStatus, Customer } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
 import { computeQuoteStatus, QUOTE_STATUS_LABELS } from '@/lib/quote-status';
 import QuoteStatusSelect from '@/components/quote/QuoteStatusSelect';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 type FilterStatus = 'all' | QuoteStatus;
 
@@ -84,7 +85,8 @@ export default function AngebotePage() {
             {quotes.length} {quotes.length === 1 ? 'Angebot' : 'Angebote'}
             {openCount > 0 && (
               <span className="ml-2 text-orange-700 font-medium">
-                · {openCount} offen ({formatEUR(openVolume)})
+                · {openCount} offen (
+                <SensitiveValue>{formatEUR(openVolume)}</SensitiveValue>)
               </span>
             )}
           </p>
@@ -177,7 +179,7 @@ export default function AngebotePage() {
                     />
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-gray-900">
-                    {formatEUR(quote.totalAmount)}
+                    <SensitiveValue>{formatEUR(quote.totalAmount)}</SensitiveValue>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

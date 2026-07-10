@@ -40,6 +40,7 @@ import {
 import DealFormModal from '@/components/vertrieb/DealFormModal';
 import ActivityModal from '@/components/vertrieb/ActivityModal';
 import EmailComposerModal from '@/components/vertrieb/EmailComposerModal';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 function isHtmlBody(body: string): boolean {
   return /<\/?[a-z][^>]*>/i.test(body);
@@ -360,6 +361,7 @@ export default function DealDetailPage() {
               <InfoRow
                 label="Dealwert"
                 value={deal.value != null ? formatEUR(deal.value) : '—'}
+                sensitive={deal.value != null}
               />
               <InfoRow
                 label="Erwartetes Abschlussdatum"
@@ -528,12 +530,22 @@ export default function DealDetailPage() {
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({
+  label,
+  value,
+  sensitive,
+}: {
+  label: string;
+  value: string;
+  /** Wenn true: Value ist ein Geld-/Sensibel-Wert und wird im
+   *  Privacy-Modus geblurred. */
+  sensitive?: boolean;
+}) {
   return (
     <div>
       <p className="text-xs uppercase tracking-wider text-gray-500">{label}</p>
       <p className="mt-0.5 text-gray-900 whitespace-pre-line break-words">
-        {value}
+        {sensitive ? <SensitiveValue>{value}</SensitiveValue> : value}
       </p>
     </div>
   );

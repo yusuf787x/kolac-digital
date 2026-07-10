@@ -14,6 +14,7 @@ import {
   computeVat,
   grossToNet,
 } from '@/lib/utils';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 interface MonthOption {
   value: string; // "2026-07"
@@ -351,7 +352,7 @@ export default function UStVAPage() {
                 monthData.zahllast >= 0 ? 'text-brand-blue' : 'text-green-700'
               }`}
             >
-              {formatEUR(monthData.zahllast)}
+              <SensitiveValue>{formatEUR(monthData.zahllast)}</SensitiveValue>
             </p>
             <p className="text-xs text-gray-500 mt-2">
               {monthData.zahllast >= 0
@@ -416,13 +417,13 @@ export default function UStVAPage() {
                             {customers.get(i.customerId)?.company ?? '—'}
                           </td>
                           <td className="py-1.5 text-right">
-                            {formatEUR(v.net)}
+                            <SensitiveValue>{formatEUR(v.net)}</SensitiveValue>
                           </td>
                           <td className="py-1.5 text-right">
-                            {formatEUR(v.vat)}
+                            <SensitiveValue>{formatEUR(v.vat)}</SensitiveValue>
                           </td>
                           <td className="py-1.5 text-right font-medium">
-                            {formatEUR(v.gross)}
+                            <SensitiveValue>{formatEUR(v.gross)}</SensitiveValue>
                           </td>
                         </tr>
                       );
@@ -480,13 +481,13 @@ export default function UStVAPage() {
                           <td className="py-1.5">{e.description}</td>
                           <td className="py-1.5">{e.supplier || '—'}</td>
                           <td className="py-1.5 text-right">
-                            {formatEUR(split.net)}
+                            <SensitiveValue>{formatEUR(split.net)}</SensitiveValue>
                           </td>
                           <td className="py-1.5 text-right">
-                            {formatEUR(split.vat)}
+                            <SensitiveValue>{formatEUR(split.vat)}</SensitiveValue>
                           </td>
                           <td className="py-1.5 text-right font-medium">
-                            {formatEUR(split.gross)}
+                            <SensitiveValue>{formatEUR(split.gross)}</SensitiveValue>
                           </td>
                         </tr>
                       );
@@ -561,10 +562,10 @@ export default function UStVAPage() {
                           <td className="py-1.5">{e.description}</td>
                           <td className="py-1.5">{e.supplier || '—'}</td>
                           <td className="py-1.5 text-right">
-                            {formatEUR(net)}
+                            <SensitiveValue>{formatEUR(net)}</SensitiveValue>
                           </td>
                           <td className="py-1.5 text-right">
-                            {formatEUR(vat)}
+                            <SensitiveValue>{formatEUR(vat)}</SensitiveValue>
                           </td>
                         </tr>
                       );
@@ -660,13 +661,13 @@ function SummaryByRate({
                 {Math.round(rate * 100)} %
               </td>
               <td className="py-1.5 text-right text-gray-700">
-                {formatEUR(v.net)}
+                <SensitiveValue>{formatEUR(v.net)}</SensitiveValue>
               </td>
               <td className="py-1.5 text-right text-gray-700">
-                {formatEUR(v.vat)}
+                <SensitiveValue>{formatEUR(v.vat)}</SensitiveValue>
               </td>
               <td className="py-1.5 text-right text-gray-900 font-medium">
-                {formatEUR(v.gross)}
+                <SensitiveValue>{formatEUR(v.gross)}</SensitiveValue>
               </td>
             </tr>
           ))}
@@ -693,7 +694,7 @@ function RcMetric({
           KZ {kz}
         </span>
         <span className="text-sm font-semibold text-gray-900">
-          {formatEUR(value)}
+          <SensitiveValue>{formatEUR(value)}</SensitiveValue>
         </span>
       </div>
       <p className="mt-2 text-xs text-gray-600 leading-tight">{label}</p>
@@ -716,15 +717,21 @@ function Totals({
     <div className="border-t border-gray-200 mt-2 pt-2 grid grid-cols-3 gap-2 text-sm">
       <div>
         <div className="text-xs text-gray-500">Netto</div>
-        <div className="font-semibold text-gray-900">{formatEUR(net)}</div>
+        <div className="font-semibold text-gray-900">
+          <SensitiveValue>{formatEUR(net)}</SensitiveValue>
+        </div>
       </div>
       <div>
         <div className="text-xs text-gray-500">{vatLabel}</div>
-        <div className="font-semibold text-gray-900">{formatEUR(vat)}</div>
+        <div className="font-semibold text-gray-900">
+          <SensitiveValue>{formatEUR(vat)}</SensitiveValue>
+        </div>
       </div>
       <div>
         <div className="text-xs text-gray-500">Brutto</div>
-        <div className="font-semibold text-gray-900">{formatEUR(gross)}</div>
+        <div className="font-semibold text-gray-900">
+          <SensitiveValue>{formatEUR(gross)}</SensitiveValue>
+        </div>
       </div>
     </div>
   );

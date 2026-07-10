@@ -7,6 +7,7 @@ import type { Invoice, InvoiceStatus, Customer } from '@/lib/types';
 import { formatEUR, formatDateDE, isOverdue, daysOverdue } from '@/lib/utils';
 import { STATUS_LABELS } from '@/lib/invoice-status';
 import InvoiceStatusSelect from '@/components/invoice/InvoiceStatusSelect';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 type FilterStatus = 'all' | InvoiceStatus;
 
@@ -189,7 +190,9 @@ export default function RechnungenPage() {
                     />
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-gray-900">
-                    {formatEUR(invoice.totalAmount)}
+                    <SensitiveValue>
+                      {formatEUR(invoice.totalAmount)}
+                    </SensitiveValue>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

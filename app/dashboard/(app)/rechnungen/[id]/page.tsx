@@ -19,6 +19,7 @@ import {
   computeVat,
 } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 import { authedFetch } from '@/lib/api-client';
 // PDF generator and drive sync are dynamic imports — they pull in
 // @react-pdf/renderer (~500kB) which we only need on-demand.
@@ -441,9 +442,16 @@ export default function RechnungDetailPage() {
         </div>
         {invoice.status === 'partially_paid' && (
           <p className="mt-3 text-sm text-gray-700">
-            Bezahlt: <strong>{formatEUR(invoice.paidAmount)}</strong> von{' '}
-            {formatEUR(invoice.totalAmount)} · Rest{' '}
-            <strong className="text-orange-700">{formatEUR(remaining)}</strong>
+            Bezahlt:{' '}
+            <strong>
+              <SensitiveValue>{formatEUR(invoice.paidAmount)}</SensitiveValue>
+            </strong>{' '}
+            von{' '}
+            <SensitiveValue>{formatEUR(invoice.totalAmount)}</SensitiveValue>{' '}
+            · Rest{' '}
+            <strong className="text-orange-700">
+              <SensitiveValue>{formatEUR(remaining)}</SensitiveValue>
+            </strong>
           </p>
         )}
       </section>
@@ -486,10 +494,10 @@ export default function RechnungDetailPage() {
                   </td>
                   <td className="py-3 text-right text-gray-700">{item.quantity}</td>
                   <td className="py-3 text-right text-gray-700">
-                    {formatEUR(item.unitPrice)}
+                    <SensitiveValue>{formatEUR(item.unitPrice)}</SensitiveValue>
                   </td>
                   <td className="py-3 text-right font-medium text-gray-900">
-                    {formatEUR(item.totalPrice)}
+                    <SensitiveValue>{formatEUR(item.totalPrice)}</SensitiveValue>
                   </td>
                 </tr>
               ))}
@@ -508,7 +516,7 @@ export default function RechnungDetailPage() {
                         Total netto
                       </td>
                       <td className="py-2 text-right text-sm text-gray-700">
-                        {formatEUR(v.net)}
+                        <SensitiveValue>{formatEUR(v.net)}</SensitiveValue>
                       </td>
                     </tr>
                     <tr>
@@ -519,7 +527,7 @@ export default function RechnungDetailPage() {
                         USt ({pct} %)
                       </td>
                       <td className="py-1 text-right text-sm text-gray-700">
-                        {formatEUR(v.vat)}
+                        <SensitiveValue>{formatEUR(v.vat)}</SensitiveValue>
                       </td>
                     </tr>
                     <tr>
@@ -530,7 +538,7 @@ export default function RechnungDetailPage() {
                         Gesamtbetrag brutto
                       </td>
                       <td className="py-2 text-right font-semibold text-brand-blue">
-                        {formatEUR(v.gross)}
+                        <SensitiveValue>{formatEUR(v.gross)}</SensitiveValue>
                       </td>
                     </tr>
                   </>

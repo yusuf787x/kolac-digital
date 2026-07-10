@@ -27,6 +27,7 @@ import {
 import { activityDef } from '@/lib/sales';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import { computeQuoteStatus } from '@/lib/quote-status';
+import SensitiveValue from '@/components/ui/SensitiveValue';
 
 export default function DashboardHomePage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -194,7 +195,8 @@ export default function DashboardHomePage() {
               <div className="text-sm text-red-800">
                 <strong>{stats.overdueCount}</strong>{' '}
                 {stats.overdueCount === 1 ? 'Rechnung' : 'Rechnungen'} überfällig ·{' '}
-                {formatEUR(stats.overdueAmount)} offen
+                <SensitiveValue>{formatEUR(stats.overdueAmount)}</SensitiveValue>{' '}
+                offen
               </div>
               <Link
                 href="/dashboard/rechnungen"
@@ -237,7 +239,9 @@ export default function DashboardHomePage() {
                   Offene Angebote (Sales Pipeline)
                 </p>
                 <p className="mt-2 text-2xl font-semibold text-orange-700">
-                  {formatEUR(stats.openQuotesAmount)}
+                  <SensitiveValue>
+                    {formatEUR(stats.openQuotesAmount)}
+                  </SensitiveValue>
                 </p>
                 <p className="mt-1 text-xs text-gray-500">
                   {stats.openQuotesCount}{' '}
@@ -353,7 +357,9 @@ export default function DashboardHomePage() {
                             {STATUS_LABELS[computedStatus]}
                           </span>
                           <span className="text-sm font-medium text-gray-900 w-24 text-right">
-                            {formatEUR(inv.totalAmount)}
+                            <SensitiveValue>
+                              {formatEUR(inv.totalAmount)}
+                            </SensitiveValue>
                           </span>
                         </div>
                       </Link>
@@ -392,7 +398,9 @@ export default function DashboardHomePage() {
                           </p>
                         </div>
                         <span className="text-sm font-medium text-gray-900 ml-3">
-                          {formatEUR(inv.totalAmount)}
+                          <SensitiveValue>
+                            {formatEUR(inv.totalAmount)}
+                          </SensitiveValue>
                         </span>
                       </Link>
                     );
@@ -419,8 +427,18 @@ function StatCard({
   return (
     <div className="card">
       <p className="text-xs uppercase tracking-wider text-gray-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-gray-900">{value}</p>
-      {hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
+      <p className="mt-2 text-2xl font-semibold text-gray-900">
+        <SensitiveValue>{value}</SensitiveValue>
+      </p>
+      {hint && (
+        <p className="mt-1 text-xs text-gray-500">
+          {hint.includes('€') ? (
+            <SensitiveValue>{hint}</SensitiveValue>
+          ) : (
+            hint
+          )}
+        </p>
+      )}
     </div>
   );
 }
