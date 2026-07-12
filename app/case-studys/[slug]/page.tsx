@@ -6,6 +6,7 @@ import { caseStudies, findCaseStudy } from '@/lib/case-studies';
 import { site } from '@/lib/site-config';
 import Reveal from '@/components/marketing/Reveal';
 import ValueIcon from '@/components/case-studies/ValueIcon';
+import VideoTestimonial from '@/components/case-studies/VideoTestimonial';
 
 interface Params {
   params: { slug: string };
@@ -214,6 +215,30 @@ export default function CaseStudyDetailPage({ params }: Params) {
           </Reveal>
         </div>
       </section>
+
+      {/* Video-Testimonial (optional) — nutzt die gleichen CSS-Klassen
+          wie die Homepage-Kundenstimmen, damit alles einheitlich aussieht. */}
+      {cs.videoTestimonial && (
+        <section className="bg-white pb-16 sm:pb-20">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6">
+            <Reveal>
+              <div className="text-center">
+                <p className="text-xs font-medium uppercase tracking-wider text-brand-blue">
+                  Kundenstimme
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+                  Was der Kunde selbst dazu sagt
+                </h2>
+              </div>
+            </Reveal>
+            <Reveal delay={100}>
+              <div className="video-testimonials mt-10">
+                <VideoTestimonial data={cs.videoTestimonial} />
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* Bridge zu anderen Zielgruppen */}
       <section className="bg-gray-50 py-16 sm:py-20">

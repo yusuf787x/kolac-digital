@@ -19,7 +19,13 @@ type IconKey =
   | 'automation'
   | 'document'
   | 'shield'
-  | 'bell';
+  | 'bell'
+  | 'configurator'
+  | 'inbox'
+  | 'cart'
+  | 'panel'
+  | 'search'
+  | 'star';
 
 interface Props {
   icon: IconKey;
@@ -41,6 +47,18 @@ export default function ValueIcon({ icon, className = '' }: Props) {
         return <ShieldIcon />;
       case 'bell':
         return <BellIcon />;
+      case 'configurator':
+        return <ConfiguratorIcon />;
+      case 'inbox':
+        return <InboxIcon />;
+      case 'cart':
+        return <CartIcon />;
+      case 'panel':
+        return <PanelIcon />;
+      case 'search':
+        return <SearchIcon />;
+      case 'star':
+        return <StarPlayIcon />;
     }
   })();
   return (
@@ -289,6 +307,230 @@ function ShieldIcon() {
       <rect x="40" y="40" width="16" height="14" rx="2" fill="#ffffff" />
       <circle cx="48" cy="46" r="2" fill="url(#shield-blue)" />
       <rect x="47" y="46" width="2" height="4" rx="1" fill="url(#shield-blue)" />
+    </svg>
+  );
+}
+
+function ConfiguratorIcon() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+      <Defs id="cfg" />
+      {/* Auto-Silhouette Schatten */}
+      <path
+        d="M14 60 c0-8 6-12 14-14 l4-8 c2-4 6-6 12-6 h12 c6 0 10 2 12 6 l4 8 c8 2 14 6 14 14 v10 h-72 z"
+        fill="url(#cfg-edge)"
+      />
+      {/* Auto-Karosserie */}
+      <path
+        d="M12 54 c0-8 6-12 14-14 l4-8 c2-4 6-6 12-6 h12 c6 0 10 2 12 6 l4 8 c8 2 14 6 14 14 v10 h-72 z"
+        fill="url(#cfg-light)"
+        stroke="#dbe4fb"
+        strokeWidth="1"
+      />
+      {/* Fenster blau */}
+      <path
+        d="M28 40 l6-10 c1-2 3-3 5-3 h18 c2 0 4 1 5 3 l6 10 z"
+        fill="url(#cfg-blue)"
+      />
+      {/* Raeder */}
+      <circle cx="26" cy="66" r="7" fill="#0f1a3a" />
+      <circle cx="26" cy="66" r="3" fill="#4f7bf5" />
+      <circle cx="70" cy="66" r="7" fill="#0f1a3a" />
+      <circle cx="70" cy="66" r="3" fill="#4f7bf5" />
+      {/* Schallwellen aus dem Auto rechts oben */}
+      <g stroke="url(#cfg-blue)" strokeWidth="2.5" strokeLinecap="round" fill="none">
+        <path d="M74 20 c4 4 4 8 0 12" />
+        <path d="M80 14 c8 8 8 16 0 24" opacity="0.7" />
+        <path d="M86 8 c12 12 12 24 0 36" opacity="0.4" />
+      </g>
+    </svg>
+  );
+}
+
+function InboxIcon() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+      <Defs id="inbox" />
+      {/* Schatten-Basis */}
+      <rect x="14" y="24" width="68" height="60" rx="6" fill="url(#inbox-edge)" />
+      {/* Body */}
+      <rect
+        x="12"
+        y="20"
+        width="68"
+        height="60"
+        rx="6"
+        fill="url(#inbox-light)"
+        stroke="#dbe4fb"
+        strokeWidth="1"
+      />
+      {/* Ausgefuelltes Formular-Papier */}
+      <rect x="22" y="12" width="48" height="46" rx="3" fill="#ffffff" stroke="#dbe4fb" />
+      {/* Formular-Zeilen */}
+      <line x1="28" y1="22" x2="52" y2="22" stroke="#c9d6f7" strokeWidth="2" strokeLinecap="round" />
+      <line x1="28" y1="30" x2="60" y2="30" stroke="#c9d6f7" strokeWidth="2" strokeLinecap="round" />
+      <line x1="28" y1="38" x2="56" y2="38" stroke="#c9d6f7" strokeWidth="2" strokeLinecap="round" />
+      {/* Grosses Haekchen unten */}
+      <circle cx="46" cy="66" r="12" fill="url(#inbox-blue)" />
+      <path
+        d="M40 66 L45 71 L54 62"
+        stroke="#ffffff"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
+function CartIcon() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+      <Defs id="cart" />
+      {/* Schatten Warenkorb */}
+      <path
+        d="M16 26 h8 l8 40 h44 l6 -28 h-46"
+        stroke="url(#cart-edge)"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      {/* Vorderes Warenkorb-Gestell */}
+      <path
+        d="M14 24 h8 l8 40 h44 l6 -28 h-46"
+        stroke="url(#cart-blue)"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      {/* Ware im Korb */}
+      <rect x="32" y="38" width="10" height="14" rx="1.5" fill="url(#cart-blue)" />
+      <rect x="46" y="34" width="10" height="18" rx="1.5" fill="#4f7bf5" />
+      <rect x="60" y="40" width="10" height="12" rx="1.5" fill="url(#cart-blue)" />
+      {/* Raeder */}
+      <circle cx="38" cy="76" r="6" fill="#0f1a3a" />
+      <circle cx="38" cy="76" r="2" fill="#4f7bf5" />
+      <circle cx="70" cy="76" r="6" fill="#0f1a3a" />
+      <circle cx="70" cy="76" r="2" fill="#4f7bf5" />
+      {/* Plus-Kreis oben rechts */}
+      <circle cx="76" cy="22" r="9" fill="url(#cart-blue)" />
+      <line x1="76" y1="17" x2="76" y2="27" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="71" y1="22" x2="81" y2="22" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function PanelIcon() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+      <Defs id="panel" />
+      {/* Schatten */}
+      <rect x="14" y="22" width="70" height="60" rx="8" fill="url(#panel-edge)" />
+      {/* Steuerpult */}
+      <rect
+        x="12"
+        y="18"
+        width="70"
+        height="60"
+        rx="8"
+        fill="url(#panel-light)"
+        stroke="#dbe4fb"
+        strokeWidth="1"
+      />
+      {/* Schieberegler-Bahnen */}
+      <line x1="22" y1="32" x2="72" y2="32" stroke="#dbe4fb" strokeWidth="3" strokeLinecap="round" />
+      <line x1="22" y1="48" x2="72" y2="48" stroke="#dbe4fb" strokeWidth="3" strokeLinecap="round" />
+      <line x1="22" y1="64" x2="72" y2="64" stroke="#dbe4fb" strokeWidth="3" strokeLinecap="round" />
+      {/* Aktive Bahn-Fuellungen */}
+      <line x1="22" y1="32" x2="54" y2="32" stroke="url(#panel-blue)" strokeWidth="3" strokeLinecap="round" />
+      <line x1="22" y1="48" x2="38" y2="48" stroke="url(#panel-blue)" strokeWidth="3" strokeLinecap="round" />
+      <line x1="22" y1="64" x2="62" y2="64" stroke="url(#panel-blue)" strokeWidth="3" strokeLinecap="round" />
+      {/* Regler-Knoepfe */}
+      <circle cx="54" cy="32" r="6" fill="url(#panel-blue)" stroke="#ffffff" strokeWidth="2" />
+      <circle cx="38" cy="48" r="6" fill="url(#panel-blue)" stroke="#ffffff" strokeWidth="2" />
+      <circle cx="62" cy="64" r="6" fill="url(#panel-blue)" stroke="#ffffff" strokeWidth="2" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+      <Defs id="search" />
+      {/* Schatten der Lupe */}
+      <circle cx="44" cy="46" r="24" fill="url(#search-edge)" />
+      <rect
+        x="62"
+        y="62"
+        width="20"
+        height="8"
+        rx="4"
+        transform="rotate(45 62 62)"
+        fill="url(#search-edge)"
+      />
+      {/* Lupe */}
+      <circle
+        cx="42"
+        cy="44"
+        r="24"
+        fill="url(#search-light)"
+        stroke="url(#search-blue)"
+        strokeWidth="4"
+      />
+      {/* Griff */}
+      <rect
+        x="60"
+        y="60"
+        width="20"
+        height="8"
+        rx="4"
+        transform="rotate(45 60 60)"
+        fill="url(#search-blue)"
+      />
+      {/* Standort-Pin in der Lupe */}
+      <path
+        d="M42 32 c-4 0-7 3-7 7 c0 5 7 12 7 12 s7-7 7-12 c0-4-3-7-7-7 z"
+        fill="url(#search-blue)"
+      />
+      <circle cx="42" cy="39" r="2.5" fill="#ffffff" />
+    </svg>
+  );
+}
+
+function StarPlayIcon() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+      <Defs id="star" />
+      {/* Schatten */}
+      <path
+        d="M48 20 l7 15 16 2 -12 11 3 16 -14 -8 -14 8 3 -16 -12 -11 16 -2 z"
+        fill="url(#star-edge)"
+        transform="translate(0,4)"
+      />
+      {/* Stern */}
+      <path
+        d="M48 16 l7 15 16 2 -12 11 3 16 -14 -8 -14 8 3 -16 -12 -11 16 -2 z"
+        fill="url(#star-blue)"
+        stroke="#1e40af"
+        strokeWidth="1"
+      />
+      {/* Play-Dreieck im Zentrum */}
+      <circle cx="48" cy="46" r="10" fill="#ffffff" />
+      <path d="M45 41 L54 46 L45 51 z" fill="url(#star-blue)" />
+      {/* Kleines Stern-Sparkle rechts oben */}
+      <path
+        d="M76 26 l1 4 4 1 -4 1 -1 4 -1 -4 -4 -1 4 -1 z"
+        fill="#4f7bf5"
+      />
+      {/* Kleines Stern-Sparkle links unten */}
+      <path
+        d="M20 70 l1 4 4 1 -4 1 -1 4 -1 -4 -4 -1 4 -1 z"
+        fill="#4f7bf5"
+        opacity="0.7"
+      />
     </svg>
   );
 }
