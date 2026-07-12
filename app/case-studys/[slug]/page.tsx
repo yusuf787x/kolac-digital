@@ -167,7 +167,7 @@ export default function CaseStudyDetailPage({ params }: Params) {
                     src={cs.screenshot}
                     alt={cs.screenshotAlt}
                     fill
-                    className="object-cover object-top"
+                    className="object-cover object-left"
                     sizes="(max-width: 1024px) 100vw, 1024px"
                   />
                 </div>
