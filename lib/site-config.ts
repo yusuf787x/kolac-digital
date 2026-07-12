@@ -175,6 +175,9 @@ export interface Reference {
   socialLink?: string;
   socialLinkText?: string;
   socialIcon?: 'instagram' | 'tiktok';
+  /** Wenn gesetzt: statt Website/Social-Buttons wird auf der
+   *  Landingpage ein einzelner "Case Study ansehen"-Button gezeigt. */
+  caseStudyUrl?: string;
 }
 
 export const references: Reference[] = [
@@ -197,6 +200,7 @@ export const references: Reference[] = [
     socialLink: 'https://www.instagram.com/bacaraasthetik/?hl=de',
     socialLinkText: 'Instagram ansehen',
     socialIcon: 'instagram',
+    caseStudyUrl: '/case-studys/bacara-aesthetik',
   },
   {
     company: 'CarHiFi Herford',
@@ -215,6 +219,7 @@ export const references: Reference[] = [
     linkIcon: 'website',
     socialLink: 'https://www.tiktok.com/@carhifi.herford',
     socialLinkText: 'TikTok ansehen',
+    caseStudyUrl: '/case-studys/carhifi-herford',
     socialIcon: 'tiktok',
   },
   {

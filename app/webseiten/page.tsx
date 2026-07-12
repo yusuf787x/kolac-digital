@@ -828,35 +828,57 @@ function ReferenceCard({
           <p className="mt-1 text-sm font-medium text-gray-900">{r.keyWin}</p>
         </div>
 
-        {(r.link || r.socialLink) && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            {r.link && (
-              <a
-                href={r.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue-hover"
+        {r.caseStudyUrl ? (
+          // Wenn eine Case Study existiert: nur DIESER eine Button.
+          // Website- und Social-Links entfallen bewusst — der volle Text
+          // dazu steht in der Case Study drin, und die Karte bleibt
+          // fokussiert auf "hier klicken um mehr zu erfahren".
+          <div className="mt-5">
+            <a
+              href={r.caseStudyUrl}
+              className="inline-flex items-center gap-1.5 rounded-full bg-brand-blue px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-blue-hover"
+            >
+              <span aria-hidden>📖</span>
+              Case Study ansehen
+              <span
+                aria-hidden
+                className="transition-transform group-hover:translate-x-0.5"
               >
-                {linkIcons[r.linkIcon ?? 'website']}
-                {r.linkText ?? 'Website ansehen'}
-              </a>
-            )}
-            {r.socialLink && (
-              <a
-                href={r.socialLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-white ${
-                  r.socialIcon === 'instagram'
-                    ? 'bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600'
-                    : 'bg-black'
-                }`}
-              >
-                {linkIcons[r.socialIcon ?? 'instagram']}
-                {r.socialLinkText ?? 'Profil ansehen'}
-              </a>
-            )}
+                →
+              </span>
+            </a>
           </div>
+        ) : (
+          (r.link || r.socialLink) && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {r.link && (
+                <a
+                  href={r.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-brand-blue px-4 py-2 text-sm font-medium text-white hover:bg-brand-blue-hover"
+                >
+                  {linkIcons[r.linkIcon ?? 'website']}
+                  {r.linkText ?? 'Website ansehen'}
+                </a>
+              )}
+              {r.socialLink && (
+                <a
+                  href={r.socialLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-white ${
+                    r.socialIcon === 'instagram'
+                      ? 'bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600'
+                      : 'bg-black'
+                  }`}
+                >
+                  {linkIcons[r.socialIcon ?? 'instagram']}
+                  {r.socialLinkText ?? 'Profil ansehen'}
+                </a>
+              )}
+            </div>
+          )
         )}
       </div>
     </article>
