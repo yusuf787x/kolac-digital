@@ -8,6 +8,18 @@
   --brand-blue: #2563EB;
 }
 
+/* Wenn eine Unterseite (webseiten, case-studys) die Homepage-Navbar
+   nutzt, ist die Navbar fixed und wuerde die erste Section verdecken.
+   Kompensieren wir mit padding-top an der Main-Zone. */
+.site-marketing-main {
+  padding-top: 76px;
+}
+@media (max-width: 767px) {
+  .site-marketing-main {
+    padding-top: 68px;
+  }
+}
+
 @layer base {
   html {
     font-family:
