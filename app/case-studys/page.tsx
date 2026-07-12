@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { caseStudies } from '@/lib/case-studies';
 import { site } from '@/lib/site-config';
 import Reveal from '@/components/marketing/Reveal';
+import ValueIcon from '@/components/case-studies/ValueIcon';
 
 export const metadata: Metadata = {
   title: 'Case Studys · Kolac Digital',
@@ -53,13 +53,14 @@ export default function CaseStudysOverviewPage() {
                   href={`/case-studys/${cs.slug}`}
                   className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-shadow hover:shadow-xl"
                 >
-                  <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-50 to-white">
-                    <Image
-                      src={cs.screenshot}
-                      alt={cs.screenshotAlt}
-                      fill
-                      className="object-cover object-top"
-                    />
+                  {/* Statt Screenshot ein grosses 3D-Icon in einer
+                      dezenten Blau-Gradient-Flaeche. Sofort erkennbar,
+                      passt zum Kern-Nutzen des Projekts. */}
+                  <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-50 via-white to-white flex items-center justify-center overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_60%,rgba(37,99,235,0.10),transparent_60%)]" />
+                    <div className="relative scale-[1.6] transition-transform duration-300 group-hover:scale-[1.75]">
+                      <ValueIcon icon={cs.overviewIconKey} />
+                    </div>
                   </div>
                   <div className="flex flex-1 flex-col p-6">
                     <p className="text-xs font-medium uppercase tracking-wider text-brand-blue">

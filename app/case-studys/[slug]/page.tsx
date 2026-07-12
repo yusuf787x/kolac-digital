@@ -59,6 +59,26 @@ export default function CaseStudyDetailPage({ params }: Params) {
         </div>
       </section>
 
+      {/* Wer ist das eigentlich? — kurzer Founder/Betrieb-Kontext,
+          damit der Leser sofort weiss um wen es geht. */}
+      <section className="border-b border-gray-100 bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <Reveal>
+            <p className="text-xs font-medium uppercase tracking-wider text-brand-blue">
+              Wer ist das eigentlich
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+              {cs.founder.headline}
+            </h2>
+          </Reveal>
+          <Reveal delay={80}>
+            <p className="mt-5 text-base leading-relaxed text-gray-700 sm:text-lg">
+              {cs.founder.paragraph}
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
       {/* Problem */}
       <section className="bg-white py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
@@ -232,7 +252,7 @@ export default function CaseStudyDetailPage({ params }: Params) {
               </div>
             </Reveal>
             <Reveal delay={100}>
-              <div className="video-testimonials mt-10">
+              <div className="video-testimonials mt-10 mx-auto max-w-lg">
                 <VideoTestimonial data={cs.videoTestimonial} />
               </div>
             </Reveal>

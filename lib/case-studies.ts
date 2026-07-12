@@ -41,6 +41,12 @@ export interface CaseStudy {
   category: string;
   /** Kurze Ergebnis-Zeile fuer die Overview-Karte. */
   resultTeaser: string;
+  /**
+   * Icon-Key fuer die Overview-Karte. Ersetzt den Dashboard-Screenshot,
+   * damit die Karten sofort erkennbar sind ohne "kaputt-aussehende"
+   * geschwaerzte Bilder zu zeigen.
+   */
+  overviewIconKey: CaseValueBlock['iconKey'];
   /** Screenshot-Pfad in /public. Wird als Hero-/Dashboard-Bild genutzt. */
   screenshot: string;
   /** Alt-Text fuer den Screenshot. */
@@ -48,6 +54,13 @@ export interface CaseStudy {
   hero: {
     headline: string;
     subline: string;
+  };
+  /** Kurzer Vorstellungs-Block direkt nach dem Hero: wer ist der
+   *  Gruender, was macht der Betrieb. Damit der Leser sofort einordnen
+   *  kann, ueber wen die Case eigentlich geht. */
+  founder: {
+    headline: string;
+    paragraph: string;
   };
   problem: {
     headline: string;
@@ -85,6 +98,7 @@ export const caseStudies: CaseStudy[] = [
     company: 'Bacara Ästhetik',
     category: 'Ästhetische Medizin',
     resultTeaser: 'Über 800 Termine online gebucht, ohne einen einzigen Anruf.',
+    overviewIconKey: 'calendar',
     screenshot: '/images/bacara-dashboard.png',
     screenshotAlt:
       'Dashboard von Bacara Ästhetik mit Terminübersicht, Patientenverwaltung und Automatisierungen auf einen Blick.',
@@ -92,6 +106,11 @@ export const caseStudies: CaseStudy[] = [
       headline: 'Deine Praxis läuft. Der Papierkram frisst deinen Feierabend.',
       subline:
         'So haben wir für Bacara Ästhetik aus Zettelwirtschaft, drei verschiedenen Tools und ständigen Rückrufen ein einziges System gemacht. Termine buchen sich jetzt von selbst.',
+    },
+    founder: {
+      headline: 'Wer steht hinter Bacara Ästhetik?',
+      paragraph:
+        'Dr. Bugrahan Bacara führt seine Privatpraxis für ästhetische Medizin in Bünde. Botox, Hyaluron, Peelings, Fadenlifting. Behandlungen die Vertrauen brauchen, weil man das Ergebnis im Gesicht trägt. Die Praxis hat sich als eine der führenden Adressen für minimalinvasive Ästhetik in Ostwestfalen etabliert. Die Nachfrage ist da, die Bewertungen sind top.',
     },
     problem: {
       headline: 'Kennst du das?',
@@ -192,6 +211,7 @@ export const caseStudies: CaseStudy[] = [
     category: 'Car-Hifi und Fachhandel',
     resultTeaser:
       'Aus zwanzig Minuten Telefonat wurden dreißig Sekunden Konfigurator.',
+    overviewIconKey: 'configurator',
     screenshot: '/images/carhifi-dashboard.png',
     screenshotAlt:
       'Backend von CarHifi Herford mit Fahrzeug-Datenbank, Soundpaketen und Bestellübersicht.',
@@ -199,6 +219,11 @@ export const caseStudies: CaseStudy[] = [
       headline: 'Jede Anfrage ein 20-Minuten-Telefonat. Jeden Tag aufs Neue.',
       subline:
         'So haben wir für CarHifi-Herford aus einer alten Visitenkarten-Website ein System gemacht, das Kunden selbst durch die Beratung führt und Anfragen fertig vorbereitet einsammelt.',
+    },
+    founder: {
+      headline: 'Wer steht hinter CarHifi Herford?',
+      paragraph:
+        'Halim Özdemir betreibt CarHifi Herford seit über zehn Jahren. Auto-Soundsysteme, Subwoofer, Endstufen, Dämmung. Wer in Ostwestfalen ordentlich Sound in seinem Wagen will, kommt zu ihm. Die Bewertungen sind top, die Werkstatt gut ausgelastet. Aber das meiste läuft noch über Telefon und Vor-Ort-Beratung.',
     },
     problem: {
       headline: 'Kennst du das?',
@@ -282,6 +307,111 @@ export const caseStudies: CaseStudy[] = [
       headline: 'Für alle die es genau wissen wollen',
       paragraph:
         'Individuell entwickelt, kein fertiges System von der Stange. Online-Shop mit Bezahlung über Stripe. Eigene Fahrzeug-Datenbank mit Marken, Modellen, Generationen und Werksanlagen, an die Halim seine Soundpakete koppelt. Alles hängt zusammen, eine Änderung wirkt überall. Google-Bewertungen und TikTok live eingebunden. Impressum, AGB, Datenschutz und Cookie-Banner rechtssicher.',
+    },
+  },
+  {
+    slug: 'kolac-digital',
+    company: 'Kolac Digital',
+    category: 'Eigenes Backoffice',
+    resultTeaser:
+      'Angebote, Rechnungen, Verträge, Steuer. Ein Klick statt fünf Tools.',
+    overviewIconKey: 'dashboard',
+    screenshot: '/images/kolac-digital-dashboard.png',
+    screenshotAlt:
+      'Kolac Digital Dashboard mit Kunden, Vertrieb, Rechnungen, Verträgen, Ausgaben und UStVA-Übersicht.',
+    hero: {
+      headline:
+        'Ich predige kein Wasser und trinke Wein. Das System, mit dem ich meine Agentur führe.',
+      subline:
+        'Kunden, Angebote, Verträge, Rechnungen, Belege, Steuer. Alles in einem selbst gebauten Dashboard. Weil ich meinen Kunden nichts empfehlen will, was ich nicht selbst benutze.',
+    },
+    founder: {
+      headline: 'Wer steht hinter Kolac Digital?',
+      paragraph:
+        'Yusuf Kolac betreibt Kolac Digital aus Bielefeld. Webseiten, Systeme und digitale Prozesse für kleine und mittelständische Betriebe in OWL, NRW und ganz Deutschland. Wenn du eine Praxis, eine Werkstatt oder einen Fachhandel führst und in der Verwaltung ertrinkst, bin ich der, der dir ein System baut das dir das abnimmt.',
+    },
+    problem: {
+      headline: 'Kennst du das?',
+      paragraphs: [
+        'Du hast eine kleine Firma. Angebote in Word. Rechnungen in einem alten Programm. Belege in einem Ordner, oder auf dem Handy, oder in beiden. Verträge werden gedruckt, unterschrieben, abgeheftet.',
+        'Am Monatsende sitzt du am Rechner und sortierst. Was ist reingekommen, was ist rausgegangen, was fehlt noch. Umsatzsteuer-Voranmeldung wird zum eigenen Projekt.',
+        'Es funktioniert. Aber es kostet dich jeden Monat einen Tag. Und wenn du dir was Neues aufbaust, wird es nicht besser sondern schlimmer.',
+      ],
+    },
+    situation: {
+      headline: 'So war es bei mir selbst',
+      paragraphs: [
+        'Ich baue Systeme die Betriebe entlasten. Aber ich selbst hatte lange keins. Excel für Einnahmen, ein anderes für Ausgaben, Word für Angebote, DocuSign für Verträge, ein Terminplaner nebendran. Belege in Google Drive, halb sortiert.',
+        'Wenn ein Kunde eine Rechnung wollte, dauerte das zehn Minuten. Wenn er einen Vertrag zum Unterschreiben brauchte, noch länger. Und am Monatsende die Buchhaltung, immer die gleiche Sortier-Arbeit.',
+        'Das war nicht das Bild, das ich nach außen vermittelt habe. Und irgendwann war klar: das muss ich mir selbst bauen.',
+      ],
+    },
+    values: {
+      headline: 'Ein Dashboard, das die Verwaltung übernimmt',
+      intro:
+        'Ich habe mir das gebaut, was ich meinen Kunden verspreche. Alles was in einer Agentur oder einem kleinen Betrieb anfällt, läuft an einem Ort zusammen. Wo möglich, macht das System die Arbeit von selbst.',
+      blocks: [
+        {
+          iconKey: 'automation',
+          title: 'Monatliche Rechnungen laufen von allein',
+          description:
+            'Kunden mit Wartungsvertrag werden per SEPA-Lastschrift eingezogen. Sobald das Geld da ist, wird die Rechnung erstellt, per Mail verschickt und in Drive gesichert. Ich bekomme nur eine Bestätigung.',
+        },
+        {
+          iconKey: 'document',
+          title: 'Verträge digital unterschreiben',
+          description:
+            'PDF hochladen, Signaturfeld markieren, Link schicken. Der Kunde unterschreibt am Handy mit dem Finger. Beide bekommen das signierte PDF zurück, mit Audit-Trail für die Rechtssicherheit.',
+        },
+        {
+          iconKey: 'inbox',
+          title: 'Belege werden erkannt statt getippt',
+          description:
+            'Foto von einem Beleg reicht. Betrag, Datum, Lieferant und Kategorie werden automatisch ausgelesen. Ich kontrolliere kurz, speichere, fertig.',
+        },
+        {
+          iconKey: 'panel',
+          title: 'Steuer-Voranmeldung ohne Sortier-Marathon',
+          description:
+            'Monat auswählen, alles ist schon fertig aufgeteilt. USt, Vorsteuer, Reverse Charge für Meta und Google. Drei CSV-Exporte, ab damit ins ELSTER.',
+        },
+        {
+          iconKey: 'dashboard',
+          title: 'Vertrieb, Kunden, Angebote an einem Ort',
+          description:
+            'Pipeline als Kanban, Kunden mit voller Historie, Angebote werden auf Klick zu Rechnungen. Was ich brauche, ist einen Klick weit weg, statt in fünf Tools verstreut.',
+        },
+        {
+          iconKey: 'shield',
+          title: 'Privacy-Modus für Screenshares',
+          description:
+            'Wenn ich das System jemandem zeige, blende ich alle Beträge mit einem Klick weg. Die Struktur bleibt sichtbar, die Zahlen sind unlesbar. Kein Screenshot-Zensieren mehr.',
+        },
+      ],
+    },
+    results: {
+      headline: 'Was sich verändert hat',
+      points: [
+        'Monatliche Retainer-Rechnungen brauchen null Klicks. Ich sehe sie erst, wenn sie beim Kunden im Postfach sind.',
+        'Verträge sind nach 3 Minuten unterschrieben und archiviert, statt am nächsten Tag per Post.',
+        'Belege werden beim Kauf sofort abfotografiert und sind für immer weg. Nicht mehr als Sortier-Stapel am Ende des Monats.',
+        'Die Umsatzsteuer-Voranmeldung mache ich in unter 15 Minuten. Vorher war das ein Nachmittag.',
+      ],
+      closing:
+        'Ich habe wieder Zeit für das, wofür ich mein Geld verdiene. Für Kunden und für neue Projekte.',
+    },
+    bridge: {
+      headline: 'Genau so bauen wir es auch für dich',
+      paragraphs: [
+        'Das Dashboard hier ist auf eine Digitalagentur zugeschnitten. Für dich wäre es anders geschnitten. Andere Bereiche, andere Automatisierungen, andere Reports.',
+        'Aber die Kernidee bleibt: alles was du jeden Tag oder jeden Monat brauchst, an einem Ort. Wo möglich, macht das System die Arbeit für dich.',
+        'Kein Baukasten von der Stange. Etwas das zu deinem Betrieb passt.',
+      ],
+    },
+    technical: {
+      headline: 'Für alle die es genau wissen wollen',
+      paragraph:
+        'Komplett selbst entwickelt mit Next.js. Firebase als Datenbank, Firebase Storage für Dateien, Firebase Auth für Login. Rechnungen und Angebote als PDF mit @react-pdf/renderer, Verträge signiert mit pdf-lib. Belegerkennung über Claude Vision. Zahlungsabwicklung über GoCardless mit signierten Webhooks. Auto-Backup in Google Drive und Google Sheets über OAuth. Deployment auf Vercel mit täglichen Cron-Jobs. Alle API-Routen mit Firebase-ID-Token abgesichert. Gehostet auf Vercel, Backup-Dateien in Google Drive.',
     },
   },
 ];
