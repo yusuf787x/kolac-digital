@@ -279,6 +279,9 @@
       const socialLinkHTML = project.socialLink
         ? `<a href="${project.socialLink}" target="_blank" rel="noopener" class="ref-link ref-link-${project.socialIcon}">${icons[project.socialIcon] || ''} ${project.socialLinkText}</a>`
         : '';
+      const caseStudyLinkHTML = project.caseStudyUrl
+        ? `<a href="${project.caseStudyUrl}" class="ref-link ref-link-case-study">📖 Case Study lesen</a>`
+        : '';
 
       card.innerHTML = `
         ${mockupHTML}
@@ -293,6 +296,7 @@
           <div class="ref-links">
             ${linkHTML}
             ${socialLinkHTML}
+            ${caseStudyLinkHTML}
           </div>
         </div>
       `;

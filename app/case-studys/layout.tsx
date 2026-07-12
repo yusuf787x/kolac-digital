@@ -4,12 +4,6 @@ import Image from 'next/image';
 import { Inter } from 'next/font/google';
 import { site } from '@/lib/site-config';
 
-/**
- * Eigenes Layout für die öffentliche Webseiten-Landingpage.
- * Überschreibt das Root-Layout-Robots-Setting (Dashboard ist noindex).
- * Header + Footer 1:1 angeglichen an die bestehende Homepage.
- */
-
 const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
@@ -31,14 +25,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function WebseitenLayout({
+/**
+ * Layout fuer den Case-Study-Bereich. Optisch 1:1 wie das Layout
+ * unter /webseiten, damit sich der Bereich naht­los ins Marketing
+ * einfuegt.
+ */
+export default function CaseStudysLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <div className={`${inter.className} min-h-screen bg-white text-gray-900`}>
-      {/* HEADER – Look der Homepage-Navbar */}
       <header className="sticky top-0 z-30 border-b border-gray-100 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <Link href="/" className="flex items-center" aria-label="Kolac Digital – Startseite">
@@ -64,15 +62,19 @@ export default function WebseitenLayout({
               Kundenstimmen
             </a>
           </nav>
-          <a href="#kontakt" className="btn-primary">
-            Projekt starten
+          <a
+            href={site.meetingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+          >
+            📅 Termin buchen
           </a>
         </div>
       </header>
 
       <main>{children}</main>
 
-      {/* FOOTER – wie auf der Homepage: dunkel, Logo links, zwei Spalten rechts */}
       <footer className="bg-[#0a0a0a] text-gray-300">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-16">
           <div className="grid gap-10 md:grid-cols-[1fr_auto_auto] md:items-start">
@@ -118,7 +120,7 @@ export default function WebseitenLayout({
                   </a>
                 </li>
                 <li>
-                  <a href="#kontakt" className="hover:text-white">
+                  <a href="/#kontakt" className="hover:text-white">
                     Kontakt
                   </a>
                 </li>

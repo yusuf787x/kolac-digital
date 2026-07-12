@@ -1531,6 +1531,18 @@ textarea {
   border-color: #1d4ed8;
 }
 
+/* Case Study — hebt sich als Content-Link von den Social/Website-Buttons ab. */
+.ref-link-case-study {
+  background: transparent;
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #2563eb;
+}
+
+.ref-link-case-study:hover {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.55);
+}
+
 /* Shop */
 .ref-link-shop {
   background: #ea580c;
