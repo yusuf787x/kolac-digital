@@ -162,11 +162,10 @@ export default function CaseStudyDetailPage({ params }: Params) {
                 Überblick
               </p>
               <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-                So sieht der Überblick aus
+                {cs.screenshotSection.headline}
               </h2>
               <p className="mt-4 text-base leading-relaxed text-gray-600 sm:text-lg">
-                Ein Bildschirm, auf dem alles zusammenläuft. Termine, Patienten,
-                Rechnungen, Automatisierungen.
+                {cs.screenshotSection.description}
               </p>
             </div>
           </Reveal>
@@ -180,7 +179,7 @@ export default function CaseStudyDetailPage({ params }: Params) {
                   <span className="h-3 w-3 rounded-full bg-yellow-400" />
                   <span className="h-3 w-3 rounded-full bg-green-400" />
                   <span className="ml-4 truncate rounded-md bg-white px-3 py-1 text-xs text-gray-500 shadow-sm">
-                    dashboard.bacara-aesthetik.de
+                    {cs.dashboardUrl}
                   </span>
                 </div>
                 <div className="relative aspect-[16/10] w-full bg-gray-100">

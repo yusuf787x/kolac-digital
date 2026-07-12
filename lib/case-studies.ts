@@ -52,6 +52,13 @@ export interface CaseStudy {
   screenshot: string;
   /** Alt-Text fuer den Screenshot. */
   screenshotAlt: string;
+  /** Fiktive URL in der Browser-Mockup-Adresszeile (z.B. dashboard.beispiel.de). */
+  dashboardUrl: string;
+  /** Kopfzeile + kurze Einleitung ueber dem Screenshot-Mockup. */
+  screenshotSection: {
+    headline: string;
+    description: string;
+  };
   hero: {
     headline: string;
     subline: string;
@@ -103,6 +110,12 @@ export const caseStudies: CaseStudy[] = [
     screenshot: '/images/bacara-dashboard.png',
     screenshotAlt:
       'Dashboard von Bacara Ästhetik mit Terminübersicht, Patientenverwaltung und Automatisierungen auf einen Blick.',
+    dashboardUrl: 'dashboard.bacara-aesthetik.de',
+    screenshotSection: {
+      headline: 'So sieht der Überblick aus',
+      description:
+        'Termine heute, offene Rechnungen, neue Buchungen. Links die ganze Praxis: Kalender, Patienten, Einwilligungen, Automatisierungen, Warenwirtschaft. Alles an einem Ort.',
+    },
     hero: {
       headline: 'Deine Praxis läuft. Der Papierkram frisst deinen Feierabend.',
       subline:
@@ -216,6 +229,12 @@ export const caseStudies: CaseStudy[] = [
     screenshot: '/images/carhifi-dashboard.png',
     screenshotAlt:
       'Backend von CarHifi Herford mit Fahrzeug-Datenbank, Soundpaketen und Bestellübersicht.',
+    dashboardUrl: 'dashboard.carhifi-herford.de',
+    screenshotSection: {
+      headline: 'So sieht der Überblick aus',
+      description:
+        'Neue Anfragen, kontaktierte Kunden, geplante Termine. Dazu die Konfigurator-Anfragen die reingekommen sind. Links Soundpakete, Komponenten und der Fahrzeugbaum. Alles pflegbar ohne Agentur.',
+    },
     hero: {
       headline: 'Jede Anfrage ein 20-Minuten-Telefonat. Jeden Tag aufs Neue.',
       subline:
@@ -320,6 +339,12 @@ export const caseStudies: CaseStudy[] = [
     screenshot: '/images/kolac-digital-dashboard.png',
     screenshotAlt:
       'Kolac Digital Dashboard mit Kunden, Vertrieb, Rechnungen, Verträgen, Ausgaben und UStVA-Übersicht.',
+    dashboardUrl: 'dashboard.kolac-digital.de',
+    screenshotSection: {
+      headline: 'So sieht der Überblick aus',
+      description:
+        'Umsatz aktueller Monat, offene Rechnungen, Ausgaben und die letzten Rechnungen mit einem Klick zum Detail. Links Kunden, Vertrieb, Verträge, Berichte. Alles was ich täglich brauche, auf einem Bildschirm.',
+    },
     hero: {
       headline:
         'Ich predige kein Wasser und trinke Wein. Das System, mit dem ich meine Agentur führe.',
