@@ -18,7 +18,8 @@ export interface CaseValueBlock {
     | 'cart'
     | 'panel'
     | 'search'
-    | 'star';
+    | 'star'
+    | 'chart';
   title: string;
   description: string;
 }
@@ -382,10 +383,10 @@ export const caseStudies: CaseStudy[] = [
             'Pipeline als Kanban, Kunden mit voller Historie, Angebote werden auf Klick zu Rechnungen. Was ich brauche, ist einen Klick weit weg, statt in fünf Tools verstreut.',
         },
         {
-          iconKey: 'shield',
-          title: 'Privacy-Modus für Screenshares',
+          iconKey: 'chart',
+          title: 'Berichte zeigen was wirklich läuft',
           description:
-            'Wenn ich das System jemandem zeige, blende ich alle Beträge mit einem Klick weg. Die Struktur bleibt sichtbar, die Zahlen sind unlesbar. Kein Screenshot-Zensieren mehr.',
+            'Umsatz, Ausgaben, Gewinn pro Monat. Auf welchen Kunden ich meine Zeit verbrannt habe und welcher wirklich zieht. Statt einmal im Jahr eine Überraschung vom Steuerberater ein klarer Blick jederzeit.',
         },
       ],
     },
@@ -411,7 +412,7 @@ export const caseStudies: CaseStudy[] = [
     technical: {
       headline: 'Für alle die es genau wissen wollen',
       paragraph:
-        'Komplett selbst entwickelt mit Next.js. Firebase als Datenbank, Firebase Storage für Dateien, Firebase Auth für Login. Rechnungen und Angebote als PDF mit @react-pdf/renderer, Verträge signiert mit pdf-lib. Belegerkennung über Claude Vision. Zahlungsabwicklung über GoCardless mit signierten Webhooks. Auto-Backup in Google Drive und Google Sheets über OAuth. Deployment auf Vercel mit täglichen Cron-Jobs. Alle API-Routen mit Firebase-ID-Token abgesichert. Gehostet auf Vercel, Backup-Dateien in Google Drive.',
+        'Komplett selbst entwickelt mit Next.js. Firebase Firestore als Datenbank, Firebase Storage für Dateien, Firebase Auth für Login. Datenbank und Storage nur für meine E-Mail freigegeben, kein Self-Signup, sonst nichts. Alle API-Routen prüfen den Firebase-ID-Token gegen meine feste User-ID. Öffentliche Endpoints (Signing-Links für Verträge, GoCardless-Webhook, Cron) sind Token- oder HMAC-geschützt und laufen nur bei gültiger Signatur. Rechnungen und Angebote als PDF mit @react-pdf/renderer, Verträge signiert mit pdf-lib und Audit-Trail. Belegerkennung über Claude Vision. Zahlungsabwicklung über GoCardless mit HMAC-SHA256-Webhooks. Auto-Backup in Google Drive und Google Sheets über OAuth. Deployment auf Vercel mit HTTPS und täglichen Cron-Jobs. Alle Secrets als Environment Variables, nichts im Client-Code.',
     },
   },
 ];

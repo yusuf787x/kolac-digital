@@ -1,10 +1,16 @@
 rules_version = '2';
 
-// Single-user dashboard: any authenticated user can read/write any path.
+// Single-user dashboard. Zugriff auf Storage-Objekte streng an die
+// Owner-E-Mail gebunden. Public Signed-URLs mit eigenem Download-Token
+// funktionieren unabhaengig von diesen Rules (das ist der Zweck der
+// Signed URLs), waehrend direkte SDK-Zugriffe nur mit gueltigem Auth-
+// Token der Owner-E-Mail erlaubt sind.
 service firebase.storage {
   match /b/{bucket}/o {
     match /{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if request.auth != null
+        && request.auth.token.email == 'yusuf@kolac-digital.de'
+        && request.auth.token.email_verified == true;
     }
   }
 }

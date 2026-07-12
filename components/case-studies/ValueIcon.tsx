@@ -25,7 +25,8 @@ type IconKey =
   | 'cart'
   | 'panel'
   | 'search'
-  | 'star';
+  | 'star'
+  | 'chart';
 
 interface Props {
   icon: IconKey;
@@ -59,6 +60,8 @@ export default function ValueIcon({ icon, className = '' }: Props) {
         return <SearchIcon />;
       case 'star':
         return <StarPlayIcon />;
+      case 'chart':
+        return <ChartIcon />;
     }
   })();
   return (
@@ -531,6 +534,46 @@ function StarPlayIcon() {
         fill="#4f7bf5"
         opacity="0.7"
       />
+    </svg>
+  );
+}
+
+function ChartIcon() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+      <Defs id="chart" />
+      {/* Schatten-Basis */}
+      <rect x="14" y="24" width="70" height="60" rx="8" fill="url(#chart-edge)" />
+      {/* Karten-Body */}
+      <rect
+        x="12"
+        y="20"
+        width="70"
+        height="60"
+        rx="8"
+        fill="url(#chart-light)"
+        stroke="#dbe4fb"
+        strokeWidth="1"
+      />
+      {/* Achsen */}
+      <line x1="22" y1="30" x2="22" y2="68" stroke="#c9d6f7" strokeWidth="2" strokeLinecap="round" />
+      <line x1="22" y1="68" x2="72" y2="68" stroke="#c9d6f7" strokeWidth="2" strokeLinecap="round" />
+      {/* Balken (steigend, was ein Wachstum suggeriert) */}
+      <rect x="28" y="54" width="8" height="14" rx="1.5" fill="#4f7bf5" />
+      <rect x="40" y="46" width="8" height="22" rx="1.5" fill="url(#chart-blue)" />
+      <rect x="52" y="38" width="8" height="30" rx="1.5" fill="#4f7bf5" />
+      <rect x="64" y="30" width="8" height="38" rx="1.5" fill="url(#chart-blue)" />
+      {/* Trend-Pfeil oben rechts */}
+      <path
+        d="M28 42 L40 34 L52 26 L64 18"
+        stroke="#1e40af"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        opacity="0.6"
+      />
+      <path d="M60 18 L64 18 L64 22" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.6" />
     </svg>
   );
 }

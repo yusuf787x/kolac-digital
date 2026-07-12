@@ -240,7 +240,7 @@ export default function CaseStudyDetailPage({ params }: Params) {
           wie die Homepage-Kundenstimmen, damit alles einheitlich aussieht. */}
       {cs.videoTestimonial && (
         <section className="bg-white pb-16 sm:pb-20">
-          <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <Reveal>
               <div className="text-center">
                 <p className="text-xs font-medium uppercase tracking-wider text-brand-blue">
@@ -252,7 +252,7 @@ export default function CaseStudyDetailPage({ params }: Params) {
               </div>
             </Reveal>
             <Reveal delay={100}>
-              <div className="video-testimonials mt-10 mx-auto max-w-lg">
+              <div className="video-testimonials mt-10 mx-auto max-w-3xl">
                 <VideoTestimonial data={cs.videoTestimonial} />
               </div>
             </Reveal>
