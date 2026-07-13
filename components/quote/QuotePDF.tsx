@@ -13,7 +13,11 @@ import {
 import type { Quote, Customer } from '@/lib/types';
 import { formatEUR, formatDateDE, computeVat } from '@/lib/utils';
 import { COMPANY_INFO } from '@/lib/qr';
-import { parseRichText, type MdInlineSegment } from '@/lib/simple-markdown';
+import {
+  parseRichText,
+  type MdInlineSegment,
+  type MdBlock,
+} from '@/lib/simple-markdown';
 
 const COLORS = {
   blue: '#2563EB',
@@ -25,7 +29,10 @@ const COLORS = {
 const styles = StyleSheet.create({
   page: {
     paddingTop: 40,
-    paddingBottom: 40,
+    // Footer sitzt absolut bei bottom:30 und ist ~40pt hoch — Content
+    // muss darueber enden. 90pt lassen Platz plus etwas Sicherheit,
+    // damit lange Positions-Beschreibungen den Footer nicht ueberlappen.
+    paddingBottom: 90,
     paddingHorizontal: 50,
     fontSize: 10,
     fontFamily: 'Helvetica',
@@ -239,7 +246,10 @@ type AnyStyle = ComponentProps<typeof View>['style'] &
   ComponentProps<typeof Text>['style'];
 
 interface MarkdownProps {
-  text: string;
+  /** Roh-Text (HTML aus WYSIWYG oder Legacy-Markdown). */
+  text?: string;
+  /** Alternativ: bereits geparste Bloecke. Hat Vorrang vor `text`. */
+  blocks?: MdBlock[];
   /** Basisstyle fuer normale Absaetze (paragraph vs. itemSubline usw.). */
   paragraphStyle: AnyStyle;
   bulletRowStyle: AnyStyle;
@@ -249,12 +259,13 @@ interface MarkdownProps {
 
 const PdfMarkdown = ({
   text,
+  blocks: provided,
   paragraphStyle,
   bulletRowStyle,
   bulletMarkerStyle,
   bulletBodyStyle,
 }: MarkdownProps) => {
-  const blocks = parseRichText(text);
+  const blocks = provided ?? parseRichText(text ?? '');
   return (
     <>
       {blocks.map((b, idx) =>
@@ -372,9 +383,14 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
           </View>
 
           {quote.items.map((item) => {
-            const lines = item.description.split('\n');
-            const head = lines[0] ?? '';
-            const rest = lines.slice(1).join('\n');
+            // Beschreibung immer komplett durch den Rich-Text-Parser —
+            // funktioniert fuer HTML (WYSIWYG) UND fuer Legacy-Klartext
+            // mit \n. Erster Block wird zum Titel, alles danach zum Body.
+            const blocks = parseRichText(item.description);
+            const titleBlock = blocks.find((b) => b.type === 'paragraph');
+            const restBlocks = titleBlock
+              ? blocks.filter((b) => b !== titleBlock)
+              : blocks;
             const isOptional = !!item.optional;
             const fmtN = (n: number) =>
               n
@@ -388,11 +404,11 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
                     {isOptional && (
                       <Text style={styles.optionalBadge}>OPTIONAL · </Text>
                     )}
-                    {head}
+                    {titleBlock ? renderSegments(titleBlock.segments) : ''}
                   </Text>
-                  {rest.trim() && (
+                  {restBlocks.length > 0 && (
                     <PdfMarkdown
-                      text={rest}
+                      blocks={restBlocks}
                       paragraphStyle={styles.itemSubline}
                       bulletRowStyle={styles.itemBulletRow}
                       bulletMarkerStyle={styles.itemBulletMarker}
