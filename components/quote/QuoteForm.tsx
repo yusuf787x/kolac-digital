@@ -17,12 +17,14 @@ interface ItemDraft {
   description: string;
   quantity: string;
   unitPrice: string;
+  optional: boolean;
 }
 
 const emptyItem = (): ItemDraft => ({
   description: '',
   quantity: '1',
   unitPrice: '0',
+  optional: false,
 });
 
 const dateInputValue = (d: Date) => d.toISOString().slice(0, 10);
@@ -53,6 +55,7 @@ export default function QuoteForm({ initial, mode }: Props) {
           description: i.description,
           quantity: String(i.quantity),
           unitPrice: i.unitPrice.toFixed(2),
+          optional: !!i.optional,
         }))
       : [emptyItem()],
   );
@@ -139,6 +142,14 @@ export default function QuoteForm({ initial, mode }: Props) {
     });
   };
 
+  const toggleOptional = (idx: number) => {
+    setItems((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], optional: !next[idx].optional };
+      return next;
+    });
+  };
+
   const moveItem = (idx: number, direction: -1 | 1) => {
     setItems((prev) => {
       const next = [...prev];
@@ -161,7 +172,14 @@ export default function QuoteForm({ initial, mode }: Props) {
     return q * p;
   };
 
-  const grandTotal = items.reduce((acc, i) => acc + itemTotal(i), 0);
+  // Nur nicht-optionale Positionen zaehlen in die Summe. Optionale
+  // stehen im Angebot als "auf Wunsch zubuchbar", nicht im Preis.
+  const grandTotal = items
+    .filter((i) => !i.optional)
+    .reduce((acc, i) => acc + itemTotal(i), 0);
+  const optionalTotal = items
+    .filter((i) => i.optional)
+    .reduce((acc, i) => acc + itemTotal(i), 0);
   const vatCalc = computeVat(grandTotal, vatRate);
   const selectedCustomer = customers.find((c) => c.id === customerId);
 
@@ -184,6 +202,7 @@ export default function QuoteForm({ initial, mode }: Props) {
       quantity: parseFloat(it.quantity) || 0,
       unitPrice: parseFloat(it.unitPrice) || 0,
       totalPrice: itemTotal(it),
+      optional: it.optional,
     }));
 
     try {
@@ -328,7 +347,11 @@ export default function QuoteForm({ initial, mode }: Props) {
           {items.map((item, idx) => (
             <div
               key={idx}
-              className="grid grid-cols-12 gap-3 items-start border border-gray-200 rounded-lg p-3"
+              className={`grid grid-cols-12 gap-3 items-start border rounded-lg p-3 ${
+                item.optional
+                  ? 'border-amber-200 bg-amber-50/30'
+                  : 'border-gray-200'
+              }`}
             >
               <div className="col-span-12 sm:col-span-6">
                 <label className="label">Beschreibung</label>
@@ -361,12 +384,33 @@ export default function QuoteForm({ initial, mode }: Props) {
               </div>
               <div className="col-span-4 sm:col-span-2">
                 <label className="label">Summe</label>
-                <div className="input bg-gray-50 text-right">
+                <div
+                  className={`input text-right ${
+                    item.optional
+                      ? 'bg-amber-50 text-amber-800'
+                      : 'bg-gray-50'
+                  }`}
+                >
                   {formatEUR(itemTotal(item))}
                 </div>
               </div>
 
-              <div className="col-span-12 flex justify-end gap-2 pt-1">
+              <div className="col-span-12 flex flex-wrap items-center justify-between gap-2 pt-1">
+                <label className="inline-flex items-center gap-2 text-xs text-gray-700 select-none">
+                  <input
+                    type="checkbox"
+                    checked={item.optional}
+                    onChange={() => toggleOptional(idx)}
+                    className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                  />
+                  <span>
+                    Optional
+                    <span className="ml-1 text-gray-400">
+                      (zaehlt nicht in die Summe)
+                    </span>
+                  </span>
+                </label>
+                <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => moveItem(idx, -1)}
@@ -391,6 +435,7 @@ export default function QuoteForm({ initial, mode }: Props) {
                 >
                   Entfernen
                 </button>
+                </div>
               </div>
             </div>
           ))}
@@ -419,6 +464,11 @@ export default function QuoteForm({ initial, mode }: Props) {
             <div className="text-lg font-semibold text-gray-900">
               Gesamt brutto: {formatEUR(vatCalc.gross)}
             </div>
+            {optionalTotal > 0 && (
+              <div className="text-xs text-amber-700 pt-1">
+                Optional zubuchbar: {formatEUR(optionalTotal)}
+              </div>
+            )}
           </div>
         </div>
       </section>

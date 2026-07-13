@@ -23,7 +23,7 @@ import {
   QUOTE_STATUS_LABELS,
   QUOTE_STATUS_BADGE_CLASSES,
 } from '@/lib/quote-status';
-import { parseMarkdownBlocks, type MdInlineSegment } from '@/lib/simple-markdown';
+import { parseRichText, type MdInlineSegment } from '@/lib/simple-markdown';
 
 /**
  * Rendert Markdown-Bloecke (Absaetze + Aufzaehlung, **fett**) im
@@ -37,7 +37,7 @@ function MarkdownView({
   text: string;
   className?: string;
 }) {
-  const blocks = parseMarkdownBlocks(text);
+  const blocks = parseRichText(text);
   if (blocks.length === 0) return null;
   const renderInline = (segs: MdInlineSegment[]) =>
     segs.map((s, i) =>
@@ -268,13 +268,18 @@ export default function AngebotDetailPage() {
       const dueDate = new Date(today);
       dueDate.setDate(dueDate.getDate() + settings.defaultPaymentDays);
 
-      const items: InvoiceItem[] = quote.items.map((it, idx) => ({
+      // Optionale Positionen werden bei der Rechnung NICHT uebernommen —
+      // die waren nur Vorschlag. Wenn der Kunde sie zusaetzlich beauftragt
+      // hat, muss sie manuell in der Rechnung ergaenzt werden.
+      const binding = quote.items.filter((it) => !it.optional);
+      const items: InvoiceItem[] = binding.map((it, idx) => ({
         position: idx + 1,
         description: it.description,
         quantity: it.quantity,
         unitPrice: it.unitPrice,
         totalPrice: it.totalPrice,
       }));
+      const bindingTotal = binding.reduce((acc, it) => acc + it.totalPrice, 0);
 
       const { id: invoiceId } = await createInvoiceWithNumber({
         customerId: quote.customerId,
@@ -282,7 +287,7 @@ export default function AngebotDetailPage() {
         dueDate: Timestamp.fromDate(dueDate),
         status: 'draft',
         paidAmount: 0,
-        totalAmount: quote.totalAmount,
+        totalAmount: bindingTotal,
         // MwSt-Satz aus dem Angebot uebernehmen, damit die neue Rechnung
         // exakt dieselbe Steuerlogik hat (kein Sprung durch Default-Wechsel).
         vatRate: quote.vatRate,
@@ -577,10 +582,21 @@ export default function AngebotDetailPage() {
                 const lines = item.description.split('\n');
                 const head = lines[0] ?? '';
                 const rest = lines.slice(1).join('\n');
+                const isOptional = !!item.optional;
                 return (
-                <tr key={item.position}>
+                <tr
+                  key={item.position}
+                  className={isOptional ? 'bg-amber-50/40' : ''}
+                >
                   <td className="py-3 text-gray-900">
-                    <div className="font-medium">{head}</div>
+                    <div className="font-medium flex items-center gap-2">
+                      {isOptional && (
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                          Optional
+                        </span>
+                      )}
+                      <span>{head}</span>
+                    </div>
                     {rest.trim() && (
                       <MarkdownView
                         text={rest}
@@ -594,8 +610,16 @@ export default function AngebotDetailPage() {
                   <td className="py-3 text-right text-gray-700">
                     <SensitiveValue>{formatEUR(item.unitPrice)}</SensitiveValue>
                   </td>
-                  <td className="py-3 text-right font-medium text-gray-900">
-                    <SensitiveValue>{formatEUR(item.totalPrice)}</SensitiveValue>
+                  <td
+                    className={`py-3 text-right font-medium ${
+                      isOptional ? 'text-amber-700' : 'text-gray-900'
+                    }`}
+                  >
+                    <SensitiveValue>
+                      {isOptional
+                        ? `(${formatEUR(item.totalPrice)})`
+                        : formatEUR(item.totalPrice)}
+                    </SensitiveValue>
                   </td>
                 </tr>
                 );
@@ -603,7 +627,14 @@ export default function AngebotDetailPage() {
             </tbody>
             <tfoot>
               {(() => {
-                const v = computeVat(quote.totalAmount, quote.vatRate);
+                const bindingNet = quote.items
+                  .filter((it) => !it.optional)
+                  .reduce((acc, it) => acc + it.totalPrice, 0);
+                const optionalNet = quote.items
+                  .filter((it) => it.optional)
+                  .reduce((acc, it) => acc + it.totalPrice, 0);
+                const v = computeVat(bindingNet, quote.vatRate);
+                const optV = computeVat(optionalNet, quote.vatRate);
                 const pct = Math.round(v.rate * 100);
                 return (
                   <>
@@ -640,6 +671,19 @@ export default function AngebotDetailPage() {
                         <SensitiveValue>{formatEUR(v.gross)}</SensitiveValue>
                       </td>
                     </tr>
+                    {optionalNet > 0 && (
+                      <tr>
+                        <td
+                          colSpan={3}
+                          className="py-2 text-right text-xs text-amber-700"
+                        >
+                          Optional zubuchbar (brutto)
+                        </td>
+                        <td className="py-2 text-right text-xs text-amber-700">
+                          <SensitiveValue>{formatEUR(optV.gross)}</SensitiveValue>
+                        </td>
+                      </tr>
+                    )}
                   </>
                 );
               })()}

@@ -38,6 +38,13 @@ export interface InvoiceItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  /**
+   * Nur relevant fuer Angebote: markiert eine Position als optional.
+   * Die Summe zaehlt sie NICHT mit; im PDF wird sie visuell markiert.
+   * Bei Rechnungen immer undefined/false (Rechnungen haben nur
+   * verbindliche Positionen).
+   */
+  optional?: boolean;
 }
 
 export interface Invoice {

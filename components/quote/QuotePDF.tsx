@@ -13,7 +13,7 @@ import {
 import type { Quote, Customer } from '@/lib/types';
 import { formatEUR, formatDateDE, computeVat } from '@/lib/utils';
 import { COMPANY_INFO } from '@/lib/qr';
-import { parseMarkdownBlocks, type MdInlineSegment } from '@/lib/simple-markdown';
+import { parseRichText, type MdInlineSegment } from '@/lib/simple-markdown';
 
 const COLORS = {
   blue: '#2563EB',
@@ -86,6 +86,19 @@ const styles = StyleSheet.create({
   },
   itemBulletMarker: { width: 8, fontSize: 9, color: COLORS.gray },
   itemBulletBody: { flex: 1, fontSize: 9, color: COLORS.gray },
+  optionalBadge: {
+    fontSize: 8,
+    fontFamily: 'Helvetica-Bold',
+    color: '#B45309', // amber-700
+    letterSpacing: 0.5,
+  },
+  cellSumOptional: { color: '#B45309' },
+  optionalHint: {
+    marginTop: 4,
+    fontSize: 9,
+    color: COLORS.gray,
+    fontStyle: 'italic',
+  },
   table: { marginTop: 14, marginBottom: 4 },
   tableHeader: {
     flexDirection: 'row',
@@ -241,7 +254,7 @@ const PdfMarkdown = ({
   bulletMarkerStyle,
   bulletBodyStyle,
 }: MarkdownProps) => {
-  const blocks = parseMarkdownBlocks(text);
+  const blocks = parseRichText(text);
   return (
     <>
       {blocks.map((b, idx) =>
@@ -327,8 +340,9 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
         {/* Title */}
         <Text style={styles.title}>ANGEBOT</Text>
 
-        <Text style={styles.paragraph}>{greeting(customer)}</Text>
         {quote.introText && quote.introText.trim() ? (
+          // Nutzer schreibt eigene Anrede + Text — kein zweiter,
+          // hardcodeder "Sehr geehrte..." Block davor.
           <PdfMarkdown
             text={quote.introText}
             paragraphStyle={styles.paragraph}
@@ -337,10 +351,13 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
             bulletBodyStyle={styles.bulletBody}
           />
         ) : (
-          <Text style={styles.paragraph}>
-            vielen Dank für Ihre Anfrage. Wir freuen uns, Ihnen folgendes
-            Angebot unterbreiten zu dürfen:
-          </Text>
+          <>
+            <Text style={styles.paragraph}>{greeting(customer)}</Text>
+            <Text style={styles.paragraph}>
+              vielen Dank für Ihre Anfrage. Wir freuen uns, Ihnen folgendes
+              Angebot unterbreiten zu dürfen:
+            </Text>
+          </>
         )}
 
         {/* Items table */}
@@ -358,10 +375,21 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
             const lines = item.description.split('\n');
             const head = lines[0] ?? '';
             const rest = lines.slice(1).join('\n');
+            const isOptional = !!item.optional;
+            const fmtN = (n: number) =>
+              n
+                .toFixed(2)
+                .replace('.', ',')
+                .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             return (
               <View key={item.position} style={styles.tableRow}>
                 <View style={styles.cellPosition}>
-                  <Text style={styles.itemTitle}>{head}</Text>
+                  <Text style={styles.itemTitle}>
+                    {isOptional && (
+                      <Text style={styles.optionalBadge}>OPTIONAL · </Text>
+                    )}
+                    {head}
+                  </Text>
                   {rest.trim() && (
                     <PdfMarkdown
                       text={rest}
@@ -375,17 +403,14 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
                 <Text style={styles.cellQty}>
                   {item.quantity.toLocaleString('de-DE')}
                 </Text>
-                <Text style={styles.cellPrice}>
-                  {item.unitPrice
-                    .toFixed(2)
-                    .replace('.', ',')
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-                </Text>
-                <Text style={styles.cellSum}>
-                  {item.totalPrice
-                    .toFixed(2)
-                    .replace('.', ',')
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+                <Text style={styles.cellPrice}>{fmtN(item.unitPrice)}</Text>
+                <Text
+                  style={[
+                    styles.cellSum,
+                    isOptional ? styles.cellSumOptional : {},
+                  ]}
+                >
+                  {isOptional ? `(${fmtN(item.totalPrice)})` : fmtN(item.totalPrice)}
                 </Text>
               </View>
             );
@@ -393,9 +418,17 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
 
           {/* Net + USt rows — analog zur Rechnung. Bei vatRate=0 wird
               der §19-Kleinunternehmer-Hinweis unter der Total-Box
-              eingeblendet, sonst regulaerer USt-Ausweis. */}
+              eingeblendet, sonst regulaerer USt-Ausweis.
+
+              Total wird sicherheitshalber neu aus den Items berechnet
+              (Optional-Positionen ausgeschlossen), damit Legacy-Quotes,
+              deren `totalAmount` noch Optionals mitzaehlt, korrekt
+              gerendert werden. */}
           {(() => {
-            const v = computeVat(quote.totalAmount, quote.vatRate);
+            const bindingNet = quote.items
+              .filter((it) => !it.optional)
+              .reduce((acc, it) => acc + it.totalPrice, 0);
+            const v = computeVat(bindingNet, quote.vatRate);
             const pct = Math.round(v.rate * 100);
             const fmt = (n: number) =>
               n
@@ -419,9 +452,17 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
           })()}
         </View>
 
-        {/* Total box (Brutto) */}
+        {/* Total box (Brutto) — Netto neu aus non-optional items,
+            damit Legacy-Quotes korrekt zaehlen. */}
         {(() => {
-          const v = computeVat(quote.totalAmount, quote.vatRate);
+          const bindingNet = quote.items
+            .filter((it) => !it.optional)
+            .reduce((acc, it) => acc + it.totalPrice, 0);
+          const optionalNet = quote.items
+            .filter((it) => it.optional)
+            .reduce((acc, it) => acc + it.totalPrice, 0);
+          const v = computeVat(bindingNet, quote.vatRate);
+          const optV = computeVat(optionalNet, quote.vatRate);
           const isKleinunternehmer = v.rate === 0;
           const fmt = (n: number) =>
             n
@@ -434,6 +475,12 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
                 <Text style={styles.totalLabel}>EUR</Text>
                 <Text style={styles.totalValue}>{fmt(v.gross)}</Text>
               </View>
+              {optionalNet > 0 && (
+                <Text style={styles.optionalHint}>
+                  Optional zubuchbar: {fmt(optV.gross)} EUR brutto (nicht im
+                  Angebotspreis enthalten).
+                </Text>
+              )}
               {isKleinunternehmer && (
                 <Text style={styles.paragraph}>
                   Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.

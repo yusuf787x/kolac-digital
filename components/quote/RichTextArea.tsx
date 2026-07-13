@@ -1,18 +1,18 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
- * Leichter Rich-Editor fuer Angebots-Textfelder.
+ * WYSIWYG-Editor fuer Angebots-Textfelder. Kein Markdown mehr sichtbar —
+ * Fett wird live fett, Aufzaehlungspunkte werden echte Bullets.
  *
- * Speichert Markdown im Klartext (kein HTML), zwei Buttons in der
- * Toolbar:
- *   - Fett: markiert die Auswahl mit **...**
- *   - Aufzaehlung: setzt "- " an den Zeilenanfang jeder markierten Zeile
+ * Umsetzung: contentEditable + document.execCommand fuer Bold/List.
+ * execCommand ist zwar "deprecated", ist aber in allen aktuellen Browsern
+ * stabil und liefert genau die zwei Operationen (Bold + BulletList) ohne
+ * Zusatz-Dependency. Speichert HTML im value-String.
  *
- * Keine externe Library, kein Editor-State — reines Umschreiben des
- * Textarea-Value. Speichert bleibt String, PDF + Detail-Page parsen
- * dieselbe Markdown-Syntax.
+ * Toolbar-Buttons nutzen onMouseDown mit preventDefault, damit die
+ * Selection im Editor beim Klick nicht verloren geht.
  */
 
 interface Props {
@@ -20,63 +20,78 @@ interface Props {
   onChange: (value: string) => void;
   placeholder?: string;
   minHeight?: number;
-  /** Zusaetzliche Tailwind-Klassen fuer das <textarea>. */
-  className?: string;
   ariaLabel?: string;
 }
+
+const isProbablyHtml = (s: string) =>
+  /<(p|br|strong|b|em|i|ul|ol|li|div|span)\b/i.test(s);
+
+/**
+ * Legacy-Markdown (**fett** und "- punkt") in leichtes HTML wandeln,
+ * damit bestehende Angebote im WYSIWYG korrekt angezeigt werden.
+ */
+const markdownToHtml = (md: string): string => {
+  const lines = md.split(/\n/);
+  const html: string[] = [];
+  let listOpen = false;
+  for (const raw of lines) {
+    const bullet = raw.match(/^\s*[-*]\s+(.*)$/);
+    if (bullet) {
+      if (!listOpen) {
+        html.push('<ul>');
+        listOpen = true;
+      }
+      html.push(`<li>${inlineMdToHtml(bullet[1])}</li>`);
+    } else {
+      if (listOpen) {
+        html.push('</ul>');
+        listOpen = false;
+      }
+      if (raw.trim()) {
+        html.push(`<p>${inlineMdToHtml(raw)}</p>`);
+      }
+    }
+  }
+  if (listOpen) html.push('</ul>');
+  return html.join('');
+};
+
+const inlineMdToHtml = (line: string): string =>
+  line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
 export default function RichTextArea({
   value,
   onChange,
   placeholder,
   minHeight = 100,
-  className = '',
   ariaLabel,
 }: Props) {
-  const ref = useRef<HTMLTextAreaElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const [isEmpty, setIsEmpty] = useState(true);
 
-  const wrapSelection = (before: string, after: string) => {
-    const el = ref.current;
-    if (!el) return;
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const selected = value.slice(start, end);
-    const next = `${value.slice(0, start)}${before}${selected}${after}${value.slice(end)}`;
-    onChange(next);
-    // Cursor hinter das eingefuegte Ende setzen.
-    requestAnimationFrame(() => {
-      if (!el) return;
-      const pos = start + before.length + selected.length + after.length;
-      el.focus();
-      el.setSelectionRange(pos, pos);
-    });
+  // Initial-Content EINMAL setzen. Nicht bei jedem Render neu schreiben —
+  // sonst wandert der Cursor beim Tippen zurueck an den Anfang.
+  useEffect(() => {
+    if (!ref.current) return;
+    const initial = value && !isProbablyHtml(value) ? markdownToHtml(value) : value || '';
+    if (ref.current.innerHTML !== initial) {
+      ref.current.innerHTML = initial;
+    }
+    setIsEmpty(!ref.current.textContent?.trim());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const emit = () => {
+    if (!ref.current) return;
+    const html = ref.current.innerHTML;
+    setIsEmpty(!ref.current.textContent?.trim());
+    onChange(html);
   };
 
-  const prefixSelectedLines = (prefix: string) => {
-    const el = ref.current;
-    if (!el) return;
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    // Zeilenanfang der Auswahl finden
-    const lineStart = value.lastIndexOf('\n', start - 1) + 1;
-    // Zeilenende der Auswahl finden
-    const lineEndIdx = value.indexOf('\n', end);
-    const lineEnd = lineEndIdx === -1 ? value.length : lineEndIdx;
-    const block = value.slice(lineStart, lineEnd);
-    const changed = block
-      .split('\n')
-      .map((line) =>
-        line.startsWith(prefix) ? line : line ? `${prefix}${line}` : prefix.trim(),
-      )
-      .join('\n');
-    const next = `${value.slice(0, lineStart)}${changed}${value.slice(lineEnd)}`;
-    onChange(next);
-    requestAnimationFrame(() => {
-      if (!el) return;
-      el.focus();
-      const newEnd = lineStart + changed.length;
-      el.setSelectionRange(newEnd, newEnd);
-    });
+  const exec = (cmd: string) => {
+    document.execCommand(cmd, false);
+    emit();
+    ref.current?.focus();
   };
 
   return (
@@ -84,33 +99,50 @@ export default function RichTextArea({
       <div className="mb-1.5 flex flex-wrap items-center gap-1">
         <button
           type="button"
-          onClick={() => wrapSelection('**', '**')}
-          title="Fett (Markierung mit ** umschließen)"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            exec('bold');
+          }}
+          title="Fett (⌘/Ctrl+B)"
           className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-md border border-gray-200 bg-white text-sm font-bold text-gray-700 hover:bg-gray-50"
         >
           B
         </button>
         <button
           type="button"
-          onClick={() => prefixSelectedLines('- ')}
-          title="Aufzählung (- Punkte pro Zeile)"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            exec('insertUnorderedList');
+          }}
+          title="Aufzählung"
           className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-md border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50"
         >
           • Liste
         </button>
-        <span className="ml-2 text-[11px] text-gray-400">
-          Tipp: du kannst auch direkt **fett** oder - Aufzählungspunkte tippen.
-        </span>
       </div>
-      <textarea
-        ref={ref}
-        className={`input ${className}`.trim()}
-        style={{ minHeight }}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        aria-label={ariaLabel}
-      />
+
+      <div className="relative">
+        {isEmpty && placeholder && (
+          <div
+            className="pointer-events-none absolute left-3 top-2 text-sm text-gray-400"
+            aria-hidden
+          >
+            {placeholder}
+          </div>
+        )}
+        <div
+          ref={ref}
+          contentEditable
+          suppressContentEditableWarning
+          role="textbox"
+          aria-multiline
+          aria-label={ariaLabel}
+          onInput={emit}
+          onBlur={emit}
+          className="input wysiwyg block w-full whitespace-pre-wrap break-words"
+          style={{ minHeight }}
+        />
+      </div>
     </div>
   );
 }

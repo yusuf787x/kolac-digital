@@ -45,6 +45,55 @@ export function parseMarkdownBlocks(text: string): MdBlock[] {
 }
 
 /**
+ * Erkennt "sieht aus wie HTML" — wenn der Editor HTML gespeichert hat,
+ * muessen wir zuerst nach Markdown normalisieren, bevor wir Bloecke bauen.
+ */
+export function isProbablyHtml(s: string): boolean {
+  return /<(p|br|strong|b|em|i|ul|ol|li|div|span)\b/i.test(s);
+}
+
+/**
+ * Sehr schlanker HTML->Markdown-Converter, deckt genau die Elemente
+ * ab, die unser WYSIWYG-Editor produziert: <p>, <br>, <strong|b>,
+ * <em|i>, <ul>/<ol>/<li>. Alles andere wird gestrippt.
+ */
+export function htmlToMarkdown(html: string): string {
+  return html
+    .replace(/<br\s*\/?\s*>/gi, '\n')
+    .replace(/<\/p\s*>/gi, '\n\n')
+    .replace(/<p[^>]*>/gi, '')
+    .replace(/<\/div\s*>/gi, '\n')
+    .replace(/<div[^>]*>/gi, '')
+    .replace(/<strong[^>]*>|<b[^>]*>/gi, '**')
+    .replace(/<\/strong\s*>|<\/b\s*>/gi, '**')
+    .replace(/<em[^>]*>|<i[^>]*>/gi, '**') // italic zu bold reduzieren
+    .replace(/<\/em\s*>|<\/i\s*>/gi, '**')
+    .replace(/<li[^>]*>/gi, '- ')
+    .replace(/<\/li\s*>/gi, '\n')
+    .replace(/<\/?(ul|ol)[^>]*>/gi, '\n')
+    .replace(/<[^>]+>/g, '') // was uebrig ist: strip
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * Universelle Eintritts-Funktion: nimmt entweder HTML (aus WYSIWYG) oder
+ * Legacy-Markdown (aus alter Version) und liefert die gemeinsame
+ * Block-Struktur zurueck.
+ */
+export function parseRichText(text: string): MdBlock[] {
+  if (!text) return [];
+  const md = isProbablyHtml(text) ? htmlToMarkdown(text) : text;
+  return parseMarkdownBlocks(md);
+}
+
+/**
  * Zerlegt eine Zeile in fett/nicht-fett-Segmente.
  * Erkennt "**fett**".
  */
