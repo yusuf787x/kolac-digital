@@ -59,6 +59,9 @@ export default function QuoteForm({ initial, mode }: Props) {
     initial?.closingText ?? 'Vielen Dank und liebe Grüße\nYusuf Kolac',
   );
   const [acceptanceText, setAcceptanceText] = useState(initial?.acceptanceText ?? '');
+  // Freier Einleitungstext oben. Erscheint im PDF zwischen Anrede
+  // und Positionen. Optional — leer lassen, wenn nichts noetig ist.
+  const [introText, setIntroText] = useState(initial?.introText ?? '');
   // MwSt-Satz analog zur Rechnung: 0.19 = 19%. Bei Edit den bestehenden
   // Wert behalten, bei Create default aus dem Datum ableiten (bis 30.06.2026
   // Kleinunternehmer, danach 19%). Nutzer kann jederzeit anpassen.
@@ -191,6 +194,7 @@ export default function QuoteForm({ initial, mode }: Props) {
           status: 'draft',
           totalAmount: grandTotal,
           vatRate,
+          introText,
           closingText,
           acceptanceText,
           pdfUrl: null,
@@ -213,6 +217,7 @@ export default function QuoteForm({ initial, mode }: Props) {
           validUntil: Timestamp.fromDate(new Date(validUntil)),
           totalAmount: grandTotal,
           vatRate,
+          introText,
           closingText,
           acceptanceText,
           items: cleanItems,
@@ -286,6 +291,24 @@ export default function QuoteForm({ initial, mode }: Props) {
             />
           </div>
         </div>
+      </section>
+
+      <section className="card space-y-3">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">
+            Einleitungstext
+          </h2>
+          <p className="mt-1 text-xs text-gray-500">
+            Optionaler Freitext, der oben im Angebot zwischen Anrede und
+            Positionen erscheint. Leer lassen, wenn nichts noetig ist.
+          </p>
+        </div>
+        <textarea
+          className="input min-h-[100px]"
+          value={introText}
+          onChange={(e) => setIntroText(e.target.value)}
+          placeholder="z.B. wir bedanken uns fuer dein Vertrauen und freuen uns dir folgendes Angebot machen zu duerfen…"
+        />
       </section>
 
       <section className="card space-y-4">

@@ -512,6 +512,11 @@ export default function AngebotDetailPage() {
         </section>
 
         <section className="card lg:col-span-2">
+          {quote.introText && quote.introText.trim() && (
+            <div className="mb-5 pb-5 border-b border-gray-100 text-sm text-gray-700 whitespace-pre-line">
+              {quote.introText}
+            </div>
+          )}
           <h2 className="text-base font-semibold text-gray-900 mb-3">
             Positionen
           </h2>

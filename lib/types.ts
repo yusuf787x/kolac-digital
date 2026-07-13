@@ -141,6 +141,9 @@ export interface Quote {
    * Analog zur Invoice-Logik.
    */
   vatRate?: number;
+  /** Freier Text-Block oben im Angebot, zwischen Anrede und Positionen.
+   *  Optional, damit Legacy-Angebote nichts kaputt macht. */
+  introText?: string;
   closingText: string;
   acceptanceText: string;
   pdfUrl: string | null;

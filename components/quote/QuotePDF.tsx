@@ -257,10 +257,21 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
         <Text style={styles.title}>ANGEBOT</Text>
 
         <Text style={styles.paragraph}>{greeting(customer)}</Text>
-        <Text style={styles.paragraph}>
-          vielen Dank für Ihre Anfrage. Wir freuen uns, Ihnen folgendes Angebot
-          unterbreiten zu dürfen:
-        </Text>
+        {quote.introText && quote.introText.trim() ? (
+          // Nutzer-Text hat Vorrang. Absaetze werden pro Zeilenumbruch
+          // als eigener Text-Block gerendert, damit @react-pdf sie
+          // korrekt umbricht und Abstaende sauber sitzen.
+          quote.introText.split(/\n+/).map((para, idx) => (
+            <Text key={idx} style={styles.paragraph}>
+              {para}
+            </Text>
+          ))
+        ) : (
+          <Text style={styles.paragraph}>
+            vielen Dank für Ihre Anfrage. Wir freuen uns, Ihnen folgendes
+            Angebot unterbreiten zu dürfen:
+          </Text>
+        )}
 
         {/* Items table */}
         <View style={styles.table}>
