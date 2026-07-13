@@ -124,7 +124,7 @@ export const caseStudies: CaseStudy[] = [
     founder: {
       headline: 'Wer steht hinter Bacara Ästhetik?',
       paragraph:
-        'Dr. Bugrahan Bacara führt seine Privatpraxis für ästhetische Medizin in Bünde. Botox, Hyaluron, Peelings, Fadenlifting. Behandlungen die Vertrauen brauchen, weil man das Ergebnis im Gesicht trägt. Die Praxis hat sich als eine der führenden Adressen für minimalinvasive Ästhetik in Ostwestfalen etabliert. Die Nachfrage ist da, die Bewertungen sind top.',
+        'Dr. Bugrahan Bacara führt seine Privatpraxis für ästhetische Medizin in Bünde. Botox, Hyaluron, Vitamininfusionen etc.. Behandlungen die Vertrauen brauchen, weil man das Ergebnis im Gesicht trägt. Die Praxis hat sich als eine der führenden Adressen für minimalinvasive Ästhetik in Ostwestfalen etabliert. Die Nachfrage ist da, die Bewertungen sind top.',
     },
     problem: {
       headline: 'Kennst du das?',
@@ -359,8 +359,8 @@ export const caseStudies: CaseStudy[] = [
     problem: {
       headline: 'Kennst du das?',
       paragraphs: [
-        'Du hast eine kleine Firma. Angebote in Word. Rechnungen in einem alten Programm. Belege in einem Ordner, oder auf dem Handy, oder in beiden. Verträge werden gedruckt, unterschrieben, abgeheftet.',
-        'Am Monatsende sitzt du am Rechner und sortierst. Was ist reingekommen, was ist rausgegangen, was fehlt noch. Umsatzsteuer-Voranmeldung wird zum eigenen Projekt.',
+        'Du hast deine eigene Firma. Angebote in Word. Rechnungen in einem alten Programm. Belege in einem Ordner, oder auf dem Handy, oder in beiden. Verträge werden gedruckt, unterschrieben, abgeheftet.',
+        'Am Monatsende sitzt du am Rechner und sortierst. Von der Fehleranfälligkeit garnicht erst angefangen. Was ist reingekommen, was ist rausgegangen, was fehlt noch. Umsatzsteuer-Voranmeldung wird zum eigenen Projekt.',
         'Es funktioniert. Aber es kostet dich jeden Monat einen Tag. Und wenn du dir was Neues aufbaust, wird es nicht besser sondern schlimmer.',
       ],
     },
