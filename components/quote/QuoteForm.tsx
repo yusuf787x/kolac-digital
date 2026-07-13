@@ -10,7 +10,7 @@ import {
   getSettings,
 } from '@/lib/firestore';
 import type { Customer, Quote, InvoiceItem } from '@/lib/types';
-import { formatEUR } from '@/lib/utils';
+import { formatEUR, computeVat, defaultVatRateForDate } from '@/lib/utils';
 
 interface ItemDraft {
   description: string;
@@ -59,6 +59,13 @@ export default function QuoteForm({ initial, mode }: Props) {
     initial?.closingText ?? 'Vielen Dank und liebe Grüße\nYusuf Kolac',
   );
   const [acceptanceText, setAcceptanceText] = useState(initial?.acceptanceText ?? '');
+  // MwSt-Satz analog zur Rechnung: 0.19 = 19%. Bei Edit den bestehenden
+  // Wert behalten, bei Create default aus dem Datum ableiten (bis 30.06.2026
+  // Kleinunternehmer, danach 19%). Nutzer kann jederzeit anpassen.
+  const [vatRate, setVatRate] = useState<number>(
+    initial?.vatRate ?? defaultVatRateForDate(quoteDate),
+  );
+  const [vatRateUserSet, setVatRateUserSet] = useState(mode === 'edit');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +110,16 @@ export default function QuoteForm({ initial, mode }: Props) {
     if (mode === 'create' && !validUntilUserSet && newDate) {
       setValidUntil(addDays(newDate, validDays));
     }
+    // MwSt-Default folgt dem Angebotsdatum, solange Nutzer den Satz
+    // nicht manuell gesetzt hat (Kleinunternehmer vs. Regelsatz).
+    if (mode === 'create' && !vatRateUserSet && newDate) {
+      setVatRate(defaultVatRateForDate(newDate));
+    }
+  };
+
+  const handleVatRateChange = (rate: number) => {
+    setVatRate(rate);
+    setVatRateUserSet(true);
   };
 
   const handleValidUntilChange = (newDate: string) => {
@@ -141,6 +158,7 @@ export default function QuoteForm({ initial, mode }: Props) {
   };
 
   const grandTotal = items.reduce((acc, i) => acc + itemTotal(i), 0);
+  const vatCalc = computeVat(grandTotal, vatRate);
   const selectedCustomer = customers.find((c) => c.id === customerId);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -172,6 +190,7 @@ export default function QuoteForm({ initial, mode }: Props) {
           validUntil: Timestamp.fromDate(new Date(validUntil)),
           status: 'draft',
           totalAmount: grandTotal,
+          vatRate,
           closingText,
           acceptanceText,
           pdfUrl: null,
@@ -193,6 +212,7 @@ export default function QuoteForm({ initial, mode }: Props) {
           quoteDate: Timestamp.fromDate(new Date(quoteDate)),
           validUntil: Timestamp.fromDate(new Date(validUntil)),
           totalAmount: grandTotal,
+          vatRate,
           closingText,
           acceptanceText,
           items: cleanItems,
@@ -352,10 +372,28 @@ export default function QuoteForm({ initial, mode }: Props) {
           ))}
         </div>
 
-        <div className="flex justify-end pt-2 border-t border-gray-100">
-          <div className="text-right">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pt-2 border-t border-gray-100">
+          <div className="sm:w-48">
+            <label className="label">MwSt-Satz</label>
+            <select
+              className="input"
+              value={String(vatRate)}
+              onChange={(e) => handleVatRateChange(parseFloat(e.target.value))}
+            >
+              <option value="0.19">19 % (Regelsatz)</option>
+              <option value="0.07">7 % (ermäßigt)</option>
+              <option value="0">0 % (Kleinunternehmer § 19 UStG)</option>
+            </select>
+          </div>
+          <div className="text-right space-y-1">
+            <div className="text-sm text-gray-500">
+              Total netto: {formatEUR(vatCalc.net)}
+            </div>
+            <div className="text-sm text-gray-500">
+              USt ({Math.round(vatRate * 100)} %): {formatEUR(vatCalc.vat)}
+            </div>
             <div className="text-lg font-semibold text-gray-900">
-              Gesamt: {formatEUR(grandTotal)}
+              Gesamt brutto: {formatEUR(vatCalc.gross)}
             </div>
           </div>
         </div>

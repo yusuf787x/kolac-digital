@@ -16,7 +16,7 @@ import {
   getGoogleAuth,
 } from '@/lib/firestore';
 import type { Quote, Customer, InvoiceItem } from '@/lib/types';
-import { formatEUR, formatDateDE } from '@/lib/utils';
+import { formatEUR, formatDateDE, computeVat } from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 import {
   computeQuoteStatus,
@@ -240,6 +240,9 @@ export default function AngebotDetailPage() {
         status: 'draft',
         paidAmount: 0,
         totalAmount: quote.totalAmount,
+        // MwSt-Satz aus dem Angebot uebernehmen, damit die neue Rechnung
+        // exakt dieselbe Steuerlogik hat (kein Sprung durch Default-Wechsel).
+        vatRate: quote.vatRate,
         closingText: settings.defaultClosingText,
         pdfUrl: null,
         driveUrl: null,
@@ -540,14 +543,47 @@ export default function AngebotDetailPage() {
               ))}
             </tbody>
             <tfoot>
-              <tr>
-                <td colSpan={3} className="py-2 text-right font-semibold">
-                  Gesamtbetrag
-                </td>
-                <td className="py-2 text-right font-semibold text-brand-blue">
-                  <SensitiveValue>{formatEUR(quote.totalAmount)}</SensitiveValue>
-                </td>
-              </tr>
+              {(() => {
+                const v = computeVat(quote.totalAmount, quote.vatRate);
+                const pct = Math.round(v.rate * 100);
+                return (
+                  <>
+                    <tr className="border-t border-gray-200">
+                      <td
+                        colSpan={3}
+                        className="py-2 text-right text-sm text-gray-500"
+                      >
+                        Total netto
+                      </td>
+                      <td className="py-2 text-right text-sm text-gray-700">
+                        <SensitiveValue>{formatEUR(v.net)}</SensitiveValue>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="py-1 text-right text-sm text-gray-500"
+                      >
+                        USt ({pct} %)
+                      </td>
+                      <td className="py-1 text-right text-sm text-gray-700">
+                        <SensitiveValue>{formatEUR(v.vat)}</SensitiveValue>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="py-2 text-right font-semibold"
+                      >
+                        Gesamtbetrag brutto
+                      </td>
+                      <td className="py-2 text-right font-semibold text-brand-blue">
+                        <SensitiveValue>{formatEUR(v.gross)}</SensitiveValue>
+                      </td>
+                    </tr>
+                  </>
+                );
+              })()}
             </tfoot>
           </table>
 

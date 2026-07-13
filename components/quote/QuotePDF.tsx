@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from '@react-pdf/renderer';
 import type { Quote, Customer } from '@/lib/types';
-import { formatEUR, formatDateDE } from '@/lib/utils';
+import { formatEUR, formatDateDE, computeVat } from '@/lib/utils';
 import { COMPANY_INFO } from '@/lib/qr';
 
 const COLORS = {
@@ -304,38 +304,57 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
             );
           })}
 
-          {/* Net + USt rows (Kleinunternehmer — analog zur Rechnung) */}
-          <View style={[styles.summaryRow, { marginTop: 6 }]}>
-            <Text style={styles.summaryLabel}>Total netto</Text>
-            <Text style={styles.summaryUnit}>EUR</Text>
-            <Text style={styles.summaryValue}>
-              {quote.totalAmount
+          {/* Net + USt rows — analog zur Rechnung. Bei vatRate=0 wird
+              der §19-Kleinunternehmer-Hinweis unter der Total-Box
+              eingeblendet, sonst regulaerer USt-Ausweis. */}
+          {(() => {
+            const v = computeVat(quote.totalAmount, quote.vatRate);
+            const pct = Math.round(v.rate * 100);
+            const fmt = (n: number) =>
+              n
                 .toFixed(2)
                 .replace('.', ',')
-                .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-            </Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>USt (0%)</Text>
-            <Text style={styles.summaryUnit}>EUR</Text>
-            <Text style={styles.summaryValue}>0,00</Text>
-          </View>
+                .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return (
+              <>
+                <View style={[styles.summaryRow, { marginTop: 6 }]}>
+                  <Text style={styles.summaryLabel}>Total netto</Text>
+                  <Text style={styles.summaryUnit}>EUR</Text>
+                  <Text style={styles.summaryValue}>{fmt(v.net)}</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>USt ({pct}%)</Text>
+                  <Text style={styles.summaryUnit}>EUR</Text>
+                  <Text style={styles.summaryValue}>{fmt(v.vat)}</Text>
+                </View>
+              </>
+            );
+          })()}
         </View>
 
-        {/* Total box */}
-        <View style={styles.totalBox}>
-          <Text style={styles.totalLabel}>EUR</Text>
-          <Text style={styles.totalValue}>
-            {quote.totalAmount
+        {/* Total box (Brutto) */}
+        {(() => {
+          const v = computeVat(quote.totalAmount, quote.vatRate);
+          const isKleinunternehmer = v.rate === 0;
+          const fmt = (n: number) =>
+            n
               .toFixed(2)
               .replace('.', ',')
-              .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-          </Text>
-        </View>
-
-        <Text style={styles.paragraph}>
-          Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
-        </Text>
+              .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+          return (
+            <>
+              <View style={styles.totalBox}>
+                <Text style={styles.totalLabel}>EUR</Text>
+                <Text style={styles.totalValue}>{fmt(v.gross)}</Text>
+              </View>
+              {isKleinunternehmer && (
+                <Text style={styles.paragraph}>
+                  Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
+                </Text>
+              )}
+            </>
+          );
+        })()}
 
         {/* Acceptance text in highlighted box (enthält bereits Kontaktwege) */}
         {quote.acceptanceText && (

@@ -135,6 +135,12 @@ export interface Quote {
   validUntil: Timestamp;
   status: QuoteStatus;
   totalAmount: number;
+  /**
+   * MwSt-Satz als Dezimalzahl (0.19 = 19%). Optional fuer Legacy-Angebote.
+   * `totalAmount` ist NETTO, Brutto = totalAmount * (1 + vatRate).
+   * Analog zur Invoice-Logik.
+   */
+  vatRate?: number;
   closingText: string;
   acceptanceText: string;
   pdfUrl: string | null;
