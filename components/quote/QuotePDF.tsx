@@ -270,7 +270,10 @@ const PdfMarkdown = ({
     <>
       {blocks.map((b, idx) =>
         b.type === 'bullet' ? (
-          <View key={idx} style={bulletRowStyle}>
+          // wrap={false} haelt Bullet-Symbol + Text zusammen — sonst
+          // bleibt beim Seitenumbruch nur das "•" auf der alten Seite
+          // stehen und der Text springt allein auf die naechste.
+          <View key={idx} style={bulletRowStyle} wrap={false}>
             <Text style={bulletMarkerStyle}>•</Text>
             <Text style={bulletBodyStyle}>{renderSegments(b.segments)}</Text>
           </View>
