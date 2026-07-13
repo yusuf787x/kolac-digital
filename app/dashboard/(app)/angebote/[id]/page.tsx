@@ -23,6 +23,49 @@ import {
   QUOTE_STATUS_LABELS,
   QUOTE_STATUS_BADGE_CLASSES,
 } from '@/lib/quote-status';
+import { parseMarkdownBlocks, type MdInlineSegment } from '@/lib/simple-markdown';
+
+/**
+ * Rendert Markdown-Bloecke (Absaetze + Aufzaehlung, **fett**) im
+ * Angebots-UI. Kein HTML aus Nutzer-Input, kein dangerouslySetInnerHTML —
+ * die Segmente kommen aus dem eigenen Parser.
+ */
+function MarkdownView({
+  text,
+  className = 'text-sm text-gray-700',
+}: {
+  text: string;
+  className?: string;
+}) {
+  const blocks = parseMarkdownBlocks(text);
+  if (blocks.length === 0) return null;
+  const renderInline = (segs: MdInlineSegment[]) =>
+    segs.map((s, i) =>
+      s.bold ? (
+        <strong key={i} className="font-semibold text-gray-900">
+          {s.text}
+        </strong>
+      ) : (
+        <span key={i}>{s.text}</span>
+      ),
+    );
+  return (
+    <div className={className}>
+      {blocks.map((b, i) =>
+        b.type === 'bullet' ? (
+          <div key={i} className="flex gap-2">
+            <span className="text-gray-400">•</span>
+            <span>{renderInline(b.segments)}</span>
+          </div>
+        ) : (
+          <p key={i} className="mb-1 last:mb-0">
+            {renderInline(b.segments)}
+          </p>
+        ),
+      )}
+    </div>
+  );
+}
 
 export default function AngebotDetailPage() {
   const params = useParams<{ id: string }>();
@@ -513,8 +556,8 @@ export default function AngebotDetailPage() {
 
         <section className="card lg:col-span-2">
           {quote.introText && quote.introText.trim() && (
-            <div className="mb-5 pb-5 border-b border-gray-100 text-sm text-gray-700 whitespace-pre-line">
-              {quote.introText}
+            <div className="mb-5 pb-5 border-b border-gray-100">
+              <MarkdownView text={quote.introText} />
             </div>
           )}
           <h2 className="text-base font-semibold text-gray-900 mb-3">
@@ -530,10 +573,20 @@ export default function AngebotDetailPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {quote.items.map((item) => (
+              {quote.items.map((item) => {
+                const lines = item.description.split('\n');
+                const head = lines[0] ?? '';
+                const rest = lines.slice(1).join('\n');
+                return (
                 <tr key={item.position}>
-                  <td className="py-3 whitespace-pre-line text-gray-900">
-                    {item.description}
+                  <td className="py-3 text-gray-900">
+                    <div className="font-medium">{head}</div>
+                    {rest.trim() && (
+                      <MarkdownView
+                        text={rest}
+                        className="mt-1 text-xs text-gray-600"
+                      />
+                    )}
                   </td>
                   <td className="py-3 text-right text-gray-700">
                     {item.quantity}
@@ -545,7 +598,8 @@ export default function AngebotDetailPage() {
                     <SensitiveValue>{formatEUR(item.totalPrice)}</SensitiveValue>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
             <tfoot>
               {(() => {

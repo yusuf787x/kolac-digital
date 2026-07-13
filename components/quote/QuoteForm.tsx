@@ -11,6 +11,7 @@ import {
 } from '@/lib/firestore';
 import type { Customer, Quote, InvoiceItem } from '@/lib/types';
 import { formatEUR, computeVat, defaultVatRateForDate } from '@/lib/utils';
+import RichTextArea from '@/components/quote/RichTextArea';
 
 interface ItemDraft {
   description: string;
@@ -300,14 +301,14 @@ export default function QuoteForm({ initial, mode }: Props) {
           </h2>
           <p className="mt-1 text-xs text-gray-500">
             Optionaler Freitext, der oben im Angebot zwischen Anrede und
-            Positionen erscheint. Leer lassen, wenn nichts noetig ist.
+            Positionen erscheint. Fett + Aufzählungspunkte über die Toolbar.
           </p>
         </div>
-        <textarea
-          className="input min-h-[100px]"
+        <RichTextArea
           value={introText}
-          onChange={(e) => setIntroText(e.target.value)}
+          onChange={setIntroText}
           placeholder="z.B. wir bedanken uns fuer dein Vertrauen und freuen uns dir folgendes Angebot machen zu duerfen…"
+          minHeight={100}
         />
       </section>
 
@@ -331,11 +332,11 @@ export default function QuoteForm({ initial, mode }: Props) {
             >
               <div className="col-span-12 sm:col-span-6">
                 <label className="label">Beschreibung</label>
-                <textarea
-                  className="input min-h-[60px]"
+                <RichTextArea
                   value={item.description}
-                  onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                  onChange={(v) => updateItem(idx, 'description', v)}
                   placeholder="z.B. Webentwicklung Pauschal"
+                  minHeight={60}
                 />
               </div>
               <div className="col-span-4 sm:col-span-2">

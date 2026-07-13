@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 'use client';
 
+import type { ComponentProps } from 'react';
 import {
   Document,
   Page,
@@ -12,6 +13,7 @@ import {
 import type { Quote, Customer } from '@/lib/types';
 import { formatEUR, formatDateDE, computeVat } from '@/lib/utils';
 import { COMPANY_INFO } from '@/lib/qr';
+import { parseMarkdownBlocks, type MdInlineSegment } from '@/lib/simple-markdown';
 
 const COLORS = {
   blue: '#2563EB',
@@ -70,6 +72,20 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   paragraph: { marginBottom: 10, fontSize: 10 },
+  bulletRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+    paddingLeft: 4,
+  },
+  bulletMarker: { width: 10, fontSize: 10 },
+  bulletBody: { flex: 1, fontSize: 10 },
+  itemBulletRow: {
+    flexDirection: 'row',
+    marginTop: 1,
+    paddingLeft: 2,
+  },
+  itemBulletMarker: { width: 8, fontSize: 9, color: COLORS.gray },
+  itemBulletBody: { flex: 1, fontSize: 9, color: COLORS.gray },
   table: { marginTop: 14, marginBottom: 4 },
   tableHeader: {
     flexDirection: 'row',
@@ -189,6 +205,61 @@ interface Props {
   logoSrc: string;
 }
 
+/**
+ * Inline-Segmente einer Markdown-Zeile in @react-pdf-<Text>-Kinder
+ * uebersetzen. Fett-Segmente bekommen Helvetica-Bold, damit sie im PDF
+ * auch wirklich fett rendern (react-pdf mappt fontWeight nicht auf die
+ * Standard-Helvetica-Familie).
+ */
+const renderSegments = (segments: MdInlineSegment[]) =>
+  segments.map((seg, i) =>
+    seg.bold ? (
+      <Text key={i} style={{ fontFamily: 'Helvetica-Bold' }}>
+        {seg.text}
+      </Text>
+    ) : (
+      <Text key={i}>{seg.text}</Text>
+    ),
+  );
+
+type AnyStyle = ComponentProps<typeof View>['style'] &
+  ComponentProps<typeof Text>['style'];
+
+interface MarkdownProps {
+  text: string;
+  /** Basisstyle fuer normale Absaetze (paragraph vs. itemSubline usw.). */
+  paragraphStyle: AnyStyle;
+  bulletRowStyle: AnyStyle;
+  bulletMarkerStyle: AnyStyle;
+  bulletBodyStyle: AnyStyle;
+}
+
+const PdfMarkdown = ({
+  text,
+  paragraphStyle,
+  bulletRowStyle,
+  bulletMarkerStyle,
+  bulletBodyStyle,
+}: MarkdownProps) => {
+  const blocks = parseMarkdownBlocks(text);
+  return (
+    <>
+      {blocks.map((b, idx) =>
+        b.type === 'bullet' ? (
+          <View key={idx} style={bulletRowStyle}>
+            <Text style={bulletMarkerStyle}>•</Text>
+            <Text style={bulletBodyStyle}>{renderSegments(b.segments)}</Text>
+          </View>
+        ) : (
+          <Text key={idx} style={paragraphStyle}>
+            {renderSegments(b.segments)}
+          </Text>
+        ),
+      )}
+    </>
+  );
+};
+
 const greeting = (c: Customer): string => {
   const last = c.lastName?.trim() || c.company?.trim() || '';
   if (c.salutation === 'Frau') return `Sehr geehrte Frau ${last},`;
@@ -258,14 +329,13 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
 
         <Text style={styles.paragraph}>{greeting(customer)}</Text>
         {quote.introText && quote.introText.trim() ? (
-          // Nutzer-Text hat Vorrang. Absaetze werden pro Zeilenumbruch
-          // als eigener Text-Block gerendert, damit @react-pdf sie
-          // korrekt umbricht und Abstaende sauber sitzen.
-          quote.introText.split(/\n+/).map((para, idx) => (
-            <Text key={idx} style={styles.paragraph}>
-              {para}
-            </Text>
-          ))
+          <PdfMarkdown
+            text={quote.introText}
+            paragraphStyle={styles.paragraph}
+            bulletRowStyle={styles.bulletRow}
+            bulletMarkerStyle={styles.bulletMarker}
+            bulletBodyStyle={styles.bulletBody}
+          />
         ) : (
           <Text style={styles.paragraph}>
             vielen Dank für Ihre Anfrage. Wir freuen uns, Ihnen folgendes
@@ -287,13 +357,19 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
           {quote.items.map((item) => {
             const lines = item.description.split('\n');
             const head = lines[0] ?? '';
-            const rest = lines.slice(1);
+            const rest = lines.slice(1).join('\n');
             return (
               <View key={item.position} style={styles.tableRow}>
                 <View style={styles.cellPosition}>
                   <Text style={styles.itemTitle}>{head}</Text>
-                  {rest.length > 0 && (
-                    <Text style={styles.itemSubline}>{rest.join('\n')}</Text>
+                  {rest.trim() && (
+                    <PdfMarkdown
+                      text={rest}
+                      paragraphStyle={styles.itemSubline}
+                      bulletRowStyle={styles.itemBulletRow}
+                      bulletMarkerStyle={styles.itemBulletMarker}
+                      bulletBodyStyle={styles.itemBulletBody}
+                    />
                   )}
                 </View>
                 <Text style={styles.cellQty}>
