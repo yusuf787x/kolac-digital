@@ -82,6 +82,7 @@ export async function GET(req: Request) {
     title: data.title,
     typeLabel: data.typeLabel,
     customerCompany: data.customerSnapshot?.company ?? '',
+    customerCity: data.customerSnapshot?.city ?? '',
     fields: data.fields ?? [],
     // Eigene Proxy-URL statt direkte Firebase-Storage-URL, damit
     // react-pdf das PDF cross-origin sauber per fetch laden kann.

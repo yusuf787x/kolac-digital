@@ -11,6 +11,12 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 interface Props {
   pdfUrl: string;
   fields: ContractField[];
+  /**
+   * Kundenstadt aus dem Snapshot — wird im Ort/Datum-Field-Overlay als
+   * Vorschau angezeigt, damit der Kunde sieht was beim Signieren
+   * automatisch eingesetzt wird.
+   */
+  customerCity?: string;
 }
 
 /**
@@ -25,7 +31,20 @@ interface Props {
  * dass der andere schon signiert hat. Die Field-Overlays zeigen wo er
  * selbst noch unterschreibt bzw. wo das Datum eingesetzt wird.
  */
-export default function ContractPdfView({ pdfUrl, fields }: Props) {
+export default function ContractPdfView({
+  pdfUrl,
+  fields,
+  customerCity,
+}: Props) {
+  // Vorschau fuer das Ort/Datum-Overlay: "Bünde, den 15.11.2025"
+  const previewDate = new Date().toLocaleDateString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  const datePreview = customerCity
+    ? `${customerCity}, den ${previewDate}`
+    : `den ${previewDate}`;
   const containerRef = useRef<HTMLDivElement>(null);
   const [pageWidth, setPageWidth] = useState(800);
   const [numPages, setNumPages] = useState(0);
@@ -128,7 +147,7 @@ export default function ContractPdfView({ pdfUrl, fields }: Props) {
             )}
           </Document>
           {pageFields.map((f, i) => (
-            <PreviewField key={i} field={f} />
+            <PreviewField key={i} field={f} datePreview={datePreview} />
           ))}
         </div>
       </div>
@@ -213,7 +232,13 @@ function PdfToolbar({
   );
 }
 
-function PreviewField({ field }: { field: ContractField }) {
+function PreviewField({
+  field,
+  datePreview,
+}: {
+  field: ContractField;
+  datePreview: string;
+}) {
   const style: React.CSSProperties = {
     position: 'absolute',
     left: `${field.x * 100}%`,
@@ -250,8 +275,9 @@ function PreviewField({ field }: { field: ContractField }) {
       <div
         style={{ ...style, border: '1px dashed #d97706' }}
         className="flex items-center justify-center text-[10px] text-amber-700 bg-amber-50/40"
+        title="Wird beim Unterschreiben automatisch eingesetzt."
       >
-        Ort + Datum (automatisch)
+        {datePreview}
       </div>
     );
   }

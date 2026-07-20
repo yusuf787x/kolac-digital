@@ -16,6 +16,7 @@ interface LoadResponse {
   title: string;
   typeLabel: string;
   customerCompany: string;
+  customerCity?: string;
   fields: ContractField[];
   originalPdfUrl: string;
   expiresAt: number | null;
@@ -233,6 +234,7 @@ export default function SignPage() {
               <ContractPdfView
                 pdfUrl={state.data.originalPdfUrl}
                 fields={state.data.fields}
+                customerCity={state.data.customerCity}
               />
             </div>
 

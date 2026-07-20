@@ -441,7 +441,7 @@ export default function TemplateContractPdf({
           <View style={styles.sigColumn}>
             <Text style={styles.sigOrtDatumLabel}>Ort, Datum</Text>
             <Text style={styles.sigOrtDatum}>
-              {COMPANY_INFO.city}, {generatedAt}
+              {COMPANY_INFO.city}, den {generatedAt}
             </Text>
             <View style={styles.sigSlot as AnyStyle}>
               {kolacSignatureSrc && (

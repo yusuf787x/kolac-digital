@@ -128,7 +128,7 @@ export async function POST(req: Request) {
 
   const today = formatDateDDMMYYYY(new Date());
   const city = (data.customerSnapshot?.city ?? '').trim();
-  const dateString = city ? `${city}, ${today}` : today;
+  const dateString = city ? `${city}, den ${today}` : `den ${today}`;
 
   for (const field of fields) {
     const pageIndex = field.page - 1;
