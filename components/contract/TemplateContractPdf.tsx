@@ -58,8 +58,12 @@ const SIG_LAYOUT = {
   //   subtitle(10+28) + intro(10*4+32) ≈ 244pt.
   blockTopPt: 244,
   slotHeightPt: 46, // hoehe des unterschrift-slots (Bild-Container)
-  ortDatumHeightPt: 14,
-  ortDatumBottomGapPt: 6,
+  // Hoehe fuer die Datumszeile — muss die vererbte lineHeight:1.5 der
+  // Seite auffangen (fontSize 10 * 1.5 = 15pt), sonst wird der Text
+  // aus dem Container geschnitten und gar nicht gerendert.
+  ortDatumHeightPt: 18,
+  ortDatumLabelHeightPt: 12, // "Ort, Datum" label (8pt + marginBottom 2)
+  ortDatumBottomGapPt: 8,
   // rechte Spalte startet ungefaehr bei Mitte + halber Gap
   rightColumnStartPct: 0.52,
   rightColumnWidthPct: 0.4,
@@ -69,18 +73,19 @@ const SIG_LAYOUT = {
  * Position und Groesse der ContractFields auf der Signaturseite.
  * Werden vom Neu-/Edit-Flow als authoritative Wahrheit uebernommen —
  * so bleiben PDF-Layout und Signing-Overlay in Sync.
+ *
+ * Y-Position beginnt UNTER dem "Ort, Datum"-Label, damit das Overlay
+ * das Label nicht verdeckt (sitzt direkt auf der Datum-Text-Zeile).
  */
 export const SIG_FIELD_POSITIONS = (() => {
   const blockTop = SIG_LAYOUT.blockTopPt;
-  // Ort+Datum sitzt ganz oben im Signaturblock (rechte Spalte).
-  const ortDatumTop = blockTop;
-  // Signatur-Slot beginnt darunter.
+  // Datum-Text-Zeile sitzt unter dem kleinen "Ort, Datum"-Label.
+  const ortDatumTop = blockTop + SIG_LAYOUT.ortDatumLabelHeightPt;
+  // Signatur-Slot beginnt unter der Datum-Zeile + Gap.
   const sigSlotTop =
-    blockTop +
+    ortDatumTop +
     SIG_LAYOUT.ortDatumHeightPt +
-    SIG_LAYOUT.ortDatumBottomGapPt +
-    // "OrtDatumLabel" (8pt) + kleiner Zusatzabstand
-    12;
+    SIG_LAYOUT.ortDatumBottomGapPt;
 
   return {
     date: {
@@ -246,8 +251,9 @@ const styles = StyleSheet.create({
   },
   sigOrtDatum: {
     fontSize: 10,
-    height: 14,
-    marginBottom: 6,
+    lineHeight: 1.2, // eigene lineHeight — sonst 1.5 * 10 > height
+    height: SIG_LAYOUT.ortDatumHeightPt,
+    marginBottom: SIG_LAYOUT.ortDatumBottomGapPt,
   },
   sigOrtDatumLabel: {
     fontSize: 8,
