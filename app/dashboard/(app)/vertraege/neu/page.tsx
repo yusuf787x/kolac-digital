@@ -12,6 +12,8 @@ import {
   createContract,
   createContractType,
   uploadFile,
+  listQuotes,
+  getQuote,
 } from '@/lib/firestore';
 import {
   generateSigningToken,
@@ -21,7 +23,9 @@ import type {
   ContractField,
   ContractType,
   Customer,
+  Quote,
 } from '@/lib/types';
+import RichTextArea from '@/components/quote/RichTextArea';
 
 // PDF-Editor nur im Client laden — react-pdf nutzt window.
 const PdfFieldEditor = dynamic(
@@ -38,6 +42,11 @@ export default function NeuerVertragPage() {
 }
 
 type Step = 'meta' | 'upload' | 'edit';
+type Mode = 'template' | 'upload';
+
+const ANGEBOT_LABEL_HINTS = ['angebot', 'offerte'];
+const isAngebotType = (label: string) =>
+  ANGEBOT_LABEL_HINTS.some((h) => label.toLowerCase().includes(h));
 
 function NeuerVertragInner() {
   const router = useRouter();
@@ -72,6 +81,61 @@ function NeuerVertragInner() {
   const [newTypeLabel, setNewTypeLabel] = useState('');
   const [newTypeShort, setNewTypeShort] = useState('');
   const [creatingType, setCreatingType] = useState(false);
+
+  // Template-Modus (neu) vs. klassischer PDF-Upload.
+  const [mode, setMode] = useState<Mode>('template');
+  const [bodyText, setBodyText] = useState('');
+  const [generating, setGenerating] = useState(false);
+
+  // Wenn Vertragstyp „Angebot" ist: bestehende Angebote laden und
+  // per Dropdown anbieten, um Inhalt in den Freitext zu uebernehmen.
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [quotesLoaded, setQuotesLoaded] = useState(false);
+  const [selectedQuoteId, setSelectedQuoteId] = useState('');
+  const [importingQuote, setImportingQuote] = useState(false);
+
+  const selectedType = types.find((t) => t.id === typeId);
+  const showQuotePicker =
+    mode === 'template' && selectedType && isAngebotType(selectedType.label);
+
+  // Angebote lazy laden — erst wenn der Nutzer "Angebot" waehlt.
+  useEffect(() => {
+    if (!showQuotePicker || quotesLoaded) return;
+    (async () => {
+      try {
+        const list = await listQuotes();
+        // Nur Angebote des ausgewaehlten Kunden anzeigen, wenn einer
+        // gesetzt ist — sonst alle.
+        setQuotes(list);
+        setQuotesLoaded(true);
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, [showQuotePicker, quotesLoaded]);
+
+  const filteredQuotes = customerId
+    ? quotes.filter((q) => q.customerId === customerId)
+    : quotes;
+
+  const handleImportQuote = async () => {
+    if (!selectedQuoteId) return;
+    setImportingQuote(true);
+    try {
+      const q = await getQuote(selectedQuoteId);
+      if (!q) return;
+      const { quoteToTemplateHtml } = await import('@/lib/pdf-generator');
+      const html = quoteToTemplateHtml(q);
+      setBodyText(html);
+      // Titel auf sinnvollen Default setzen, falls noch leer.
+      if (!title) setTitle(`Auftragsbestätigung ${q.quoteNumber}`);
+    } catch (err) {
+      console.error(err);
+      setError(`Angebot konnte nicht geladen werden: ${(err as Error).message}`);
+    } finally {
+      setImportingQuote(false);
+    }
+  };
 
   const handleCreateType = async () => {
     const label = newTypeLabel.trim();
@@ -128,6 +192,120 @@ function NeuerVertragInner() {
       setTitle(`${t.shortLabel} ${c.company}`.trim());
     }
   }, [customerId, typeId, customers, types, title]);
+
+  /**
+   * Template-Modus: PDF wird live aus dem Freitext generiert, hochgeladen,
+   * Signatur-Felder werden programmatisch platziert (Positionen sind im
+   * Template festgelegt — Auftraggeber unten rechts). Der restliche Save-
+   * Flow ist identisch zum Upload-Weg.
+   */
+  const handleSaveFromTemplate = async () => {
+    if (!customerId || !typeId || !title || !bodyText.trim()) return;
+    const customer = customers.find((x) => x.id === customerId);
+    const type = types.find((x) => x.id === typeId);
+    if (!customer || !type) return;
+
+    setSaving(true);
+    setError(null);
+    try {
+      const { generateTemplateContractBlob } = await import(
+        '@/lib/pdf-generator'
+      );
+      const blob = await generateTemplateContractBlob({
+        title,
+        subtitle: `${type.label} · ${customer.company || `${customer.firstName} ${customer.lastName}`}`,
+        customer,
+        bodyText,
+      });
+
+      const buf = await blob.arrayBuffer();
+      const hash = await sha256Hex(buf);
+      const token = generateSigningToken();
+      const path = `contracts/${token}/original.pdf`;
+      // File-Objekt aus Blob bauen, damit uploadFile denselben Weg nimmt.
+      const pdfFile = new File([blob], 'contract.pdf', {
+        type: 'application/pdf',
+      });
+      const downloadUrl = await uploadFile(path, pdfFile);
+
+      // Seitenzahl aus dem generierten PDF (fuer Signatur-Feld-Platzierung
+      // auf der letzten Seite). pdf-lib ist bereits fuer den Signing-Flow
+      // installiert — kein zusaetzlicher Worker/Dependency noetig.
+      let pageCount = 1;
+      try {
+        const { PDFDocument } = await import('pdf-lib');
+        const doc = await PDFDocument.load(buf);
+        pageCount = doc.getPageCount();
+      } catch (e) {
+        console.warn('Seitenzahl konnte nicht bestimmt werden:', e);
+      }
+
+      // Signatur-Felder auf der LETZTEN Seite — der Signaturblock im
+      // Template sitzt visuell im unteren Bereich (wrap={false}, rutscht
+      // ggf. gemeinsam auf die naechste Seite). Prozentkoordinaten sind
+      // eine Naeherung; sitzen typischerweise auf der Signatur-Linie.
+      const fields: ContractField[] = [
+        {
+          type: 'date',
+          page: pageCount,
+          x: 0.28,
+          y: 0.72,
+          width: 0.25,
+          height: 0.04,
+        },
+        {
+          type: 'customer_signature',
+          page: pageCount,
+          x: 0.55,
+          y: 0.78,
+          width: 0.35,
+          height: 0.08,
+        },
+      ];
+
+      const expiresAt = Timestamp.fromMillis(
+        Date.now() + expiryDays * 24 * 60 * 60 * 1000,
+      );
+
+      const id = await createContract({
+        customerId,
+        customerSnapshot: {
+          company: customer.company,
+          firstName: customer.firstName,
+          lastName: customer.lastName,
+          email: customer.email,
+          city: customer.city,
+        },
+        typeId,
+        typeLabel: type.label,
+        title,
+        status: 'draft',
+        originalPdfPath: path,
+        originalPdfUrl: downloadUrl,
+        originalSha256: hash,
+        pageCount,
+        fields,
+        signingToken: token,
+        signingExpiresAt: expiresAt,
+        signedPdfPath: null,
+        signedPdfUrl: null,
+        reminderEnabled,
+        reminderDays,
+        lastReminderAt: null,
+        sentAt: null,
+        signedAt: null,
+        signedByName: null,
+        signedFromIp: null,
+        signedFromUserAgent: null,
+        audit: [{ at: Timestamp.now(), event: 'created' }],
+      });
+      router.push(`/dashboard/vertraege/${id}`);
+    } catch (err) {
+      console.error(err);
+      setError(`Speichern fehlgeschlagen: ${(err as Error).message}`);
+      setSaving(false);
+    }
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -235,10 +413,37 @@ function NeuerVertragInner() {
         </Link>
         <h1 className="text-3xl font-semibold text-gray-900">Neuer Vertrag</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Kunde wählen → PDF hochladen → Unterschriftenfelder platzieren →
-          Signing-Link generieren.
+          Aus Vorlage erzeugen oder fertiges PDF hochladen — danach
+          Signing-Link an den Kunden.
         </p>
       </header>
+
+      {step !== 'edit' && (
+        <div className="mb-4 inline-flex rounded-lg border border-gray-200 bg-white p-1 text-sm">
+          <button
+            type="button"
+            onClick={() => setMode('template')}
+            className={`px-3 py-1.5 rounded-md ${
+              mode === 'template'
+                ? 'bg-brand-blue text-white'
+                : 'text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Aus Vorlage erstellen
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('upload')}
+            className={`px-3 py-1.5 rounded-md ${
+              mode === 'upload'
+                ? 'bg-brand-blue text-white'
+                : 'text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Fertiges PDF hochladen
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="card mb-4 bg-red-50 border-red-200 text-sm text-red-700">
@@ -375,28 +580,116 @@ function NeuerVertragInner() {
             </div>
           </div>
 
-          <div className="border-t border-gray-100 pt-4">
-            <p className="text-sm font-medium text-gray-900 mb-2">
-              Vertrag als PDF hochladen
-            </p>
-            <p className="text-sm text-gray-500 mb-3">
-              Du füllst den Vertrag in Word/Pages wie gewohnt aus und
-              exportierst ihn als PDF. Bitte ohne Verschlüsselung oder
-              Passwortschutz.
-            </p>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={handleFileChange}
-              disabled={!customerId || !typeId || !title}
-              className="block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-brand-blue file:text-white file:font-medium file:cursor-pointer disabled:opacity-50"
-            />
-            {(!customerId || !typeId || !title) && (
-              <p className="mt-2 text-xs text-amber-700">
-                Bitte zuerst Kunde, Typ und Titel ausfüllen.
+          {mode === 'upload' && (
+            <div className="border-t border-gray-100 pt-4">
+              <p className="text-sm font-medium text-gray-900 mb-2">
+                Vertrag als PDF hochladen
               </p>
-            )}
-          </div>
+              <p className="text-sm text-gray-500 mb-3">
+                Du füllst den Vertrag in Word/Pages wie gewohnt aus und
+                exportierst ihn als PDF. Bitte ohne Verschlüsselung oder
+                Passwortschutz.
+              </p>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                disabled={!customerId || !typeId || !title}
+                className="block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-brand-blue file:text-white file:font-medium file:cursor-pointer disabled:opacity-50"
+              />
+              {(!customerId || !typeId || !title) && (
+                <p className="mt-2 text-xs text-amber-700">
+                  Bitte zuerst Kunde, Typ und Titel ausfüllen.
+                </p>
+              )}
+            </div>
+          )}
+
+          {mode === 'template' && (
+            <div className="border-t border-gray-100 pt-4 space-y-4">
+              {showQuotePicker && (
+                <div className="p-3 rounded-lg border border-blue-200 bg-blue-50/60 space-y-2">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="text-sm font-medium text-blue-900">
+                      Aus bestehendem Angebot übernehmen
+                    </p>
+                    <span className="text-xs text-blue-700">
+                      {customerId
+                        ? `${filteredQuotes.length} Angebote für diesen Kunden`
+                        : `${quotes.length} Angebote insgesamt`}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <select
+                      className="input flex-1"
+                      value={selectedQuoteId}
+                      onChange={(e) => setSelectedQuoteId(e.target.value)}
+                    >
+                      <option value="">– Angebot wählen –</option>
+                      {filteredQuotes.map((q) => (
+                        <option key={q.id} value={q.id}>
+                          {q.quoteNumber} · {q.totalAmount.toFixed(2)} € netto
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={handleImportQuote}
+                      disabled={!selectedQuoteId || importingQuote}
+                      className="btn-secondary text-sm"
+                    >
+                      {importingQuote ? 'Übernehme…' : 'Übernehmen'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-blue-800">
+                    Einleitungstext, Positionen und Preise werden in den
+                    Freitext eingefügt. Du kannst danach noch beliebig
+                    anpassen.
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label className="label">Freitext (Vertragsinhalt)</label>
+                <RichTextArea
+                  value={bodyText}
+                  onChange={setBodyText}
+                  placeholder="Hier den Inhalt des Vertrags eintragen…"
+                  minHeight={280}
+                />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Header (Kolac + Kunde), Signaturbereich und Footer werden
+                  automatisch ergänzt. Signaturfeld für den Kunden landet
+                  unten rechts auf der letzten Seite.
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleSaveFromTemplate}
+                  disabled={
+                    saving ||
+                    generating ||
+                    !customerId ||
+                    !typeId ||
+                    !title ||
+                    !bodyText.trim()
+                  }
+                  className="btn-primary disabled:opacity-50"
+                >
+                  {saving
+                    ? 'Erzeuge PDF & speichere…'
+                    : 'PDF erzeugen & Signing-Link generieren'}
+                </button>
+              </div>
+              {(!customerId || !typeId || !title) && (
+                <p className="text-xs text-amber-700">
+                  Bitte zuerst Kunde, Typ und Titel ausfüllen.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
