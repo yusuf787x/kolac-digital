@@ -8,14 +8,18 @@ import TemplateContractPdf, {
 } from '@/components/contract/TemplateContractPdf';
 import type { Invoice, Customer, Quote } from './types';
 import { buildInvoiceQrDataUrl } from './qr';
-import { computeVat, formatEUR } from './utils';
+import { computeInvoiceVat, computeVat, formatEUR } from './utils';
 
 export async function generateInvoicePdfBlob(
   invoice: Invoice,
   customer: Customer,
 ): Promise<Blob> {
+  // GiroCode-Betrag = Brutto (was der Kunde tatsaechlich zahlt).
+  // totalAmount ist Netto; Brutto ueber computeInvoiceVat pro Item,
+  // Fallback auf Rechnungs-vatRate fuer Legacy.
+  const invoiceGross = computeInvoiceVat(invoice.items, invoice.vatRate).gross;
   const qrCodeDataUrl = await buildInvoiceQrDataUrl({
-    amount: invoice.totalAmount,
+    amount: invoiceGross,
     invoiceNumber: invoice.invoiceNumber ?? 'ENTWURF',
   });
 

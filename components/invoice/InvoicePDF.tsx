@@ -268,33 +268,54 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     lineHeight: 1.35,
   },
+  referralBadge: {
+    // Feste Breite reserviert Platz fuer "15%" (fontSize 22) UND das
+    // Wort "AUSZAHLUNG" darunter (10 Zeichen bei fontSize 8) —
+    // verhindert das Overlap durch letterSpacing/negative marginTop.
+    width: 78,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   referralPercent: {
-    fontSize: 20,
+    fontSize: 22,
     fontFamily: 'Helvetica-Bold',
     color: COLORS.blue,
-    letterSpacing: -0.5,
+    lineHeight: 1,
+    textAlign: 'center',
   },
   referralPercentLabel: {
-    fontSize: 7,
+    fontSize: 8,
     color: COLORS.blue,
     letterSpacing: 0.8,
     textAlign: 'center',
-    marginTop: -2,
+    marginTop: 4,
   },
-  // GiroCode-Zeile — auch nur einmal (letzte Seite), direkt unter
-  // dem Referral-Kasten. Beide zusammen im wrap={false}-Container.
-  qrRow: {
-    marginTop: 10,
+  // GiroCode-Sektion (letzte Seite). Section-Headline und Text sind
+  // links buendig mit dem restlichen Rechnungs-Layout, QR sitzt rechts.
+  qrSection: {
+    marginTop: 16,
+  },
+  qrSectionHeadline: {
+    fontFamily: 'Helvetica-Bold',
+    fontSize: 11,
+    marginBottom: 8,
+    paddingBottom: 4,
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.border,
+  },
+  qrSectionRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 10,
+    alignItems: 'flex-start',
+    gap: 16,
+  },
+  qrSectionTextCol: {
+    flex: 1,
   },
   qrHint: {
-    fontSize: 8,
+    fontSize: 9,
     color: COLORS.gray,
-    textAlign: 'right',
-    maxWidth: 220,
+    lineHeight: 1.4,
+    textAlign: 'left',
   },
 });
 
@@ -584,21 +605,30 @@ export default function InvoicePDF({
                 .
               </Text>
             </View>
-            <View style={{ alignItems: 'center', minWidth: 46 }}>
+            <View style={styles.referralBadge}>
               <Text style={styles.referralPercent}>15%</Text>
               <Text style={styles.referralPercentLabel}>AUSZAHLUNG</Text>
             </View>
           </View>
 
           {!isDirectDebit && (
-            <View style={styles.qrRow}>
-              <Text style={styles.qrHint}>
-                Zahlung per SEPA-QR: Code mit deiner Banking-App scannen.
-                Empfänger, IBAN und Betrag werden automatisch eingesetzt.
+            <View style={styles.qrSection}>
+              <Text style={styles.qrSectionHeadline}>
+                Bequem bezahlen mit QR-Code
               </Text>
-              <View style={styles.qrBox}>
-                <Image style={styles.qrImage} src={qrCodeDataUrl} />
-                <Text style={styles.qrLabel}>Mit Banking-App scannen</Text>
+              <View style={styles.qrSectionRow}>
+                <View style={styles.qrSectionTextCol}>
+                  <Text style={styles.qrHint}>
+                    Scanne den Code mit deiner Banking-App. Empfänger, IBAN und
+                    Gesamtbetrag werden automatisch eingesetzt. So sparst du dir
+                    das Abtippen und stellst sicher, dass die Zahlung korrekt
+                    zugeordnet wird.
+                  </Text>
+                </View>
+                <View style={styles.qrBox}>
+                  <Image style={styles.qrImage} src={qrCodeDataUrl} />
+                  <Text style={styles.qrLabel}>Mit Banking-App scannen</Text>
+                </View>
               </View>
             </View>
           )}

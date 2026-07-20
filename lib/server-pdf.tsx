@@ -2,6 +2,7 @@ import { pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/invoice/InvoicePDF';
 import type { Invoice, Customer } from './types';
 import { buildInvoiceQrDataUrl } from './qr';
+import { computeInvoiceVat } from './utils';
 
 /**
  * Server-Variante des Invoice-PDF-Generators für API-Routes (z.B. den
@@ -11,8 +12,10 @@ export async function generateInvoicePdfBuffer(
   invoice: Invoice,
   customer: Customer,
 ): Promise<Buffer> {
+  // Brutto-Betrag fuer GiroCode (was der Kunde per QR ueberweist).
+  const invoiceGross = computeInvoiceVat(invoice.items, invoice.vatRate).gross;
   const qrCodeDataUrl = await buildInvoiceQrDataUrl({
-    amount: invoice.totalAmount,
+    amount: invoiceGross,
     invoiceNumber: invoice.invoiceNumber ?? 'ENTWURF',
   });
 
