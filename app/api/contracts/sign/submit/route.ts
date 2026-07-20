@@ -158,11 +158,14 @@ export async function POST(req: Request) {
         height: hPx,
       });
     } else if (field.type === 'date') {
-      // Text vertikal mittig im Feld.
-      const fontSize = Math.max(8, Math.min(hPx * 0.7, 18));
+      // Feste Groesse 10pt — muss zur Kolac-Seite im Template
+      // (styles.sigOrtDatum) matchen, damit links und rechts optisch
+      // identisch aussehen. Baseline sitzt am oberen Container-Rand,
+      // spiegelt die Top-Alignment-Position von react-pdf-Text.
+      const fontSize = 10;
       page.drawText(dateString, {
         x: xPx,
-        y: yBottomPx + (hPx - fontSize) / 2,
+        y: yBottomPx + hPx - fontSize,
         size: fontSize,
         font,
         color: rgb(0, 0, 0),
