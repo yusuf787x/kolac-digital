@@ -12,6 +12,7 @@ import {
   formatEUR,
   formatDateDE,
   computeVat,
+  computeInvoiceVat,
   grossToNet,
 } from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
@@ -75,22 +76,26 @@ export default function UStVAPage() {
     );
     const monthExpenses = expenses.filter((e) => inMonth(e.date.toDate()));
 
-    // Output VAT: USt aus Verkaeufen
+    // Output VAT: USt aus Verkaeufen — pro Position rechnen (jede
+    // Position kann eigenen Satz haben, z.B. 19% Beratung + 0% durch-
+    // laufender Posten fuer Werbebudget).
     let outputNet = 0;
     let outputVat = 0;
     let outputGross = 0;
     const outputByRate = new Map<number, { net: number; vat: number; gross: number }>();
     for (const i of monthInvoices) {
-      const v = computeVat(i.totalAmount, i.vatRate);
+      const v = computeInvoiceVat(i.items, i.vatRate);
       outputNet += v.net;
       outputVat += v.vat;
       outputGross += v.gross;
-      const prev = outputByRate.get(v.rate) ?? { net: 0, vat: 0, gross: 0 };
-      outputByRate.set(v.rate, {
-        net: prev.net + v.net,
-        vat: prev.vat + v.vat,
-        gross: prev.gross + v.gross,
-      });
+      for (const r of v.byRate) {
+        const prev = outputByRate.get(r.rate) ?? { net: 0, vat: 0, gross: 0 };
+        outputByRate.set(r.rate, {
+          net: prev.net + r.net,
+          vat: prev.vat + r.vat,
+          gross: prev.gross + r.gross,
+        });
+      }
     }
 
     // Input VAT: Vorsteuer aus regulaeren Belegen (Brutto → Netto + Vorsteuer)
@@ -173,17 +178,23 @@ export default function UStVAPage() {
         'Status',
       ],
       ...monthData.monthInvoices.map((i) => {
-        const v = computeVat(i.totalAmount, i.vatRate);
+        const v = computeInvoiceVat(i.items, i.vatRate);
         const cust = customers.get(i.customerId);
         const desc =
           i.items?.map((it) => it.description.split('\n')[0]).join('; ') ?? '';
+        // Bei mehreren Steuersaetzen in derselben Rechnung: "gemischt"
+        // statt eines einzelnen Prozentwerts.
+        const rateStr =
+          v.byRate.length === 1
+            ? String(Math.round(v.byRate[0].rate * 100))
+            : v.byRate.map((r) => Math.round(r.rate * 100)).join('/');
         return [
           i.invoiceNumber ?? '',
           formatDateDE(i.invoiceDate.toDate()),
           cust?.company ?? '—',
           desc,
           fmtCsv(v.net),
-          String(Math.round(v.rate * 100)),
+          rateStr,
           fmtCsv(v.vat),
           fmtCsv(v.gross),
           i.status,
@@ -401,7 +412,7 @@ export default function UStVAPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {monthData.monthInvoices.map((i) => {
-                      const v = computeVat(i.totalAmount, i.vatRate);
+                      const v = computeInvoiceVat(i.items, i.vatRate);
                       return (
                         <tr key={i.id}>
                           <td className="py-1.5">

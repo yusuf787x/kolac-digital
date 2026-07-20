@@ -10,7 +10,11 @@ import {
   getSettings,
 } from '@/lib/firestore';
 import type { Customer, Quote, InvoiceItem } from '@/lib/types';
-import { formatEUR, computeVat, defaultVatRateForDate } from '@/lib/utils';
+import {
+  formatEUR,
+  computeInvoiceVat,
+  defaultVatRateForDate,
+} from '@/lib/utils';
 import RichTextArea from '@/components/quote/RichTextArea';
 
 interface ItemDraft {
@@ -18,6 +22,8 @@ interface ItemDraft {
   quantity: string;
   unitPrice: string;
   optional: boolean;
+  /** null = Standard-Satz der Rechnung nutzen. */
+  vatRate: number | null;
 }
 
 const emptyItem = (): ItemDraft => ({
@@ -25,6 +31,7 @@ const emptyItem = (): ItemDraft => ({
   quantity: '1',
   unitPrice: '0',
   optional: false,
+  vatRate: null,
 });
 
 const dateInputValue = (d: Date) => d.toISOString().slice(0, 10);
@@ -56,6 +63,7 @@ export default function QuoteForm({ initial, mode }: Props) {
           quantity: String(i.quantity),
           unitPrice: i.unitPrice.toFixed(2),
           optional: !!i.optional,
+          vatRate: i.vatRate ?? null,
         }))
       : [emptyItem()],
   );
@@ -134,10 +142,22 @@ export default function QuoteForm({ initial, mode }: Props) {
     setValidUntilUserSet(true);
   };
 
-  const updateItem = (idx: number, key: keyof ItemDraft, value: string) => {
+  const updateItem = (
+    idx: number,
+    key: 'description' | 'quantity' | 'unitPrice',
+    value: string,
+  ) => {
     setItems((prev) => {
       const next = [...prev];
       next[idx] = { ...next[idx], [key]: value };
+      return next;
+    });
+  };
+
+  const updateItemVatRate = (idx: number, vatRate: number | null) => {
+    setItems((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], vatRate };
       return next;
     });
   };
@@ -174,13 +194,17 @@ export default function QuoteForm({ initial, mode }: Props) {
 
   // Nur nicht-optionale Positionen zaehlen in die Summe. Optionale
   // stehen im Angebot als "auf Wunsch zubuchbar", nicht im Preis.
-  const grandTotal = items
-    .filter((i) => !i.optional)
-    .reduce((acc, i) => acc + itemTotal(i), 0);
+  // computeInvoiceVat rechnet pro Position mit eigenem Satz + fallback.
+  const itemsForVat = items.map((i) => ({
+    totalPrice: itemTotal(i),
+    optional: i.optional,
+    vatRate: i.vatRate ?? undefined,
+  }));
+  const vatCalc = computeInvoiceVat(itemsForVat, vatRate);
+  const grandTotal = vatCalc.net;
   const optionalTotal = items
     .filter((i) => i.optional)
     .reduce((acc, i) => acc + itemTotal(i), 0);
-  const vatCalc = computeVat(grandTotal, vatRate);
   const selectedCustomer = customers.find((c) => c.id === customerId);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -203,6 +227,9 @@ export default function QuoteForm({ initial, mode }: Props) {
       unitPrice: parseFloat(it.unitPrice) || 0,
       totalPrice: itemTotal(it),
       optional: it.optional,
+      ...(it.vatRate !== null && it.vatRate !== vatRate
+        ? { vatRate: it.vatRate }
+        : {}),
     }));
 
     try {
@@ -395,6 +422,28 @@ export default function QuoteForm({ initial, mode }: Props) {
                 </div>
               </div>
 
+              <div className="col-span-12 sm:col-span-4 sm:col-start-7">
+                <label className="label">MwSt (nur diese Position)</label>
+                <select
+                  className="input"
+                  value={item.vatRate === null ? 'default' : String(item.vatRate)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    updateItemVatRate(
+                      idx,
+                      v === 'default' ? null : parseFloat(v),
+                    );
+                  }}
+                >
+                  <option value="default">
+                    Standard ({Math.round(vatRate * 100)} %)
+                  </option>
+                  <option value="0.19">19 %</option>
+                  <option value="0.07">7 %</option>
+                  <option value="0">0 % (durchlaufender Posten / § 19)</option>
+                </select>
+              </div>
+
               <div className="col-span-12 flex flex-wrap items-center justify-between gap-2 pt-1">
                 <label className="inline-flex items-center gap-2 text-xs text-gray-700 select-none">
                   <input
@@ -458,12 +507,20 @@ export default function QuoteForm({ initial, mode }: Props) {
             <div className="text-sm text-gray-500">
               Total netto: {formatEUR(vatCalc.net)}
             </div>
-            <div className="text-sm text-gray-500">
-              USt ({Math.round(vatRate * 100)} %): {formatEUR(vatCalc.vat)}
-            </div>
+            {vatCalc.byRate.map((r) => (
+              <div key={r.rate} className="text-sm text-gray-500">
+                USt ({Math.round(r.rate * 100)} %) auf {formatEUR(r.net)}:{' '}
+                {formatEUR(r.vat)}
+              </div>
+            ))}
             <div className="text-lg font-semibold text-gray-900">
               Gesamt brutto: {formatEUR(vatCalc.gross)}
             </div>
+            {vatCalc.byRate.length > 1 && (
+              <p className="text-xs text-amber-700">
+                Mehrere Steuersaetze — im PDF pro Satz einzeln ausgewiesen.
+              </p>
+            )}
             {optionalTotal > 0 && (
               <div className="text-xs text-amber-700 pt-1">
                 Optional zubuchbar: {formatEUR(optionalTotal)}

@@ -18,7 +18,7 @@ import {
   formatDateDE,
   isOverdue,
   daysOverdue,
-  computeVat,
+  computeInvoiceVat,
 } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import SensitiveValue from '@/components/ui/SensitiveValue';
@@ -652,8 +652,7 @@ export default function RechnungDetailPage() {
             </tbody>
             <tfoot>
               {(() => {
-                const v = computeVat(invoice.totalAmount, invoice.vatRate);
-                const pct = Math.round(v.rate * 100);
+                const v = computeInvoiceVat(invoice.items, invoice.vatRate);
                 return (
                   <>
                     <tr className="border-t border-gray-200">
@@ -667,17 +666,22 @@ export default function RechnungDetailPage() {
                         <SensitiveValue>{formatEUR(v.net)}</SensitiveValue>
                       </td>
                     </tr>
-                    <tr>
-                      <td
-                        colSpan={3}
-                        className="py-1 text-right text-sm text-gray-500"
-                      >
-                        USt ({pct} %)
-                      </td>
-                      <td className="py-1 text-right text-sm text-gray-700">
-                        <SensitiveValue>{formatEUR(v.vat)}</SensitiveValue>
-                      </td>
-                    </tr>
+                    {v.byRate.map((r) => (
+                      <tr key={r.rate}>
+                        <td
+                          colSpan={3}
+                          className="py-1 text-right text-sm text-gray-500"
+                        >
+                          USt ({Math.round(r.rate * 100)} %)
+                          {v.byRate.length > 1
+                            ? ` auf ${formatEUR(r.net)}`
+                            : ''}
+                        </td>
+                        <td className="py-1 text-right text-sm text-gray-700">
+                          <SensitiveValue>{formatEUR(r.vat)}</SensitiveValue>
+                        </td>
+                      </tr>
+                    ))}
                     <tr>
                       <td
                         colSpan={3}

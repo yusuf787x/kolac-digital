@@ -11,7 +11,7 @@ import {
   StyleSheet,
 } from '@react-pdf/renderer';
 import type { Quote, Customer } from '@/lib/types';
-import { formatEUR, formatDateDE, computeVat } from '@/lib/utils';
+import { formatEUR, formatDateDE, computeInvoiceVat } from '@/lib/utils';
 import { COMPANY_INFO } from '@/lib/qr';
 import {
   parseRichText,
@@ -444,11 +444,7 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
               deren `totalAmount` noch Optionals mitzaehlt, korrekt
               gerendert werden. */}
           {(() => {
-            const bindingNet = quote.items
-              .filter((it) => !it.optional)
-              .reduce((acc, it) => acc + it.totalPrice, 0);
-            const v = computeVat(bindingNet, quote.vatRate);
-            const pct = Math.round(v.rate * 100);
+            const v = computeInvoiceVat(quote.items, quote.vatRate);
             const fmt = (n: number) =>
               n
                 .toFixed(2)
@@ -461,11 +457,16 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
                   <Text style={styles.summaryUnit}>EUR</Text>
                   <Text style={styles.summaryValue}>{fmt(v.net)}</Text>
                 </View>
-                <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>USt ({pct}%)</Text>
-                  <Text style={styles.summaryUnit}>EUR</Text>
-                  <Text style={styles.summaryValue}>{fmt(v.vat)}</Text>
-                </View>
+                {v.byRate.map((r) => (
+                  <View key={r.rate} style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>
+                      USt ({Math.round(r.rate * 100)}%)
+                      {v.byRate.length > 1 ? ` auf ${fmt(r.net)}` : ''}
+                    </Text>
+                    <Text style={styles.summaryUnit}>EUR</Text>
+                    <Text style={styles.summaryValue}>{fmt(r.vat)}</Text>
+                  </View>
+                ))}
               </>
             );
           })()}
@@ -474,15 +475,13 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
         {/* Total box (Brutto) — Netto neu aus non-optional items,
             damit Legacy-Quotes korrekt zaehlen. */}
         {(() => {
-          const bindingNet = quote.items
-            .filter((it) => !it.optional)
-            .reduce((acc, it) => acc + it.totalPrice, 0);
-          const optionalNet = quote.items
-            .filter((it) => it.optional)
-            .reduce((acc, it) => acc + it.totalPrice, 0);
-          const v = computeVat(bindingNet, quote.vatRate);
-          const optV = computeVat(optionalNet, quote.vatRate);
-          const isKleinunternehmer = v.rate === 0;
+          const v = computeInvoiceVat(quote.items, quote.vatRate);
+          const optV = computeInvoiceVat(
+            quote.items.filter((it) => it.optional),
+            quote.vatRate,
+            { includeOptional: true },
+          );
+          const isKleinunternehmer = v.byRate.every((r) => r.rate === 0);
           const fmt = (n: number) =>
             n
               .toFixed(2)
@@ -494,7 +493,7 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
                 <Text style={styles.totalLabel}>EUR</Text>
                 <Text style={styles.totalValue}>{fmt(v.gross)}</Text>
               </View>
-              {optionalNet > 0 && (
+              {optV.gross > 0 && (
                 <Text style={styles.optionalHint}>
                   Optional zubuchbar: {fmt(optV.gross)} EUR brutto (nicht im
                   Angebotspreis enthalten).

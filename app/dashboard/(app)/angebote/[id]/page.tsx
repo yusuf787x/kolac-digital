@@ -16,7 +16,7 @@ import {
   getGoogleAuth,
 } from '@/lib/firestore';
 import type { Quote, Customer, InvoiceItem } from '@/lib/types';
-import { formatEUR, formatDateDE, computeVat } from '@/lib/utils';
+import { formatEUR, formatDateDE, computeInvoiceVat } from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 import {
   computeQuoteStatus,
@@ -278,6 +278,9 @@ export default function AngebotDetailPage() {
         quantity: it.quantity,
         unitPrice: it.unitPrice,
         totalPrice: it.totalPrice,
+        // Position-spezifischen VAT-Satz mit uebernehmen (z.B. 0% fuer
+        // durchlaufende Posten wie Werbebudget-Weiterberechnung).
+        ...(it.vatRate !== undefined ? { vatRate: it.vatRate } : {}),
       }));
       const bindingTotal = binding.reduce((acc, it) => acc + it.totalPrice, 0);
 
@@ -631,15 +634,12 @@ export default function AngebotDetailPage() {
             </tbody>
             <tfoot>
               {(() => {
-                const bindingNet = quote.items
-                  .filter((it) => !it.optional)
-                  .reduce((acc, it) => acc + it.totalPrice, 0);
-                const optionalNet = quote.items
-                  .filter((it) => it.optional)
-                  .reduce((acc, it) => acc + it.totalPrice, 0);
-                const v = computeVat(bindingNet, quote.vatRate);
-                const optV = computeVat(optionalNet, quote.vatRate);
-                const pct = Math.round(v.rate * 100);
+                const v = computeInvoiceVat(quote.items, quote.vatRate);
+                const optV = computeInvoiceVat(
+                  quote.items.filter((it) => it.optional),
+                  quote.vatRate,
+                  { includeOptional: true },
+                );
                 return (
                   <>
                     <tr className="border-t border-gray-200">
@@ -653,17 +653,22 @@ export default function AngebotDetailPage() {
                         <SensitiveValue>{formatEUR(v.net)}</SensitiveValue>
                       </td>
                     </tr>
-                    <tr>
-                      <td
-                        colSpan={3}
-                        className="py-1 text-right text-sm text-gray-500"
-                      >
-                        USt ({pct} %)
-                      </td>
-                      <td className="py-1 text-right text-sm text-gray-700">
-                        <SensitiveValue>{formatEUR(v.vat)}</SensitiveValue>
-                      </td>
-                    </tr>
+                    {v.byRate.map((r) => (
+                      <tr key={r.rate}>
+                        <td
+                          colSpan={3}
+                          className="py-1 text-right text-sm text-gray-500"
+                        >
+                          USt ({Math.round(r.rate * 100)} %)
+                          {v.byRate.length > 1
+                            ? ` auf ${formatEUR(r.net)}`
+                            : ''}
+                        </td>
+                        <td className="py-1 text-right text-sm text-gray-700">
+                          <SensitiveValue>{formatEUR(r.vat)}</SensitiveValue>
+                        </td>
+                      </tr>
+                    ))}
                     <tr>
                       <td
                         colSpan={3}
@@ -675,7 +680,7 @@ export default function AngebotDetailPage() {
                         <SensitiveValue>{formatEUR(v.gross)}</SensitiveValue>
                       </td>
                     </tr>
-                    {optionalNet > 0 && (
+                    {optV.gross > 0 && (
                       <tr>
                         <td
                           colSpan={3}

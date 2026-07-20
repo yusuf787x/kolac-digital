@@ -15,7 +15,12 @@ import {
   StyleSheet,
 } from '@react-pdf/renderer';
 import type { Invoice, Customer } from '@/lib/types';
-import { formatEUR, formatDateDE, tsToDate, computeVat } from '@/lib/utils';
+import {
+  formatEUR,
+  formatDateDE,
+  tsToDate,
+  computeInvoiceVat,
+} from '@/lib/utils';
 import { COMPANY_BANK, COMPANY_INFO } from '@/lib/qr';
 import {
   parseRichText,
@@ -328,10 +333,10 @@ export default function InvoicePDF({
   const isDirectDebit = Boolean(invoice.gocardlessPaymentId);
   const chargedAt =
     tsToDate(invoice.gocardlessChargedAt) ?? tsToDate(invoice.paidAt);
-  // MwSt — vatRate fehlt bei Legacy-Rechnungen, dann 0 (Kleinunternehmer).
-  const vatCalc = computeVat(invoice.totalAmount, invoice.vatRate);
-  const vatPercent = Math.round(vatCalc.rate * 100);
-  const isKleinunternehmer = vatCalc.rate === 0;
+  // MwSt: pro Position berechnen (mit fallback auf Rechnungs-vatRate).
+  // Bei Rechnungen ohne Item-vatRate ist byRate exakt ein Eintrag.
+  const vatCalc = computeInvoiceVat(invoice.items, invoice.vatRate);
+  const isKleinunternehmer = vatCalc.byRate.every((r) => r.rate === 0);
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -455,17 +460,25 @@ export default function InvoicePDF({
             );
           })}
 
-          {/* Net + USt rows */}
+          {/* Net + USt rows: pro Steuersatz eine Zeile. Bei nur einem
+              Satz aussehen wie vorher (kompakt). */}
           <View style={[styles.summaryRow, { marginTop: 6 }]}>
             <Text style={styles.summaryLabel}>Total netto</Text>
             <Text style={styles.summaryUnit}>EUR</Text>
             <Text style={styles.summaryValue}>{germanAmount(vatCalc.net)}</Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>USt ({vatPercent}%)</Text>
-            <Text style={styles.summaryUnit}>EUR</Text>
-            <Text style={styles.summaryValue}>{germanAmount(vatCalc.vat)}</Text>
-          </View>
+          {vatCalc.byRate.map((r) => (
+            <View key={r.rate} style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>
+                USt ({Math.round(r.rate * 100)}%)
+                {vatCalc.byRate.length > 1
+                  ? ` auf ${germanAmount(r.net)}`
+                  : ''}
+              </Text>
+              <Text style={styles.summaryUnit}>EUR</Text>
+              <Text style={styles.summaryValue}>{germanAmount(r.vat)}</Text>
+            </View>
+          ))}
         </View>
 
         {/* Total box */}

@@ -383,6 +383,28 @@ export default function InvoiceForm({ initial, mode }: Props) {
                 </div>
               </div>
 
+              <div className="col-span-12 sm:col-span-4 sm:col-start-7">
+                <label className="label">MwSt (nur diese Position)</label>
+                <select
+                  className="input"
+                  value={item.vatRate === null ? 'default' : String(item.vatRate)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    updateItemVatRate(
+                      idx,
+                      v === 'default' ? null : parseFloat(v),
+                    );
+                  }}
+                >
+                  <option value="default">
+                    Standard ({Math.round(vatRate * 100)} %)
+                  </option>
+                  <option value="0.19">19 %</option>
+                  <option value="0.07">7 %</option>
+                  <option value="0">0 % (durchlaufender Posten / § 19)</option>
+                </select>
+              </div>
+
               <div className="col-span-12 flex justify-end gap-2 pt-1">
                 <button
                   type="button"
@@ -430,12 +452,21 @@ export default function InvoiceForm({ initial, mode }: Props) {
             <div className="text-sm text-gray-500">
               Total netto: {formatEUR(vatCalc.net)}
             </div>
-            <div className="text-sm text-gray-500">
-              USt ({Math.round(vatRate * 100)} %): {formatEUR(vatCalc.vat)}
-            </div>
+            {vatCalc.byRate.map((r) => (
+              <div key={r.rate} className="text-sm text-gray-500">
+                USt ({Math.round(r.rate * 100)} %) auf {formatEUR(r.net)}:{' '}
+                {formatEUR(r.vat)}
+              </div>
+            ))}
             <div className="text-lg font-semibold text-gray-900">
               Gesamt brutto: {formatEUR(vatCalc.gross)}
             </div>
+            {vatCalc.byRate.length > 1 && (
+              <p className="text-xs text-amber-700">
+                Mehrere Steuersaetze in dieser Rechnung — wird im PDF pro
+                Satz einzeln ausgewiesen.
+              </p>
+            )}
           </div>
         </div>
       </section>
