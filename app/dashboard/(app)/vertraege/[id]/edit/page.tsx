@@ -14,7 +14,10 @@ import { sha256Hex } from '@/lib/contract-utils';
 import { buildTemplateContractPdf } from '@/lib/template-contract';
 import RichTextArea from '@/components/quote/RichTextArea';
 import AttachmentsEditor from '@/components/contract/AttachmentsEditor';
-import type { ContractAttachment } from '@/components/contract/TemplateContractPdf';
+import {
+  SIG_FIELD_POSITIONS,
+  type ContractAttachment,
+} from '@/components/contract/TemplateContractPdf';
 import type { Contract, ContractField, Customer } from '@/lib/types';
 
 /**
@@ -84,6 +87,15 @@ export default function EditContractPage() {
       const subtitle =
         contract.templateData?.subtitle ??
         `${contract.typeLabel} · ${customer.company || `${customer.firstName} ${customer.lastName}`}`;
+      // Erstellungsdatum konstant halten. Erst wenn's im gespeicherten
+      // Zustand fehlt (Legacy-Vertraege vor generatedAt), heute nehmen.
+      const generatedAt =
+        contract.templateData?.generatedAt ??
+        new Date().toLocaleDateString('de-DE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
 
       const { blob, pageCount, signaturePage } = await buildTemplateContractPdf(
         {
@@ -92,6 +104,7 @@ export default function EditContractPage() {
           customer,
           bodyText,
           attachments,
+          generatedAt,
         },
       );
       const buf = await blob.arrayBuffer();
@@ -106,21 +119,11 @@ export default function EditContractPage() {
       const downloadUrl = await uploadFile(contract.originalPdfPath, pdfFile);
 
       const fields: ContractField[] = [
-        {
-          type: 'date',
-          page: signaturePage,
-          x: 0.28,
-          y: 0.72,
-          width: 0.25,
-          height: 0.04,
-        },
+        { type: 'date', page: signaturePage, ...SIG_FIELD_POSITIONS.date },
         {
           type: 'customer_signature',
           page: signaturePage,
-          x: 0.55,
-          y: 0.78,
-          width: 0.35,
-          height: 0.08,
+          ...SIG_FIELD_POSITIONS.customerSignature,
         },
       ];
 
@@ -133,6 +136,7 @@ export default function EditContractPage() {
             title: a.title,
             body: a.body,
           })),
+          generatedAt,
         },
         originalPdfUrl: downloadUrl,
         originalSha256: hash,

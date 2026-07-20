@@ -41,6 +41,63 @@ const COLORS = {
   border: '#e5e7eb',
 };
 
+// ------------------------------------------------------------------
+// Signaturseiten-Layout — feste Werte, damit die Coordinates fuer die
+// ContractFields (Ort/Datum + Kundenunterschrift) im Signing-Overlay
+// exakt auf den PDF-Feldern liegen.
+// A4 = 595 x 842 pt. Seiten-paddingTop=40, paddingBottom=90,
+// paddingHorizontal=50.
+// ------------------------------------------------------------------
+const A4_WIDTH_PT = 595;
+const A4_HEIGHT_PT = 842;
+
+const SIG_LAYOUT = {
+  // Vertikale Position, an der der Signaturblock beginnt (nach Logo
+  // + Titel-Zeilen + Intro-Text). Grob berechnet:
+  //   paddingTop(40) + logo(50) + logo-margin(24) + title(14+6) +
+  //   subtitle(10+28) + intro(10*4+32) ≈ 244pt.
+  blockTopPt: 244,
+  slotHeightPt: 46, // hoehe des unterschrift-slots (Bild-Container)
+  ortDatumHeightPt: 14,
+  ortDatumBottomGapPt: 6,
+  // rechte Spalte startet ungefaehr bei Mitte + halber Gap
+  rightColumnStartPct: 0.52,
+  rightColumnWidthPct: 0.4,
+};
+
+/**
+ * Position und Groesse der ContractFields auf der Signaturseite.
+ * Werden vom Neu-/Edit-Flow als authoritative Wahrheit uebernommen —
+ * so bleiben PDF-Layout und Signing-Overlay in Sync.
+ */
+export const SIG_FIELD_POSITIONS = (() => {
+  const blockTop = SIG_LAYOUT.blockTopPt;
+  // Ort+Datum sitzt ganz oben im Signaturblock (rechte Spalte).
+  const ortDatumTop = blockTop;
+  // Signatur-Slot beginnt darunter.
+  const sigSlotTop =
+    blockTop +
+    SIG_LAYOUT.ortDatumHeightPt +
+    SIG_LAYOUT.ortDatumBottomGapPt +
+    // "OrtDatumLabel" (8pt) + kleiner Zusatzabstand
+    12;
+
+  return {
+    date: {
+      x: SIG_LAYOUT.rightColumnStartPct,
+      y: ortDatumTop / A4_HEIGHT_PT,
+      width: SIG_LAYOUT.rightColumnWidthPct,
+      height: SIG_LAYOUT.ortDatumHeightPt / A4_HEIGHT_PT,
+    },
+    customerSignature: {
+      x: SIG_LAYOUT.rightColumnStartPct,
+      y: sigSlotTop / A4_HEIGHT_PT,
+      width: SIG_LAYOUT.rightColumnWidthPct,
+      height: SIG_LAYOUT.slotHeightPt / A4_HEIGHT_PT,
+    },
+  };
+})();
+
 const styles = StyleSheet.create({
   page: {
     paddingTop: 40,
@@ -161,6 +218,65 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
     paddingBottom: 6,
   },
+  // ------- Signaturseite (eigene, letzte Hauptseite) -------
+  sigPageTitle: {
+    fontSize: 14,
+    fontFamily: 'Helvetica-Bold',
+    marginBottom: 6,
+  },
+  sigPageSubtitle: {
+    fontSize: 10,
+    color: COLORS.gray,
+    marginBottom: 28,
+  },
+  sigPageIntro: {
+    fontSize: 10,
+    marginBottom: 32,
+    color: COLORS.black,
+  },
+  sigColumnsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 30,
+  },
+  sigColumn: {
+    flex: 1,
+    // Feste Column-Hoehe, damit alle Positionen berechenbar sind.
+    minHeight: 200,
+  },
+  sigOrtDatum: {
+    fontSize: 10,
+    height: 14,
+    marginBottom: 6,
+  },
+  sigOrtDatumLabel: {
+    fontSize: 8,
+    color: COLORS.gray,
+    marginBottom: 2,
+  },
+  // Signatur-Slot: fixe Hoehe, Signatur wird als Image (Kolac) oder
+  // vom Signing-Server (Kunde) hier reingezeichnet.
+  sigSlot: {
+    height: SIG_LAYOUT.slotHeightPt,
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.black,
+    marginBottom: 4,
+    justifyContent: 'flex-end',
+  },
+  sigImage: {
+    height: SIG_LAYOUT.slotHeightPt - 2,
+    width: 'auto',
+    objectFit: 'contain',
+  },
+  sigLabel: {
+    fontSize: 8,
+    color: COLORS.gray,
+    marginBottom: 2,
+  },
+  sigName: {
+    fontSize: 10,
+    fontFamily: 'Helvetica-Bold',
+  },
 });
 
 type AnyStyle = ComponentProps<typeof View>['style'] &
@@ -215,11 +331,15 @@ interface Props {
   /** WYSIWYG-HTML oder Markdown (parseRichText normalisiert beides). */
   bodyText: string;
   /**
-   * Anlagen, die NACH dem Signaturblock kommen. Jede Anlage startet auf
+   * Anlagen, die NACH der Signaturseite kommen. Jede Anlage startet auf
    * einer neuen Seite mit „ANLAGE N: [Titel]"-Header.
    */
   attachments?: ContractAttachment[];
   logoSrc: string;
+  /** URL des Kolac-Signaturbilds — wird auf der Signaturseite eingebettet. */
+  kolacSignatureSrc?: string;
+  /** Anzeige-Datum "TT.MM.JJJJ" (Erstellungsdatum, links unter Kolac). */
+  generatedAt: string;
 }
 
 export default function TemplateContractPdf({
@@ -229,6 +349,8 @@ export default function TemplateContractPdf({
   bodyText,
   attachments = [],
   logoSrc,
+  kolacSignatureSrc,
+  generatedAt,
 }: Props) {
   const customerName =
     [customer.firstName, customer.lastName].filter(Boolean).join(' ') ||
@@ -278,33 +400,6 @@ export default function TemplateContractPdf({
         {/* Freitext */}
         <RichBody text={bodyText} />
 
-        {/* Signaturblock — bleibt zusammen, rutscht auf naechste Seite,
-            wenn er nicht mehr passt. */}
-        <View style={styles.signatureSection as AnyStyle} wrap={false}>
-          <Text style={styles.dateLine}>
-            {COMPANY_INFO.city}, den _________________
-          </Text>
-          <View style={styles.signatureRow}>
-            <View style={styles.signatureBox}>
-              <Text style={styles.signatureLabel}>
-                Datum, Unterschrift Auftragnehmer
-              </Text>
-              <Text style={styles.signatureName}>
-                Yusuf Kolac · {COMPANY_INFO.name}
-              </Text>
-            </View>
-            <View style={styles.signatureBox}>
-              <Text style={styles.signatureLabel}>
-                Datum, Unterschrift Auftraggeber
-              </Text>
-              <Text style={styles.signatureName}>
-                {customerName}
-                {customer.company ? ` · ${customer.company}` : ''}
-              </Text>
-            </View>
-          </View>
-        </View>
-
         {/* Footer */}
         <View style={styles.footer} fixed>
           <View style={styles.footerLeft}>
@@ -324,7 +419,78 @@ export default function TemplateContractPdf({
         </View>
       </Page>
 
-      {/* Anlagen — je eigene Seite, ganze Kette nach dem Signaturblock.
+      {/* Signaturseite — eigene, letzte Hauptseite. Feste Positionen,
+          damit die ContractFields (Ort/Datum + Kundensignatur) im
+          Signing-Overlay exakt auf dem PDF-Feld liegen. */}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.logoBox}>
+          <Image style={styles.logo} src={logoSrc} />
+        </View>
+
+        <Text style={styles.sigPageTitle}>Unterschriften</Text>
+        <Text style={styles.sigPageSubtitle}>
+          {title} · {customer.company || customerName}
+        </Text>
+        <Text style={styles.sigPageIntro}>
+          Mit der Unterschrift auf dieser Seite bestaetigen beide Parteien
+          die auf den vorstehenden Seiten festgehaltenen Vereinbarungen.
+        </Text>
+
+        <View style={styles.sigColumnsRow}>
+          {/* Linke Spalte — Kolac (schon signiert) */}
+          <View style={styles.sigColumn}>
+            <Text style={styles.sigOrtDatumLabel}>Ort, Datum</Text>
+            <Text style={styles.sigOrtDatum}>
+              {COMPANY_INFO.city}, {generatedAt}
+            </Text>
+            <View style={styles.sigSlot as AnyStyle}>
+              {kolacSignatureSrc && (
+                <Image
+                  src={kolacSignatureSrc}
+                  style={styles.sigImage as AnyStyle}
+                />
+              )}
+            </View>
+            <Text style={styles.sigLabel}>Auftragnehmer</Text>
+            <Text style={styles.sigName}>Yusuf Kolac</Text>
+            <Text style={styles.sigLabel}>{COMPANY_INFO.name}</Text>
+          </View>
+
+          {/* Rechte Spalte — Kunde (leer, wird beim Signing gefuellt) */}
+          <View style={styles.sigColumn}>
+            <Text style={styles.sigOrtDatumLabel}>Ort, Datum</Text>
+            {/* Leere Zeile fuer date-Feld (kommt beim Signing als
+                "[Kundenstadt], [heute]"). */}
+            <View style={styles.sigOrtDatum as AnyStyle} />
+            {/* Leerer Signatur-Slot fuer customer_signature-Feld */}
+            <View style={styles.sigSlot as AnyStyle} />
+            <Text style={styles.sigLabel}>Auftraggeber</Text>
+            <Text style={styles.sigName}>{customerName}</Text>
+            {customer.company && (
+              <Text style={styles.sigLabel}>{customer.company}</Text>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.footer} fixed>
+          <View style={styles.footerLeft}>
+            <Text style={styles.footerCompany}>
+              {COMPANY_INFO.name.toUpperCase()}
+            </Text>
+            <Text style={styles.footerLine}>
+              {COMPANY_INFO.street}, {COMPANY_INFO.zip} {COMPANY_INFO.city}
+            </Text>
+            <Text style={styles.footerLine}>
+              Steuernr.: {COMPANY_INFO.taxId}
+            </Text>
+          </View>
+          <View>
+            <Text style={styles.footerRight}>UNTERSCHRIFTEN</Text>
+          </View>
+        </View>
+      </Page>
+
+      {/* Anlagen — je eigene Seite, ganze Kette nach der Signaturseite.
           Jede Anlage kann selbst mehrere Seiten belegen (Body-Overflow). */}
       {validAttachments.map((att, idx) => (
         <Page key={idx} size="A4" style={styles.page}>

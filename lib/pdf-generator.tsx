@@ -88,11 +88,24 @@ export async function generateTemplateContractBlob(opts: {
   customer: Customer;
   bodyText: string;
   attachments?: ContractAttachment[];
+  /**
+   * Anzeige-Datum links unter der Kolac-Signatur (Erstellungsdatum
+   * des Vertrags). Format: TT.MM.JJJJ. Wenn nicht gesetzt, wird das
+   * heutige Datum genommen.
+   */
+  generatedAt?: string;
 }): Promise<Blob> {
-  const logoSrc =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/images/Logo%20Lang%20Schwarz.png`
-      : '/images/Logo%20Lang%20Schwarz.png';
+  const origin =
+    typeof window !== 'undefined' ? window.location.origin : '';
+  const logoSrc = `${origin}/images/Logo%20Lang%20Schwarz.png`;
+  const kolacSignatureSrc = `${origin}/images/unterschrift-yusuf.png`;
+  const generatedAt =
+    opts.generatedAt ??
+    new Date().toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
 
   return pdf(
     <TemplateContractPdf
@@ -102,6 +115,8 @@ export async function generateTemplateContractBlob(opts: {
       bodyText={opts.bodyText}
       attachments={opts.attachments}
       logoSrc={logoSrc}
+      kolacSignatureSrc={kolacSignatureSrc}
+      generatedAt={generatedAt}
     />,
   ).toBlob();
 }

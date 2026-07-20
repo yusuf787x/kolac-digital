@@ -27,7 +27,10 @@ import type {
 } from '@/lib/types';
 import RichTextArea from '@/components/quote/RichTextArea';
 import AttachmentsEditor from '@/components/contract/AttachmentsEditor';
-import type { ContractAttachment } from '@/components/contract/TemplateContractPdf';
+import {
+  SIG_FIELD_POSITIONS,
+  type ContractAttachment,
+} from '@/components/contract/TemplateContractPdf';
 import { buildTemplateContractPdf } from '@/lib/template-contract';
 
 // PDF-Editor nur im Client laden — react-pdf nutzt window.
@@ -213,6 +216,11 @@ function NeuerVertragInner() {
     setError(null);
     try {
       const subtitle = `${type.label} · ${customer.company || `${customer.firstName} ${customer.lastName}`}`;
+      const generatedAt = new Date().toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
       const {
         blob,
         pageCount,
@@ -223,6 +231,7 @@ function NeuerVertragInner() {
         customer,
         bodyText,
         attachments,
+        generatedAt,
       });
 
       const buf = await blob.arrayBuffer();
@@ -234,24 +243,15 @@ function NeuerVertragInner() {
       });
       const downloadUrl = await uploadFile(path, pdfFile);
 
-      // Signatur-Felder auf der SIGNATUR-Seite (letzte Seite des
-      // Hauptteils, NICHT auf einer Anlagen-Seite).
+      // Signatur-Felder exakt an den Positionen des Templates —
+      // Konstanten aus TemplateContractPdf.tsx (SIG_FIELD_POSITIONS)
+      // halten PDF-Layout und Signing-Overlay in Sync.
       const fields: ContractField[] = [
-        {
-          type: 'date',
-          page: signaturePage,
-          x: 0.28,
-          y: 0.72,
-          width: 0.25,
-          height: 0.04,
-        },
+        { type: 'date', page: signaturePage, ...SIG_FIELD_POSITIONS.date },
         {
           type: 'customer_signature',
           page: signaturePage,
-          x: 0.55,
-          y: 0.78,
-          width: 0.35,
-          height: 0.08,
+          ...SIG_FIELD_POSITIONS.customerSignature,
         },
       ];
 
@@ -279,6 +279,7 @@ function NeuerVertragInner() {
             title: a.title,
             body: a.body,
           })),
+          generatedAt,
         },
         status: 'draft',
         originalPdfPath: path,

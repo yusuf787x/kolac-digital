@@ -9,6 +9,8 @@ interface BuildInput {
   customer: Customer;
   bodyText: string;
   attachments: ContractAttachment[];
+  /** Erstellungsdatum "TT.MM.JJJJ" fuer die Signaturseite. */
+  generatedAt?: string;
 }
 
 interface BuildResult {
@@ -45,6 +47,7 @@ export async function buildTemplateContractPdf(
     customer: input.customer,
     bodyText: input.bodyText,
     attachments: validAttachments,
+    generatedAt: input.generatedAt,
   });
   const buf = await blob.arrayBuffer();
   const doc = await PDFDocument.load(buf);
@@ -53,13 +56,14 @@ export async function buildTemplateContractPdf(
   let signaturePage = pageCount;
   if (validAttachments.length > 0) {
     // Zweiter Render nur mit Hauptteil, um die Signatur-Seite zu
-    // bestimmen (letzte Seite des Hauptteils).
+    // bestimmen (letzte Seite des Hauptteils = Signaturseite).
     const mainBlob = await generateTemplateContractBlob({
       title: input.title,
       subtitle: input.subtitle,
       customer: input.customer,
       bodyText: input.bodyText,
       attachments: [],
+      generatedAt: input.generatedAt,
     });
     const mainBuf = await mainBlob.arrayBuffer();
     const mainDoc = await PDFDocument.load(mainBuf);

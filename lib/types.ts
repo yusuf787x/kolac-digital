@@ -297,6 +297,12 @@ export interface ContractTemplateData {
   bodyText: string;
   subtitle?: string;
   attachments: Array<{ title: string; body: string }>;
+  /**
+   * Erstellungsdatum "TT.MM.JJJJ" fuer die Signaturseite (Kolac-Seite:
+   * "Bielefeld, [Datum]"). Bleibt beim Bearbeiten konstant — sonst
+   * wuerde jede Aenderung das Ort/Datum-Label neu setzen.
+   */
+  generatedAt?: string;
 }
 
 export interface Contract {
