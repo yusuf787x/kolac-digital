@@ -238,6 +238,16 @@ function VertragDetailInner() {
                     Als versendet markieren
                   </button>
                 )}
+                {contract.templateData &&
+                  (contract.status === 'draft' ||
+                    contract.status === 'sent') && (
+                    <Link
+                      href={`/dashboard/vertraege/${contract.id}/edit`}
+                      className="btn-secondary mt-3 ml-2 text-sm inline-block"
+                    >
+                      Bearbeiten
+                    </Link>
+                  )}
               </>
             )}
           </section>

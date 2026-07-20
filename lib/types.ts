@@ -286,6 +286,19 @@ export interface ContractAuditEntry {
   note?: string;
 }
 
+/**
+ * Wenn ein Vertrag aus der Programm-Vorlage erzeugt wurde, halten wir
+ * den strukturierten Editor-Zustand vor, damit man ihn spaeter erneut
+ * oeffnen, bearbeiten und das PDF neu generieren kann. Bei
+ * hochgeladenen PDFs bleibt das Feld undefined — die sind nicht
+ * bearbeitbar.
+ */
+export interface ContractTemplateData {
+  bodyText: string;
+  subtitle?: string;
+  attachments: Array<{ title: string; body: string }>;
+}
+
 export interface Contract {
   id: string;
   customerId: string;
@@ -300,6 +313,8 @@ export interface Contract {
   typeId: string; // ID des Vertragstyps (siehe contractTypes)
   typeLabel: string; // Snapshot für Anzeige in Listen
   title: string; // freier Titel, z.B. "DSV CarHifi-Herford"
+  /** Gesetzt, wenn per Programm-Vorlage erzeugt — dann bearbeitbar. */
+  templateData?: ContractTemplateData;
   status: ContractStatus;
   originalPdfPath: string; // Storage-Pfad
   originalPdfUrl: string; // Download-URL

@@ -147,6 +147,20 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textAlign: 'right',
   },
+  attachmentBadge: {
+    fontSize: 8,
+    color: COLORS.gray,
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  attachmentTitle: {
+    fontSize: 14,
+    fontFamily: 'Helvetica-Bold',
+    marginBottom: 14,
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.border,
+    paddingBottom: 6,
+  },
 });
 
 type AnyStyle = ComponentProps<typeof View>['style'] &
@@ -185,6 +199,13 @@ const RichBody = ({ text }: { text: string }) => {
   );
 };
 
+export interface ContractAttachment {
+  /** Titel der Anlage, z.B. „Technische und organisatorische Maßnahmen (TOM)". */
+  title: string;
+  /** WYSIWYG-HTML oder Markdown. */
+  body: string;
+}
+
 interface Props {
   /** Titel oben, z.B. „ANGEBOT" oder „AUFTRAGSBESTAETIGUNG". */
   title: string;
@@ -193,6 +214,11 @@ interface Props {
   customer: Customer;
   /** WYSIWYG-HTML oder Markdown (parseRichText normalisiert beides). */
   bodyText: string;
+  /**
+   * Anlagen, die NACH dem Signaturblock kommen. Jede Anlage startet auf
+   * einer neuen Seite mit „ANLAGE N: [Titel]"-Header.
+   */
+  attachments?: ContractAttachment[];
   logoSrc: string;
 }
 
@@ -201,11 +227,15 @@ export default function TemplateContractPdf({
   subtitle,
   customer,
   bodyText,
+  attachments = [],
   logoSrc,
 }: Props) {
   const customerName =
     [customer.firstName, customer.lastName].filter(Boolean).join(' ') ||
     customer.company;
+  const validAttachments = attachments.filter(
+    (a) => a.title.trim() || a.body.trim(),
+  );
 
   return (
     <Document>
@@ -293,6 +323,42 @@ export default function TemplateContractPdf({
           </View>
         </View>
       </Page>
+
+      {/* Anlagen — je eigene Seite, ganze Kette nach dem Signaturblock.
+          Jede Anlage kann selbst mehrere Seiten belegen (Body-Overflow). */}
+      {validAttachments.map((att, idx) => (
+        <Page key={idx} size="A4" style={styles.page}>
+          <View style={styles.logoBox}>
+            <Image style={styles.logo} src={logoSrc} />
+          </View>
+          <Text style={styles.attachmentBadge}>
+            ANLAGE {idx + 1} ZU „{title.toUpperCase()}"
+          </Text>
+          <Text style={styles.attachmentTitle}>
+            {att.title || `Anlage ${idx + 1}`}
+          </Text>
+          <RichBody text={att.body} />
+
+          <View style={styles.footer} fixed>
+            <View style={styles.footerLeft}>
+              <Text style={styles.footerCompany}>
+                {COMPANY_INFO.name.toUpperCase()}
+              </Text>
+              <Text style={styles.footerLine}>
+                {COMPANY_INFO.street}, {COMPANY_INFO.zip} {COMPANY_INFO.city}
+              </Text>
+              <Text style={styles.footerLine}>
+                Steuernr.: {COMPANY_INFO.taxId}
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.footerRight}>
+                ANLAGE {idx + 1} / {validAttachments.length}
+              </Text>
+            </View>
+          </View>
+        </Page>
+      ))}
     </Document>
   );
 }

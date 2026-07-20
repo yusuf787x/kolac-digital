@@ -26,6 +26,9 @@ import type {
   Quote,
 } from '@/lib/types';
 import RichTextArea from '@/components/quote/RichTextArea';
+import AttachmentsEditor from '@/components/contract/AttachmentsEditor';
+import type { ContractAttachment } from '@/components/contract/TemplateContractPdf';
+import { buildTemplateContractPdf } from '@/lib/template-contract';
 
 // PDF-Editor nur im Client laden — react-pdf nutzt window.
 const PdfFieldEditor = dynamic(
@@ -85,6 +88,7 @@ function NeuerVertragInner() {
   // Template-Modus (neu) vs. klassischer PDF-Upload.
   const [mode, setMode] = useState<Mode>('template');
   const [bodyText, setBodyText] = useState('');
+  const [attachments, setAttachments] = useState<ContractAttachment[]>([]);
   const [generating, setGenerating] = useState(false);
 
   // Wenn Vertragstyp „Angebot" ist: bestehende Angebote laden und
@@ -208,46 +212,34 @@ function NeuerVertragInner() {
     setSaving(true);
     setError(null);
     try {
-      const { generateTemplateContractBlob } = await import(
-        '@/lib/pdf-generator'
-      );
-      const blob = await generateTemplateContractBlob({
+      const subtitle = `${type.label} · ${customer.company || `${customer.firstName} ${customer.lastName}`}`;
+      const {
+        blob,
+        pageCount,
+        signaturePage,
+      } = await buildTemplateContractPdf({
         title,
-        subtitle: `${type.label} · ${customer.company || `${customer.firstName} ${customer.lastName}`}`,
+        subtitle,
         customer,
         bodyText,
+        attachments,
       });
 
       const buf = await blob.arrayBuffer();
       const hash = await sha256Hex(buf);
       const token = generateSigningToken();
       const path = `contracts/${token}/original.pdf`;
-      // File-Objekt aus Blob bauen, damit uploadFile denselben Weg nimmt.
       const pdfFile = new File([blob], 'contract.pdf', {
         type: 'application/pdf',
       });
       const downloadUrl = await uploadFile(path, pdfFile);
 
-      // Seitenzahl aus dem generierten PDF (fuer Signatur-Feld-Platzierung
-      // auf der letzten Seite). pdf-lib ist bereits fuer den Signing-Flow
-      // installiert — kein zusaetzlicher Worker/Dependency noetig.
-      let pageCount = 1;
-      try {
-        const { PDFDocument } = await import('pdf-lib');
-        const doc = await PDFDocument.load(buf);
-        pageCount = doc.getPageCount();
-      } catch (e) {
-        console.warn('Seitenzahl konnte nicht bestimmt werden:', e);
-      }
-
-      // Signatur-Felder auf der LETZTEN Seite — der Signaturblock im
-      // Template sitzt visuell im unteren Bereich (wrap={false}, rutscht
-      // ggf. gemeinsam auf die naechste Seite). Prozentkoordinaten sind
-      // eine Naeherung; sitzen typischerweise auf der Signatur-Linie.
+      // Signatur-Felder auf der SIGNATUR-Seite (letzte Seite des
+      // Hauptteils, NICHT auf einer Anlagen-Seite).
       const fields: ContractField[] = [
         {
           type: 'date',
-          page: pageCount,
+          page: signaturePage,
           x: 0.28,
           y: 0.72,
           width: 0.25,
@@ -255,7 +247,7 @@ function NeuerVertragInner() {
         },
         {
           type: 'customer_signature',
-          page: pageCount,
+          page: signaturePage,
           x: 0.55,
           y: 0.78,
           width: 0.35,
@@ -279,6 +271,15 @@ function NeuerVertragInner() {
         typeId,
         typeLabel: type.label,
         title,
+        // Editor-Zustand fuer spaeteres Bearbeiten mitspeichern.
+        templateData: {
+          bodyText,
+          subtitle,
+          attachments: attachments.map((a) => ({
+            title: a.title,
+            body: a.body,
+          })),
+        },
         status: 'draft',
         originalPdfPath: path,
         originalPdfUrl: downloadUrl,
@@ -659,9 +660,16 @@ function NeuerVertragInner() {
                 />
                 <p className="mt-1.5 text-xs text-gray-500">
                   Header (Kolac + Kunde), Signaturbereich und Footer werden
-                  automatisch ergänzt. Signaturfeld für den Kunden landet
-                  unten rechts auf der letzten Seite.
+                  automatisch ergänzt. Signaturfeld sitzt unten rechts
+                  direkt unter deinem Freitext.
                 </p>
+              </div>
+
+              <div className="border-t border-gray-100 pt-4">
+                <AttachmentsEditor
+                  attachments={attachments}
+                  onChange={setAttachments}
+                />
               </div>
 
               <div className="flex justify-end">

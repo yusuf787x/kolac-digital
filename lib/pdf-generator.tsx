@@ -3,7 +3,9 @@
 import { pdf } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/invoice/InvoicePDF';
 import QuotePDF from '@/components/quote/QuotePDF';
-import TemplateContractPdf from '@/components/contract/TemplateContractPdf';
+import TemplateContractPdf, {
+  type ContractAttachment,
+} from '@/components/contract/TemplateContractPdf';
 import type { Invoice, Customer, Quote } from './types';
 import { buildInvoiceQrDataUrl } from './qr';
 import { computeVat, formatEUR } from './utils';
@@ -85,6 +87,7 @@ export async function generateTemplateContractBlob(opts: {
   subtitle?: string;
   customer: Customer;
   bodyText: string;
+  attachments?: ContractAttachment[];
 }): Promise<Blob> {
   const logoSrc =
     typeof window !== 'undefined'
@@ -97,6 +100,7 @@ export async function generateTemplateContractBlob(opts: {
       subtitle={opts.subtitle}
       customer={opts.customer}
       bodyText={opts.bodyText}
+      attachments={opts.attachments}
       logoSrc={logoSrc}
     />,
   ).toBlob();
