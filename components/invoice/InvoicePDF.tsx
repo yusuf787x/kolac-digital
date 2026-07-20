@@ -600,7 +600,7 @@ export default function InvoicePDF({
                 Empfiehl uns weiter. Wenn aus deiner Empfehlung ein Auftrag
                 entsteht, bekommst du{' '}
                 <Text style={{ fontFamily: 'Helvetica-Bold' }}>
-                  15 % des Auftragsvolumens als Auszahlung
+                  15 % der ersten Rechnung als Auszahlung
                 </Text>
                 .
               </Text>
