@@ -9,6 +9,8 @@ import {
   getCustomer,
   updateInvoice,
   deleteInvoice,
+  finalizeInvoiceWithNumber,
+  getGoogleAuth,
 } from '@/lib/firestore';
 import type { Invoice, Customer } from '@/lib/types';
 import {
@@ -37,6 +39,8 @@ export default function RechnungDetailPage() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingDrive, setSyncingDrive] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
+  const [finalizeMsg, setFinalizeMsg] = useState<string | null>(null);
 
   // Live-Vorschau: PDF wird beim Laden der Seite einmal client-seitig
   // gerendert und als Blob-URL in einem Iframe angezeigt. So funktioniert
@@ -157,13 +161,74 @@ export default function RechnungDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Rechnung ${invoice.invoiceNumber} wirklich löschen?`)) return;
+    const label = invoice.invoiceNumber
+      ? `Rechnung ${invoice.invoiceNumber}`
+      : 'diesen Entwurf';
+    if (!confirm(`${label} wirklich löschen?`)) return;
     try {
       await deleteInvoice(invoice.id);
       router.push('/dashboard/rechnungen');
     } catch (err) {
       console.error(err);
       alert('Löschen fehlgeschlagen.');
+    }
+  };
+
+  /**
+   * Rechnung stellen: vergibt atomar die naechste laufende Nummer,
+   * setzt Status auf 'sent' und synct das PDF nach Google Drive (falls
+   * verbunden). Ab diesem Moment ist die Rechnung buchhaltungsrelevant
+   * und darf nicht mehr bearbeitet werden.
+   */
+  const handleFinalize = async () => {
+    if (!customer) return;
+    if (
+      !confirm(
+        'Nummer wird jetzt vergeben und bleibt vergeben. Danach ist die Rechnung verbindlich und wird auf Google Drive gesichert. Fortfahren?',
+      )
+    )
+      return;
+    setFinalizing(true);
+    setFinalizeMsg(null);
+    try {
+      const { invoiceNumber } = await finalizeInvoiceWithNumber(invoice.id);
+      await updateInvoice(invoice.id, {
+        status: 'sent',
+        sentAt: Timestamp.fromDate(new Date()),
+      });
+      await refresh();
+
+      // Drive-Sync im Anschluss — best-effort, blockiert nicht.
+      try {
+        const auth = await getGoogleAuth();
+        if (auth?.refreshToken) {
+          setFinalizeMsg('Rechnung gestellt ✓ — synchronisiere mit Drive…');
+          const fresh = await getInvoice(invoice.id);
+          if (fresh) {
+            const { syncInvoiceToDrive } = await import('@/lib/drive-sync');
+            await syncInvoiceToDrive(fresh, customer);
+            await refresh();
+            setFinalizeMsg(
+              `Rechnungsnummer ${invoiceNumber} vergeben, auf Drive gesichert ✓`,
+            );
+          }
+        } else {
+          setFinalizeMsg(
+            `Rechnungsnummer ${invoiceNumber} vergeben. (Kein Drive verbunden — Sync uebersprungen.)`,
+          );
+        }
+      } catch (syncErr) {
+        console.warn('Drive-Sync nach Finalisieren fehlgeschlagen:', syncErr);
+        setFinalizeMsg(
+          `Rechnungsnummer ${invoiceNumber} vergeben. Drive-Sync fehlgeschlagen (${(syncErr as Error).message}) — kannst du manuell nachholen.`,
+        );
+      }
+      setTimeout(() => setFinalizeMsg(null), 6000);
+    } catch (err) {
+      console.error(err);
+      alert(`Rechnung stellen fehlgeschlagen: ${(err as Error).message}`);
+    } finally {
+      setFinalizing(false);
     }
   };
 
@@ -309,7 +374,10 @@ export default function RechnungDetailPage() {
     }
   };
 
-  const isDraft = invoice.status === 'draft';
+  // Draft = noch keine Rechnungsnummer vergeben. Bewusst NICHT ueber
+  // status='draft' pruefen — Status wandert nach Finalisieren auf
+  // 'sent', aber solange keine Nummer da ist, ist es ein Entwurf.
+  const isDraft = invoice.invoiceNumber === null;
   const remaining = invoice.totalAmount - invoice.paidAmount;
 
   return (
@@ -323,16 +391,22 @@ export default function RechnungDetailPage() {
         </Link>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl font-semibold text-gray-900 flex items-center gap-3">
-              {invoice.invoiceNumber}
-              <span
-                className={`text-sm font-medium px-2 py-0.5 rounded ${STATUS_BADGE_CLASSES[computedStatus]}`}
-              >
-                {STATUS_LABELS[computedStatus]}
-                {computedStatus === 'overdue' && daysLate > 0 && (
-                  <span> · {daysLate} Tage</span>
-                )}
-              </span>
+            <h1 className="text-3xl font-semibold text-gray-900 flex items-center gap-3 flex-wrap">
+              {invoice.invoiceNumber ?? 'Entwurf'}
+              {isDraft ? (
+                <span className="text-sm font-medium px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                  Entwurf · noch keine Nummer
+                </span>
+              ) : (
+                <span
+                  className={`text-sm font-medium px-2 py-0.5 rounded ${STATUS_BADGE_CLASSES[computedStatus]}`}
+                >
+                  {STATUS_LABELS[computedStatus]}
+                  {computedStatus === 'overdue' && daysLate > 0 && (
+                    <span> · {daysLate} Tage</span>
+                  )}
+                </span>
+              )}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
               {customer?.company ?? 'Kunde unbekannt'} ·{' '}
@@ -343,12 +417,21 @@ export default function RechnungDetailPage() {
 
           <div className="flex flex-wrap gap-2">
             {isDraft && (
-              <Link
-                href={`/dashboard/rechnungen/${invoice.id}/edit`}
-                className="btn-secondary"
-              >
-                Bearbeiten
-              </Link>
+              <>
+                <Link
+                  href={`/dashboard/rechnungen/${invoice.id}/edit`}
+                  className="btn-secondary"
+                >
+                  Bearbeiten
+                </Link>
+                <button
+                  onClick={handleFinalize}
+                  disabled={finalizing || !customer}
+                  className="btn-primary"
+                >
+                  {finalizing ? 'Stelle Rechnung…' : 'Rechnung stellen'}
+                </button>
+              </>
             )}
             <button
               onClick={handleDownloadPdf}
@@ -357,29 +440,33 @@ export default function RechnungDetailPage() {
             >
               {generatingPdf ? 'Generiere PDF…' : 'PDF herunterladen'}
             </button>
-            <button
-              onClick={handleSendEmail}
-              disabled={sendingEmail || !customer?.email}
-              className="btn-secondary"
-              title={
-                !customer?.email
-                  ? 'Keine E-Mail im Kundenprofil hinterlegt'
-                  : ''
-              }
-            >
-              {sendingEmail ? 'Sende…' : 'Per E-Mail senden'}
-            </button>
-            <button
-              onClick={handleSyncDrive}
-              disabled={syncingDrive || !customer}
-              className="btn-secondary"
-            >
-              {syncingDrive
-                ? 'Synct…'
-                : invoice.driveUrl
-                  ? 'Drive: aktualisieren'
-                  : 'Auf Drive sichern'}
-            </button>
+            {!isDraft && (
+              <>
+                <button
+                  onClick={handleSendEmail}
+                  disabled={sendingEmail || !customer?.email}
+                  className="btn-secondary"
+                  title={
+                    !customer?.email
+                      ? 'Keine E-Mail im Kundenprofil hinterlegt'
+                      : ''
+                  }
+                >
+                  {sendingEmail ? 'Sende…' : 'Per E-Mail senden'}
+                </button>
+                <button
+                  onClick={handleSyncDrive}
+                  disabled={syncingDrive || !customer}
+                  className="btn-secondary"
+                >
+                  {syncingDrive
+                    ? 'Synct…'
+                    : invoice.driveUrl
+                      ? 'Drive: aktualisieren'
+                      : 'Auf Drive sichern'}
+                </button>
+              </>
+            )}
             <button
               onClick={handleDelete}
               className="btn-secondary text-red-600 hover:bg-red-50"
@@ -388,13 +475,29 @@ export default function RechnungDetailPage() {
             </button>
           </div>
         </div>
+        {finalizeMsg && (
+          <div className="mt-3 px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800">
+            {finalizeMsg}
+          </div>
+        )}
       </header>
 
       {/* Status-Aktionen */}
       <section className="card mb-6">
         <h2 className="text-base font-semibold text-gray-900 mb-3">Status</h2>
         <div className="flex flex-wrap gap-2">
-          {invoice.status === 'draft' && (
+          {isDraft && (
+            <p className="text-sm text-gray-500">
+              Solange dieser Entwurf noch keine Nummer hat, ist er nicht
+              buchhaltungsrelevant. Klick oben auf <strong>Rechnung
+              stellen</strong>, um die Nummer zu vergeben.
+            </p>
+          )}
+          {/* Legacy: Rechnungen aus der Zeit vor dem Draft-Workflow
+              koennen Status 'draft' MIT Nummer haben — dort noch
+              "versendet markieren" moeglich, damit die auch weiter
+              nutzbar bleiben. */}
+          {invoice.status === 'draft' && !isDraft && (
             <button
               onClick={markSent}
               disabled={updatingStatus}
@@ -581,7 +684,7 @@ export default function RechnungDetailPage() {
         ) : previewUrl ? (
           <iframe
             src={`${previewUrl}#toolbar=0&navpanes=0`}
-            title={`Rechnung ${invoice.invoiceNumber}`}
+            title={`Rechnung ${invoice.invoiceNumber ?? 'Entwurf'}`}
             className="w-full block"
             style={{ height: 'min(1100px, 80vh)', border: 0 }}
           />

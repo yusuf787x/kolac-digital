@@ -59,7 +59,7 @@ export default function RechnungEditPage() {
           href={`/dashboard/rechnungen/${invoice.id}`}
           className="text-sm text-gray-500 hover:text-gray-900 mb-3 inline-block"
         >
-          ← Zurück zu {invoice.invoiceNumber}
+          ← Zurück zu {invoice.invoiceNumber ?? 'Entwurf'}
         </Link>
         <h1 className="text-3xl font-semibold text-gray-900">
           Rechnung bearbeiten

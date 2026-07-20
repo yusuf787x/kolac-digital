@@ -64,7 +64,7 @@ export default function RechnungenPage() {
       if (filter !== 'all' && computedStatus !== filter) return false;
       if (!q) return true;
       const blob = [
-        invoice.invoiceNumber,
+        invoice.invoiceNumber ?? 'entwurf',
         customer?.company,
         customer?.firstName,
         customer?.lastName,
@@ -165,7 +165,14 @@ export default function RechnungenPage() {
               {filtered.map(({ invoice, customer, computedStatus, daysLate }) => (
                 <tr key={invoice.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-900">
-                    {invoice.invoiceNumber}
+                    {invoice.invoiceNumber ?? (
+                      <span className="inline-flex items-center gap-1 text-amber-700 font-normal">
+                        Entwurf
+                        <span className="text-[10px] uppercase tracking-wider bg-amber-100 px-1.5 py-0.5 rounded">
+                          ohne Nr.
+                        </span>
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-gray-700">
                     {formatDateDE(invoice.invoiceDate.toDate())}

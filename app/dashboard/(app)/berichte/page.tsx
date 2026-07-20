@@ -77,11 +77,14 @@ export default function BerichtePage() {
     const rows = [
       ['Datum', 'Rechnungsnr.', 'Kunde', 'Status', 'Betrag', 'Bezahlt'],
       ...invoices
+        // Entwuerfe ohne Rechnungsnummer sind noch nicht buchhaltungs-
+        // relevant und gehoeren nicht in den Einnahmen-Export.
+        .filter((i) => i.invoiceNumber !== null)
         .filter((i) => i.invoiceDate.toDate().getFullYear() === year)
         .sort((a, b) => a.invoiceDate.toMillis() - b.invoiceDate.toMillis())
         .map((i) => [
           formatDateDE(i.invoiceDate.toDate()),
-          i.invoiceNumber,
+          i.invoiceNumber ?? '',
           customerMap.get(i.customerId)?.company ?? '',
           i.status,
           i.totalAmount.toFixed(2).replace('.', ','),

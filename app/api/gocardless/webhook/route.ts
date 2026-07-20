@@ -197,14 +197,18 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<HandlerResult> {
   // Mail zeigt den Brutto-Betrag (was tatsächlich abgebucht wurde),
   // nicht den Netto-Anteil von totalAmount.
   const grossAmount = centsToEuros(payment.amount);
+  // GoCardless-Rechnungen werden immer sofort mit Nummer erzeugt
+  // (createInvoiceWithNumber weiter unten) — hier ist die Nummer
+  // garantiert vorhanden.
+  const invNumber = invoice.invoiceNumber ?? 'ENTWURF';
   await sendInvoiceMail({
     to: recipient,
     customerName: greetingName,
-    invoiceNumber: invoice.invoiceNumber,
+    invoiceNumber: invNumber,
     totalAmount: grossAmount,
     chargedAt: new Date(payment.charge_date),
     pdfBuffer,
-    pdfFilename: `Rechnung ${invoice.invoiceNumber}.pdf`,
+    pdfFilename: `Rechnung ${invNumber}.pdf`,
   });
 
   await notifyAdmin({
@@ -422,7 +426,7 @@ async function syncToDrive(
     filename,
     date: formatDateDE(invoice.invoiceDate.toDate()),
     customerName: customer.company || customer.lastName || '—',
-    invoiceNumber: invoice.invoiceNumber,
+    invoiceNumber: invoice.invoiceNumber ?? 'ENTWURF',
     leistung,
     amount: invoice.totalAmount,
   });

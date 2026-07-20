@@ -68,8 +68,10 @@ export default function UStVAPage() {
     const inMonth = (d: Date) =>
       d.getFullYear() === year && d.getMonth() + 1 === mon;
 
-    const monthInvoices = invoices.filter((i) =>
-      inMonth(i.invoiceDate.toDate()),
+    // Entwuerfe ohne Rechnungsnummer sind nicht gebucht und gehen nicht
+    // in die UStVA — sie sind erst mit der Nummernvergabe verbindlich.
+    const monthInvoices = invoices.filter(
+      (i) => i.invoiceNumber !== null && inMonth(i.invoiceDate.toDate()),
     );
     const monthExpenses = expenses.filter((e) => inMonth(e.date.toDate()));
 
@@ -176,7 +178,7 @@ export default function UStVAPage() {
         const desc =
           i.items?.map((it) => it.description.split('\n')[0]).join('; ') ?? '';
         return [
-          i.invoiceNumber,
+          i.invoiceNumber ?? '',
           formatDateDE(i.invoiceDate.toDate()),
           cust?.company ?? '—',
           desc,

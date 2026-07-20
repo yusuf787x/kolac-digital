@@ -212,7 +212,10 @@ export async function importFromGoogleSheet(opts?: {
   });
 
   const existingInvoiceNumbers = new Set(
-    existingInvoices.map((i) => i.invoiceNumber.toLowerCase()),
+    existingInvoices
+      // Entwuerfe haben noch keine Nummer und blockieren keinen Import.
+      .filter((i): i is typeof i & { invoiceNumber: string } => i.invoiceNumber !== null)
+      .map((i) => i.invoiceNumber.toLowerCase()),
   );
 
   const existingExpenseKeys = new Set(

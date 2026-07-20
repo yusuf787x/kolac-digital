@@ -432,7 +432,9 @@ function KundeDetailInner() {
                   >
                     <div>
                       <p className="text-sm font-medium text-gray-900">
-                        {inv.invoiceNumber}
+                        {inv.invoiceNumber ?? (
+                          <span className="text-amber-700">Entwurf</span>
+                        )}
                       </p>
                       <p className="text-xs text-gray-500">
                         {formatDateDE(inv.invoiceDate.toDate())}

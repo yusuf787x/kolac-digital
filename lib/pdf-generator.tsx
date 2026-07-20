@@ -16,7 +16,7 @@ export async function generateInvoicePdfBlob(
 ): Promise<Blob> {
   const qrCodeDataUrl = await buildInvoiceQrDataUrl({
     amount: invoice.totalAmount,
-    invoiceNumber: invoice.invoiceNumber,
+    invoiceNumber: invoice.invoiceNumber ?? 'ENTWURF',
   });
 
   const logoSrc =
@@ -51,7 +51,8 @@ export function buildInvoiceFilename(
 ): string {
   const cust = customer.company || customer.lastName || 'Kunde';
   const safe = cust.replace(/[^a-zA-ZäöüÄÖÜß0-9 -]/g, '').trim();
-  return `Rechnung ${invoice.invoiceNumber} ${safe}.pdf`;
+  const nr = invoice.invoiceNumber ?? 'Entwurf';
+  return `Rechnung ${nr} ${safe}.pdf`;
 }
 
 export async function generateQuotePdfBlob(

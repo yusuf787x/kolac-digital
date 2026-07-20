@@ -50,7 +50,14 @@ export interface InvoiceItem {
 export interface Invoice {
   id: string;
   customerId: string;
-  invoiceNumber: string;
+  /**
+   * Rechnungsnummer wird ERST beim Finalisieren („Rechnung stellen")
+   * atomar aus der laufenden Nummer vergeben — Entwuerfe haben `null`.
+   * Solange `null` ist, ist der Datensatz noch nicht buchhaltungs-
+   * relevant, kann bearbeitet werden und wird nicht per Mail/Drive
+   * verschickt.
+   */
+  invoiceNumber: string | null;
   invoiceDate: Timestamp;
   dueDate: Timestamp;
   status: InvoiceStatus;

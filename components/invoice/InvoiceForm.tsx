@@ -4,12 +4,10 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Timestamp } from 'firebase/firestore';
 import {
-  createInvoiceWithNumber,
+  createInvoiceDraft,
   updateInvoice,
   listCustomers,
   getSettings,
-  getInvoice,
-  getGoogleAuth,
 } from '@/lib/firestore';
 import type { Customer, Invoice, InvoiceItem } from '@/lib/types';
 import { formatEUR, computeVat, defaultVatRateForDate } from '@/lib/utils';
@@ -191,7 +189,11 @@ export default function InvoiceForm({ initial, mode }: Props) {
 
     try {
       if (mode === 'create') {
-        const { id } = await createInvoiceWithNumber({
+        // Entwurf ohne Rechnungsnummer anlegen — Nummernvergabe UND
+        // Drive-Sync passieren erst beim "Rechnung stellen" auf der
+        // Detail-Seite, damit keine Nummer verbrannt wird und Drive
+        // erst das finalisierte PDF bekommt.
+        const { id } = await createInvoiceDraft({
           customerId,
           invoiceDate: Timestamp.fromDate(new Date(invoiceDate)),
           dueDate: Timestamp.fromDate(new Date(dueDate)),
@@ -206,38 +208,6 @@ export default function InvoiceForm({ initial, mode }: Props) {
           paidAt: null,
           items: cleanItems,
         });
-
-        // Drive-Sync if Google Drive is connected — non-blocking.
-        let syncMessage: string | null = null;
-        try {
-          const auth = await getGoogleAuth();
-          if (auth?.refreshToken) {
-            setSyncStatus('Synchronisiere mit Google Drive…');
-            const newInvoice = await getInvoice(id);
-            const customer = customers.find((c) => c.id === customerId);
-            if (newInvoice && customer) {
-              const { syncInvoiceToDrive } = await import('@/lib/drive-sync');
-              const { sheetSyncError } = await syncInvoiceToDrive(
-                newInvoice,
-                customer,
-              );
-              if (sheetSyncError) {
-                syncMessage = `Rechnung auf Drive ✓ — ABER Sheet-Eintrag fehlgeschlagen: ${sheetSyncError}`;
-              } else {
-                syncMessage =
-                  'Auf Google Drive gesichert ✓ (PDF + Sheet-Zeile)';
-              }
-            }
-          }
-        } catch (syncErr) {
-          console.warn('Drive-Sync fehlgeschlagen:', syncErr);
-          syncMessage = `Drive-Sync fehlgeschlagen (${(syncErr as Error).message}). Rechnung wurde lokal gespeichert.`;
-        }
-
-        if (syncMessage) {
-          setSyncStatus(syncMessage);
-          await new Promise((r) => setTimeout(r, 2500));
-        }
 
         router.push(`/dashboard/rechnungen/${id}`);
       } else if (initial) {
@@ -469,7 +439,7 @@ export default function InvoiceForm({ initial, mode }: Props) {
           {submitting
             ? 'Speichern…'
             : mode === 'create'
-              ? 'Rechnung anlegen'
+              ? 'Als Entwurf speichern'
               : 'Speichern'}
         </button>
         <button

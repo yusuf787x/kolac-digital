@@ -302,7 +302,7 @@ export default function InvoicePDF({
             <View style={styles.metaRow}>
               <Text style={styles.metaLabel}>RECHNUNGSNR.:</Text>
               <Text style={styles.metaValueHighlight}>
-                {invoice.invoiceNumber}
+                {invoice.invoiceNumber ?? 'ENTWURF'}
               </Text>
             </View>
             <View style={styles.metaRow}>

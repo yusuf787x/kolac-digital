@@ -398,11 +398,11 @@ function buildIndex(data: {
         id: `i-${inv.id}`,
         group: 'Rechnungen',
         icon: '📄',
-        title: `${inv.invoiceNumber} · ${nameOf(inv.customerId)}`,
+        title: `${inv.invoiceNumber ?? 'Entwurf'} · ${nameOf(inv.customerId)}`,
         subtitle: `${formatDateDE(inv.invoiceDate.toDate())} · ${formatEUR(inv.totalAmount)}`,
         href: `/dashboard/rechnungen/${inv.id}`,
       },
-      [nameOf(inv.customerId), inv.invoiceNumber],
+      [nameOf(inv.customerId), inv.invoiceNumber ?? 'entwurf'],
     );
   });
 

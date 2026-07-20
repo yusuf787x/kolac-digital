@@ -343,7 +343,7 @@ export default function DashboardHomePage() {
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
-                            {inv.invoiceNumber} ·{' '}
+                            {inv.invoiceNumber ?? 'Entwurf'} ·{' '}
                             {customerMap.get(inv.customerId)?.company ?? '—'}
                           </p>
                           <p className="text-xs text-gray-500">
@@ -389,7 +389,7 @@ export default function DashboardHomePage() {
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
-                            {inv.invoiceNumber} ·{' '}
+                            {inv.invoiceNumber ?? 'Entwurf'} ·{' '}
                             {customerMap.get(inv.customerId)?.company ?? '—'}
                           </p>
                           <p className="text-xs text-red-600">

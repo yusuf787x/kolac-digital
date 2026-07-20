@@ -13,7 +13,7 @@ export async function generateInvoicePdfBuffer(
 ): Promise<Buffer> {
   const qrCodeDataUrl = await buildInvoiceQrDataUrl({
     amount: invoice.totalAmount,
-    invoiceNumber: invoice.invoiceNumber,
+    invoiceNumber: invoice.invoiceNumber ?? 'ENTWURF',
   });
 
   const base = appBaseUrl();

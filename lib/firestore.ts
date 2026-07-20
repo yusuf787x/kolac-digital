@@ -115,9 +115,77 @@ export async function getInvoice(id: string): Promise<Invoice | null> {
 }
 
 /**
+ * Legt eine Rechnung als ENTWURF ohne Rechnungsnummer an. Wird spaeter
+ * ueber `finalizeInvoiceWithNumber` "gestellt" — dann bekommt sie erst
+ * eine laufende Nummer und wird buchhaltungsrelevant.
+ */
+export async function createInvoiceDraft(
+  data: Omit<Invoice, 'id' | 'invoiceNumber' | 'createdAt' | 'updatedAt'>,
+): Promise<{ id: string }> {
+  const newRef = doc(invoicesCol());
+  await setDoc(newRef, {
+    ...data,
+    invoiceNumber: null,
+    status: 'draft',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return { id: newRef.id };
+}
+
+/**
+ * Reserviert atomar die naechste Rechnungsnummer und weist sie einem
+ * bereits existierenden Entwurf zu. Idempotent: wenn der Entwurf schon
+ * eine Nummer hat, wird sie einfach zurueckgegeben (keine Doppelvergabe).
+ * Wenn die Rechnung nicht existiert oder kein Draft ist, wirft die
+ * Funktion.
+ */
+export async function finalizeInvoiceWithNumber(
+  id: string,
+): Promise<{ invoiceNumber: string }> {
+  const settingsRef = doc(db, 'settings', 'config');
+  const invRef = doc(db, 'invoices', id);
+
+  const invoiceNumber = await runTransaction(db, async (tx) => {
+    const invSnap = await tx.get(invRef);
+    if (!invSnap.exists()) {
+      throw new Error('Rechnung nicht gefunden.');
+    }
+    const inv = invSnap.data() as Invoice;
+    // Idempotenz: schon finalisiert -> vorhandene Nummer zurueckgeben.
+    if (inv.invoiceNumber) return inv.invoiceNumber;
+
+    const settingsSnap = await tx.get(settingsRef);
+    const current = settingsSnap.exists()
+      ? (settingsSnap.data() as Settings).nextInvoiceNumber
+      : 1218;
+
+    const dateObj =
+      inv.invoiceDate instanceof Timestamp
+        ? inv.invoiceDate.toDate()
+        : new Date(inv.invoiceDate as unknown as string);
+    const number = buildInvoiceNumber(current, dateObj);
+
+    tx.set(
+      settingsRef,
+      { nextInvoiceNumber: current + 1 },
+      { merge: true },
+    );
+    tx.update(invRef, {
+      invoiceNumber: number,
+      updatedAt: serverTimestamp(),
+    });
+    return number;
+  });
+
+  return { invoiceNumber };
+}
+
+/**
  * Atomically reserves the next invoice number from settings/config and
  * creates the invoice. Format ("R<n>" vs. "KD-YYYY-NNN") is decided by
- * the invoice date.
+ * the invoice date. Wird von Auto-Flows (GoCardless-Webhook) genutzt,
+ * bei denen die Rechnung sofort verbindlich raus geht — kein Draft-Zwischenschritt.
  */
 export async function createInvoiceWithNumber(
   data: Omit<Invoice, 'id' | 'invoiceNumber' | 'createdAt' | 'updatedAt'>,

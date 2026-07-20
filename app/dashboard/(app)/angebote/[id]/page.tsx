@@ -11,7 +11,7 @@ import {
   deleteQuote,
   uploadFile,
   deleteFile,
-  createInvoiceWithNumber,
+  createInvoiceDraft,
   getSettings,
   getGoogleAuth,
 } from '@/lib/firestore';
@@ -281,7 +281,11 @@ export default function AngebotDetailPage() {
       }));
       const bindingTotal = binding.reduce((acc, it) => acc + it.totalPrice, 0);
 
-      const { id: invoiceId } = await createInvoiceWithNumber({
+      // Wird als ENTWURF angelegt — Rechnungsnummer bekommt sie erst,
+      // wenn du auf der Rechnungs-Detail-Seite "Rechnung stellen"
+      // klickst. So kannst du sie noch pruefen / anpassen bevor sie
+      // buchhaltungsrelevant wird.
+      const { id: invoiceId } = await createInvoiceDraft({
         customerId: quote.customerId,
         invoiceDate: Timestamp.fromDate(today),
         dueDate: Timestamp.fromDate(dueDate),
