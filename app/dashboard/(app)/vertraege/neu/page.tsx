@@ -10,6 +10,7 @@ import {
   listContractTypes,
   seedContractTypes,
   createContract,
+  createContractType,
   uploadFile,
 } from '@/lib/firestore';
 import {
@@ -62,6 +63,42 @@ function NeuerVertragInner() {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Inline "Neuen Typ anlegen" — spart den Umweg ueber die Einstellungen,
+  // wenn der Nutzer z.B. mal ein Angebot verschicken will und "Angebot"
+  // noch nicht als Typ existiert. Neuer Typ wird direkt gespeichert und
+  // im Dropdown vorausgewaehlt.
+  const [showNewType, setShowNewType] = useState(false);
+  const [newTypeLabel, setNewTypeLabel] = useState('');
+  const [newTypeShort, setNewTypeShort] = useState('');
+  const [creatingType, setCreatingType] = useState(false);
+
+  const handleCreateType = async () => {
+    const label = newTypeLabel.trim();
+    const short = newTypeShort.trim() || label.slice(0, 4).toUpperCase();
+    if (!label) return;
+    setCreatingType(true);
+    setError(null);
+    try {
+      const id = await createContractType({
+        label,
+        shortLabel: short,
+        description: '',
+        active: true,
+      });
+      const fresh = await listContractTypes();
+      setTypes(fresh.filter((x) => x.active));
+      setTypeId(id);
+      setNewTypeLabel('');
+      setNewTypeShort('');
+      setShowNewType(false);
+    } catch (err) {
+      console.error(err);
+      setError(`Typ anlegen fehlgeschlagen: ${(err as Error).message}`);
+    } finally {
+      setCreatingType(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -228,7 +265,16 @@ function NeuerVertragInner() {
               </select>
             </div>
             <div>
-              <label className="label">Vertragstyp</label>
+              <div className="flex items-baseline justify-between gap-2 mb-1.5">
+                <label className="label !mb-0">Vertragstyp</label>
+                <button
+                  type="button"
+                  onClick={() => setShowNewType((s) => !s)}
+                  className="text-xs text-brand-blue hover:underline"
+                >
+                  {showNewType ? '× abbrechen' : '+ Neuer Typ'}
+                </button>
+              </div>
               <select
                 className="input"
                 value={typeId}
@@ -241,8 +287,41 @@ function NeuerVertragInner() {
                   </option>
                 ))}
               </select>
+
+              {showNewType && (
+                <div className="mt-2 p-3 rounded-lg border border-gray-200 bg-gray-50 space-y-2">
+                  <p className="text-xs text-gray-600">
+                    Neuer Typ (z.B. „Angebot", „NDA", „Auftragsbestätigung")
+                    — wird gespeichert und steht ab sofort im Dropdown.
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <input
+                      className="input col-span-2"
+                      value={newTypeLabel}
+                      onChange={(e) => setNewTypeLabel(e.target.value)}
+                      placeholder="Bezeichnung, z.B. Angebot"
+                    />
+                    <input
+                      className="input"
+                      value={newTypeShort}
+                      onChange={(e) => setNewTypeShort(e.target.value)}
+                      placeholder="Kürzel"
+                    />
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleCreateType}
+                      disabled={creatingType || !newTypeLabel.trim()}
+                      className="btn-secondary text-xs py-1.5 px-3"
+                    >
+                      {creatingType ? 'Speichere…' : 'Typ speichern'}
+                    </button>
+                  </div>
+                </div>
+              )}
               <p className="mt-1 text-xs text-gray-500">
-                Weitere Typen anlegen unter Einstellungen → Vertragstypen.
+                Weitere Typen findest du unter Einstellungen → Vertragstypen.
               </p>
             </div>
           </div>
