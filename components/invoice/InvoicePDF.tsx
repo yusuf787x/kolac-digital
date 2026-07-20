@@ -576,24 +576,24 @@ export default function InvoicePDF({
                 Zufrieden mit der Zusammenarbeit?
               </Text>
               <Text style={styles.referralBody}>
-                Empfiehl uns weiter — wenn aus deiner Empfehlung ein Auftrag
+                Empfiehl uns weiter. Wenn aus deiner Empfehlung ein Auftrag
                 entsteht, bekommst du{' '}
                 <Text style={{ fontFamily: 'Helvetica-Bold' }}>
-                  15 % des Auftragsvolumens als Gutschrift
-                </Text>{' '}
-                auf deine nächste Rechnung.
+                  15 % des Auftragsvolumens als Auszahlung
+                </Text>
+                .
               </Text>
             </View>
             <View style={{ alignItems: 'center', minWidth: 46 }}>
               <Text style={styles.referralPercent}>15%</Text>
-              <Text style={styles.referralPercentLabel}>GUTSCHRIFT</Text>
+              <Text style={styles.referralPercentLabel}>AUSZAHLUNG</Text>
             </View>
           </View>
 
           {!isDirectDebit && (
             <View style={styles.qrRow}>
               <Text style={styles.qrHint}>
-                Zahlung per SEPA-QR: Code mit deiner Banking-App scannen —
+                Zahlung per SEPA-QR: Code mit deiner Banking-App scannen.
                 Empfänger, IBAN und Betrag werden automatisch eingesetzt.
               </Text>
               <View style={styles.qrBox}>
