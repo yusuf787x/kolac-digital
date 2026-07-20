@@ -59,6 +59,51 @@ const markdownToHtml = (md: string): string => {
 const inlineMdToHtml = (line: string): string =>
   line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
+/**
+ * Fuegt HTML an der aktuellen Cursor-Position in ein contentEditable ein.
+ * Nutzt die native Range/Selection-API — robuster als execCommand
+ * (das in Chrome/Safari HTML manchmal als escaped Text landet, weil es
+ * am Rand von <p>-Bloecken die Struktur nicht sauber trennt).
+ *
+ * Wenn die aktuelle Selection nicht innerhalb des Editors sitzt (z.B.
+ * direkt nach dem Buttons-Klick), wird ans Ende des Editors angehaengt.
+ */
+const insertHtmlAtCursor = (html: string, editor: HTMLDivElement | null) => {
+  if (!editor) return;
+  const sel = window.getSelection();
+  let range: Range | null = null;
+
+  if (sel && sel.rangeCount > 0) {
+    const r = sel.getRangeAt(0);
+    if (editor.contains(r.commonAncestorContainer)) {
+      range = r;
+    }
+  }
+  if (!range) {
+    // Fallback: an das Ende einfuegen
+    range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+  }
+
+  range.deleteContents();
+
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  const frag = template.content;
+  const lastNode = frag.lastChild;
+  range.insertNode(frag);
+
+  // Cursor hinter das eingefuegte Ende setzen.
+  if (lastNode && sel) {
+    const after = document.createRange();
+    after.setStartAfter(lastNode);
+    after.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(after);
+  }
+};
+
 export default function RichTextArea({
   value,
   onChange,
@@ -105,10 +150,11 @@ export default function RichTextArea({
    * Pipeline:
    *   1) HTML aus Zwischenablage → htmlToMarkdown (kollabiert alles auf
    *      unsere Untermenge: <strong>, <ul><li>, Absaetze).
-   *   2) Falls kein HTML → Klartext (der aber "**fett**" oder "- punkt"
-   *      enthalten kann, weil so aus ChatGPT-Copy oft rauskommt).
+   *   2) Falls kein HTML → Klartext, der aber "**fett**" oder "- punkt"
+   *      enthalten kann (Copy aus ChatGPT/Claude-Textmodus).
    *   3) markdownToHtml wandelt beides in unser sauberes HTML.
-   *   4) execCommand('insertHTML') fuegt es am Cursor ein.
+   *   4) Ueber die native Range-API am Cursor einfuegen (robuster als
+   *      das teils buggy execCommand('insertHTML')).
    */
   const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     const cd = e.clipboardData;
@@ -117,16 +163,16 @@ export default function RichTextArea({
 
     const html = cd.getData('text/html');
     const text = cd.getData('text/plain');
-    const source = html && isProbablyHtml(html) ? html : text;
-    if (!source) return;
+    const useHtml = !!html && isProbablyHtml(html);
+    if (!useHtml && !text) return;
 
-    // htmlToMarkdown ist tolerant — er akzeptiert Klartext auch ohne
-    // Tags und laesst ihn durchfliessen. So kommen ChatGPT-"**fett**"
-    // und Word-<strong>fett</strong> im selben Weg zum Ziel.
-    const md = html && isProbablyHtml(html) ? htmlToMarkdown(html) : text;
+    // htmlToMarkdown akzeptiert auch Klartext (regexen greifen dann
+    // einfach nicht). So kommen ChatGPT-"**fett**" und Word-
+    // <strong>fett</strong> beide durch dieselbe Pipeline.
+    const md = useHtml ? htmlToMarkdown(html) : text;
     const cleaned = markdownToHtml(md);
 
-    document.execCommand('insertHTML', false, cleaned);
+    insertHtmlAtCursor(cleaned, ref.current);
     emit();
   };
 

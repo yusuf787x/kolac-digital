@@ -89,8 +89,8 @@ export function htmlToMarkdown(html: string): string {
       .replace(/<br\s*\/?\s*>/gi, '\n')
       .replace(/<\/p\s*>/gi, '\n\n')
       .replace(/<p[^>]*>/gi, '')
-      .replace(/<\/(h[1-6])\s*>/gi, '\n\n')
       .replace(/<(h[1-6])[^>]*>/gi, '**') // Headings als fett behandeln
+      .replace(/<\/(h[1-6])\s*>/gi, '**\n\n') // schliessendes ** + Umbruch
       .replace(/<\/div\s*>/gi, '\n')
       .replace(/<div[^>]*>/gi, '')
       // Fett + Kursiv → ** (unser einziger Inline-Stil)
