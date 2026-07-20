@@ -58,28 +58,64 @@ export function isProbablyHtml(s: string): boolean {
  * <em|i>, <ul>/<ol>/<li>. Alles andere wird gestrippt.
  */
 export function htmlToMarkdown(html: string): string {
-  return html
-    .replace(/<br\s*\/?\s*>/gi, '\n')
-    .replace(/<\/p\s*>/gi, '\n\n')
-    .replace(/<p[^>]*>/gi, '')
-    .replace(/<\/div\s*>/gi, '\n')
-    .replace(/<div[^>]*>/gi, '')
-    .replace(/<strong[^>]*>|<b[^>]*>/gi, '**')
-    .replace(/<\/strong\s*>|<\/b\s*>/gi, '**')
-    .replace(/<em[^>]*>|<i[^>]*>/gi, '**') // italic zu bold reduzieren
-    .replace(/<\/em\s*>|<\/i\s*>/gi, '**')
-    .replace(/<li[^>]*>/gi, '- ')
-    .replace(/<\/li\s*>/gi, '\n')
-    .replace(/<\/?(ul|ol)[^>]*>/gi, '\n')
-    .replace(/<[^>]+>/g, '') // was uebrig ist: strip
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  return (
+    html
+      // Word/Outlook: MSO-Bloecke rauswerfen
+      .replace(/<!--\[if[\s\S]*?<!\[endif\]-->/gi, '')
+      .replace(/<o:p[^>]*>[\s\S]*?<\/o:p>/gi, '')
+      // Style/Script komplett droppen
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      // Google Docs / Word / Notion nutzen oft <span style="font-weight:...">
+      // statt <strong>. Vor der Element-Konvertierung normalisieren:
+      // - font-weight bold/500-900 → <strong>
+      // - font-style italic → <em> (wird spaeter zu ** reduziert)
+      .replace(
+        /<span[^>]*style="[^"]*font-weight:\s*(?:bold|[5-9]00)[^"]*"[^>]*>([\s\S]*?)<\/span>/gi,
+        '<strong>$1</strong>',
+      )
+      .replace(
+        /<span[^>]*style="[^"]*font-style:\s*italic[^"]*"[^>]*>([\s\S]*?)<\/span>/gi,
+        '<em>$1</em>',
+      )
+      // Google Docs verschachtelt zusaetzlich <b style="font-weight:normal">
+      // (kein Fett!). Wenn font-weight:normal explizit gesetzt ist, den
+      // <b>-Tag entfernen ohne Bold-Marker.
+      .replace(
+        /<b[^>]*style="[^"]*font-weight:\s*normal[^"]*"[^>]*>([\s\S]*?)<\/b>/gi,
+        '$1',
+      )
+      // Struktur-Elemente auf Umbrueche mappen
+      .replace(/<br\s*\/?\s*>/gi, '\n')
+      .replace(/<\/p\s*>/gi, '\n\n')
+      .replace(/<p[^>]*>/gi, '')
+      .replace(/<\/(h[1-6])\s*>/gi, '\n\n')
+      .replace(/<(h[1-6])[^>]*>/gi, '**') // Headings als fett behandeln
+      .replace(/<\/div\s*>/gi, '\n')
+      .replace(/<div[^>]*>/gi, '')
+      // Fett + Kursiv → ** (unser einziger Inline-Stil)
+      .replace(/<strong[^>]*>|<b[^>]*>/gi, '**')
+      .replace(/<\/strong\s*>|<\/b\s*>/gi, '**')
+      .replace(/<em[^>]*>|<i[^>]*>/gi, '**')
+      .replace(/<\/em\s*>|<\/i\s*>/gi, '**')
+      // Listen
+      .replace(/<li[^>]*>/gi, '- ')
+      .replace(/<\/li\s*>/gi, '\n')
+      .replace(/<\/?(ul|ol)[^>]*>/gi, '\n')
+      // Rest strippen
+      .replace(/<[^>]+>/g, '')
+      // HTML-Entities
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&#39;|&apos;/g, "'")
+      .replace(/&quot;/g, '"')
+      // Cleanup: leere Fett-Klammern und mehrfache Leerzeilen
+      .replace(/\*\*\s*\*\*/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+  );
 }
 
 /**

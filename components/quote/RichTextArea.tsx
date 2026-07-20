@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { htmlToMarkdown, isProbablyHtml } from '@/lib/simple-markdown';
 
 /**
  * WYSIWYG-Editor fuer Angebots-Textfelder. Kein Markdown mehr sichtbar —
@@ -23,12 +24,11 @@ interface Props {
   ariaLabel?: string;
 }
 
-const isProbablyHtml = (s: string) =>
-  /<(p|br|strong|b|em|i|ul|ol|li|div|span)\b/i.test(s);
-
 /**
  * Legacy-Markdown (**fett** und "- punkt") in leichtes HTML wandeln,
  * damit bestehende Angebote im WYSIWYG korrekt angezeigt werden.
+ * Wird auch fuer Paste-Sanitizing genutzt (HTML aus KI/Word/Gmail
+ * → Markdown → sauberes HTML mit nur unseren Elementen).
  */
 const markdownToHtml = (md: string): string => {
   const lines = md.split(/\n/);
@@ -94,6 +94,42 @@ export default function RichTextArea({
     ref.current?.focus();
   };
 
+  /**
+   * Paste-Handler mit Sanitizer.
+   *
+   * KI-Tools (ChatGPT, Claude, Perplexity), Word, Gmail und Notion legen
+   * beim Kopieren HTML in die Zwischenablage — inkl. Fonts, Farben,
+   * Layout-Divs usw. Wenn wir das 1:1 einfuegen, sieht der Text im
+   * Editor "fremd" aus und mischt sich schlecht mit unserem PDF-Rendering.
+   *
+   * Pipeline:
+   *   1) HTML aus Zwischenablage → htmlToMarkdown (kollabiert alles auf
+   *      unsere Untermenge: <strong>, <ul><li>, Absaetze).
+   *   2) Falls kein HTML → Klartext (der aber "**fett**" oder "- punkt"
+   *      enthalten kann, weil so aus ChatGPT-Copy oft rauskommt).
+   *   3) markdownToHtml wandelt beides in unser sauberes HTML.
+   *   4) execCommand('insertHTML') fuegt es am Cursor ein.
+   */
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const cd = e.clipboardData;
+    if (!cd) return;
+    e.preventDefault();
+
+    const html = cd.getData('text/html');
+    const text = cd.getData('text/plain');
+    const source = html && isProbablyHtml(html) ? html : text;
+    if (!source) return;
+
+    // htmlToMarkdown ist tolerant — er akzeptiert Klartext auch ohne
+    // Tags und laesst ihn durchfliessen. So kommen ChatGPT-"**fett**"
+    // und Word-<strong>fett</strong> im selben Weg zum Ziel.
+    const md = html && isProbablyHtml(html) ? htmlToMarkdown(html) : text;
+    const cleaned = markdownToHtml(md);
+
+    document.execCommand('insertHTML', false, cleaned);
+    emit();
+  };
+
   return (
     <div>
       <div className="mb-1.5 flex flex-wrap items-center gap-1">
@@ -139,6 +175,7 @@ export default function RichTextArea({
           aria-label={ariaLabel}
           onInput={emit}
           onBlur={emit}
+          onPaste={handlePaste}
           className="input wysiwyg block w-full whitespace-pre-wrap break-words"
           style={{ minHeight }}
         />
