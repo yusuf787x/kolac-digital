@@ -198,3 +198,67 @@ export function grossToNet(
   const vat = Math.round((gross - net) * 100) / 100;
   return { net, vat, gross };
 }
+
+/**
+ * Rechnet Netto/USt/Brutto ueber alle Positionen einer Rechnung —
+ * mit position-spezifischem `vatRate` (fallback auf Rechnungs-Satz).
+ * Notwendig, weil eine Rechnung Positionen mit unterschiedlichen
+ * Steuersaetzen haben kann (z.B. 19% Beratung + 0% durchlaufender
+ * Posten fuer Werbebudget).
+ *
+ * Rueckgabe:
+ *   - `net`, `vat`, `gross`: Gesamtsummen der Rechnung
+ *   - `byRate`: nach Steuersatz gruppierte Zeilen fuer die PDF/Detail-
+ *     Anzeige ("Netto zu 19% = X, USt = Y ...")
+ *
+ * Position-Interface hier absichtlich lose typisiert (statt Import
+ * aus types.ts), damit auch Draft-Items aus dem Formular ohne den
+ * vollen InvoiceItem-Shape durchgereicht werden koennen.
+ */
+export function computeInvoiceVat(
+  items: Array<{
+    totalPrice: number;
+    vatRate?: number;
+    optional?: boolean;
+  }>,
+  fallbackVatRate: number | null | undefined,
+  opts: { includeOptional?: boolean } = {},
+): {
+  net: number;
+  vat: number;
+  gross: number;
+  byRate: Array<{ rate: number; net: number; vat: number; gross: number }>;
+} {
+  const fallback = fallbackVatRate ?? 0;
+  const buckets = new Map<number, { net: number; vat: number }>();
+  const source = opts.includeOptional
+    ? items
+    : items.filter((i) => !i.optional);
+
+  for (const it of source) {
+    const rate = it.vatRate ?? fallback;
+    const net = it.totalPrice;
+    const vat = net * rate;
+    const bucket = buckets.get(rate) ?? { net: 0, vat: 0 };
+    bucket.net += net;
+    bucket.vat += vat;
+    buckets.set(rate, bucket);
+  }
+
+  const byRate = Array.from(buckets.entries())
+    .sort((a, b) => b[0] - a[0]) // hoechster Satz zuerst
+    .map(([rate, b]) => {
+      const net = Math.round(b.net * 100) / 100;
+      const vat = Math.round(b.vat * 100) / 100;
+      return { rate, net, vat, gross: Math.round((net + vat) * 100) / 100 };
+    });
+
+  const net = byRate.reduce((a, b) => a + b.net, 0);
+  const vat = byRate.reduce((a, b) => a + b.vat, 0);
+  return {
+    net: Math.round(net * 100) / 100,
+    vat: Math.round(vat * 100) / 100,
+    gross: Math.round((net + vat) * 100) / 100,
+    byRate,
+  };
+}

@@ -45,6 +45,14 @@ export interface InvoiceItem {
    * verbindliche Positionen).
    */
   optional?: boolean;
+  /**
+   * Position-spezifischer USt-Satz als Dezimalzahl (0.19 = 19%).
+   * Fehlt der Wert → fallback zum Rechnungs-`vatRate`. So kann eine
+   * Rechnung mit Standardsatz 19% eine einzelne 0%-Position enthalten
+   * (z.B. durchlaufender Posten fuer Werbebudget). Legacy-Positionen
+   * ohne Feld verhalten sich exakt wie bisher.
+   */
+  vatRate?: number;
 }
 
 export interface Invoice {

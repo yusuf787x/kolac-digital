@@ -5,6 +5,7 @@
 // 'use client' wuerde Next.js einen Client-Component-Reference statt
 // der echten Funktion liefern und der PDF-Renderer wirft React #130.
 
+import type { ComponentProps } from 'react';
 import {
   Document,
   Page,
@@ -16,6 +17,11 @@ import {
 import type { Invoice, Customer } from '@/lib/types';
 import { formatEUR, formatDateDE, tsToDate, computeVat } from '@/lib/utils';
 import { COMPANY_BANK, COMPANY_INFO } from '@/lib/qr';
+import {
+  parseRichText,
+  type MdBlock,
+  type MdInlineSegment,
+} from '@/lib/simple-markdown';
 
 const COLORS = {
   blue: '#2563EB',
@@ -29,7 +35,13 @@ const COLORS = {
 const styles = StyleSheet.create({
   page: {
     paddingTop: 40,
-    paddingBottom: 40,
+    // Footer sitzt absolut bei bottom:30 und ist mit QR-Code/Konto-
+    // Block ~110pt hoch. Content-Bereich muss klar darueber enden,
+    // sonst haben wir Overlap. 140pt Puffer sind reichlich; wenn der
+    // Content laenger ist, brechen die Absaetze automatisch auf die
+    // naechste Seite (der Footer wird via `fixed` auf jeder Seite
+    // gerendert).
+    paddingBottom: 140,
     paddingHorizontal: 50,
     fontSize: 10,
     fontFamily: 'Helvetica',
@@ -132,6 +144,13 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: COLORS.gray,
   },
+  itemBulletRow: {
+    flexDirection: 'row',
+    marginTop: 1,
+    paddingLeft: 2,
+  },
+  itemBulletMarker: { width: 8, fontSize: 9, color: COLORS.gray },
+  itemBulletBody: { flex: 1, fontSize: 9, color: COLORS.gray },
   summaryRow: {
     flexDirection: 'row',
     paddingVertical: 4,
@@ -247,6 +266,57 @@ const salutationGreeting = (c: Customer): string => {
   return `Sehr geehrte/r ${last},`;
 };
 
+// ---- Rich-Text-Rendering fuer Positions-Beschreibungen (analog Angebot):
+// fett + Bullet-Listen via parseRichText, tolerant fuer Legacy-Klartext.
+type AnyStyle = ComponentProps<typeof View>['style'] &
+  ComponentProps<typeof Text>['style'];
+
+const renderSegments = (segments: MdInlineSegment[]) =>
+  segments.map((seg, i) =>
+    seg.bold ? (
+      <Text key={i} style={{ fontFamily: 'Helvetica-Bold' }}>
+        {seg.text}
+      </Text>
+    ) : (
+      <Text key={i}>{seg.text}</Text>
+    ),
+  );
+
+interface PdfMarkdownProps {
+  text?: string;
+  blocks?: MdBlock[];
+  paragraphStyle: AnyStyle;
+  bulletRowStyle: AnyStyle;
+  bulletMarkerStyle: AnyStyle;
+  bulletBodyStyle: AnyStyle;
+}
+const PdfMarkdown = ({
+  text,
+  blocks: provided,
+  paragraphStyle,
+  bulletRowStyle,
+  bulletMarkerStyle,
+  bulletBodyStyle,
+}: PdfMarkdownProps) => {
+  const blocks = provided ?? parseRichText(text ?? '');
+  return (
+    <>
+      {blocks.map((b, idx) =>
+        b.type === 'bullet' ? (
+          <View key={idx} style={bulletRowStyle} wrap={false}>
+            <Text style={bulletMarkerStyle}>•</Text>
+            <Text style={bulletBodyStyle}>{renderSegments(b.segments)}</Text>
+          </View>
+        ) : (
+          <Text key={idx} style={paragraphStyle}>
+            {renderSegments(b.segments)}
+          </Text>
+        ),
+      )}
+    </>
+  );
+};
+
 export default function InvoicePDF({
   invoice,
   customer,
@@ -342,15 +412,28 @@ export default function InvoicePDF({
           </View>
 
           {invoice.items.map((item) => {
-            const lines = item.description.split('\n');
-            const head = lines[0] ?? '';
-            const rest = lines.slice(1);
+            // Beschreibung durch den Rich-Text-Parser (HTML aus WYSIWYG
+            // ODER Legacy-Klartext). Erster Paragraph = fetter Titel,
+            // alles danach = Body (Fett + Bullets werden korrekt gerendert).
+            const blocks = parseRichText(item.description);
+            const titleBlock = blocks.find((b) => b.type === 'paragraph');
+            const restBlocks = titleBlock
+              ? blocks.filter((b) => b !== titleBlock)
+              : blocks;
             return (
               <View key={item.position} style={styles.tableRow}>
                 <View style={styles.cellPosition}>
-                  <Text style={styles.itemTitle}>{head}</Text>
-                  {rest.length > 0 && (
-                    <Text style={styles.itemSubline}>{rest.join('\n')}</Text>
+                  <Text style={styles.itemTitle}>
+                    {titleBlock ? renderSegments(titleBlock.segments) : ''}
+                  </Text>
+                  {restBlocks.length > 0 && (
+                    <PdfMarkdown
+                      blocks={restBlocks}
+                      paragraphStyle={styles.itemSubline as AnyStyle}
+                      bulletRowStyle={styles.itemBulletRow as AnyStyle}
+                      bulletMarkerStyle={styles.itemBulletMarker as AnyStyle}
+                      bulletBodyStyle={styles.itemBulletBody as AnyStyle}
+                    />
                   )}
                 </View>
                 <Text style={styles.cellQty}>

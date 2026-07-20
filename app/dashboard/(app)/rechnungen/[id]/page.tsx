@@ -23,6 +23,51 @@ import {
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 import { authedFetch } from '@/lib/api-client';
+import { parseRichText, type MdInlineSegment } from '@/lib/simple-markdown';
+
+// Rich-Text-Renderer fuer Positions-Beschreibungen (fett + Bullets),
+// analog zur Angebots-Detail-Page. Sicheres HTML-freies Rendering ueber
+// unseren eigenen Parser.
+function ItemDescription({ text }: { text: string }) {
+  const blocks = parseRichText(text);
+  if (blocks.length === 0) return null;
+  const renderInline = (segs: MdInlineSegment[]) =>
+    segs.map((s, i) =>
+      s.bold ? (
+        <strong key={i} className="font-semibold text-gray-900">
+          {s.text}
+        </strong>
+      ) : (
+        <span key={i}>{s.text}</span>
+      ),
+    );
+  const [title, ...rest] = blocks;
+  return (
+    <div>
+      {title && (
+        <div className="font-medium text-gray-900">
+          {renderInline(title.segments)}
+        </div>
+      )}
+      {rest.length > 0 && (
+        <div className="mt-1 text-xs text-gray-600">
+          {rest.map((b, i) =>
+            b.type === 'bullet' ? (
+              <div key={i} className="flex gap-2">
+                <span className="text-gray-400">•</span>
+                <span>{renderInline(b.segments)}</span>
+              </div>
+            ) : (
+              <p key={i} className="mb-1 last:mb-0">
+                {renderInline(b.segments)}
+              </p>
+            ),
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 // PDF generator and drive sync are dynamic imports — they pull in
 // @react-pdf/renderer (~500kB) which we only need on-demand.
 
@@ -592,8 +637,8 @@ export default function RechnungDetailPage() {
             <tbody className="divide-y divide-gray-100">
               {invoice.items.map((item) => (
                 <tr key={item.position}>
-                  <td className="py-3 whitespace-pre-line text-gray-900">
-                    {item.description}
+                  <td className="py-3 text-gray-900">
+                    <ItemDescription text={item.description} />
                   </td>
                   <td className="py-3 text-right text-gray-700">{item.quantity}</td>
                   <td className="py-3 text-right text-gray-700">

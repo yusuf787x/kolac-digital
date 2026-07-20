@@ -10,18 +10,29 @@ import {
   getSettings,
 } from '@/lib/firestore';
 import type { Customer, Invoice, InvoiceItem } from '@/lib/types';
-import { formatEUR, computeVat, defaultVatRateForDate } from '@/lib/utils';
+import RichTextArea from '@/components/quote/RichTextArea';
+import {
+  formatEUR,
+  computeInvoiceVat,
+  defaultVatRateForDate,
+} from '@/lib/utils';
 
 interface ItemDraft {
   description: string;
   quantity: string;
   unitPrice: string;
+  /**
+   * Position-spezifischer USt-Satz als Dezimalzahl (0.19 = 19%).
+   * `null` bedeutet: Rechnungs-Default nutzen (kein Override).
+   */
+  vatRate: number | null;
 }
 
 const emptyItem = (): ItemDraft => ({
   description: '',
   quantity: '1',
   unitPrice: '0',
+  vatRate: null,
 });
 
 const dateInputValue = (d: Date) => d.toISOString().slice(0, 10);
@@ -52,6 +63,7 @@ export default function InvoiceForm({ initial, mode }: Props) {
           description: i.description,
           quantity: String(i.quantity),
           unitPrice: i.unitPrice.toFixed(2),
+          vatRate: i.vatRate ?? null,
         }))
       : [emptyItem()],
   );
@@ -131,10 +143,22 @@ export default function InvoiceForm({ initial, mode }: Props) {
     setDueDateUserSet(true);
   };
 
-  const updateItem = (idx: number, key: keyof ItemDraft, value: string) => {
+  const updateItem = (
+    idx: number,
+    key: 'description' | 'quantity' | 'unitPrice',
+    value: string,
+  ) => {
     setItems((prev) => {
       const next = [...prev];
       next[idx] = { ...next[idx], [key]: value };
+      return next;
+    });
+  };
+
+  const updateItemVatRate = (idx: number, vatRate: number | null) => {
+    setItems((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], vatRate };
       return next;
     });
   };
@@ -161,8 +185,16 @@ export default function InvoiceForm({ initial, mode }: Props) {
     return q * p;
   };
 
-  const grandTotal = items.reduce((acc, i) => acc + itemTotal(i), 0);
-  const vatCalc = computeVat(grandTotal, vatRate);
+  // Neue Berechnung: pro Position mit eigenem VAT-Satz (fallback auf
+  // Rechnungs-Satz). Der zurueckgegebene `byRate` gruppiert die Zeilen
+  // pro Satz und wird sowohl in der Formular-Summe als auch im PDF
+  // gerendert.
+  const itemsForVat = items.map((i) => ({
+    totalPrice: itemTotal(i),
+    vatRate: i.vatRate ?? undefined,
+  }));
+  const vatCalc = computeInvoiceVat(itemsForVat, vatRate);
+  const grandTotal = vatCalc.net;
 
   const selectedCustomer = customers.find((c) => c.id === customerId);
 
@@ -185,6 +217,12 @@ export default function InvoiceForm({ initial, mode }: Props) {
       quantity: parseFloat(it.quantity) || 0,
       unitPrice: parseFloat(it.unitPrice) || 0,
       totalPrice: itemTotal(it),
+      // Nur speichern wenn abweichend vom Rechnungs-Satz — spart
+      // Legacy-Verhalten (Feld bleibt undefined bei Positionen ohne
+      // Override).
+      ...(it.vatRate !== null && it.vatRate !== vatRate
+        ? { vatRate: it.vatRate }
+        : {}),
     }));
 
     try {
@@ -311,11 +349,11 @@ export default function InvoiceForm({ initial, mode }: Props) {
             >
               <div className="col-span-12 sm:col-span-6">
                 <label className="label">Beschreibung</label>
-                <textarea
-                  className="input min-h-[60px]"
+                <RichTextArea
                   value={item.description}
-                  onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                  onChange={(v) => updateItem(idx, 'description', v)}
                   placeholder="z.B. Webentwicklung (Pauschal)"
+                  minHeight={60}
                 />
               </div>
               <div className="col-span-4 sm:col-span-2">
