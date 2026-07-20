@@ -40,13 +40,10 @@ const COLORS = {
 const styles = StyleSheet.create({
   page: {
     paddingTop: 40,
-    // Footer sitzt absolut bei bottom:30 und ist mit QR-Code/Konto-
-    // Block ~110pt hoch. Content-Bereich muss klar darueber enden,
-    // sonst haben wir Overlap. 140pt Puffer sind reichlich; wenn der
-    // Content laenger ist, brechen die Absaetze automatisch auf die
-    // naechste Seite (der Footer wird via `fixed` auf jeder Seite
-    // gerendert).
-    paddingBottom: 140,
+    // Footer OHNE QR ist ~60pt hoch (5 Textzeilen + bottom-Offset 30).
+    // 100pt Puffer reservieren, damit Content klar darueber endet und
+    // Referral-Kasten + QR-Zeile davor natuerlich fliessen koennen.
+    paddingBottom: 100,
     paddingHorizontal: 50,
     fontSize: 10,
     fontFamily: 'Helvetica',
@@ -245,6 +242,59 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 0.5,
     textAlign: 'right',
+  },
+  // Referral-Kasten (letzte Seite) — nudged in-line vor dem Footer,
+  // damit er nur EINMAL erscheint (nicht mit `fixed` auf jeder Seite).
+  referralBox: {
+    marginTop: 16,
+    padding: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.blue,
+    backgroundColor: '#EFF6FF', // blue-50
+    borderRadius: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  referralTextCol: { flex: 1 },
+  referralHeadline: {
+    fontFamily: 'Helvetica-Bold',
+    fontSize: 11,
+    color: COLORS.blue,
+    marginBottom: 3,
+  },
+  referralBody: {
+    fontSize: 9,
+    color: COLORS.black,
+    lineHeight: 1.35,
+  },
+  referralPercent: {
+    fontSize: 20,
+    fontFamily: 'Helvetica-Bold',
+    color: COLORS.blue,
+    letterSpacing: -0.5,
+  },
+  referralPercentLabel: {
+    fontSize: 7,
+    color: COLORS.blue,
+    letterSpacing: 0.8,
+    textAlign: 'center',
+    marginTop: -2,
+  },
+  // GiroCode-Zeile — auch nur einmal (letzte Seite), direkt unter
+  // dem Referral-Kasten. Beide zusammen im wrap={false}-Container.
+  qrRow: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 10,
+  },
+  qrHint: {
+    fontSize: 8,
+    color: COLORS.gray,
+    textAlign: 'right',
+    maxWidth: 220,
   },
 });
 
@@ -516,7 +566,45 @@ export default function InvoicePDF({
         </Text>
         <Text style={styles.paragraph}>{invoice.closingText}</Text>
 
-        {/* Footer */}
+        {/* Referral-Kasten + GiroCode — beides nur EINMAL, natural
+            flow, wrap={false} haelt Kasten und QR zusammen und rutscht
+            gemeinsam auf naechste Seite, falls nicht mehr Platz. */}
+        <View wrap={false}>
+          <View style={styles.referralBox}>
+            <View style={styles.referralTextCol}>
+              <Text style={styles.referralHeadline}>
+                Zufrieden mit der Zusammenarbeit?
+              </Text>
+              <Text style={styles.referralBody}>
+                Empfiehl uns weiter — wenn aus deiner Empfehlung ein Auftrag
+                entsteht, bekommst du{' '}
+                <Text style={{ fontFamily: 'Helvetica-Bold' }}>
+                  15 % des Auftragsvolumens als Gutschrift
+                </Text>{' '}
+                auf deine nächste Rechnung.
+              </Text>
+            </View>
+            <View style={{ alignItems: 'center', minWidth: 46 }}>
+              <Text style={styles.referralPercent}>15%</Text>
+              <Text style={styles.referralPercentLabel}>GUTSCHRIFT</Text>
+            </View>
+          </View>
+
+          {!isDirectDebit && (
+            <View style={styles.qrRow}>
+              <Text style={styles.qrHint}>
+                Zahlung per SEPA-QR: Code mit deiner Banking-App scannen —
+                Empfänger, IBAN und Betrag werden automatisch eingesetzt.
+              </Text>
+              <View style={styles.qrBox}>
+                <Image style={styles.qrImage} src={qrCodeDataUrl} />
+                <Text style={styles.qrLabel}>Mit Banking-App scannen</Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Footer — jetzt OHNE QR, laeuft weiterhin auf jeder Seite. */}
         <View style={styles.footer} fixed>
           <View style={styles.footerLeft}>
             <Text style={styles.footerCompany}>
@@ -531,13 +619,6 @@ export default function InvoicePDF({
               Steuernr.: {COMPANY_INFO.taxId}
             </Text>
           </View>
-
-          {!isDirectDebit && (
-            <View style={styles.qrBox}>
-              <Image style={styles.qrImage} src={qrCodeDataUrl} />
-              <Text style={styles.qrLabel}>Mit Banking-App scannen</Text>
-            </View>
-          )}
 
           <View>
             <Text style={styles.footerRight}>DANKE FÜR IHR VERTRAUEN</Text>
