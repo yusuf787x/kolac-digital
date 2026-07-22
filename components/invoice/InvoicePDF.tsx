@@ -570,7 +570,7 @@ export default function InvoicePDF({
             <Text style={styles.bold}>
               {chargedAt ? formatDateDE(chargedAt) : formatDateDE(invoice.invoiceDate.toDate())}
             </Text>{' '}
-            per SEPA-Lastschrift von deinem hinterlegten Konto eingezogen.
+            per SEPA-Lastschrift von Ihrem hinterlegten Konto eingezogen.
             Keine weitere Aktion notwendig.
           </Text>
         ) : (
@@ -597,8 +597,8 @@ export default function InvoicePDF({
                 Zufrieden mit der Zusammenarbeit?
               </Text>
               <Text style={styles.referralBody}>
-                Empfiehl uns weiter. Wenn aus deiner Empfehlung ein Auftrag
-                entsteht, bekommst du{' '}
+                Empfehlen Sie uns weiter. Wenn aus Ihrer Empfehlung ein Auftrag
+                entsteht, erhalten Sie{' '}
                 <Text style={{ fontFamily: 'Helvetica-Bold' }}>
                   15 % der ersten Rechnung als Auszahlung
                 </Text>
@@ -619,10 +619,10 @@ export default function InvoicePDF({
               <View style={styles.qrSectionRow}>
                 <View style={styles.qrSectionTextCol}>
                   <Text style={styles.qrHint}>
-                    Scanne den Code mit deiner Banking-App. Empfänger, IBAN und
-                    Gesamtbetrag werden automatisch eingesetzt. So sparst du dir
-                    das Abtippen und stellst sicher, dass die Zahlung korrekt
-                    zugeordnet wird.
+                    Scannen Sie den Code mit Ihrer Banking-App. Empfänger, IBAN
+                    und Gesamtbetrag werden automatisch eingesetzt. So sparen
+                    Sie sich das Abtippen und stellen sicher, dass die Zahlung
+                    korrekt zugeordnet wird.
                   </Text>
                 </View>
                 <View style={styles.qrBox}>
