@@ -12,6 +12,7 @@ import {
   uploadFile,
   deleteFile,
   createInvoiceDraft,
+  createQuoteWithNumber,
   getSettings,
   getGoogleAuth,
 } from '@/lib/firestore';
@@ -80,6 +81,7 @@ export default function AngebotDetailPage() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
   const [syncingConfirmation, setSyncingConfirmation] = useState(false);
   const [confirmationSyncMessage, setConfirmationSyncMessage] = useState<
     string | null
@@ -320,6 +322,68 @@ export default function AngebotDetailPage() {
     }
   };
 
+  /**
+   * Angebot duplizieren: legt ein neues Angebot mit denselben Positionen,
+   * Texten und MwSt-Einstellung an. Bekommt eine frische Angebotsnummer
+   * ueber die laufende Zaehlung. Alles Zeit- und Status-Spezifische
+   * (Datum, Gueltigkeit, gesendet/angenommen/abgerechnet, hochgeladene
+   * Auftragsbestaetigung, PDF-URLs, verknuepfte Rechnung) wird
+   * zurueckgesetzt — die Kopie startet als sauberer Entwurf.
+   */
+  const handleDuplicate = async () => {
+    if (!quote) return;
+    setDuplicating(true);
+    try {
+      const settings = await getSettings();
+      const today = new Date();
+      const validUntil = new Date(today);
+      validUntil.setDate(
+        validUntil.getDate() + (settings.defaultQuoteValidDays ?? 14),
+      );
+
+      // Positionen 1:1 uebernehmen inkl. optional-Flag und
+      // position-spezifischem vatRate (z.B. 0 % fuer durchlaufende Posten).
+      const items: InvoiceItem[] = quote.items.map((it, idx) => ({
+        position: idx + 1,
+        description: it.description,
+        quantity: it.quantity,
+        unitPrice: it.unitPrice,
+        totalPrice: it.totalPrice,
+        ...(it.optional ? { optional: true } : {}),
+        ...(it.vatRate !== undefined ? { vatRate: it.vatRate } : {}),
+      }));
+
+      const { id: newId } = await createQuoteWithNumber({
+        customerId: quote.customerId,
+        quoteDate: Timestamp.fromDate(today),
+        validUntil: Timestamp.fromDate(validUntil),
+        status: 'draft',
+        totalAmount: quote.totalAmount,
+        vatRate: quote.vatRate,
+        introText: quote.introText,
+        closingText: quote.closingText,
+        acceptanceText: quote.acceptanceText,
+        items,
+        // Alles Frische zurueck auf null.
+        pdfUrl: null,
+        driveUrl: null,
+        confirmationFileUrl: null,
+        confirmationFilename: null,
+        confirmationDriveUrl: null,
+        sentAt: null,
+        acceptedAt: null,
+        rejectedAt: null,
+        invoicedAt: null,
+        invoiceId: null,
+      });
+      router.push(`/dashboard/angebote/${newId}`);
+    } catch (err) {
+      console.error(err);
+      alert(`Duplizieren fehlgeschlagen: ${(err as Error).message}`);
+      setDuplicating(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!confirm(`Angebot ${quote.quoteNumber} wirklich löschen?`)) return;
     try {
@@ -396,6 +460,14 @@ export default function AngebotDetailPage() {
               className="btn-secondary"
             >
               {generatingPdf ? 'Generiere PDF…' : 'PDF herunterladen'}
+            </button>
+            <button
+              onClick={handleDuplicate}
+              disabled={duplicating}
+              className="btn-secondary"
+              title="Legt ein neues Angebot mit denselben Positionen und Texten an."
+            >
+              {duplicating ? 'Dupliziere…' : 'Duplizieren'}
             </button>
             {canConvert && (
               <button
