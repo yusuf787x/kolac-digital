@@ -1,0 +1,102 @@
+# Kolac Digital Dashboard — Funktionalitäten
+
+Zentrale Referenz aller Features des Business-Dashboards. Verweis-Ziel für andere Projekte (via User-Skill `kolac-digital`).
+
+Repository-Root: `/Users/yusufkolac/Documents/03Orga/kolac digital/kolac-digital`
+Stack: Next.js 14 App Router, Firebase (Firestore + Storage + Admin), Tailwind, `@react-pdf/renderer`, `pdf-lib`.
+
+## Datenmodell (`lib/types.ts`)
+
+`Customer`, `InvoiceItem` (mit optional-Flag + item-vatRate), `Invoice` (invoiceNumber `string | null` bei Draft), `Quote`, `Contract` (mit optional `templateData` für Bearbeit-Fähigkeit), `ContractType`, `ContractField`, `Expense`, `Deal`, `Activity`, `EmailTemplate`, `Task`, `TaskColumn`, `GoogleAuth`, `Settings`.
+
+Wichtige Enums: `InvoiceStatus` (draft/sent/paid/partially_paid/overdue), `QuoteStatus` (draft/sent/accepted/rejected/invoiced/expired), `ContractStatus` (draft/sent/signed/expired/cancelled).
+
+## Rechnungen (`app/dashboard/(app)/rechnungen/`)
+
+- **Draft-Workflow**: `createInvoiceDraft` legt ohne Nummer an → auf Detail-Page „Rechnung stellen" → `finalizeInvoiceWithNumber` vergibt atomar via Transaction + Drive-Sync. Idempotent.
+- **VAT pro Position** (0/7/19% pro Zeile) mit Fallback auf Rechnungs-Satz. Zentraler Helper: `computeInvoiceVat(items, fallbackRate)` in `lib/utils.ts` — gibt `{net, vat, gross, byRate}` zurück.
+- **PDF** (`components/invoice/InvoicePDF.tsx`): pro Steuersatz eine USt-Zeile, GiroCode (Brutto) + Referral-Kasten „15% der ersten Rechnung als Auszahlung" nur auf letzter Seite (natural flow), sonst `fixed`-Footer mit Bank-Daten.
+- **Rich-Text-Beschreibungen**: `RichTextArea` aus Quote-Modul wird auch für Positions-Beschreibungen genutzt. `parseRichText` normalisiert HTML+Markdown.
+- **GoCardless Auto**: `app/api/gocardless/webhook/route.ts` legt Retainer-Rechnungen direkt mit Nummer über `createInvoiceWithNumber` an + versendet + Drive-Sync.
+
+## Angebote (`app/dashboard/(app)/angebote/`)
+
+- **Draft/Sent/Accepted/Invoiced/Rejected/Expired**-Status. Nummer wird bei Anlage direkt vergeben (`createQuoteWithNumber`, format `A-YYYY-NNN`).
+- **Optional-Positionen**: `item.optional=true` → nicht in Bindungs-Summe, aber „Optional zubuchbar" im PDF.
+- **VAT pro Position** (analog Rechnung).
+- **Rich-Text** in Einleitungstext + Positions-Beschreibungen (WYSIWYG, Bold + Bullets, Paste-Sanitizer aus KI/Docs).
+- **Duplizieren**: Button auf Detail-Page → neues Angebot mit gleichen Positionen/Texten, frischer Nummer, Status draft.
+- **Convert → Invoice-Draft** (nicht direkt Nummer): `createInvoiceDraft` mit übernommenen Positionen + item.vatRate.
+- **Auftragsbestätigung**: Upload → Auto-Sync in Drive-Ordner „Aufträge", promotet Status draft→sent bei sent-Angebot.
+
+## Verträge (`app/dashboard/(app)/vertraege/`)
+
+Drei Modi im „Neuer Vertrag"-Flow:
+
+1. **PDF hochladen** (Legacy) — freies PDF + Feld-Editor (`PdfFieldEditor.tsx`) für Signatur-/Datum-/Kolac-Signatur-Positionen.
+2. **Aus Vorlage erstellen** (Template) — WYSIWYG-Freitext + Anlagen. Rendert `TemplateContractPdf.tsx`:
+   - Hauptseite: Logo, Titel, Parteien-Block, Freitext, `fixed`-Footer
+   - Signaturseite (eigene, letzte Hauptseite): Kolac-Signatur schon eingebettet, „Bielefeld, den [Datum]" links, leerer Slot rechts für Kundensignatur
+   - Anlagen: je eigene Seite ab Signaturseite („ANLAGE N ZU …")
+   - **Bearbeitbar** solange Draft/Sent (nicht signed/cancelled): `templateData` wird gespeichert, `/vertraege/[id]/edit/page.tsx` regeneriert PDF am gleichen Storage-Pfad → Signing-Link zeigt automatisch aktuelle Version.
+3. **Angebot zur Unterschrift** (neu): Wenn Vertragstyp „Angebot" gewählt UND Angebot aus Dropdown selektiert → Original-Angebots-PDF wird 1:1 als Basis genutzt, `SignaturePageOnlyPdf.tsx` wird hintendran gemergt (pdf-lib). Freitext-UI ausgeblendet. Signaturfelder auf letzter Seite.
+
+**Neuer-Typ-Inline**: Beim Anlegen kann ein neuer Vertragstyp direkt inline erstellt werden (`createContractType`).
+
+**Signatur-Feld-Konstanten**: `SIG_FIELD_POSITIONS` in `TemplateContractPdf.tsx` — identisch verwendet in Template-Flow + Angebot-zur-Unterschrift-Flow.
+
+## Signing-Flow (`app/sign/[token]/`)
+
+- Öffentlicher Read-only-Zugang via signingToken (`generateSigningToken` in `lib/contract-utils.ts`).
+- PDF-Viewer (`ContractPdfView.tsx`): Single-Page-Ansicht + Blätter-Navigation, Springen-zur-Signatur-Button, Tastatur-Steuerung.
+- Overlay-Felder mit Preview: „Bünde, den 15.11.2025" (echte Vorschau aus `customerCity`), Kolac-Signatur schon sichtbar, „Deine Unterschrift kommt hier hin" auf dem Kundensignatur-Slot.
+- Submit (`app/api/contracts/sign/submit/route.ts`): Zeichnet Kundensignatur + Datum (`"[Kundenstadt], den [heute]"`) an programmatischen Positionen via pdf-lib, hängt Audit-Seite mit IP/UA/SHA256 an.
+
+## Berichte (`app/dashboard/(app)/berichte/`)
+
+- **Einnahmen-CSV**: Rechnungs-Liste nach Jahr, Drafts ausgeschlossen.
+- **UStVA**: Monatsweise pro-Position-VAT (nicht Rechnungs-Ebene), Output-VAT gruppiert nach Satz, Vorsteuer aus Ausgaben, Reverse-Charge § 13b, § 19 Kleinunternehmer, Zahllast-Berechnung. Drafts filtern raus.
+
+## CRM & Aktivitäten
+
+- **Deals** mit Stages (kontaktiert / erstgespraech / angebot_verschickt / vertrag_erhalten / abgeschlossen / verloren), Aktivitäten (anruf/email/notiz/meeting/angebot/vertrag/sonstiges).
+- **E-Mail-Templates** mit Platzhaltern (`EmailTemplate`).
+- **Aufgaben-Kanban** (Task/TaskColumn) mit Priority-Tags.
+
+## Google Drive Sync (`lib/drive-sync.ts`)
+
+- `syncInvoiceToDrive`: PDF in Kunden-Ordner + Zeile in Einnahmen-Sheet.
+- `syncConfirmationToDrive`: Auftragsbestätigung → Ordner „Aufträge".
+- `syncExpenseToDrive`: Beleg + Sheet-Zeile.
+- OAuth via `lib/google-oauth.ts`, Refresh-Token im `GoogleAuth`-Doc.
+
+## Datenbank + Auth
+
+- Firestore-Rules: E-Mail-Whitelist auf `yusuf@kolac-digital.de` mit `email_verified=true`.
+- Storage-Rules identisch.
+- Admin SDK via `FIREBASE_SERVICE_ACCOUNT_JSON` env var (`lib/firebase-admin.ts`).
+
+## Marketing-Site
+
+Statische Landing + `/case-studys/[slug]/page.tsx` (Bacara, CarHifi, Kolac Digital) mit shared `SiteHeader`/`SiteFooter`, Video-Testimonials (YouTube nocookie), 3D-Icons für Overview-Cards.
+
+## Style-Regeln
+
+- **Kein Gedankenstrich** (— / –) in nutzerseitigem Text (UI, PDF, Buttons, Dialoge). Bindestrich in Wörtern (SEPA-QR, MwSt-Satz) ist OK. Siehe Memory `style_no_em_dash`.
+- Rechnungs-PDF durchgängig **Sie**-Form.
+- **Nummernkreise**: Rechnungen `R<n>` bis 30.06.2026, danach `KD-YYYY-NNN`. Angebote `A-YYYY-NNN`.
+- **MwSt-Default** datumsabhängig (Kleinunternehmer 0% bis 30.06.2026, danach 19%).
+
+## Kern-Utilities
+
+- `lib/utils.ts`: `computeInvoiceVat`, `defaultVatRateForDate`, `computeVat`, `grossToNet`, `buildInvoiceNumber`, `buildQuoteNumber`, EPC-QR-Payload, Datums-Helper.
+- `lib/simple-markdown.ts`: `parseRichText`, `htmlToMarkdown`, `parseMarkdownBlocks` (HTML aus WYSIWYG normalisieren, Legacy-Klartext-Verträglichkeit).
+- `lib/pdf-generator.tsx`: `generateInvoicePdfBlob`, `generateQuotePdfBlob`, `generateTemplateContractBlob`, `generateQuoteWithSignatureBlob`, `quoteToTemplateHtml`.
+- `lib/template-contract.ts`: `buildTemplateContractPdf` mit Doppel-Render (Hauptteil + Anlagen) für Signaturseiten-Erkennung.
+
+## PDF-Komponenten
+
+- `components/invoice/InvoicePDF.tsx`
+- `components/quote/QuotePDF.tsx`
+- `components/contract/TemplateContractPdf.tsx` (mit `SIG_FIELD_POSITIONS`)
+- `components/contract/SignaturePageOnlyPdf.tsx` (Stand-alone-Signaturseite, für Angebot-zur-Unterschrift)

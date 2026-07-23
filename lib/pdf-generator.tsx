@@ -6,6 +6,7 @@ import QuotePDF from '@/components/quote/QuotePDF';
 import TemplateContractPdf, {
   type ContractAttachment,
 } from '@/components/contract/TemplateContractPdf';
+import SignaturePageOnlyPdf from '@/components/contract/SignaturePageOnlyPdf';
 import type { Invoice, Customer, Quote } from './types';
 import { buildInvoiceQrDataUrl } from './qr';
 import { computeInvoiceVat, computeVat, formatEUR } from './utils';
@@ -57,6 +58,77 @@ export function buildInvoiceFilename(
   const safe = cust.replace(/[^a-zA-ZäöüÄÖÜß0-9 -]/g, '').trim();
   const nr = invoice.invoiceNumber ?? 'Entwurf';
   return `Rechnung ${nr} ${safe}.pdf`;
+}
+
+/**
+ * Rendert das Angebots-PDF und haengt EINE Signaturseite dahinter —
+ * mit Kolac-Signatur + Bielefeld/Datum bereits eingesetzt, rechte
+ * Spalte leer fuer den Kunden. Genutzt vom Vertrags-Flow, wenn der
+ * User "Angebot" als Vertragstyp waehlt und ein bestehendes Angebot
+ * 1:1 zur Unterschrift schicken will. So bleibt das Original-Layout
+ * des Angebots erhalten und die Signaturzeilen sitzen an den
+ * bekannten Positionen (SIG_FIELD_POSITIONS).
+ */
+export async function generateQuoteWithSignatureBlob(opts: {
+  quote: Quote;
+  customer: Customer;
+  generatedAt?: string;
+}): Promise<Blob> {
+  const origin =
+    typeof window !== 'undefined' ? window.location.origin : '';
+  const logoSrc = `${origin}/images/Logo%20Lang%20Schwarz.png`;
+  const kolacSignatureSrc = `${origin}/images/unterschrift-yusuf.png`;
+  const generatedAt =
+    opts.generatedAt ??
+    new Date().toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+
+  // 1) Original-Angebots-PDF rendern.
+  const quoteBlob = await pdf(
+    <QuotePDF
+      quote={opts.quote}
+      customer={opts.customer}
+      logoSrc={logoSrc}
+    />,
+  ).toBlob();
+
+  // 2) Signaturseiten-PDF (eine Seite) rendern.
+  const sigBlob = await pdf(
+    <SignaturePageOnlyPdf
+      title={`Angebot ${opts.quote.quoteNumber}`}
+      subtitle={
+        opts.customer.company ||
+        `${opts.customer.firstName} ${opts.customer.lastName}`
+      }
+      customer={opts.customer}
+      kolacSignatureSrc={kolacSignatureSrc}
+      logoSrc={logoSrc}
+      generatedAt={generatedAt}
+    />,
+  ).toBlob();
+
+  // 3) Beide zu einem PDF mergen (Angebot + Signaturseite als Ende).
+  const { PDFDocument } = await import('pdf-lib');
+  const [quoteBuf, sigBuf] = await Promise.all([
+    quoteBlob.arrayBuffer(),
+    sigBlob.arrayBuffer(),
+  ]);
+  const merged = await PDFDocument.create();
+  const quoteDoc = await PDFDocument.load(quoteBuf);
+  const sigDoc = await PDFDocument.load(sigBuf);
+  const quotePages = await merged.copyPages(
+    quoteDoc,
+    quoteDoc.getPageIndices(),
+  );
+  quotePages.forEach((p) => merged.addPage(p));
+  const sigPages = await merged.copyPages(sigDoc, sigDoc.getPageIndices());
+  sigPages.forEach((p) => merged.addPage(p));
+  const bytes = await merged.save();
+  // ArrayBuffer statt Uint8Array uebergeben, damit Blob den Typ akzeptiert
+  return new Blob([bytes.buffer as ArrayBuffer], { type: 'application/pdf' });
 }
 
 export async function generateQuotePdfBlob(

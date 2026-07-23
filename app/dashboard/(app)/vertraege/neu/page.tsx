@@ -99,7 +99,6 @@ function NeuerVertragInner() {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [quotesLoaded, setQuotesLoaded] = useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = useState('');
-  const [importingQuote, setImportingQuote] = useState(false);
 
   const selectedType = types.find((t) => t.id === typeId);
   const showQuotePicker =
@@ -125,24 +124,15 @@ function NeuerVertragInner() {
     ? quotes.filter((q) => q.customerId === customerId)
     : quotes;
 
-  const handleImportQuote = async () => {
+  // Wenn ein Angebot ausgewaehlt wird: Titel-Default sinnvoll setzen.
+  // Kein Import-Handler mehr — das Angebot wird beim Speichern direkt
+  // 1:1 als PDF-Basis genutzt und die Signaturseite hintendran gemergt.
+  useEffect(() => {
     if (!selectedQuoteId) return;
-    setImportingQuote(true);
-    try {
-      const q = await getQuote(selectedQuoteId);
-      if (!q) return;
-      const { quoteToTemplateHtml } = await import('@/lib/pdf-generator');
-      const html = quoteToTemplateHtml(q);
-      setBodyText(html);
-      // Titel auf sinnvollen Default setzen, falls noch leer.
-      if (!title) setTitle(`Auftragsbestätigung ${q.quoteNumber}`);
-    } catch (err) {
-      console.error(err);
-      setError(`Angebot konnte nicht geladen werden: ${(err as Error).message}`);
-    } finally {
-      setImportingQuote(false);
-    }
-  };
+    const q = quotes.find((x) => x.id === selectedQuoteId);
+    if (q && !title) setTitle(`Angebot ${q.quoteNumber}`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedQuoteId, quotes]);
 
   const handleCreateType = async () => {
     const label = newTypeLabel.trim();
@@ -199,6 +189,119 @@ function NeuerVertragInner() {
       setTitle(`${t.shortLabel} ${c.company}`.trim());
     }
   }, [customerId, typeId, customers, types, title]);
+
+  /**
+   * Angebot-Modus: Ausgewaehltes Angebot wird 1:1 als PDF-Basis genutzt
+   * (Original-Layout, Positionen, Preise unveraendert). Signaturseite
+   * mit Kolac-Signatur + "Bielefeld, den [heute]" wird automatisch
+   * hintendran gemergt. Signatur-Felder liegen an den bekannten
+   * SIG_FIELD_POSITIONS auf der letzten Seite.
+   */
+  const handleSaveFromQuote = async () => {
+    if (!customerId || !typeId || !title || !selectedQuoteId) return;
+    const customer = customers.find((x) => x.id === customerId);
+    const type = types.find((x) => x.id === typeId);
+    if (!customer || !type) return;
+
+    setSaving(true);
+    setError(null);
+    try {
+      const q = await getQuote(selectedQuoteId);
+      if (!q) {
+        setError('Angebot konnte nicht geladen werden.');
+        setSaving(false);
+        return;
+      }
+
+      const generatedAt = new Date().toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+      const { generateQuoteWithSignatureBlob } = await import(
+        '@/lib/pdf-generator'
+      );
+      const blob = await generateQuoteWithSignatureBlob({
+        quote: q,
+        customer,
+        generatedAt,
+      });
+      const buf = await blob.arrayBuffer();
+      const hash = await sha256Hex(buf);
+      const token = generateSigningToken();
+      const path = `contracts/${token}/original.pdf`;
+      const pdfFile = new File([blob], 'contract.pdf', {
+        type: 'application/pdf',
+      });
+      const downloadUrl = await uploadFile(path, pdfFile);
+
+      // Signaturseite ist die letzte Seite des gemergten Dokuments.
+      let pageCount = 1;
+      try {
+        const { PDFDocument } = await import('pdf-lib');
+        pageCount = (await PDFDocument.load(buf)).getPageCount();
+      } catch (e) {
+        console.warn('Seitenzahl konnte nicht bestimmt werden:', e);
+      }
+
+      const { SIG_FIELD_POSITIONS } = await import(
+        '@/components/contract/TemplateContractPdf'
+      );
+      const fields: ContractField[] = [
+        { type: 'date', page: pageCount, ...SIG_FIELD_POSITIONS.date },
+        {
+          type: 'customer_signature',
+          page: pageCount,
+          ...SIG_FIELD_POSITIONS.customerSignature,
+        },
+      ];
+
+      const expiresAt = Timestamp.fromMillis(
+        Date.now() + expiryDays * 24 * 60 * 60 * 1000,
+      );
+
+      const id = await createContract({
+        customerId,
+        customerSnapshot: {
+          company: customer.company,
+          firstName: customer.firstName,
+          lastName: customer.lastName,
+          email: customer.email,
+          city: customer.city,
+        },
+        typeId,
+        typeLabel: type.label,
+        title,
+        // KEIN templateData — Bearbeiten faellt weg, weil die Basis das
+        // eigentliche Angebot ist. Wenn du was aendern willst, mach's
+        // im Angebot selbst und leg einen neuen Vertrag an.
+        status: 'draft',
+        originalPdfPath: path,
+        originalPdfUrl: downloadUrl,
+        originalSha256: hash,
+        pageCount,
+        fields,
+        signingToken: token,
+        signingExpiresAt: expiresAt,
+        signedPdfPath: null,
+        signedPdfUrl: null,
+        reminderEnabled,
+        reminderDays,
+        lastReminderAt: null,
+        sentAt: null,
+        signedAt: null,
+        signedByName: null,
+        signedFromIp: null,
+        signedFromUserAgent: null,
+        audit: [{ at: Timestamp.now(), event: 'created' }],
+      });
+      router.push(`/dashboard/vertraege/${id}`);
+    } catch (err) {
+      console.error(err);
+      setError(`Speichern fehlgeschlagen: ${(err as Error).message}`);
+      setSaving(false);
+    }
+  };
 
   /**
    * Template-Modus: PDF wird live aus dem Freitext generiert, hochgeladen,
@@ -613,7 +716,7 @@ function NeuerVertragInner() {
                 <div className="p-3 rounded-lg border border-blue-200 bg-blue-50/60 space-y-2">
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="text-sm font-medium text-blue-900">
-                      Aus bestehendem Angebot übernehmen
+                      Bestehendes Angebot zur Unterschrift
                     </p>
                     <span className="text-xs text-blue-700">
                       {customerId
@@ -621,75 +724,79 @@ function NeuerVertragInner() {
                         : `${quotes.length} Angebote insgesamt`}
                     </span>
                   </div>
-                  <div className="flex gap-2">
-                    <select
-                      className="input flex-1"
-                      value={selectedQuoteId}
-                      onChange={(e) => setSelectedQuoteId(e.target.value)}
-                    >
-                      <option value="">– Angebot wählen –</option>
-                      {filteredQuotes.map((q) => (
-                        <option key={q.id} value={q.id}>
-                          {q.quoteNumber} · {q.totalAmount.toFixed(2)} € netto
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={handleImportQuote}
-                      disabled={!selectedQuoteId || importingQuote}
-                      className="btn-secondary text-sm"
-                    >
-                      {importingQuote ? 'Übernehme…' : 'Übernehmen'}
-                    </button>
-                  </div>
+                  <select
+                    className="input"
+                    value={selectedQuoteId}
+                    onChange={(e) => setSelectedQuoteId(e.target.value)}
+                  >
+                    <option value="">– Angebot wählen –</option>
+                    {filteredQuotes.map((q) => (
+                      <option key={q.id} value={q.id}>
+                        {q.quoteNumber} · {q.totalAmount.toFixed(2)} € netto
+                      </option>
+                    ))}
+                  </select>
                   <p className="text-xs text-blue-800">
-                    Einleitungstext, Positionen und Preise werden in den
-                    Freitext eingefügt. Du kannst danach noch beliebig
-                    anpassen.
+                    Das ausgewählte Angebot wird 1:1 als Basis genutzt. Eine
+                    Signaturseite mit Ihrer Unterschrift + „Bielefeld, den
+                    heute" wird automatisch hintendran gehängt. Der Kunde
+                    unterschreibt rechts daneben.
                   </p>
                 </div>
               )}
 
-              <div>
-                <label className="label">Freitext (Vertragsinhalt)</label>
-                <RichTextArea
-                  value={bodyText}
-                  onChange={setBodyText}
-                  placeholder="Hier den Inhalt des Vertrags eintragen…"
-                  minHeight={280}
-                />
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Header (Kolac + Kunde), Signaturbereich und Footer werden
-                  automatisch ergänzt. Signaturfeld sitzt unten rechts
-                  direkt unter deinem Freitext.
-                </p>
-              </div>
+              {/* Freitext + Anlagen NUR wenn KEIN Angebot ausgewaehlt ist.
+                  Bei Angebot-Modus wird das Angebot direkt als PDF-Basis
+                  genutzt, kein Freitext-Editor noetig. */}
+              {!selectedQuoteId && (
+                <>
+                  <div>
+                    <label className="label">Freitext (Vertragsinhalt)</label>
+                    <RichTextArea
+                      value={bodyText}
+                      onChange={setBodyText}
+                      placeholder="Hier den Inhalt des Vertrags eintragen…"
+                      minHeight={280}
+                    />
+                    <p className="mt-1.5 text-xs text-gray-500">
+                      Header (Kolac + Kunde), Signaturbereich und Footer werden
+                      automatisch ergänzt. Signaturfeld sitzt unten rechts
+                      direkt unter Ihrem Freitext.
+                    </p>
+                  </div>
 
-              <div className="border-t border-gray-100 pt-4">
-                <AttachmentsEditor
-                  attachments={attachments}
-                  onChange={setAttachments}
-                />
-              </div>
+                  <div className="border-t border-gray-100 pt-4">
+                    <AttachmentsEditor
+                      attachments={attachments}
+                      onChange={setAttachments}
+                    />
+                  </div>
+                </>
+              )}
 
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={handleSaveFromTemplate}
+                  onClick={
+                    selectedQuoteId
+                      ? handleSaveFromQuote
+                      : handleSaveFromTemplate
+                  }
                   disabled={
                     saving ||
                     generating ||
                     !customerId ||
                     !typeId ||
                     !title ||
-                    !bodyText.trim()
+                    (!selectedQuoteId && !bodyText.trim())
                   }
                   className="btn-primary disabled:opacity-50"
                 >
                   {saving
                     ? 'Erzeuge PDF & speichere…'
-                    : 'PDF erzeugen & Signing-Link generieren'}
+                    : selectedQuoteId
+                      ? 'Angebot mit Signaturseite versenden'
+                      : 'PDF erzeugen & Signing-Link generieren'}
                 </button>
               </div>
               {(!customerId || !typeId || !title) && (
