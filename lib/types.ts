@@ -139,6 +139,8 @@ export interface Settings {
   nextQuoteNumber: number;
   defaultQuoteValidDays: number;
   defaultQuoteAcceptanceText: string;
+  /** Zaehler fuer Auftragsbestaetigungen (Nummernkreis AB-YYYY-NNN). */
+  nextOrderConfirmationNumber?: number;
 }
 
 export type QuoteStatus =
@@ -149,10 +151,20 @@ export type QuoteStatus =
   | 'invoiced'
   | 'expired';
 
+/**
+ * Ein Quote-Doc kann entweder ein Angebot ODER eine Auftragsbestaetigung
+ * sein — der Aufbau ist strukturell identisch (Kunde, Positionen, MwSt,
+ * Texte), nur Nummernkreis, Titel im PDF und Default-Formulierungen
+ * unterscheiden sich. Fehlt das Feld: Legacy-Angebot.
+ */
+export type QuoteDocumentType = 'quote' | 'order_confirmation';
+
 export interface Quote {
   id: string;
   customerId: string;
   quoteNumber: string;
+  /** Default 'quote' wenn nicht gesetzt (Legacy-Compat). */
+  documentType?: QuoteDocumentType;
   quoteDate: Timestamp;
   validUntil: Timestamp;
   status: QuoteStatus;

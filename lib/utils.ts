@@ -93,6 +93,19 @@ export function buildQuoteNumber(counter: number, quoteDate: Date): string {
 }
 
 /**
+ * Auftragsbestaetigungs-Nummer: eigener Zaehler, Format AB-YYYY-NNN.
+ * Getrennt vom Angebots-Nummernkreis, damit die Zaehler unabhaengig
+ * laufen (eine AB gehoert nicht immer zu einem Angebot).
+ */
+export function buildOrderConfirmationNumber(
+  counter: number,
+  date: Date,
+): string {
+  const year = date.getFullYear();
+  return `AB-${year}-${String(counter).padStart(3, '0')}`;
+}
+
+/**
  * Strip all whitespace from an IBAN — required for EPC/GiroCode payload.
  */
 export function normalizeIBAN(iban: string): string {

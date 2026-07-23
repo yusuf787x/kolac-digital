@@ -295,6 +295,15 @@ const greeting = (c: Customer): string => {
 };
 
 export default function QuotePDF({ quote, customer, logoSrc }: Props) {
+  const isOrderConfirmation = quote.documentType === 'order_confirmation';
+  const docTitle = isOrderConfirmation ? 'AUFTRAGSBESTÄTIGUNG' : 'ANGEBOT';
+  const docNumberLabel = isOrderConfirmation ? 'AUFTRAGSNR.:' : 'ANGEBOTSNR.:';
+  const footerTagline = isOrderConfirmation
+    ? 'DANKE FÜR IHREN AUFTRAG'
+    : 'DANKE FÜR IHRE ANFRAGE';
+  const defaultIntro = isOrderConfirmation
+    ? 'vielen Dank für Ihren Auftrag. Hiermit bestätigen wir Ihnen verbindlich die folgenden Leistungen und Konditionen:'
+    : 'vielen Dank für Ihre Anfrage. Wir freuen uns, Ihnen folgendes Angebot unterbreiten zu dürfen:';
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -331,7 +340,7 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
 
           <View style={styles.meta}>
             <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>ANGEBOTSNR.:</Text>
+              <Text style={styles.metaLabel}>{docNumberLabel}</Text>
               <Text style={styles.metaValueHighlight}>
                 {quote.quoteNumber}
               </Text>
@@ -352,11 +361,9 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>ANGEBOT</Text>
+        <Text style={styles.title}>{docTitle}</Text>
 
         {quote.introText && quote.introText.trim() ? (
-          // Nutzer schreibt eigene Anrede + Text — kein zweiter,
-          // hardcodeder "Sehr geehrte..." Block davor.
           <PdfMarkdown
             text={quote.introText}
             paragraphStyle={styles.paragraph}
@@ -367,10 +374,7 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
         ) : (
           <>
             <Text style={styles.paragraph}>{greeting(customer)}</Text>
-            <Text style={styles.paragraph}>
-              vielen Dank für Ihre Anfrage. Wir freuen uns, Ihnen folgendes
-              Angebot unterbreiten zu dürfen:
-            </Text>
+            <Text style={styles.paragraph}>{defaultIntro}</Text>
           </>
         )}
 
@@ -508,8 +512,9 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
           );
         })()}
 
-        {/* Acceptance text in highlighted box (enthält bereits Kontaktwege) */}
-        {quote.acceptanceText && (
+        {/* Acceptance text — nur bei Angeboten. Bei Auftragsbestaetigung
+            ist die Sache schon bestaetigt, kein "bitte bestaetigen"-Kasten. */}
+        {!isOrderConfirmation && quote.acceptanceText && (
           <View style={styles.acceptanceBox}>
             <Text style={styles.acceptanceText}>{quote.acceptanceText}</Text>
           </View>
@@ -517,13 +522,14 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
 
         <Text style={styles.paragraph}>{quote.closingText}</Text>
 
-        {/* Optional signature row (left: Auftraggeber, right: Auftragnehmer) */}
+        {/* Signaturzeilen: LINKS Kolac Digital, RECHTS Auftraggeber
+            (Konvention: Auftragnehmer/Ausstellender links). */}
         <View style={styles.signatureRow}>
           <View style={styles.signatureBox}>
-            <Text style={styles.signatureLabel}>Datum, Unterschrift Auftraggeber</Text>
+            <Text style={styles.signatureLabel}>Datum, Unterschrift Kolac Digital</Text>
           </View>
           <View style={styles.signatureBox}>
-            <Text style={styles.signatureLabel}>Datum, Unterschrift Kolac Digital</Text>
+            <Text style={styles.signatureLabel}>Datum, Unterschrift Auftraggeber</Text>
           </View>
         </View>
 
@@ -542,7 +548,7 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
           </View>
 
           <View>
-            <Text style={styles.footerRight}>DANKE FÜR IHRE ANFRAGE</Text>
+            <Text style={styles.footerRight}>{footerTagline}</Text>
           </View>
         </View>
       </Page>

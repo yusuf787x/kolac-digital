@@ -13,6 +13,7 @@ import {
   deleteFile,
   createInvoiceDraft,
   createQuoteWithNumber,
+  createOrderConfirmationFromQuote,
   getSettings,
   getGoogleAuth,
 } from '@/lib/firestore';
@@ -82,6 +83,7 @@ export default function AngebotDetailPage() {
   const [uploading, setUploading] = useState(false);
   const [converting, setConverting] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [creatingConfirmation, setCreatingConfirmation] = useState(false);
   const [syncingConfirmation, setSyncingConfirmation] = useState(false);
   const [confirmationSyncMessage, setConfirmationSyncMessage] = useState<
     string | null
@@ -330,10 +332,39 @@ export default function AngebotDetailPage() {
    * Auftragsbestaetigung, PDF-URLs, verknuepfte Rechnung) wird
    * zurueckgesetzt — die Kopie startet als sauberer Entwurf.
    */
+  /**
+   * Aus dem Angebot eine Auftragsbestaetigung ableiten. Erzeugt ein
+   * neues Quote-Doc mit documentType='order_confirmation', eigener
+   * AB-YYYY-NNN-Nummer aus dem separaten Zaehler, denselben Positionen
+   * und MwSt-Einstellungen. Introtext bleibt leer — Nutzer fuellt oben
+   * das Feld selbst mit dem gewuenschten Text.
+   */
+  const handleCreateOrderConfirmation = async () => {
+    if (!quote) return;
+    setCreatingConfirmation(true);
+    try {
+      const { id } = await createOrderConfirmationFromQuote(quote);
+      router.push(`/dashboard/angebote/${id}`);
+    } catch (err) {
+      console.error(err);
+      alert(
+        `Auftragsbestätigung erstellen fehlgeschlagen: ${(err as Error).message}`,
+      );
+      setCreatingConfirmation(false);
+    }
+  };
+
   const handleDuplicate = async () => {
     if (!quote) return;
     setDuplicating(true);
     try {
+      // Bei Duplizieren einer Auftragsbestaetigung: neue AB mit eigenem
+      // AB-Nummernkreis, nicht als Angebot!
+      if (quote.documentType === 'order_confirmation') {
+        const { id: newId } = await createOrderConfirmationFromQuote(quote);
+        router.push(`/dashboard/angebote/${newId}`);
+        return;
+      }
       const settings = await getSettings();
       const today = new Date();
       const validUntil = new Date(today);
@@ -408,6 +439,10 @@ export default function AngebotDetailPage() {
   const isDraft = quote.status === 'draft';
   const canConvert = quote.status === 'accepted';
   const isInvoiced = quote.status === 'invoiced';
+  const isOrderConfirmation = quote.documentType === 'order_confirmation';
+  // AB kann nur aus einem angenommenen Angebot abgeleitet werden.
+  const canDeriveConfirmation =
+    !isOrderConfirmation && quote.status === 'accepted';
 
   return (
     <div>
@@ -420,8 +455,13 @@ export default function AngebotDetailPage() {
         </Link>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl font-semibold text-gray-900 flex items-center gap-3">
+            <h1 className="text-3xl font-semibold text-gray-900 flex items-center gap-3 flex-wrap">
               {quote.quoteNumber}
+              {isOrderConfirmation && (
+                <span className="text-sm font-medium px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  Auftragsbestätigung
+                </span>
+              )}
               <span
                 className={`text-sm font-medium px-2 py-0.5 rounded ${QUOTE_STATUS_BADGE_CLASSES[computedStatus]}`}
               >
@@ -465,10 +505,26 @@ export default function AngebotDetailPage() {
               onClick={handleDuplicate}
               disabled={duplicating}
               className="btn-secondary"
-              title="Legt ein neues Angebot mit denselben Positionen und Texten an."
+              title={
+                isOrderConfirmation
+                  ? 'Legt eine neue Auftragsbestätigung mit denselben Positionen an.'
+                  : 'Legt ein neues Angebot mit denselben Positionen und Texten an.'
+              }
             >
               {duplicating ? 'Dupliziere…' : 'Duplizieren'}
             </button>
+            {canDeriveConfirmation && (
+              <button
+                onClick={handleCreateOrderConfirmation}
+                disabled={creatingConfirmation}
+                className="btn-primary"
+                title="Erzeugt aus diesem angenommenen Angebot eine neue Auftragsbestätigung mit eigener AB-Nummer."
+              >
+                {creatingConfirmation
+                  ? 'Erstelle AB…'
+                  : 'Auftragsbestätigung erstellen'}
+              </button>
+            )}
             {canConvert && (
               <button
                 onClick={handleConvertToInvoice}

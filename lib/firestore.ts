@@ -34,7 +34,12 @@ import type {
   Task,
   TaskColumn,
 } from './types';
-import { buildInvoiceNumber, buildQuoteNumber, tsToMillis } from './utils';
+import {
+  buildInvoiceNumber,
+  buildOrderConfirmationNumber,
+  buildQuoteNumber,
+  tsToMillis,
+} from './utils';
 import { SEED_TEMPLATES } from './sales';
 
 const fromDoc = <T>(d: QueryDocumentSnapshot<DocumentData>): T =>
@@ -297,6 +302,84 @@ export async function createQuoteWithNumber(
   });
 
   return { id: newRef.id, quoteNumber };
+}
+
+/**
+ * Legt eine Auftragsbestaetigung als neues Quote-Doc an
+ * (documentType='order_confirmation'). Eigener Nummernkreis
+ * (AB-YYYY-NNN) mit separatem Zaehler in settings/config. Erhaelt
+ * dieselben Positionen/Texte/MwSt wie die uebergebene Quelle
+ * (z.B. das abgeleitete Angebot); Status-/Zeit-Felder werden
+ * zurueckgesetzt.
+ */
+export async function createOrderConfirmationFromQuote(
+  source: Quote,
+  overrides?: Partial<Quote>,
+): Promise<{ id: string; quoteNumber: string }> {
+  const settingsRef = doc(db, 'settings', 'config');
+  const newRef = doc(quotesCol());
+
+  const number = await runTransaction(db, async (tx) => {
+    const settingsSnap = await tx.get(settingsRef);
+    const current = settingsSnap.exists()
+      ? (settingsSnap.data() as Settings).nextOrderConfirmationNumber ?? 1
+      : 1;
+    const nr = buildOrderConfirmationNumber(current, new Date());
+    tx.set(
+      settingsRef,
+      { nextOrderConfirmationNumber: current + 1 },
+      { merge: true },
+    );
+
+    const today = new Date();
+    const validUntil = new Date(today);
+    validUntil.setDate(validUntil.getDate() + 14);
+
+    const items = source.items.map((it, idx) => ({
+      position: idx + 1,
+      description: it.description,
+      quantity: it.quantity,
+      unitPrice: it.unitPrice,
+      totalPrice: it.totalPrice,
+      ...(it.optional ? { optional: true } : {}),
+      ...(it.vatRate !== undefined ? { vatRate: it.vatRate } : {}),
+    }));
+
+    tx.set(newRef, {
+      customerId: source.customerId,
+      documentType: 'order_confirmation' as const,
+      quoteNumber: nr,
+      quoteDate: Timestamp.fromDate(today),
+      validUntil: Timestamp.fromDate(validUntil),
+      status: 'draft',
+      totalAmount: source.totalAmount,
+      vatRate: source.vatRate,
+      // Leerer introText — der Nutzer fuellt das oben-Feld selbst.
+      // Wenn leer, rendert das PDF automatisch einen Default-Satz.
+      introText: '',
+      closingText: source.closingText,
+      // Kein "bitte bestaetigen"-Text mehr — die Bestaetigung ist die
+      // Auftragsbestaetigung selbst.
+      acceptanceText: '',
+      items,
+      pdfUrl: null,
+      driveUrl: null,
+      confirmationFileUrl: null,
+      confirmationFilename: null,
+      confirmationDriveUrl: null,
+      sentAt: null,
+      acceptedAt: null,
+      rejectedAt: null,
+      invoicedAt: null,
+      invoiceId: null,
+      ...overrides,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return nr;
+  });
+
+  return { id: newRef.id, quoteNumber: number };
 }
 
 export async function updateQuote(
