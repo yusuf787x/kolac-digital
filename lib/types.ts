@@ -248,7 +248,9 @@ export type ActivityType =
 
 export interface Activity {
   id: string;
-  dealId: string;
+  /** Ein Aktivitaet gehoert zu einem Deal ODER zu einem Lead. */
+  dealId?: string;
+  leadId?: string;
   type: ActivityType;
   description: string;
   emailSubject: string | null;
@@ -264,6 +266,105 @@ export interface EmailTemplate {
   name: string;
   subject: string;
   body: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+// ===================================================================
+// LEADS (Sales-Pipeline vor Customer-Anlage)
+// ===================================================================
+
+/**
+ * Lead-Status im typischen Kaltakquise-Trichter. „kalt" ist der
+ * Default nach Import, „gewonnen" fuehrt zum Convert-Flow (Lead wird
+ * zu Customer + Deal).
+ */
+export type LeadStatus =
+  | 'kalt'
+  | 'kontaktiert'
+  | 'interessiert'
+  | 'termin_vereinbart'
+  | 'kein_interesse'
+  | 'nicht_erreicht'
+  | 'gewonnen'
+  | 'verloren';
+
+export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
+  kalt: 'Kalt',
+  kontaktiert: 'Kontaktiert',
+  interessiert: 'Interessiert',
+  termin_vereinbart: 'Termin vereinbart',
+  kein_interesse: 'Kein Interesse',
+  nicht_erreicht: 'Nicht erreicht',
+  gewonnen: 'Gewonnen',
+  verloren: 'Verloren',
+};
+
+/** Vor-konfektionierte Branchen — frei erweiterbar via `category` als String. */
+export const LEAD_CATEGORIES = [
+  'Friseur',
+  'Barbier',
+  'Kosmetik',
+  'Nagelstudio',
+  'Physio',
+  'Zahnarzt',
+  'Arztpraxis',
+  'Heilpraktiker',
+  'Handwerker',
+  'Restaurant',
+  'Cafe',
+  'Einzelhandel',
+  'Werkstatt',
+  'Dienstleister',
+  'Sonstiges',
+] as const;
+
+export interface Lead {
+  id: string;
+  /** Betriebsname. */
+  company: string;
+  /** Optionaler Ansprechpartner (Inhaber, GF, ...). */
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  /** Bestehende Website des Betriebs, falls vorhanden. Fehlt → hot Lead. */
+  website?: string;
+  /**
+   * Nutzung des Website-Alters als Qualifier: „veraltet" (3+ Jahre nicht
+   * ueberarbeitet), „keine Website", „modern" (kein Bedarf). Frei setzbar.
+   */
+  websiteAge?: 'keine' | 'veraltet' | 'modern' | 'unbekannt';
+  /** Branche/Kategorie, frei als String (aus LEAD_CATEGORIES oder eigen). */
+  category?: string;
+  street?: string;
+  zip?: string;
+  city?: string;
+  /** Google-Rating 1-5. */
+  rating?: number;
+  reviewCount?: number;
+  /** URL zum Google-Maps-Business-Eintrag (Quelle-Referenz). */
+  googleMapsUrl?: string;
+  /** Weitere Quellen-URL (z.B. Kammer-Verzeichnis, Recherche-Notiz). */
+  sourceUrl?: string;
+  source?:
+    | 'google_maps'
+    | 'csv_import'
+    | 'manuell'
+    | 'empfehlung'
+    | 'social_media'
+    | 'sonstiges';
+  status: LeadStatus;
+  /**
+   * Naechster Rueckruf/Kontakt-Termin. Wenn <= heute → im Dashboard
+   * als „faellig" markiert.
+   */
+  nextCallAt: Timestamp | null;
+  lastContactAt: Timestamp | null;
+  lostReason?: string;
+  /** Freitext-Notizen. */
+  notes: string;
+  /** Wenn Lead „gewonnen" wurde und in einen Customer konvertiert. */
+  convertedCustomerId?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

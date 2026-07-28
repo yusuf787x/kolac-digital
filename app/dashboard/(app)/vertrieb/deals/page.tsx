@@ -30,6 +30,7 @@ export default function DealListePage() {
         const now = Date.now();
         const overdue = new Set<string>();
         acts.forEach((a) => {
+          if (!a.dealId) return;
           const due = tsToMillis(a.dueDate);
           if (due > 0 && due < now) overdue.add(a.dealId);
         });

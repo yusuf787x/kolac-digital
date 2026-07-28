@@ -266,8 +266,10 @@ export default function DashboardHomePage() {
                 </Link>
               </div>
               <div className="divide-y divide-gray-100">
-                {dueActivities.map((a) => {
-                  const deal = dealMap.get(a.dealId);
+                {dueActivities
+                  .filter((a) => a.dealId)
+                  .map((a) => {
+                  const deal = dealMap.get(a.dealId!);
                   const def = activityDef(a.type);
                   const due = a.dueDate!.toDate();
                   const overdue = a.dueDate!.toMillis() < Date.now();

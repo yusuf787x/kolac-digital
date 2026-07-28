@@ -14,6 +14,7 @@ import {
   serverTimestamp,
   Timestamp,
   runTransaction,
+  writeBatch,
   type DocumentData,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
@@ -29,6 +30,7 @@ import type {
   Deal,
   Activity,
   EmailTemplate,
+  Lead,
   Contract,
   ContractType,
   Task,
@@ -546,6 +548,116 @@ export async function updateActivity(
 
 export async function deleteActivity(id: string): Promise<void> {
   await deleteDoc(doc(db, 'activities', id));
+}
+
+export async function listActivitiesByLead(
+  leadId: string,
+): Promise<Activity[]> {
+  const snap = await getDocs(
+    query(activitiesCol(), where('leadId', '==', leadId)),
+  );
+  return snap.docs
+    .map((d) => fromDoc<Activity>(d))
+    .sort((a, b) => sortKey(b) - sortKey(a));
+}
+
+// ===================================================================
+// LEADS
+// ===================================================================
+
+const leadsCol = () => collection(db, 'leads');
+
+export async function listLeads(): Promise<Lead[]> {
+  const snap = await getDocs(query(leadsCol(), orderBy('updatedAt', 'desc')));
+  return snap.docs.map((d) => fromDoc<Lead>(d));
+}
+
+export async function getLead(id: string): Promise<Lead | null> {
+  const snap = await getDoc(doc(db, 'leads', id));
+  return snap.exists() ? fromDoc<Lead>(snap) : null;
+}
+
+export async function createLead(
+  data: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(leadsCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateLead(
+  id: string,
+  data: Partial<Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'leads', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteLead(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'leads', id));
+}
+
+/**
+ * Batch-Import: legt N Leads in einem Rutsch an. Fuer den CSV-Import.
+ * Batches sind auf 500 pro Write beschraenkt in Firestore — bei mehr
+ * Zeilen wird gechunked.
+ */
+export async function bulkCreateLeads(
+  leads: Array<Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>>,
+): Promise<number> {
+  const CHUNK = 400;
+  let written = 0;
+  for (let i = 0; i < leads.length; i += CHUNK) {
+    const batch = writeBatch(db);
+    for (const l of leads.slice(i, i + CHUNK)) {
+      const ref = doc(leadsCol());
+      batch.set(ref, {
+        ...l,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    await batch.commit();
+    written += Math.min(CHUNK, leads.length - i);
+  }
+  return written;
+}
+
+/**
+ * Rueckrufe faellig — alle Leads mit nextCallAt <= jetzt, gruppiert nach
+ * "heute" und "ueberfaellig". Client-side gefiltert, damit kein
+ * Composite-Index noetig ist.
+ */
+export async function listLeadsWithDueCallback(): Promise<{
+  today: Lead[];
+  overdue: Lead[];
+}> {
+  const all = await listLeads();
+  const now = Date.now();
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+  const today: Lead[] = [];
+  const overdue: Lead[] = [];
+  for (const l of all) {
+    if (!l.nextCallAt) continue;
+    const t = l.nextCallAt.toMillis();
+    if (t < startOfToday.getTime()) overdue.push(l);
+    else if (t <= endOfToday.getTime()) today.push(l);
+    // future → nicht anzeigen
+    void now;
+  }
+  today.sort((a, b) => (a.nextCallAt!.toMillis()) - (b.nextCallAt!.toMillis()));
+  overdue.sort(
+    (a, b) => a.nextCallAt!.toMillis() - b.nextCallAt!.toMillis(),
+  );
+  return { today, overdue };
 }
 
 // ===================================================================
