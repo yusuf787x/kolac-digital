@@ -102,10 +102,16 @@ export default function LeadListePage() {
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="btn-primary"
+            className="btn-secondary"
           >
             + Neuer Lead
           </button>
+          <Link
+            href="/dashboard/vertrieb/leads/pilot"
+            className="btn-primary inline-flex items-center gap-1"
+          >
+            🚀 Salespilot starten
+          </Link>
         </div>
       </header>
 
@@ -174,18 +180,45 @@ export default function LeadListePage() {
                   !overdue &&
                   new Date(l.nextCallAt.toMillis()).toDateString() ===
                     new Date().toDateString();
+                // Ganze Row navigiert zur Detail-Page. Innerhalb der Row
+                // sind Links/Buttons mit stopPropagation ausgestattet, damit
+                // sie ihr eigenes Ziel oeffnen ohne die Row-Navigation zu
+                // triggern.
+                const goDetail = () =>
+                  (window.location.href = `/dashboard/vertrieb/leads/${l.id}`);
+                const stop = (e: React.MouseEvent) => e.stopPropagation();
                 return (
                   <tr
                     key={l.id}
-                    className={overdue ? 'bg-amber-50/40' : 'hover:bg-gray-50'}
+                    onClick={goDetail}
+                    className={`cursor-pointer ${
+                      overdue ? 'bg-amber-50/40' : 'hover:bg-gray-50'
+                    }`}
                   >
                     <td className="px-4 py-3 font-medium text-gray-900">
-                      <Link
-                        href={`/dashboard/vertrieb/leads/${l.id}`}
-                        className="hover:underline"
-                      >
-                        {l.company}
-                      </Link>
+                      {l.website ? (
+                        <a
+                          href={l.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={stop}
+                          className="text-brand-blue hover:underline inline-flex items-center gap-1"
+                          title={`Website öffnen: ${l.website}`}
+                        >
+                          {l.company}
+                          <span className="text-[10px] text-gray-400">↗</span>
+                        </a>
+                      ) : (
+                        <span
+                          className="inline-flex items-center gap-2"
+                          title="Keine Website — heißer Lead"
+                        >
+                          {l.company}
+                          <span className="text-[10px] text-emerald-700 font-semibold">
+                            🔥
+                          </span>
+                        </span>
+                      )}
                       {l.website && (
                         <p className="text-xs text-gray-400 truncate max-w-[220px]">
                           {l.website}
@@ -199,6 +232,7 @@ export default function LeadListePage() {
                       {l.phone && (
                         <a
                           href={`tel:${l.phone}`}
+                          onClick={stop}
                           className="block text-brand-blue hover:underline"
                         >
                           {l.phone}
@@ -207,6 +241,7 @@ export default function LeadListePage() {
                       {l.email && (
                         <a
                           href={`mailto:${l.email}`}
+                          onClick={stop}
                           className="block text-xs text-gray-500 truncate max-w-[200px]"
                         >
                           {l.email}

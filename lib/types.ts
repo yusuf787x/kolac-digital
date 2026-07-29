@@ -365,6 +365,25 @@ export interface Lead {
   notes: string;
   /** Wenn Lead „gewonnen" wurde und in einen Customer konvertiert. */
   convertedCustomerId?: string;
+  /**
+   * Ergebnis des Website-Auto-Checks (per /api/leads/check-website).
+   * Speichert die Signals, die die Heuristik gefunden hat.
+   */
+  websiteCheck?: {
+    lastCopyrightYear?: number;
+    generator?: string;
+    hasViewportMeta?: boolean;
+    hasHttps?: boolean;
+    checkedAt: Timestamp;
+    reachable: boolean;
+    /** Rohe Signals als Klartext fuer Debug. */
+    notes?: string;
+  };
+  /**
+   * Zeitstempel des letzten Anruf-Versuchs im Salespilot. Wird genutzt,
+   * um "heute schon versucht" zu unterscheiden von "vor Tagen".
+   */
+  lastCallAttemptAt?: Timestamp;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

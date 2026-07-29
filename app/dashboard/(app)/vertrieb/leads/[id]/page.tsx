@@ -240,6 +240,42 @@ export default function LeadDetailPage() {
               <option value="veraltet">Veraltet (3+ Jahre)</option>
               <option value="modern">Modern (kein Bedarf)</option>
             </select>
+            {lead.website && (
+              <button
+                type="button"
+                onClick={async () => {
+                  const { authedFetch } = await import('@/lib/api-client');
+                  const { buildWebsiteCheckPayload } = await import(
+                    '@/lib/lead-utils'
+                  );
+                  const res = await authedFetch(
+                    '/api/leads/check-website',
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ url: lead.website }),
+                    },
+                  );
+                  const data = await res.json();
+                  await patch({
+                    websiteAge: data.suggestedAge,
+                    websiteCheck: buildWebsiteCheckPayload(data),
+                  });
+                }}
+                className="mt-2 text-xs text-brand-blue hover:underline"
+              >
+                🔍 Automatisch prüfen
+              </button>
+            )}
+            {lead.websiteCheck && (
+              <p className="mt-1 text-xs text-gray-500">
+                Letzter Check:{' '}
+                {new Date(
+                  lead.websiteCheck.checkedAt.toMillis(),
+                ).toLocaleDateString('de-DE')}{' '}
+                · {lead.websiteCheck.notes || '(keine Signals)'}
+              </p>
+            )}
           </div>
 
           <NotesBlock lead={lead} patch={patch} saving={saving} />
