@@ -581,7 +581,7 @@ export async function createLead(
   data: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>,
 ): Promise<string> {
   const ref = await addDoc(leadsCol(), {
-    ...data,
+    ...stripUndefined(data),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -593,7 +593,7 @@ export async function updateLead(
   data: Partial<Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>>,
 ): Promise<void> {
   await updateDoc(doc(db, 'leads', id), {
-    ...data,
+    ...stripUndefined(data),
     updatedAt: serverTimestamp(),
   });
 }
@@ -607,6 +607,19 @@ export async function deleteLead(id: string): Promise<void> {
  * Batches sind auf 500 pro Write beschraenkt in Firestore — bei mehr
  * Zeilen wird gechunked.
  */
+/**
+ * Firestore lehnt `undefined`-Feldwerte hart ab. Beim Import aus CSVs
+ * mit fehlenden Spalten sind aber viele Felder undefined. Diese
+ * Helper-Funktion droppt alle undefined-Keys aus dem Payload.
+ */
+function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) out[k] = v;
+  }
+  return out as T;
+}
+
 export async function bulkCreateLeads(
   leads: Array<Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>>,
 ): Promise<number> {
@@ -617,7 +630,7 @@ export async function bulkCreateLeads(
     for (const l of leads.slice(i, i + CHUNK)) {
       const ref = doc(leadsCol());
       batch.set(ref, {
-        ...l,
+        ...stripUndefined(l),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
