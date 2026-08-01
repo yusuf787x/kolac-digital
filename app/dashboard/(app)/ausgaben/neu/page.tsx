@@ -133,14 +133,28 @@ export default function NeueAusgabePage() {
 
     setSubmitting(true);
     setSyncStatus(null);
+    let uploadWarning: string | null = null;
     try {
       let receiptUrl: string | null = null;
       if (receipt) {
-        const safe = receipt.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-        const path = `expenses/${Date.now()}-${Math.random()
-          .toString(36)
-          .slice(2, 8)}-${safe}`;
-        receiptUrl = await uploadFile(path, receipt);
+        try {
+          const safe = receipt.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+          const path = `expenses/${Date.now()}-${Math.random()
+            .toString(36)
+            .slice(2, 8)}-${safe}`;
+          receiptUrl = await uploadFile(path, receipt);
+        } catch (uploadErr) {
+          // Storage-Fehler (z.B. Quota exceeded auf Spark-Tarif):
+          // Ausgabe trotzdem speichern, User klar warnen.
+          console.warn('Beleg-Upload fehlgeschlagen:', uploadErr);
+          const msg = (uploadErr as Error).message;
+          if (msg.includes('quota-exceeded')) {
+            uploadWarning =
+              'Beleg konnte NICHT hochgeladen werden: Firebase Storage-Quota erreicht. Die Ausgabe wurde ohne Beleg-URL gespeichert. Beleg lokal aufheben und Firebase auf Blaze-Tarif upgraden — dann kannst du den Beleg spaeter nachtragen.';
+          } else {
+            uploadWarning = `Beleg-Upload fehlgeschlagen (${msg}). Ausgabe wurde ohne Beleg gespeichert.`;
+          }
+        }
       }
 
       const expenseId = await createExpense({
@@ -179,10 +193,12 @@ export default function NeueAusgabePage() {
         syncMessage = `Drive-Sync fehlgeschlagen (${(syncErr as Error).message}). Ausgabe wurde lokal gespeichert.`;
       }
 
-      if (syncMessage) {
-        setSyncStatus(syncMessage);
-        // Pause so the user sees the message before we navigate.
-        await new Promise((r) => setTimeout(r, 2500));
+      // Upload-Warnung hat Vorrang — die ist wichtiger als der Drive-Sync-Status.
+      const finalMessage = uploadWarning ?? syncMessage;
+      if (finalMessage) {
+        setSyncStatus(finalMessage);
+        // Bei Upload-Fehler laenger stehen lassen — der User muss das lesen.
+        await new Promise((r) => setTimeout(r, uploadWarning ? 5000 : 2500));
       }
 
       router.push('/dashboard/ausgaben');
