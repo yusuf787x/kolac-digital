@@ -57,6 +57,14 @@ Drei Modi im „Neuer Vertrag"-Flow:
 - **Einnahmen-CSV**: Rechnungs-Liste nach Jahr, Drafts ausgeschlossen.
 - **UStVA**: Monatsweise pro-Position-VAT (nicht Rechnungs-Ebene), Output-VAT gruppiert nach Satz, Vorsteuer aus Ausgaben, Reverse-Charge § 13b, § 19 Kleinunternehmer, Zahllast-Berechnung. Drafts filtern raus.
 
+## Cold-Call-Modul (integriert im Salespilot)
+
+- **Skript** (`/vertrieb/skript/`): versionierbare Cold-Call-Skripte (Blöcke + Einwand-Antworten), aktive Version + Rollback möglich. `CallScript` in Firestore-Collection `callScripts`. `createCallScriptVersion` archiviert alte + aktiviert neue atomar via Transaction. `activateCallScript` = Rollback.
+- **Config** (`/vertrieb/call-log/config/`): Stufen (nicht erreicht/Gatekeeper/Einstieg/Pitch/Einwand/Abschluss), Ergebnisse (Termin/Rückruf/…), Einwand-Kategorien — alles editierbar in Firestore-Doc `callConfig/default`. `getCallLogConfig` seedet Default beim ersten Aufruf.
+- **Erfassung** direkt im Salespilot: Stufe (optional) → Ergebnis-Klick → automatisch `CallLog`-Doc + Lead-`Activity` + Lead-Status/Rückruf gesetzt + Sprung zum nächsten Lead. Skript-Regie aufklappbar im gleichen Bildschirm.
+- **Auswertung** (`/vertrieb/call-log/auswertung/`): Funnel pro Stage, Terminquote (basiert auf `outcomeIsSuccess`-Snapshots), Einwand-Häufigkeit, Skript-Versions-Vergleich (Quote pro Version), Caller-Vergleich. Alle Kennzahlen client-side aus `CallLog`-Snapshots, keine Composite-Indexe nötig.
+- **Snapshots** in `CallLog`: `scriptVersionNumber`, `stageLabel`, `outcomeLabel`, `outcomeIsSuccess`, `objectionLabel`, `leadCompany` — Änderungen an Config/Skript ändern historische Kennzahlen NICHT.
+
 ## CRM & Aktivitäten
 
 - **Deals** mit Stages (kontaktiert / erstgespraech / angebot_verschickt / vertrag_erhalten / abgeschlossen / verloren), Aktivitäten (anruf/email/notiz/meeting/angebot/vertrag/sonstiges).

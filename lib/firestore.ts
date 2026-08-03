@@ -31,6 +31,9 @@ import type {
   Activity,
   EmailTemplate,
   Lead,
+  CallScript,
+  CallLogConfig,
+  CallLog,
   Contract,
   ContractType,
   Task,
@@ -1060,4 +1063,242 @@ export async function uploadFile(
 export async function deleteFile(path: string): Promise<void> {
   const r = ref(storage, path);
   await deleteObject(r);
+}
+
+// ===================================================================
+// COLD-CALL — Skript-Versionen, Config, Log
+// ===================================================================
+
+const callScriptsCol = () => collection(db, 'callScripts');
+const callConfigDoc = () => doc(db, 'callConfig', 'default');
+const callLogsCol = () => collection(db, 'callLogs');
+
+export async function listCallScripts(): Promise<CallScript[]> {
+  const snap = await getDocs(
+    query(callScriptsCol(), orderBy('version', 'desc')),
+  );
+  return snap.docs.map((d) => fromDoc<CallScript>(d));
+}
+
+export async function getActiveCallScript(): Promise<CallScript | null> {
+  const snap = await getDocs(
+    query(callScriptsCol(), where('status', '==', 'active'), limit(1)),
+  );
+  return snap.empty ? null : fromDoc<CallScript>(snap.docs[0]);
+}
+
+export async function getCallScript(id: string): Promise<CallScript | null> {
+  const snap = await getDoc(doc(db, 'callScripts', id));
+  return snap.exists() ? fromDoc<CallScript>(snap) : null;
+}
+
+/**
+ * Legt Skript-Version 1 an, falls noch kein Skript existiert.
+ * Wird beim Betreten des Skript-Moduls einmalig aufgerufen.
+ * Inhalt ist bewusst leer bzw. neutrale Platzhalter.
+ */
+export async function seedInitialCallScriptIfMissing(): Promise<void> {
+  const existing = await getDocs(query(callScriptsCol(), limit(1)));
+  if (!existing.empty) return;
+  const newRef = doc(callScriptsCol());
+  await setDoc(newRef, {
+    version: 1,
+    status: 'active',
+    note: 'Erste Version',
+    blocks: [
+      {
+        id: cryptoId(),
+        title: 'Einstieg',
+        body: 'Hier Ihren Cold-Call-Einstieg einfügen. Zum Bearbeiten oben auf „Bearbeiten" klicken.',
+        order: 0,
+      },
+    ],
+    objections: [],
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Neue Skript-Version aus der Vorlage anlegen. Setzt sie SOFORT auf
+ * active und archiviert alle anderen (atomar per Transaction).
+ */
+export async function createCallScriptVersion(
+  base: Pick<CallScript, 'blocks' | 'objections' | 'note'>,
+): Promise<{ id: string; version: number }> {
+  return runTransaction(db, async (tx) => {
+    // Alle bestehenden Skripts lesen, um die naechste Version + zu
+    // archivierende IDs zu bestimmen.
+    const allSnap = await getDocs(callScriptsCol());
+    let maxV = 0;
+    const activeIds: string[] = [];
+    allSnap.forEach((d) => {
+      const data = d.data();
+      if (typeof data.version === 'number' && data.version > maxV)
+        maxV = data.version;
+      if (data.status === 'active') activeIds.push(d.id);
+    });
+
+    // Alle aktiven archivieren.
+    for (const id of activeIds) {
+      tx.update(doc(db, 'callScripts', id), {
+        status: 'archived',
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    // Neue Version anlegen.
+    const newRef = doc(callScriptsCol());
+    tx.set(newRef, {
+      version: maxV + 1,
+      status: 'active',
+      note: base.note ?? '',
+      blocks: base.blocks,
+      objections: base.objections,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return { id: newRef.id, version: maxV + 1 };
+  });
+}
+
+/**
+ * Aktive Version in-place bearbeiten (kein neuer Versionsstand).
+ * Wird genutzt fuer Kleinstaenderungen, die keine neue Version wert
+ * sind. Fuer echte Iterationen: createCallScriptVersion.
+ */
+export async function updateCallScript(
+  id: string,
+  data: Partial<Pick<CallScript, 'blocks' | 'objections' | 'note'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'callScripts', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Rollback: eine (archivierte) Version wieder aktivieren. Setzt alle
+ * anderen Skripts auf archived, die gewaehlte auf active. Atomar.
+ */
+export async function activateCallScript(id: string): Promise<void> {
+  await runTransaction(db, async (tx) => {
+    const allSnap = await getDocs(callScriptsCol());
+    for (const d of allSnap.docs) {
+      const isTarget = d.id === id;
+      tx.update(doc(db, 'callScripts', d.id), {
+        status: isTarget ? 'active' : 'archived',
+        updatedAt: serverTimestamp(),
+      });
+    }
+  });
+}
+
+export async function deleteCallScript(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'callScripts', id));
+}
+
+// ---- Call-Log-Config
+
+const DEFAULT_CONFIG: Omit<CallLogConfig, 'id' | 'updatedAt'> = {
+  stages: [
+    { id: 'nicht_erreicht', label: 'Nicht erreicht', order: 0 },
+    { id: 'gatekeeper', label: 'Gatekeeper', order: 1 },
+    { id: 'einstieg', label: 'Einstieg (Vorstellung)', order: 2 },
+    { id: 'pitch', label: 'Pitch (Nutzen erklaert)', order: 3 },
+    { id: 'einwand', label: 'Einwand-Behandlung', order: 4 },
+    { id: 'abschluss', label: 'Abschluss / Termin', order: 5 },
+  ],
+  outcomes: [
+    { id: 'termin', label: 'Termin vereinbart', isSuccess: true, order: 0 },
+    { id: 'rueckruf', label: 'Rueckruf vereinbart', isSuccess: false, order: 1 },
+    {
+      id: 'nicht_erreicht',
+      label: 'Nicht erreicht',
+      isSuccess: false,
+      order: 2,
+    },
+    {
+      id: 'kein_interesse',
+      label: 'Kein Interesse',
+      isSuccess: false,
+      order: 3,
+    },
+    {
+      id: 'falsche_zielgruppe',
+      label: 'Falsche Zielgruppe',
+      isSuccess: false,
+      order: 4,
+    },
+  ],
+  objections: [
+    { id: 'zu_teuer', label: 'Zu teuer', order: 0 },
+    { id: 'kein_bedarf', label: 'Kein Bedarf', order: 1 },
+    { id: 'schon_anbieter', label: 'Habe schon Anbieter', order: 2 },
+    { id: 'keine_zeit', label: 'Keine Zeit', order: 3 },
+    { id: 'spaeter', label: 'Spaeter wieder anrufen', order: 4 },
+  ],
+};
+
+export async function getCallLogConfig(): Promise<CallLogConfig> {
+  const snap = await getDoc(callConfigDoc());
+  if (snap.exists()) {
+    return { id: snap.id, ...(snap.data() as Omit<CallLogConfig, 'id'>) };
+  }
+  // Erstes Betreten: Default-Config anlegen.
+  await setDoc(callConfigDoc(), {
+    ...DEFAULT_CONFIG,
+    updatedAt: serverTimestamp(),
+  });
+  const created = await getDoc(callConfigDoc());
+  return {
+    id: created.id,
+    ...(created.data() as Omit<CallLogConfig, 'id'>),
+  };
+}
+
+export async function updateCallLogConfig(
+  data: Partial<Omit<CallLogConfig, 'id' | 'updatedAt'>>,
+): Promise<void> {
+  await setDoc(
+    callConfigDoc(),
+    { ...data, updatedAt: serverTimestamp() },
+    { merge: true },
+  );
+}
+
+// ---- Call-Log
+
+export async function createCallLog(
+  data: Omit<CallLog, 'id' | 'createdAt'>,
+): Promise<string> {
+  const ref = await addDoc(callLogsCol(), {
+    ...stripUndefined(data as unknown as Record<string, unknown>),
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function listCallLogs(): Promise<CallLog[]> {
+  const snap = await getDocs(
+    query(callLogsCol(), orderBy('calledAt', 'desc'), limit(500)),
+  );
+  return snap.docs.map((d) => fromDoc<CallLog>(d));
+}
+
+export async function listRecentCallLogs(n = 20): Promise<CallLog[]> {
+  const snap = await getDocs(
+    query(callLogsCol(), orderBy('calledAt', 'desc'), limit(n)),
+  );
+  return snap.docs.map((d) => fromDoc<CallLog>(d));
+}
+
+/** Zufaellige ID (browsersicher — crypto ist in Node + Browser verfuegbar). */
+function cryptoId(): string {
+  // crypto.randomUUID gibt es auf modernem Browser und Node 19+.
+  // Fallback fuer aeltere Umgebungen.
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return (crypto as { randomUUID: () => string }).randomUUID();
+  }
+  return `id-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }

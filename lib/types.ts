@@ -271,6 +271,98 @@ export interface EmailTemplate {
 }
 
 // ===================================================================
+// COLD-CALL: Skript + Config + Log
+// ===================================================================
+
+export interface CallScriptBlock {
+  id: string;
+  title: string;
+  /** WYSIWYG/Markdown-Body. Regie-Hinweise via **fett** oder Bullets. */
+  body: string;
+  order: number;
+}
+
+export interface CallScriptObjection {
+  id: string;
+  /** Trigger, was der Kunde sagt. */
+  trigger: string;
+  /** Antwort-Vorschlag. */
+  response: string;
+}
+
+export interface CallScript {
+  id: string;
+  version: number;
+  status: 'active' | 'archived';
+  /** Optionaler Titel/Notiz zu dieser Version ("V2 — kuerzerer Einstieg"). */
+  note?: string;
+  blocks: CallScriptBlock[];
+  objections: CallScriptObjection[];
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  createdBy?: string;
+}
+
+/**
+ * Konfigurierbare Enums fuer das Call-Log. Wird als EIN Firestore-Doc
+ * unter `callConfig/default` gehalten, damit sich der Nutzer die
+ * Stufen/Ergebnisse/Einwaende ohne Code-Aenderung anpassen kann.
+ */
+export interface CallStageOption {
+  id: string;
+  label: string;
+  order: number;
+}
+
+export interface CallOutcomeOption {
+  id: string;
+  label: string;
+  /** true → zaehlt als erfolgreicher Termin (fuer Terminquote). */
+  isSuccess: boolean;
+  order: number;
+}
+
+export interface CallObjectionOption {
+  id: string;
+  label: string;
+  order: number;
+}
+
+export interface CallLogConfig {
+  id: string; // 'default'
+  stages: CallStageOption[];
+  outcomes: CallOutcomeOption[];
+  objections: CallObjectionOption[];
+  updatedAt: Timestamp;
+}
+
+export interface CallLog {
+  id: string;
+  /** Snapshot: welche Version wurde bei diesem Call verwendet? */
+  scriptVersionId: string;
+  scriptVersionNumber: number;
+  /** Wo endete der Call. */
+  stageId: string;
+  stageLabel: string; // Snapshot fuer Auswertung
+  /** Ergebnis. */
+  outcomeId: string;
+  outcomeLabel: string; // Snapshot
+  outcomeIsSuccess: boolean; // Snapshot fuer Terminquote-Berechnung
+  /** Einwand-Kategorie (nur wenn stage=Einwand oder generell relevant). */
+  objectionTypeId?: string;
+  objectionLabel?: string;
+  /** Optionale Verknuepfung zu Lead. */
+  leadId?: string;
+  leadCompany?: string; // Snapshot
+  callerId?: string;
+  callerName?: string;
+  note?: string;
+  durationSeconds?: number;
+  calledAt: Timestamp;
+  createdAt: Timestamp;
+}
+
+// ===================================================================
 // LEADS (Sales-Pipeline vor Customer-Anlage)
 // ===================================================================
 

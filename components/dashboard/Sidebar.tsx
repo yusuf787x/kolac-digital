@@ -28,6 +28,12 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/vertrieb', label: 'Vertrieb', icon: '🔄' },
   { href: '/dashboard/vertrieb/leads', label: 'Leads', icon: '🎯' },
   { href: '/dashboard/vertrieb/leads/pilot', label: 'Salespilot', icon: '🚀' },
+  { href: '/dashboard/vertrieb/skript', label: 'Skript', icon: '📝' },
+  {
+    href: '/dashboard/vertrieb/call-log/auswertung',
+    label: 'Call-Auswertung',
+    icon: '📞',
+  },
   { href: '/dashboard/angebote', label: 'Angebote', icon: '📋' },
   { href: '/dashboard/vertraege', label: 'Verträge', icon: '✍️' },
   { href: '/dashboard/rechnungen', label: 'Rechnungen', icon: '📄' },
