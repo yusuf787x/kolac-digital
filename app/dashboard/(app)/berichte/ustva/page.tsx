@@ -17,9 +17,22 @@ import {
 } from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 
-interface MonthOption {
-  value: string; // "2026-07"
+interface PeriodOption {
+  value: string; // "2026-07" | "2026-Q3" | "2026"
   label: string;
+}
+
+type PeriodType = 'month' | 'quarter' | 'year';
+
+/**
+ * Elster-Kennzahl-Zuordnung fuer Umsatz-Steuersaetze
+ * (Sektion 3 — steuerpflichtige Umsaetze / Bemessungsgrundlage).
+ */
+function outputKZForRate(rate: number): string {
+  if (Math.abs(rate - 0.19) < 0.001) return '81';
+  if (Math.abs(rate - 0.07) < 0.001) return '86';
+  if (rate === 0) return '87';
+  return '35';
 }
 
 export default function UStVAPage() {
@@ -30,7 +43,18 @@ export default function UStVAPage() {
   const [error, setError] = useState<string | null>(null);
   const now = new Date();
   const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const [month, setMonth] = useState<string>(defaultMonth);
+  const defaultQuarter = `${now.getFullYear()}-Q${Math.floor(now.getMonth() / 3) + 1}`;
+  const [periodType, setPeriodType] = useState<PeriodType>('quarter');
+  const [periodValue, setPeriodValue] = useState<string>(defaultQuarter);
+
+  // Wenn der Nutzer den Typ wechselt, auf sinnvollen Default fuer den
+  // neuen Typ springen.
+  const changePeriodType = (t: PeriodType) => {
+    setPeriodType(t);
+    if (t === 'month') setPeriodValue(defaultMonth);
+    else if (t === 'quarter') setPeriodValue(defaultQuarter);
+    else setPeriodValue(String(now.getFullYear()));
+  };
 
   useEffect(() => {
     Promise.all([listInvoices(), listExpenses(), listCustomers()])
@@ -46,35 +70,45 @@ export default function UStVAPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const months: MonthOption[] = useMemo(() => {
-    const set = new Set<string>();
-    for (const i of invoices) {
-      const d = i.invoiceDate.toDate();
-      set.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-    }
-    for (const e of expenses) {
-      const d = e.date.toDate();
-      set.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-    }
-    set.add(defaultMonth);
-    const sorted = Array.from(set).sort().reverse();
-    return sorted.map((v) => ({
-      value: v,
-      label: monthLabel(v),
-    }));
-  }, [invoices, expenses, defaultMonth]);
+  const periodOptions: PeriodOption[] = useMemo(() => {
+    // Alle Zeitraeume aus vorhandenen Daten + aktueller je nach Typ.
+    const monthsSet = new Set<string>();
+    const quartersSet = new Set<string>();
+    const yearsSet = new Set<string>();
+    const addDate = (d: Date) => {
+      const y = d.getFullYear();
+      const m = d.getMonth() + 1;
+      const q = Math.floor((m - 1) / 3) + 1;
+      monthsSet.add(`${y}-${String(m).padStart(2, '0')}`);
+      quartersSet.add(`${y}-Q${q}`);
+      yearsSet.add(String(y));
+    };
+    for (const i of invoices) addDate(i.invoiceDate.toDate());
+    for (const e of expenses) addDate(e.date.toDate());
+    // Aktuellen Zeitraum garantiert dazu, auch wenn noch keine Daten.
+    monthsSet.add(defaultMonth);
+    quartersSet.add(defaultQuarter);
+    yearsSet.add(String(now.getFullYear()));
 
-  const monthData = useMemo(() => {
-    const [year, mon] = month.split('-').map(Number);
-    const inMonth = (d: Date) =>
-      d.getFullYear() === year && d.getMonth() + 1 === mon;
+    const source =
+      periodType === 'month'
+        ? monthsSet
+        : periodType === 'quarter'
+          ? quartersSet
+          : yearsSet;
+    const sorted = Array.from(source).sort().reverse();
+    return sorted.map((v) => ({ value: v, label: formatPeriodLabel(v) }));
+  }, [invoices, expenses, defaultMonth, defaultQuarter, periodType, now]);
+
+  const periodData = useMemo(() => {
+    const inRange = buildRangeFilter(periodValue);
 
     // Entwuerfe ohne Rechnungsnummer sind nicht gebucht und gehen nicht
     // in die UStVA — sie sind erst mit der Nummernvergabe verbindlich.
     const monthInvoices = invoices.filter(
-      (i) => i.invoiceNumber !== null && inMonth(i.invoiceDate.toDate()),
+      (i) => i.invoiceNumber !== null && inRange(i.invoiceDate.toDate()),
     );
-    const monthExpenses = expenses.filter((e) => inMonth(e.date.toDate()));
+    const monthExpenses = expenses.filter((e) => inRange(e.date.toDate()));
 
     // Output VAT: USt aus Verkaeufen — pro Position rechnen (jede
     // Position kann eigenen Satz haben, z.B. 19% Beratung + 0% durch-
@@ -162,7 +196,7 @@ export default function UStVAPage() {
       rcByRate,
       zahllast: round2(zahllast),
     };
-  }, [invoices, expenses, month]);
+  }, [invoices, expenses, periodValue]);
 
   const handleDownloadInvoicesCsv = () => {
     const rows = [
@@ -177,7 +211,7 @@ export default function UStVAPage() {
         'Brutto (EUR)',
         'Status',
       ],
-      ...monthData.monthInvoices.map((i) => {
+      ...periodData.monthInvoices.map((i) => {
         const v = computeInvoiceVat(i.items, i.vatRate);
         const cust = customers.get(i.customerId);
         const desc =
@@ -201,7 +235,7 @@ export default function UStVAPage() {
         ];
       }),
     ];
-    downloadCsv(`UStVA_Einnahmen_${month}.csv`, rows);
+    downloadCsv(`UStVA_Einnahmen_${periodValue}.csv`, rows);
   };
 
   const handleDownloadExpensesCsv = () => {
@@ -218,7 +252,7 @@ export default function UStVAPage() {
         'Brutto bezahlt (EUR)',
         'ELSTER-Kennzahl',
       ],
-      ...monthData.monthExpenses.map((e) => {
+      ...periodData.monthExpenses.map((e) => {
         if (e.reverseCharge) {
           const rate = e.vatRate ?? 0;
           const net = Math.round(e.amount * 100) / 100;
@@ -251,16 +285,16 @@ export default function UStVAPage() {
         ];
       }),
     ];
-    downloadCsv(`UStVA_Ausgaben_${month}.csv`, rows);
+    downloadCsv(`UStVA_Ausgaben_${periodValue}.csv`, rows);
   };
 
   const handleDownloadSummaryCsv = () => {
     const rows: (string | number)[][] = [
-      ['UStVA-Übersicht', monthLabel(month)],
+      ['UStVA-Übersicht', formatPeriodLabel(periodValue)],
       [],
       ['Einnahmen (Umsätze)', '', '', ''],
       ['USt-Satz', 'Netto (EUR)', 'USt (EUR)', 'Brutto (EUR)'],
-      ...Array.from(monthData.outputByRate.entries()).map(([rate, v]) => [
+      ...Array.from(periodData.outputByRate.entries()).map(([rate, v]) => [
         `${Math.round(rate * 100)} %`,
         fmtCsv(v.net),
         fmtCsv(v.vat),
@@ -268,14 +302,14 @@ export default function UStVAPage() {
       ]),
       [
         'Summe',
-        fmtCsv(monthData.outputNet),
-        fmtCsv(monthData.outputVat),
-        fmtCsv(monthData.outputGross),
+        fmtCsv(periodData.outputNet),
+        fmtCsv(periodData.outputVat),
+        fmtCsv(periodData.outputGross),
       ],
       [],
       ['Ausgaben (Vorsteuer)', '', '', ''],
       ['USt-Satz', 'Netto (EUR)', 'Vorsteuer (EUR)', 'Brutto (EUR)'],
-      ...Array.from(monthData.inputByRate.entries()).map(([rate, v]) => [
+      ...Array.from(periodData.inputByRate.entries()).map(([rate, v]) => [
         `${Math.round(rate * 100)} %`,
         fmtCsv(v.net),
         fmtCsv(v.vat),
@@ -283,67 +317,89 @@ export default function UStVAPage() {
       ]),
       [
         'Summe',
-        fmtCsv(monthData.inputNet),
-        fmtCsv(monthData.inputVat),
-        fmtCsv(monthData.inputGross),
+        fmtCsv(periodData.inputNet),
+        fmtCsv(periodData.inputVat),
+        fmtCsv(periodData.inputGross),
       ],
       [],
       ['Reverse Charge (§ 13b UStG)', '', '', ''],
       ['ELSTER-Kennzahl', 'Bezeichnung', 'Betrag (EUR)', ''],
-      ['KZ 46', 'Bemessungsgrundlage (Netto)', fmtCsv(monthData.rcNet), ''],
+      ['KZ 46', 'Bemessungsgrundlage (Netto)', fmtCsv(periodData.rcNet), ''],
       [
         'KZ 47',
         'Geschuldete USt (Steuerschuld)',
-        fmtCsv(monthData.rcVat),
+        fmtCsv(periodData.rcVat),
         '',
       ],
       [
         'KZ 67',
         'Abziehbare Vorsteuer nach § 13b',
-        fmtCsv(monthData.rcVat),
+        fmtCsv(periodData.rcVat),
         '',
       ],
       [],
       [
         'USt-Zahllast (Umsatz-USt + RC-USt − Vorsteuer − RC-Vorsteuer)',
         '',
-        fmtCsv(monthData.zahllast),
+        fmtCsv(periodData.zahllast),
         '',
       ],
     ];
-    downloadCsv(`UStVA_Uebersicht_${month}.csv`, rows);
+    downloadCsv(`UStVA_Uebersicht_${periodValue}.csv`, rows);
   };
 
   return (
     <div>
-      <header className="flex items-start justify-between gap-4 mb-6 flex-wrap">
-        <div>
-          <Link
-            href="/dashboard/berichte"
-            className="text-sm text-gray-500 hover:text-gray-900 mb-3 inline-block"
-          >
-            ← Zurück zu Berichten
-          </Link>
-          <h1 className="text-3xl font-semibold text-gray-900">
-            UStVA-Übersicht
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Monatliche Umsatzsteuer-Voranmeldung. Alle Zahlen sind nach
-            Belegdatum gruppiert und beziehen sich auf den gewählten Monat.
-            Stichtag Kleinunternehmer → Regelbesteuerung: 01.07.2026.
-          </p>
-        </div>
-        <select
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          className="input w-auto"
+      <header className="mb-6">
+        <Link
+          href="/dashboard/berichte"
+          className="text-sm text-gray-500 hover:text-gray-900 mb-3 inline-block"
         >
-          {months.map((m) => (
-            <option key={m.value} value={m.value}>
-              {m.label}
-            </option>
-          ))}
-        </select>
+          ← Zurück zu Berichten
+        </Link>
+        <h1 className="text-3xl font-semibold text-gray-900">
+          UStVA-Übersicht
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Umsatzsteuer-Voranmeldung. Alle Zahlen sind nach Belegdatum
+          gruppiert. Wechsel Kleinunternehmer → Regelbesteuerung: 01.07.2026.
+          Voranmeldungs-Rhythmus laut Finanzamt: <strong>quartalsweise</strong>.
+        </p>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          {/* Zeitraum-Typ Toggle */}
+          <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 text-sm">
+            {(['month', 'quarter', 'year'] as PeriodType[]).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => changePeriodType(t)}
+                className={`px-3 py-1.5 rounded-md ${
+                  periodType === t
+                    ? 'bg-brand-blue text-white'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {t === 'month'
+                  ? 'Monat'
+                  : t === 'quarter'
+                    ? 'Quartal'
+                    : 'Jahr'}
+              </button>
+            ))}
+          </div>
+          <select
+            value={periodValue}
+            onChange={(e) => setPeriodValue(e.target.value)}
+            className="input w-auto"
+          >
+            {periodOptions.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </header>
 
       {error && (
@@ -357,47 +413,65 @@ export default function UStVAPage() {
         <div className="space-y-6">
           {/* Zahllast Highlight */}
           <section className="card bg-brand-blue/5 border-brand-blue/20">
-            <p className="text-xs uppercase tracking-wider text-gray-500">
-              USt-Zahllast {monthLabel(month)}
-            </p>
-            <p
-              className={`text-3xl font-semibold mt-1 ${
-                monthData.zahllast >= 0 ? 'text-brand-blue' : 'text-green-700'
-              }`}
-            >
-              <SensitiveValue>{formatEUR(monthData.zahllast)}</SensitiveValue>
-            </p>
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div>
+                <p className="text-xs uppercase tracking-wider text-gray-500">
+                  USt-Zahllast {formatPeriodLabel(periodValue)}
+                </p>
+                <p
+                  className={`text-3xl font-semibold mt-1 ${
+                    periodData.zahllast >= 0
+                      ? 'text-brand-blue'
+                      : 'text-green-700'
+                  }`}
+                >
+                  <SensitiveValue>{formatEUR(periodData.zahllast)}</SensitiveValue>
+                </p>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-1 rounded bg-brand-blue/10 text-brand-blue">
+                ELSTER KZ 83 · Zeile 66
+              </span>
+            </div>
             <p className="text-xs text-gray-500 mt-2">
-              {monthData.zahllast >= 0
-                ? 'Differenz zugunsten des Finanzamts. So viel überweist du bei der Voranmeldung.'
-                : 'Differenz zugunsten dir. Vorsteuerüberhang — Finanzamt erstattet zurück.'}
+              {periodData.zahllast >= 0
+                ? 'Differenz zugunsten des Finanzamts. So viel überweisen Sie bei der Voranmeldung.'
+                : 'Differenz zugunsten von Ihnen. Vorsteuerüberhang. Finanzamt erstattet zurück.'}
             </p>
           </section>
 
           {/* Output: Sales */}
           <section className="card">
-            <h2 className="text-base font-semibold text-gray-900 mb-3">
-              Einnahmen ({monthData.monthInvoices.length} Rechnung
-              {monthData.monthInvoices.length === 1 ? '' : 'en'})
-            </h2>
-            <SummaryByRate byRate={monthData.outputByRate} label="USt" />
+            <div className="flex items-start justify-between mb-3 gap-2 flex-wrap">
+              <h2 className="text-base font-semibold text-gray-900">
+                Einnahmen ({periodData.monthInvoices.length} Rechnung
+                {periodData.monthInvoices.length === 1 ? '' : 'en'})
+              </h2>
+              <span className="text-[10px] font-mono px-2 py-1 rounded bg-brand-blue/10 text-brand-blue">
+                ELSTER Sektion 3 · KZ 81/86/87
+              </span>
+            </div>
+            <SummaryByRate
+              byRate={periodData.outputByRate}
+              label="USt"
+              kind="output"
+            />
             <Totals
-              net={monthData.outputNet}
-              vat={monthData.outputVat}
-              gross={monthData.outputGross}
+              net={periodData.outputNet}
+              vat={periodData.outputVat}
+              gross={periodData.outputGross}
               vatLabel="USt"
             />
             <button
               onClick={handleDownloadInvoicesCsv}
-              disabled={monthData.monthInvoices.length === 0}
+              disabled={periodData.monthInvoices.length === 0}
               className="btn-secondary text-sm mt-4 disabled:opacity-50"
             >
               CSV: Rechnungen-Liste
             </button>
-            {monthData.monthInvoices.length > 0 && (
+            {periodData.monthInvoices.length > 0 && (
               <details className="mt-3">
                 <summary className="cursor-pointer text-xs text-gray-500">
-                  Details ({monthData.monthInvoices.length})
+                  Details ({periodData.monthInvoices.length})
                 </summary>
                 <table className="w-full text-xs mt-2">
                   <thead className="text-gray-500 uppercase tracking-wider">
@@ -411,7 +485,7 @@ export default function UStVAPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {monthData.monthInvoices.map((i) => {
+                    {periodData.monthInvoices.map((i) => {
                       const v = computeInvoiceVat(i.items, i.vatRate);
                       return (
                         <tr key={i.id}>
@@ -449,28 +523,37 @@ export default function UStVAPage() {
 
           {/* Input: Expenses (regulaer, Vorsteuer aus Belegen) */}
           <section className="card">
-            <h2 className="text-base font-semibold text-gray-900 mb-3">
-              Ausgaben — reguläre Vorsteuer ({monthData.regularExpenses.length}{' '}
-              Beleg{monthData.regularExpenses.length === 1 ? '' : 'e'})
-            </h2>
-            <SummaryByRate byRate={monthData.inputByRate} label="Vorsteuer" />
+            <div className="flex items-start justify-between mb-3 gap-2 flex-wrap">
+              <h2 className="text-base font-semibold text-gray-900">
+                Ausgaben — reguläre Vorsteuer ({periodData.regularExpenses.length}{' '}
+                Beleg{periodData.regularExpenses.length === 1 ? '' : 'e'})
+              </h2>
+              <span className="text-[10px] font-mono px-2 py-1 rounded bg-brand-blue/10 text-brand-blue">
+                ELSTER Sektion 7 · KZ 66 (Zeile 38)
+              </span>
+            </div>
+            <SummaryByRate
+              byRate={periodData.inputByRate}
+              label="Vorsteuer"
+              kind="input"
+            />
             <Totals
-              net={monthData.inputNet}
-              vat={monthData.inputVat}
-              gross={monthData.inputGross}
+              net={periodData.inputNet}
+              vat={periodData.inputVat}
+              gross={periodData.inputGross}
               vatLabel="Vorsteuer"
             />
             <button
               onClick={handleDownloadExpensesCsv}
-              disabled={monthData.monthExpenses.length === 0}
+              disabled={periodData.monthExpenses.length === 0}
               className="btn-secondary text-sm mt-4 disabled:opacity-50"
             >
               CSV: Ausgaben-Liste
             </button>
-            {monthData.regularExpenses.length > 0 && (
+            {periodData.regularExpenses.length > 0 && (
               <details className="mt-3">
                 <summary className="cursor-pointer text-xs text-gray-500">
-                  Details ({monthData.regularExpenses.length})
+                  Details ({periodData.regularExpenses.length})
                 </summary>
                 <table className="w-full text-xs mt-2">
                   <thead className="text-gray-500 uppercase tracking-wider">
@@ -484,7 +567,7 @@ export default function UStVAPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {monthData.regularExpenses.map((e) => {
+                    {periodData.regularExpenses.map((e) => {
                       const split = grossToNet(e.amount, e.vatRate ?? 0);
                       return (
                         <tr key={e.id}>
@@ -512,13 +595,13 @@ export default function UStVAPage() {
           </section>
 
           {/* Reverse Charge § 13b UStG */}
-          {monthData.rcExpenses.length > 0 && (
+          {periodData.rcExpenses.length > 0 && (
             <section className="card border-amber-200 bg-amber-50/30">
               <div className="flex items-start justify-between mb-3 gap-2 flex-wrap">
                 <div>
                   <h2 className="text-base font-semibold text-gray-900">
-                    Reverse Charge (§ 13b UStG) — {monthData.rcExpenses.length}{' '}
-                    Rechnung{monthData.rcExpenses.length === 1 ? '' : 'en'}
+                    Reverse Charge (§ 13b UStG) — {periodData.rcExpenses.length}{' '}
+                    Rechnung{periodData.rcExpenses.length === 1 ? '' : 'en'}
                   </h2>
                   <p className="text-xs text-gray-600 mt-1">
                     EU-Ausland ohne MwSt. Fiktive USt wird als Steuerschuld
@@ -534,23 +617,23 @@ export default function UStVAPage() {
                 <RcMetric
                   kz="46"
                   label="Bemessungsgrundlage (netto)"
-                  value={monthData.rcNet}
+                  value={periodData.rcNet}
                 />
                 <RcMetric
                   kz="47"
                   label="Geschuldete USt (Steuerschuld)"
-                  value={monthData.rcVat}
+                  value={periodData.rcVat}
                 />
                 <RcMetric
                   kz="67"
                   label="Abziehbare Vorsteuer (§ 13b)"
-                  value={monthData.rcVat}
+                  value={periodData.rcVat}
                 />
               </div>
 
               <details className="mt-4">
                 <summary className="cursor-pointer text-xs text-gray-500">
-                  Details ({monthData.rcExpenses.length})
+                  Details ({periodData.rcExpenses.length})
                 </summary>
                 <table className="w-full text-xs mt-2">
                   <thead className="text-gray-500 uppercase tracking-wider">
@@ -563,7 +646,7 @@ export default function UStVAPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {monthData.rcExpenses.map((e) => {
+                    {periodData.rcExpenses.map((e) => {
                       const rate = e.vatRate ?? 0;
                       const net = Math.round(e.amount * 100) / 100;
                       const vat = Math.round(net * rate * 100) / 100;
@@ -606,30 +689,119 @@ export default function UStVAPage() {
             </button>
           </section>
 
-          <section className="card text-xs text-gray-500">
-            <p className="font-semibold text-gray-700 mb-1">
-              Hinweise zur Voranmeldung
-            </p>
+          <section className="card text-xs text-gray-500 space-y-3">
+            <div>
+              <p className="font-semibold text-gray-700 mb-1">
+                So trägst du die Zahlen in ELSTER ein
+              </p>
+              <table className="w-full text-xs mt-1">
+                <thead className="text-gray-500 uppercase tracking-wider">
+                  <tr>
+                    <th className="text-left py-1">Woher</th>
+                    <th className="text-left py-1">Sektion / Zeile</th>
+                    <th className="text-left py-1">Kennzahl</th>
+                    <th className="text-left py-1">Format</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  <tr>
+                    <td className="py-1.5">Einnahmen 19 % (Netto)</td>
+                    <td className="py-1.5">Sektion 3 · Zeile 13</td>
+                    <td className="py-1.5 font-mono">KZ 81</td>
+                    <td className="py-1.5">volle Euros, kein Komma</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1.5">Einnahmen 7 % (Netto)</td>
+                    <td className="py-1.5">Sektion 3 · Zeile 14</td>
+                    <td className="py-1.5 font-mono">KZ 86</td>
+                    <td className="py-1.5">volle Euros, kein Komma</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1.5">Einnahmen 0 % (Netto)</td>
+                    <td className="py-1.5">Sektion 3 · Zeile 15</td>
+                    <td className="py-1.5 font-mono">KZ 87</td>
+                    <td className="py-1.5">volle Euros, kein Komma</td>
+                  </tr>
+                  <tr className="border-t-2 border-gray-200">
+                    <td className="py-1.5">
+                      Reverse Charge — Bemessungsgrundlage
+                    </td>
+                    <td className="py-1.5">Sektion 5 · Zeile 30</td>
+                    <td className="py-1.5 font-mono">KZ 46</td>
+                    <td className="py-1.5">volle Euros</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1.5">
+                      Reverse Charge — geschuldete USt
+                    </td>
+                    <td className="py-1.5">Sektion 5 · Zeile 30</td>
+                    <td className="py-1.5 font-mono">KZ 47</td>
+                    <td className="py-1.5">Euro, Cent</td>
+                  </tr>
+                  <tr className="border-t-2 border-gray-200">
+                    <td className="py-1.5">
+                      Vorsteuer aus regulären Belegen
+                    </td>
+                    <td className="py-1.5">Sektion 7 · Zeile 38</td>
+                    <td className="py-1.5 font-mono">KZ 66</td>
+                    <td className="py-1.5">Euro, Cent</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1.5">
+                      Vorsteuer aus § 13b (Reverse Charge)
+                    </td>
+                    <td className="py-1.5">Sektion 7 · Zeile 41</td>
+                    <td className="py-1.5 font-mono">KZ 67</td>
+                    <td className="py-1.5">Euro, Cent</td>
+                  </tr>
+                  <tr className="border-t-2 border-gray-200">
+                    <td className="py-1.5">
+                      <strong>Zahllast / Erstattung</strong>
+                    </td>
+                    <td className="py-1.5">Sektion 9 · Zeile 66</td>
+                    <td className="py-1.5 font-mono">KZ 83</td>
+                    <td className="py-1.5">
+                      wird von ELSTER auto-berechnet
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-1.5">
+                      Wechsel Kleinunternehmer → Regel
+                    </td>
+                    <td className="py-1.5">Allgemein · Zeile</td>
+                    <td className="py-1.5 font-mono">KZ 70</td>
+                    <td className="py-1.5">
+                      nur beim ersten Mal: 01.07.2026
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
             <ul className="list-disc list-inside space-y-1">
               <li>
-                Abgabefrist: 10. des Folgemonats (mit Dauerfristverlängerung +
-                1 Monat) bei ELSTER.
+                <strong>Abgabefrist quartalsweise</strong>: 10. des Folgemonats
+                nach Quartalsende (Q1 → 10.04., Q2 → 10.07., Q3 → 10.10., Q4
+                → 10.01.). Mit Dauerfristverlängerung + 1 Monat.
+              </li>
+              <li>
+                <strong>Bemessungsgrundlagen</strong> (KZ 81, 86, 87, 46) werden
+                in Elster als volle Euros ohne Komma eingetragen (z.B. „6,80 €"
+                → <code>7</code>). Steuerbeträge (KZ 47, 66, 67) mit Komma
+                (z.B. <code>1,29</code>).
+              </li>
+              <li>
+                <strong>Reverse Charge § 13b</strong>: KZ 47 und KZ 67 sind
+                betragsmäßig gleich. In der Zahllast heben sie sich auf, müssen
+                aber deklariert werden.
               </li>
               <li>
                 Diese Übersicht ist eine Berechnungshilfe. Maßgeblich für die
-                tatsächliche UStVA bleibt deine Buchhaltung / dein Steuerberater.
+                tatsächliche UStVA bleibt Ihre Buchhaltung / Ihr Steuerberater.
               </li>
               <li>
-                Belege müssen 10 Jahre aufbewahrt werden — sind alle in Drive
+                Belege müssen 10 Jahre aufbewahrt werden. Sind alle in Drive
                 gespeichert.
-              </li>
-              <li>
-                <strong>Reverse Charge (§ 13b UStG)</strong>: Kennzahl 46 =
-                Bemessungsgrundlage, 47 = geschuldete USt, 67 = abziehbare
-                Vorsteuer. Betragsmäßig gleich — hebt sich in der Zahllast
-                auf, muss aber in der UStVA deklariert werden. Für USt-IdNr.
-                bei EU-Lieferanten (Meta, Google, Canva) hinterlegen, sobald
-                dir das Finanzamt eine ausstellt.
               </li>
             </ul>
           </section>
@@ -646,13 +818,23 @@ export default function UStVAPage() {
 function SummaryByRate({
   byRate,
   label,
+  kind,
 }: {
   byRate: Map<number, { net: number; vat: number; gross: number }>;
   label: string;
+  /**
+   * 'output' (Einnahmen) → Bemessungsgrundlage geht in KZ 81/86/87,
+   *   Steuer wird von Elster automatisch berechnet.
+   * 'input' (Ausgaben) → Vorsteuer geht komplett in KZ 66, unabhaengig
+   *   vom Satz.
+   */
+  kind: 'output' | 'input';
 }) {
   if (byRate.size === 0) {
     return (
-      <p className="text-sm text-gray-500">Keine Einträge in diesem Monat.</p>
+      <p className="text-sm text-gray-500">
+        Keine Einträge in diesem Zeitraum.
+      </p>
     );
   }
   return (
@@ -663,30 +845,65 @@ function SummaryByRate({
           <th className="text-right py-2">Netto</th>
           <th className="text-right py-2">{label}</th>
           <th className="text-right py-2">Brutto</th>
+          <th className="text-right py-2">ELSTER</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-gray-100">
         {Array.from(byRate.entries())
           .sort((a, b) => b[0] - a[0])
-          .map(([rate, v]) => (
-            <tr key={rate}>
-              <td className="py-1.5 text-gray-700">
-                {Math.round(rate * 100)} %
-              </td>
-              <td className="py-1.5 text-right text-gray-700">
-                <SensitiveValue>{formatEUR(v.net)}</SensitiveValue>
-              </td>
-              <td className="py-1.5 text-right text-gray-700">
-                <SensitiveValue>{formatEUR(v.vat)}</SensitiveValue>
-              </td>
-              <td className="py-1.5 text-right text-gray-900 font-medium">
-                <SensitiveValue>{formatEUR(v.gross)}</SensitiveValue>
-              </td>
-            </tr>
-          ))}
+          .map(([rate, v]) => {
+            const netKZ = kind === 'output' ? outputKZForRate(rate) : null;
+            return (
+              <tr key={rate}>
+                <td className="py-1.5 text-gray-700">
+                  {Math.round(rate * 100)} %
+                </td>
+                <td className="py-1.5 text-right text-gray-700">
+                  <SensitiveValue>{formatEUR(v.net)}</SensitiveValue>
+                  {kind === 'output' && netKZ && (
+                    <div className="text-[10px] font-mono text-brand-blue">
+                      KZ {netKZ}
+                    </div>
+                  )}
+                </td>
+                <td className="py-1.5 text-right text-gray-700">
+                  <SensitiveValue>{formatEUR(v.vat)}</SensitiveValue>
+                  {kind === 'input' && v.vat > 0 && (
+                    <div className="text-[10px] font-mono text-brand-blue">
+                      → KZ 66
+                    </div>
+                  )}
+                </td>
+                <td className="py-1.5 text-right text-gray-900 font-medium">
+                  <SensitiveValue>{formatEUR(v.gross)}</SensitiveValue>
+                </td>
+                <td className="py-1.5 text-right text-[10px] font-mono text-gray-500">
+                  {kind === 'output'
+                    ? `Zeile ${zeileForKZ(netKZ)}`
+                    : 'Zeile 55'}
+                </td>
+              </tr>
+            );
+          })}
       </tbody>
     </table>
   );
+}
+
+/** Elster-Zeile fuer eine Umsatz-Bemessungsgrundlage-KZ. */
+function zeileForKZ(kz: string | null): string {
+  switch (kz) {
+    case '81':
+      return '13';
+    case '86':
+      return '14';
+    case '87':
+      return '15';
+    case '35':
+      return '16';
+    default:
+      return '—';
+  }
 }
 
 /** Kleine Kennzahl-Metrik-Kachel fuer die Reverse-Charge-Section. Zeigt
@@ -772,6 +989,48 @@ const MONTHS_DE = [
 function monthLabel(key: string): string {
   const [year, mon] = key.split('-').map(Number);
   return `${MONTHS_DE[mon - 1]} ${year}`;
+}
+
+/**
+ * Formatiert einen periodValue ("2026-07" | "2026-Q3" | "2026") als
+ * leserliches Label fuer UI und CSV-Header.
+ */
+function formatPeriodLabel(key: string): string {
+  if (/^\d{4}-Q[1-4]$/.test(key)) {
+    const [year, q] = key.split('-');
+    return `${q} / ${year}`;
+  }
+  if (/^\d{4}-\d{2}$/.test(key)) return monthLabel(key);
+  if (/^\d{4}$/.test(key)) return `Jahr ${key}`;
+  return key;
+}
+
+/**
+ * Baut einen Date-in-Range-Filter fuer den gewaehlten Zeitraum.
+ * Erkennt Format automatisch: JJJJ-MM (Monat), JJJJ-QN (Quartal),
+ * JJJJ (Jahr).
+ */
+function buildRangeFilter(periodValue: string): (d: Date) => boolean {
+  // Quartal
+  const qm = periodValue.match(/^(\d{4})-Q([1-4])$/);
+  if (qm) {
+    const year = Number(qm[1]);
+    const q = Number(qm[2]);
+    const startMonth = (q - 1) * 3; // 0-basiert
+    const endMonth = startMonth + 2;
+    return (d) =>
+      d.getFullYear() === year &&
+      d.getMonth() >= startMonth &&
+      d.getMonth() <= endMonth;
+  }
+  // Jahr
+  if (/^\d{4}$/.test(periodValue)) {
+    const year = Number(periodValue);
+    return (d) => d.getFullYear() === year;
+  }
+  // Monat (Fallback)
+  const [year, mon] = periodValue.split('-').map(Number);
+  return (d) => d.getFullYear() === year && d.getMonth() + 1 === mon;
 }
 
 function round2(n: number): number {
