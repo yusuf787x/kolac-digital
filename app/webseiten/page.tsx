@@ -13,6 +13,7 @@ import {
 } from '@/lib/site-config';
 import ContactForm from './ContactForm';
 import Reveal from '@/components/marketing/Reveal';
+import ZeitfresserRechner from '@/components/marketing/ZeitfresserRechner';
 
 export const metadata: Metadata = {
   title:
@@ -1506,6 +1507,7 @@ export default function WebseitenPage() {
       <Bonuses />
       <About />
       <Regions />
+      <ZeitfresserRechner />
       <Faq />
       <Kontakt />
     </>

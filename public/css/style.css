@@ -3153,3 +3153,301 @@ textarea {
     transition: none;
   }
 }
+
+/* ==============================================================
+   Zeitfresser-Rechner (Marketing, Kalkulator + Formular)
+   ============================================================== */
+
+.zeitfresser {
+  padding: 100px 0;
+  background: var(--color-offwhite);
+}
+
+.zeitfresser-intro {
+  max-width: 1000px;
+  margin: 0 auto 48px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 40px;
+  align-items: end;
+}
+.zeitfresser-intro .section-headline {
+  font-size: 40px;
+}
+.zeitfresser-intro .section-subline {
+  max-width: none;
+}
+@media (max-width: 900px) {
+  .zeitfresser-intro {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .zeitfresser-intro .section-headline {
+    font-size: 32px;
+  }
+}
+
+.zeitfresser-card {
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #ffffff;
+}
+@media (max-width: 900px) {
+  .zeitfresser-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Linke Seite: Slider */
+.zeitfresser-sliders {
+  padding: 40px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+@media (max-width: 600px) {
+  .zeitfresser-sliders {
+    padding: 28px 22px;
+    gap: 22px;
+  }
+}
+
+.zeitfresser-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.zeitfresser-slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.zeitfresser-slider-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-black);
+  line-height: 1.35;
+}
+.zeitfresser-slider-value {
+  font-family: var(--font-accent);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-blue);
+  white-space: nowrap;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
+.zeitfresser-slider-hint {
+  font-size: 12px;
+  color: var(--color-gray-light);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+/* Range-Input im bestehenden Farbschema */
+.zeitfresser-slider input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--color-blue) 0%,
+    var(--color-blue) var(--fill, 0%),
+    #e5e7eb var(--fill, 0%),
+    #e5e7eb 100%
+  );
+  outline: none;
+  margin: 6px 0;
+}
+.zeitfresser-slider input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--color-blue);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.zeitfresser-slider input[type='range']::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+.zeitfresser-slider input[type='range']::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--color-blue);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+/* Rechte Seite: Ergebnis-Panel (dunkel wie im Referenzbild) */
+.zeitfresser-result {
+  padding: 44px 40px;
+  background: var(--color-navy);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+}
+@media (max-width: 600px) {
+  .zeitfresser-result {
+    padding: 32px 22px;
+  }
+}
+.zeitfresser-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.zeitfresser-metric-value {
+  font-family: var(--font-accent);
+  font-size: 46px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
+@media (max-width: 600px) {
+  .zeitfresser-metric-value {
+    font-size: 36px;
+  }
+}
+.zeitfresser-metric-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #ff6b6b; /* akzent-orange/rot analog Referenz */
+  margin-top: 10px;
+}
+.zeitfresser-explainer {
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.85);
+}
+.zeitfresser-footnote {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 8px;
+}
+.zeitfresser-weeks-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+}
+
+/* CTA-Formular unter dem Rechner */
+.zeitfresser-cta {
+  max-width: 1100px;
+  margin: 32px auto 0;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+@media (max-width: 600px) {
+  .zeitfresser-cta {
+    padding: 28px 22px;
+  }
+}
+.zeitfresser-cta-headline {
+  font-family: var(--font-main);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+.zeitfresser-cta-subline {
+  font-size: 14px;
+  color: var(--color-gray);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.zeitfresser-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 780px) {
+  .zeitfresser-form {
+    grid-template-columns: 1fr;
+  }
+}
+.zeitfresser-form input {
+  width: 100%;
+  padding: 14px 16px;
+  font-family: var(--font-main);
+  font-size: 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--color-black);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.zeitfresser-form input:focus {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+}
+.zeitfresser-form-honeypot {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+.zeitfresser-submit {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding: 16px 24px;
+  font-family: var(--font-main);
+  font-size: 16px;
+  font-weight: 700;
+  background: var(--color-blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.zeitfresser-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+.zeitfresser-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.zeitfresser-status {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.zeitfresser-status.success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.zeitfresser-status.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
