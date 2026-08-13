@@ -4,10 +4,9 @@ import { useMemo, useState } from 'react';
 
 /**
  * Zeitfresser-Rechner fuer die React-Landingpage /webseiten.
- * Config bewusst lokal (statt fetch), damit die Seite kein
- * client-side JSON-Fetch macht — hydriert direkt aus dem Modul.
- * Wenn du Formeln/Startwerte aendern willst, hier oder in
- * public/content/zeitfresser.json (fuer die statische Site).
+ * Config liegt lokal im Modul; die Vanilla-Variante fuer die
+ * statische Homepage steht in public/js/zeitfresser.js und hat
+ * dieselben Werte inline.
  */
 
 const CONFIG = {
@@ -15,7 +14,7 @@ const CONFIG = {
   sliders: {
     hoursPerWeek: {
       label: 'Wie viele Stunden pro Woche gehen für Büroarbeit drauf?',
-      hint: 'Termine koordinieren, Anfragen beantworten, Angebote und Rechnungen',
+      hint: 'Termine koordinieren, Anfragen beantworten, Angebote und Rechnungen.',
       min: 0,
       max: 40,
       step: 1,
@@ -54,10 +53,8 @@ const CONFIG = {
   cta: {
     sectionLabel: 'IHRE ZEIT',
     headline: 'Rechnen Sie kurz mit.',
-    subline:
-      'Vier Regler, Ihre eigenen Zahlen. Am Ende steht, was das Wiederholen Sie Woche für Woche kostet.',
     explainer:
-      'So viel Zeit und Geld steckt aktuell in Arbeit, die ein System für Sie übernehmen könnte. Jeden Tag, jeden Monat, jedes Jahr.',
+      'So viel Zeit und Geld steckt aktuell in Arbeit, die ein System für Sie übernehmen könnte.',
     footnote: 'Gerechnet mit 46 Arbeitswochen. Ihre Zahlen, keine Studie.',
     buttonText: 'Zeig mir, wie ich das zurückhole',
     formHeadline: 'Kostenlose Zeitfresser-Analyse',
@@ -102,7 +99,6 @@ export default function ZeitfresserRechner() {
     return { lostHours, total, asWorkweeks };
   }, [state]);
 
-  // Formular
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -114,7 +110,7 @@ export default function ZeitfresserRechner() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (website) return; // Honeypot
+    if (website) return;
     if (!name || !phone || !email) {
       setStatus('error');
       setStatusMsg('Bitte Name, Telefon und E-Mail ausfüllen.');
@@ -169,28 +165,19 @@ export default function ZeitfresserRechner() {
   };
 
   return (
-    <section id="zeitfresser" className="bg-slate-50 py-24">
-      <div className="mx-auto max-w-6xl px-6">
-        {/* Intro */}
-        <div className="mx-auto mb-12 grid max-w-4xl gap-6 md:grid-cols-[1.4fr_1fr] md:items-end">
-          <div>
-            <div className="mb-3 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-blue">
-              <span className="h-px w-6 bg-brand-blue" />
-              {CONFIG.cta.sectionLabel}
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
-              {CONFIG.cta.headline}
-            </h2>
+    <section id="zeitfresser" className="bg-slate-50 py-20">
+      <div className="mx-auto max-w-5xl px-6">
+        <div className="mx-auto mb-8 max-w-3xl text-center">
+          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-brand-blue">
+            {CONFIG.cta.sectionLabel}
           </div>
-          <p className="text-sm leading-relaxed text-gray-600">
-            {CONFIG.cta.subline}
-          </p>
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
+            {CONFIG.cta.headline}
+          </h2>
         </div>
 
-        {/* Rechner-Card */}
-        <div className="mx-auto grid max-w-5xl overflow-hidden rounded-3xl shadow-xl md:grid-cols-2">
-          {/* Slider-Spalte */}
-          <div className="flex flex-col gap-6 bg-white p-8 md:p-10">
+        <div className="mx-auto grid overflow-hidden rounded-2xl border border-gray-200 bg-white md:grid-cols-[1.15fr_1fr]">
+          <div className="flex flex-col gap-5 p-7 md:p-8">
             {(Object.keys(CONFIG.sliders) as SliderKey[]).map((key) => {
               const cfg = CONFIG.sliders[key];
               const val = state[key];
@@ -199,12 +186,12 @@ export default function ZeitfresserRechner() {
                   ? ((val - cfg.min) / (cfg.max - cfg.min)) * 100
                   : 0;
               return (
-                <div key={key}>
+                <div key={key} className="flex flex-col gap-1.5">
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="text-sm leading-snug text-gray-900">
+                    <span className="text-[13px] leading-snug text-gray-800">
                       {cfg.label}
                     </span>
-                    <span className="whitespace-nowrap font-serif text-xl font-bold text-brand-blue tabular-nums">
+                    <span className="whitespace-nowrap text-[15px] font-bold text-brand-blue tabular-nums">
                       {fmtValue(val, cfg.unit)}
                     </span>
                   </div>
@@ -221,100 +208,124 @@ export default function ZeitfresserRechner() {
                       }))
                     }
                     aria-label={cfg.label}
-                    className="mt-2 h-1 w-full cursor-pointer appearance-none rounded-full accent-brand-blue [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-brand-blue [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow"
+                    className="mt-1 h-[3px] w-full cursor-pointer appearance-none rounded-full [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-brand-blue [&::-webkit-slider-thumb]:shadow-sm"
                     style={{
-                      background: `linear-gradient(to right, var(--tw-color-brand-blue, #0071e3) 0%, var(--tw-color-brand-blue, #0071e3) ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`,
+                      background: `linear-gradient(to right, #0071e3 0%, #0071e3 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`,
                     }}
                   />
                   {cfg.hint && (
-                    <p className="mt-1 text-xs text-gray-400">{cfg.hint}</p>
+                    <p className="text-[11px] text-gray-400">{cfg.hint}</p>
                   )}
                 </div>
               );
             })}
           </div>
 
-          {/* Ergebnis-Spalte (dunkel) */}
-          <div className="flex flex-col justify-center gap-5 bg-[#1a1a2e] p-8 text-white md:p-10">
-            <div className="grid grid-cols-2 gap-6">
+          <div className="flex flex-col justify-center gap-4 border-t border-gray-200 bg-[#f5f8fc] p-7 md:border-l md:border-t-0 md:p-8">
+            <div className="grid grid-cols-2 gap-5">
               <div>
-                <div className="font-serif text-4xl font-bold leading-none tabular-nums md:text-5xl">
+                <div className="whitespace-nowrap text-3xl font-bold leading-[1.05] tracking-tight text-brand-blue tabular-nums">
                   {fmtInt(result.lostHours)}
                 </div>
-                <div className="mt-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#ff6b6b]">
+                <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500">
                   Stunden im Jahr
                 </div>
                 {result.asWorkweeks > 0 && (
-                  <div className="mt-1 text-xs text-white/60">
+                  <div className="mt-0.5 text-[11px] text-gray-400">
                     entspricht {result.asWorkweeks} Arbeitswochen
                   </div>
                 )}
               </div>
               <div>
-                <div className="font-serif text-4xl font-bold leading-none tabular-nums md:text-5xl">
+                <div className="whitespace-nowrap text-3xl font-bold leading-[1.05] tracking-tight text-brand-blue tabular-nums">
                   {fmtEur(result.total)}
                 </div>
-                <div className="mt-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#ff6b6b]">
-                  im Jahr
+                <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500">
+                  Kosten im Jahr
                 </div>
               </div>
             </div>
-            <p className="text-sm leading-relaxed text-white/85">
+            <p className="text-[13px] leading-relaxed text-gray-800">
               {CONFIG.cta.explainer}
             </p>
-            <p className="text-xs text-white/50">{CONFIG.cta.footnote}</p>
+            <p className="text-[11px] text-gray-400">{CONFIG.cta.footnote}</p>
           </div>
         </div>
 
-        {/* CTA-Formular */}
-        <div className="mx-auto mt-8 max-w-5xl rounded-3xl bg-white p-8 shadow-md md:p-10">
-          <h3 className="mb-1 text-2xl font-bold tracking-tight text-gray-900">
+        <div className="mx-auto mt-5 rounded-2xl border border-gray-200 bg-white p-7 md:p-8">
+          <h3 className="mb-1 text-xl font-bold tracking-tight text-gray-900">
             {CONFIG.cta.formHeadline}
           </h3>
-          <p className="mb-5 text-sm leading-relaxed text-gray-600">
+          <p className="mb-4 text-[13px] leading-relaxed text-gray-600">
             {CONFIG.cta.formSubline}
           </p>
           {status === 'success' ? (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
               {statusMsg}
             </div>
           ) : (
             <form
               onSubmit={submit}
               noValidate
-              className="grid grid-cols-1 gap-3 md:grid-cols-3"
+              className="grid grid-cols-1 gap-2.5 md:grid-cols-3"
             >
-              <input
-                type="text"
-                name="name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Name *"
-                autoComplete="name"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm text-gray-900 outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
-              />
-              <input
-                type="tel"
-                name="phone"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Telefon *"
-                autoComplete="tel"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm text-gray-900 outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
-              />
-              <input
-                type="email"
-                name="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-Mail *"
-                autoComplete="email"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm text-gray-900 outline-none transition focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
-              />
-              {/* Honeypot */}
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="zf-name"
+                  className="pl-0.5 text-xs font-medium text-gray-500"
+                >
+                  Name
+                </label>
+                <input
+                  id="zf-name"
+                  type="text"
+                  name="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ihr Name"
+                  autoComplete="name"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="zf-phone"
+                  className="pl-0.5 text-xs font-medium text-gray-500"
+                >
+                  Telefon
+                </label>
+                <input
+                  id="zf-phone"
+                  type="tel"
+                  name="phone"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="0176 …"
+                  autoComplete="tel"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="zf-email"
+                  className="pl-0.5 text-xs font-medium text-gray-500"
+                >
+                  E-Mail
+                </label>
+                <input
+                  id="zf-email"
+                  type="email"
+                  name="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ihre@mail.de"
+                  autoComplete="email"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                />
+              </div>
               <input
                 type="text"
                 name="website"
@@ -328,12 +339,12 @@ export default function ZeitfresserRechner() {
               <button
                 type="submit"
                 disabled={status === 'sending'}
-                className="col-span-full mt-2 inline-flex items-center justify-center rounded-full bg-brand-blue px-6 py-4 text-base font-bold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                className="col-span-full mt-1.5 inline-flex items-center justify-center rounded-full bg-brand-blue px-6 py-3 text-[15px] font-semibold text-white transition hover:opacity-92 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {status === 'sending' ? 'Sende…' : CONFIG.cta.buttonText}
               </button>
               {status === 'error' && statusMsg && (
-                <div className="col-span-full rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                <div className="col-span-full rounded-lg border border-red-200 bg-red-50 p-2.5 text-sm text-red-800">
                   {statusMsg}
                 </div>
               )}
