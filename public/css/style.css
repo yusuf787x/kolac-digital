@@ -3162,6 +3162,8 @@ textarea {
 .zeitfresser {
   padding: 80px 0;
   background: var(--color-offwhite);
+  position: relative;
+  z-index: 10;
 }
 
 .zeitfresser-intro {
