@@ -5,8 +5,7 @@ import { useMemo, useState } from 'react';
 /**
  * Zeitfresser-Rechner fuer die React-Landingpage /webseiten.
  * Config liegt lokal im Modul; die Vanilla-Variante fuer die
- * statische Homepage steht in public/js/zeitfresser.js und hat
- * dieselben Werte inline.
+ * statische Homepage steht in public/js/zeitfresser.js.
  */
 
 const CONFIG = {
@@ -33,7 +32,7 @@ const CONFIG = {
     },
     avgOrderValue: {
       label: 'Was ist der Wert eines durchschnittlichen Auftrags?',
-      hint: 'Netto in Euro. Was bringt ein typischer Kunde ein.',
+      hint: 'Netto in Euro. Was bringt dir ein typischer Kunde ein.',
       min: 0,
       max: 5000,
       step: 50,
@@ -41,8 +40,8 @@ const CONFIG = {
       unit: '€',
     },
     hourlyRate: {
-      label: 'Was kostet eine Stunde Arbeitszeit in Ihrem Betrieb?',
-      hint: 'Bei Solo-Selbstständigen der eigene Stundensatz.',
+      label: 'Was kostet eine Stunde Arbeitszeit in deinem Betrieb?',
+      hint: 'Bei Solo-Selbstständigen dein eigener Stundensatz.',
       min: 0,
       max: 250,
       step: 5,
@@ -51,15 +50,15 @@ const CONFIG = {
     },
   },
   cta: {
-    sectionLabel: 'IHRE ZEIT',
-    headline: 'Rechnen Sie kurz mit.',
+    sectionLabel: 'DEINE ZEIT',
+    headline: 'Rechne kurz mit.',
     explainer:
-      'So viel Zeit und Geld steckt aktuell in Arbeit, die ein System für Sie übernehmen könnte.',
-    footnote: 'Gerechnet mit 46 Arbeitswochen. Ihre Zahlen, keine Studie.',
+      'So viel Zeit und Geld steckt aktuell in Arbeit, die ein System für dich übernehmen könnte.',
+    footnote: 'Gerechnet mit 46 Arbeitswochen. Deine Zahlen, keine Studie.',
     buttonText: 'Zeig mir, wie ich das zurückhole',
     formHeadline: 'Kostenlose Zeitfresser-Analyse',
     formSubline:
-      'Wir schauen 15 Minuten auf Ihren Betrieb und zeigen, wo Sie konkret Zeit und Geld verlieren. Kostet nichts, verpflichtet zu nichts.',
+      'Wir schauen 15 Minuten auf deinen Betrieb und zeigen dir, wo du konkret Zeit und Geld verlierst. Kostet nichts, verpflichtet zu nichts.',
   },
 } as const;
 
@@ -108,10 +107,11 @@ export default function ZeitfresserRechner() {
   >('idle');
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
-  const submit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    e.stopPropagation();
     if (website) return;
-    if (!name || !phone || !email) {
+    if (!name.trim() || !phone.trim() || !email.trim()) {
       setStatus('error');
       setStatusMsg('Bitte Name, Telefon und E-Mail ausfüllen.');
       return;
@@ -134,12 +134,12 @@ export default function ZeitfresserRechner() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
-          phone,
-          email,
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
           message,
           source: 'Zeitfresser-Rechner (Webseiten-Landing)',
-          website,
+          website: '',
         }),
       });
       const body = (await res.json().catch(() => ({}))) as {
@@ -159,10 +159,10 @@ export default function ZeitfresserRechner() {
     } catch (err) {
       setStatus('error');
       setStatusMsg(
-        `Versand fehlgeschlagen: ${(err as Error).message}. Bitte rufen Sie uns direkt an: 0176 95762018.`,
+        `Versand fehlgeschlagen: ${(err as Error).message}. Ruf uns direkt an: 0176 95762018.`,
       );
     }
-  };
+  }
 
   return (
     <section id="zeitfresser" className="bg-slate-50 py-20">
@@ -265,7 +265,7 @@ export default function ZeitfresserRechner() {
             </div>
           ) : (
             <form
-              onSubmit={submit}
+              onSubmit={handleSubmit}
               noValidate
               className="grid grid-cols-1 gap-2.5 md:grid-cols-3"
             >
@@ -283,7 +283,7 @@ export default function ZeitfresserRechner() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ihr Name"
+                  placeholder="Dein Name"
                   autoComplete="name"
                   className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                 />
@@ -321,7 +321,7 @@ export default function ZeitfresserRechner() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ihre@mail.de"
+                  placeholder="deine@mail.de"
                   autoComplete="email"
                   className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                 />
@@ -339,7 +339,7 @@ export default function ZeitfresserRechner() {
               <button
                 type="submit"
                 disabled={status === 'sending'}
-                className="col-span-full mt-1.5 inline-flex items-center justify-center rounded-full bg-brand-blue px-6 py-3 text-[15px] font-semibold text-white transition hover:opacity-92 disabled:cursor-not-allowed disabled:opacity-60"
+                className="col-span-full mt-1.5 inline-flex items-center justify-center rounded-full bg-brand-blue px-6 py-3 text-[15px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {status === 'sending' ? 'Sende…' : CONFIG.cta.buttonText}
               </button>

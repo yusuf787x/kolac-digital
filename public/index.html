@@ -541,7 +541,89 @@
   </section>
 
   <!-- ===== ZEITFRESSER-RECHNER ===== -->
-  <section class="zeitfresser" id="zeitfresser" data-zeitfresser></section>
+  <section class="zeitfresser" id="zeitfresser" data-zeitfresser>
+    <div class="container">
+      <div class="zeitfresser-intro">
+        <div class="zeitfresser-label">DEINE ZEIT</div>
+        <h2 class="zeitfresser-headline">Rechne kurz mit.</h2>
+      </div>
+
+      <div class="zeitfresser-card">
+        <div class="zeitfresser-sliders">
+          <div class="zeitfresser-slider">
+            <div class="zeitfresser-slider-head">
+              <span class="zeitfresser-slider-label">Wie viele Stunden pro Woche gehen für Büroarbeit drauf?</span>
+              <span class="zeitfresser-slider-value" data-value="hoursPerWeek">10 Std.</span>
+            </div>
+            <input type="range" data-key="hoursPerWeek" min="0" max="40" step="1" value="10" aria-label="Bürostunden pro Woche" />
+            <div class="zeitfresser-slider-hint">Termine koordinieren, Anfragen beantworten, Angebote und Rechnungen.</div>
+          </div>
+          <div class="zeitfresser-slider">
+            <div class="zeitfresser-slider-head">
+              <span class="zeitfresser-slider-label">Wie viele Kundenanfragen gehen pro Monat unter oder werden nicht nachgefasst?</span>
+              <span class="zeitfresser-slider-value" data-value="missedInquiries">5 Anfragen</span>
+            </div>
+            <input type="range" data-key="missedInquiries" min="0" max="30" step="1" value="5" aria-label="Verpasste Anfragen pro Monat" />
+            <div class="zeitfresser-slider-hint">Ehrliche Schätzung. Meistens mehr als man denkt.</div>
+          </div>
+          <div class="zeitfresser-slider">
+            <div class="zeitfresser-slider-head">
+              <span class="zeitfresser-slider-label">Was ist der Wert eines durchschnittlichen Auftrags?</span>
+              <span class="zeitfresser-slider-value" data-value="avgOrderValue">500 €</span>
+            </div>
+            <input type="range" data-key="avgOrderValue" min="0" max="5000" step="50" value="500" aria-label="Ø Auftragswert" />
+            <div class="zeitfresser-slider-hint">Netto in Euro. Was bringt ein typischer Kunde ein.</div>
+          </div>
+          <div class="zeitfresser-slider">
+            <div class="zeitfresser-slider-head">
+              <span class="zeitfresser-slider-label">Was kostet eine Stunde Arbeitszeit in deinem Betrieb?</span>
+              <span class="zeitfresser-slider-value" data-value="hourlyRate">50 €</span>
+            </div>
+            <input type="range" data-key="hourlyRate" min="0" max="250" step="5" value="50" aria-label="Stundenkosten" />
+            <div class="zeitfresser-slider-hint">Bei Solo-Selbstständigen dein eigener Stundensatz.</div>
+          </div>
+        </div>
+
+        <div class="zeitfresser-result">
+          <div class="zeitfresser-metrics">
+            <div>
+              <div class="zeitfresser-metric-value" data-out="hours">460</div>
+              <div class="zeitfresser-metric-label">Stunden im Jahr</div>
+              <div class="zeitfresser-weeks-hint" data-out="hoursWeeksHint">entspricht 12 Arbeitswochen</div>
+            </div>
+            <div>
+              <div class="zeitfresser-metric-value" data-out="euro">53.000 €</div>
+              <div class="zeitfresser-metric-label">Kosten im Jahr</div>
+            </div>
+          </div>
+          <p class="zeitfresser-explainer">So viel Zeit und Geld steckt aktuell in Arbeit, die ein System für dich übernehmen könnte.</p>
+          <p class="zeitfresser-footnote">Gerechnet mit 46 Arbeitswochen. Deine Zahlen, keine Studie.</p>
+        </div>
+      </div>
+
+      <div class="zeitfresser-cta">
+        <h3 class="zeitfresser-cta-headline">Kostenlose Zeitfresser-Analyse</h3>
+        <p class="zeitfresser-cta-subline">Wir schauen 15 Minuten auf deinen Betrieb und zeigen dir, wo du konkret Zeit und Geld verlierst. Kostet nichts, verpflichtet zu nichts.</p>
+        <form class="zeitfresser-form" data-zeitfresser-form novalidate>
+          <div class="zeitfresser-field">
+            <label for="zf-name">Name</label>
+            <input id="zf-name" type="text" name="name" placeholder="Dein Name" required autocomplete="name" />
+          </div>
+          <div class="zeitfresser-field">
+            <label for="zf-phone">Telefon</label>
+            <input id="zf-phone" type="tel" name="phone" placeholder="0176 …" required autocomplete="tel" />
+          </div>
+          <div class="zeitfresser-field">
+            <label for="zf-email">E-Mail</label>
+            <input id="zf-email" type="email" name="email" placeholder="deine@mail.de" required autocomplete="email" />
+          </div>
+          <input class="zeitfresser-form-honeypot" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <button type="submit" class="zeitfresser-submit">Zeig mir, wie ich das zurückhole</button>
+          <div class="zeitfresser-status" data-status hidden></div>
+        </form>
+      </div>
+    </div>
+  </section>
 
   <!-- ===== KONTAKT ===== -->
   <section class="kontakt" id="kontakt">
