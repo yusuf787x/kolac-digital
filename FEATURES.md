@@ -56,6 +56,20 @@ Drei Modi im „Neuer Vertrag"-Flow:
 
 - **Einnahmen-CSV**: Rechnungs-Liste nach Jahr, Drafts ausgeschlossen.
 - **UStVA**: Monatsweise pro-Position-VAT (nicht Rechnungs-Ebene), Output-VAT gruppiert nach Satz, Vorsteuer aus Ausgaben, Reverse-Charge § 13b, § 19 Kleinunternehmer, Zahllast-Berechnung. Drafts filtern raus.
+- **Elster-Zuordnung (Anlage EÜR)**: Ausgaben nach Elster-Zeile gruppiert (Zeile + Bezeichnung + Netto + Absetzbar + Nicht-abzugsfähig), automatische Kürzung Bewirtung 70 %, eigener Elster-CSV-Export (2 Spalten Zeile/Betrag, direkt in Elster übertragbar).
+
+## EÜR-Kategorien und Elster-Zuordnung
+
+- **`ExpenseCategory`** (in `lib/types.ts`): `Software/Tools`, `Werbung/Ads`, `Hardware`, `Reisen`, `Kfz-Kosten`, `Büro`, `Miete Büro`, `Weiterbildung`, `Telefon/Internet`, `Versicherungen`, `Fremdleistungen`, `Bewirtung`, `Geschenke`, `Sonstiges`.
+- **`EXPENSE_CATEGORY_META`** (in `lib/types.ts`): Record<Category, { elsterLine, elsterLabel, deductibleRate, hint? }>. Zeilennummern beziehen sich auf Anlage EÜR 2024. Absetzbarkeit steuert nur die Ertragsteuer, NIE die Vorsteuer.
+- **Bewirtung (§ 4 Abs. 5 Nr. 2 EStG)** → EÜR Zeile 66, `deductibleRate: 0.7`. Nur 70 % des Netto als Betriebsausgabe, 30 % steuerlich unbeachtlich. Vorsteuer aber zu 100 % in der UStVA abziehbar (das ist in `berichte/ustva` bereits korrekt, weil dort nur `vatRate` verwendet wird, nicht `deductibleRate`).
+- **Geschenke** → Zeile 65. Grenze 35 € netto pro Empfänger/Jahr wird NICHT automatisch geprüft (Hinweis im UI).
+- **Hardware** → Zeile 33 (GwG-Sofortabschreibung bis 800 € netto). Anschaffungen darüber müsste man manuell auf AfA-Verteilung setzen — aktuell nicht automatisiert.
+- **Helper** `computeExpenseEurBreakdown(amount, vatRate, deductibleRate, reverseCharge)` in `lib/utils.ts` gibt `{ gross, net, vat, deductibleNet, nonDeductibleNet }`. Zentral in Liste/Neu-Formular/Berichte verwendet.
+- **AI-Extractor** (`app/api/expense/extract/route.ts`) kennt alle Kategorien und die EÜR-Zuordnung — erkennt Bewirtung an Restaurant/Café/Gaststätte, Kfz an Tankstelle/Werkstatt, etc.
+- **Migration bestehender Belege** (`/dashboard/ausgaben/migrate-eur`): einmalige Seite, Description-Heuristik in `lib/expense-recategorize.ts` schlägt für Alt-Belege bessere Kategorien vor, User bestätigt einzeln, dann `updateExpense`.
+- **CSV-Export Ausgaben** enthält jetzt: Datum, Posten, Kategorie, EÜR-Zeile, Lieferant, Brutto, Netto, Vorsteuer, Abziehbar, Nicht-abzugsfähig, Reverse-Charge.
+- **CSV-Export Elster-EÜR** (zusätzlich): 2 Spalten `Zeile / Betrag netto` — direkt in Elster übertragbar.
 
 ## Cold-Call-Modul (integriert im Salespilot)
 

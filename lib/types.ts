@@ -97,11 +97,114 @@ export type ExpenseCategory =
   | 'Werbung/Ads'
   | 'Hardware'
   | 'Reisen'
+  | 'Kfz-Kosten'
   | 'Büro'
+  | 'Miete Büro'
   | 'Weiterbildung'
   | 'Telefon/Internet'
   | 'Versicherungen'
+  | 'Fremdleistungen'
+  | 'Bewirtung'
+  | 'Geschenke'
   | 'Sonstiges';
+
+/**
+ * EÜR-Zuordnung (Anlage EÜR, Stand 2024/2025) und Absetzbarkeit
+ * je Kategorie. `deductibleRate` = 0.7 bedeutet: nur 70 % gehen als
+ * Betriebsausgabe in die EÜR (Bewirtung, § 4 Abs. 5 Nr. 2 EStG).
+ * Die Vorsteuer bleibt in allen Faellen zu 100 % abziehbar — die
+ * Kuerzung wirkt nur auf die Ertragsteuer, nicht auf die USt.
+ *
+ * Zeilennummern beziehen sich auf Anlage EÜR 2024. Aendern sich
+ * die Formulare, muessen sie hier einmalig gepflegt werden.
+ */
+export interface ExpenseCategoryMeta {
+  elsterLine: number;
+  elsterLabel: string;
+  deductibleRate: number;
+  hint?: string;
+}
+
+export const EXPENSE_CATEGORY_META: Record<
+  ExpenseCategory,
+  ExpenseCategoryMeta
+> = {
+  'Software/Tools': {
+    elsterLine: 62,
+    elsterLabel: 'Sonstige unbeschränkt abziehbare Betriebsausgaben',
+    deductibleRate: 1,
+  },
+  'Werbung/Ads': {
+    elsterLine: 46,
+    elsterLabel: 'Werbekosten',
+    deductibleRate: 1,
+  },
+  Hardware: {
+    elsterLine: 33,
+    elsterLabel:
+      'Sofortabschreibung geringwertiger Wirtschaftsgüter (bis 800 € netto)',
+    deductibleRate: 1,
+    hint: 'Bei Anschaffungskosten über 800 € netto: über AfA (Zeile 32) verteilen.',
+  },
+  Reisen: {
+    elsterLine: 46,
+    elsterLabel: 'Reisekosten Unternehmer (ohne Kfz-Kosten)',
+    deductibleRate: 1,
+  },
+  'Kfz-Kosten': {
+    elsterLine: 36,
+    elsterLabel: 'Übrige Fahrzeugkosten (ohne AfA und Zinsen)',
+    deductibleRate: 1,
+  },
+  Büro: {
+    elsterLine: 62,
+    elsterLabel: 'Sonstige unbeschränkt abziehbare Betriebsausgaben',
+    deductibleRate: 1,
+  },
+  'Miete Büro': {
+    elsterLine: 37,
+    elsterLabel: 'Miete/Pacht für Geschäftsräume',
+    deductibleRate: 1,
+  },
+  Weiterbildung: {
+    elsterLine: 49,
+    elsterLabel: 'Fortbildungskosten',
+    deductibleRate: 1,
+  },
+  'Telefon/Internet': {
+    elsterLine: 45,
+    elsterLabel: 'Aufwendungen für Kommunikation (Telefon, Internet, Porto)',
+    deductibleRate: 1,
+  },
+  Versicherungen: {
+    elsterLine: 62,
+    elsterLabel: 'Sonstige unbeschränkt abziehbare Betriebsausgaben',
+    deductibleRate: 1,
+    hint: 'Nur betriebliche Versicherungen (z.B. Berufshaftpflicht). Private Kranken-/Rentenversicherung gehört nicht in die EÜR.',
+  },
+  Fremdleistungen: {
+    elsterLine: 27,
+    elsterLabel: 'Bezogene Fremdleistungen (Subunternehmer, Freelancer)',
+    deductibleRate: 1,
+  },
+  Bewirtung: {
+    elsterLine: 66,
+    elsterLabel: 'Bewirtungsaufwendungen (nur 70 % abziehbar)',
+    deductibleRate: 0.7,
+    hint: 'Nur 70 % des Netto-Betrags gehen in die EÜR. Vorsteuer zu 100 % abziehbar. Bewirtungsbeleg mit Anlass und Teilnehmern aufheben.',
+  },
+  Geschenke: {
+    elsterLine: 65,
+    elsterLabel: 'Geschenke an Geschäftspartner (nur bis 35 € netto pro Empfänger/Jahr)',
+    deductibleRate: 1,
+    hint: 'Ueberschreitet ein Geschenk 35 € netto pro Empfänger/Jahr, ist es GAR NICHT abziehbar — dann als privat verbuchen.',
+  },
+  Sonstiges: {
+    elsterLine: 62,
+    elsterLabel: 'Sonstige unbeschränkt abziehbare Betriebsausgaben',
+    deductibleRate: 1,
+  },
+};
 
 export interface Expense {
   id: string;
@@ -629,9 +732,14 @@ export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   'Werbung/Ads',
   'Hardware',
   'Reisen',
+  'Kfz-Kosten',
   'Büro',
+  'Miete Büro',
   'Weiterbildung',
   'Telefon/Internet',
   'Versicherungen',
+  'Fremdleistungen',
+  'Bewirtung',
+  'Geschenke',
   'Sonstiges',
 ];

@@ -61,8 +61,22 @@ Du bekommst ein Foto oder PDF eines Belegs/einer Rechnung und extrahierst genau 
 
 - Datum: Das Rechnungs-/Belegdatum, NICHT das Lieferdatum oder Druckdatum von Versand-Etiketten.
 - Betrag: IMMER der Brutto-Endbetrag (inkl. MwSt.), nicht der Netto-Betrag, nicht einzelne Posten. Falls nur Netto + MwSt. einzeln aufgeführt sind: addieren.
-- Beschreibung: Kurz, prägnant, deutsch. Wenn der Beleg ein Abo/Service ist, möglichst Monat/Jahr mitnehmen ("Notion Pro Februar 2026").
-- Kategorie: Aus der Liste wählen. "Software/Tools" für SaaS-Abos, "Hardware" für physische Geräte, "Werbung/Ads" für Anzeigen-Plattformen, "Telefon/Internet" für Provider-Rechnungen.
+- Beschreibung: Kurz, prägnant, deutsch. Wenn der Beleg ein Abo/Service ist, möglichst Monat/Jahr mitnehmen ("Notion Pro Februar 2026"). Bei Bewirtung Restaurant + Anlass, falls erkennbar ("Restaurant Roma, Kundenessen").
+- Kategorie: Aus der Liste wählen. Zuordnung nach EÜR-Anlage:
+  * "Bewirtung" — Restaurant/Café/Gaststätte/Catering-Belege (EÜR Zeile 66, NUR 70 % abziehbar!). Erkennbar an Wörtern wie "Restaurant", "Gaststätte", "Café", "Bar", "Trinkgeld", "Speisen", "Getränke", "Menü", "Kellner". WICHTIG: Nur wenn Bewirtung im geschäftlichen Kontext (Kunde, Meeting). Reines Selbstessen ist PRIVAT und gehört NICHT in die Buchhaltung.
+  * "Geschenke" — Präsente an Geschäftspartner/Kunden (Wein, Blumen, Gutscheine). EÜR Zeile 65, nur bis 35 € netto pro Empfänger/Jahr abziehbar.
+  * "Kfz-Kosten" — Tankstelle, Werkstatt, Kfz-Versicherung, Kfz-Steuer, Waschanlage (EÜR Zeile 36). NICHT Bahn/Flug/Taxi — das ist "Reisen".
+  * "Reisen" — Bahn, Flug, Taxi, Uber, Hotel, Übernachtung, Reisenebenkosten (EÜR Zeile 46).
+  * "Miete Büro" — Miete oder Nebenkosten für Geschäftsräume (EÜR Zeile 37).
+  * "Fremdleistungen" — Rechnungen von Freelancern, Subunternehmern, Agenturen (EÜR Zeile 27).
+  * "Software/Tools" — SaaS-Abos (Notion, Figma, Adobe, GitHub, Vercel, Firebase, Canva). EÜR Zeile 62.
+  * "Werbung/Ads" — Google Ads, Meta/Facebook/Instagram Ads, TikTok Ads, Sponsored Posts, Flyer-Druck (EÜR Zeile 46).
+  * "Hardware" — Physische Geräte: Laptop, Monitor, Tastatur, Kamera, Kabel (EÜR Zeile 33 bei ≤ 800 € netto).
+  * "Telefon/Internet" — Provider-Rechnungen (Telekom, Vodafone, O2, 1&1, Domain-Rechnungen mit Hosting). EÜR Zeile 45.
+  * "Weiterbildung" — Kurse, Bücher, Seminare, Konferenzen, Udemy, Coursera (EÜR Zeile 49).
+  * "Büro" — Büromaterial, Papier, Stifte, kleiner Bürobedarf (EÜR Zeile 62).
+  * "Versicherungen" — Berufshaftpflicht, Betriebshaftpflicht, Cyber-Versicherung (EÜR Zeile 62). NICHT private Kranken-/Rentenversicherung.
+  * "Sonstiges" — Wenn nichts eindeutig passt (EÜR Zeile 62).
 - Lieferant: Name des Unternehmens vom Briefkopf/Logo.
 - Confidence: low → wichtige Felder geraten/unsicher; medium → ein paar Lücken aber Hauptdaten klar; high → alles klar erkennbar.
 

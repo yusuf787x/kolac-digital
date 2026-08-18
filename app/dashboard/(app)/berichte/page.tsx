@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { listInvoices, listExpenses, listCustomers } from '@/lib/firestore';
 import type { Invoice, Expense, Customer } from '@/lib/types';
-import { formatEUR, formatDateDE } from '@/lib/utils';
+import { EXPENSE_CATEGORY_META } from '@/lib/types';
+import {
+  formatEUR,
+  formatDateDE,
+  computeExpenseEurBreakdown,
+} from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 
 const MONTHS_DE = [
@@ -42,6 +47,16 @@ export default function BerichtePage() {
       () => ({ revenue: 0, expense: 0 }),
     );
     const byCategory: Record<string, number> = {};
+    // EÜR-Ansicht: nach Elster-Zeile gruppiert, mit Bewirtungs-Kuerzung.
+    const byElsterLine = new Map<
+      number,
+      { label: string; net: number; deductible: number; nonDeductible: number }
+    >();
+    let eurTotalNet = 0;
+    let eurTotalDeductible = 0;
+    let eurTotalNonDeductible = 0;
+    let bewirtungGrossSum = 0;
+    let bewirtungNetSum = 0;
 
     invoices.forEach((inv) => {
       const d = inv.invoiceDate.toDate();
@@ -60,6 +75,32 @@ export default function BerichtePage() {
       if (d.getFullYear() !== year) return;
       byMonth[d.getMonth()].expense += e.amount;
       byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount;
+
+      const meta = EXPENSE_CATEGORY_META[e.category];
+      if (!meta) return;
+      const eur = computeExpenseEurBreakdown(
+        e.amount,
+        e.vatRate ?? 0,
+        meta.deductibleRate,
+        !!e.reverseCharge,
+      );
+      eurTotalNet += eur.net;
+      eurTotalDeductible += eur.deductibleNet;
+      eurTotalNonDeductible += eur.nonDeductibleNet;
+      if (e.category === 'Bewirtung') {
+        bewirtungGrossSum += eur.gross;
+        bewirtungNetSum += eur.net;
+      }
+      const bucket = byElsterLine.get(meta.elsterLine) ?? {
+        label: meta.elsterLabel,
+        net: 0,
+        deductible: 0,
+        nonDeductible: 0,
+      };
+      bucket.net += eur.net;
+      bucket.deductible += eur.deductibleNet;
+      bucket.nonDeductible += eur.nonDeductibleNet;
+      byElsterLine.set(meta.elsterLine, bucket);
     });
 
     const totalRevenue = byMonth.reduce((a, m) => a + m.revenue, 0);
@@ -70,7 +111,30 @@ export default function BerichtePage() {
       1,
     );
 
-    return { byMonth, byCategory, totalRevenue, totalExpense, profit, maxBar };
+    const elsterRows = Array.from(byElsterLine.entries())
+      .map(([line, v]) => ({
+        line,
+        label: v.label,
+        net: Math.round(v.net * 100) / 100,
+        deductible: Math.round(v.deductible * 100) / 100,
+        nonDeductible: Math.round(v.nonDeductible * 100) / 100,
+      }))
+      .sort((a, b) => a.line - b.line);
+
+    return {
+      byMonth,
+      byCategory,
+      totalRevenue,
+      totalExpense,
+      profit,
+      maxBar,
+      elsterRows,
+      eurTotalNet: Math.round(eurTotalNet * 100) / 100,
+      eurTotalDeductible: Math.round(eurTotalDeductible * 100) / 100,
+      eurTotalNonDeductible: Math.round(eurTotalNonDeductible * 100) / 100,
+      bewirtungGrossSum: Math.round(bewirtungGrossSum * 100) / 100,
+      bewirtungNetSum: Math.round(bewirtungNetSum * 100) / 100,
+    };
   }, [invoices, expenses, year]);
 
   const exportInvoicesCSV = () => {
@@ -95,39 +159,106 @@ export default function BerichtePage() {
   };
 
   const exportExpensesCSV = () => {
+    const fmt = (n: number) => n.toFixed(2).replace('.', ',');
     const rows = [
-      ['Datum', 'Posten', 'Kategorie', 'Lieferant', 'Betrag'],
+      [
+        'Datum',
+        'Posten',
+        'Kategorie',
+        'EÜR-Zeile',
+        'Lieferant',
+        'Brutto',
+        'Netto',
+        'Vorsteuer',
+        'Abziehbar (EÜR)',
+        'Nicht abzugsfähig',
+        'Reverse Charge',
+      ],
       ...expenses
         .filter((e) => e.date.toDate().getFullYear() === year)
         .sort((a, b) => a.date.toMillis() - b.date.toMillis())
-        .map((e) => [
-          formatDateDE(e.date.toDate()),
-          e.description,
-          e.category,
-          e.supplier,
-          e.amount.toFixed(2).replace('.', ','),
-        ]),
+        .map((e) => {
+          const meta = EXPENSE_CATEGORY_META[e.category];
+          const eur = computeExpenseEurBreakdown(
+            e.amount,
+            e.vatRate ?? 0,
+            meta?.deductibleRate ?? 1,
+            !!e.reverseCharge,
+          );
+          return [
+            formatDateDE(e.date.toDate()),
+            e.description,
+            e.category,
+            meta ? String(meta.elsterLine) : '',
+            e.supplier,
+            fmt(eur.gross),
+            fmt(eur.net),
+            fmt(eur.vat),
+            fmt(eur.deductibleNet),
+            fmt(eur.nonDeductibleNet),
+            e.reverseCharge ? 'ja' : '',
+          ];
+        }),
     ];
     downloadCSV(`ausgaben-${year}.csv`, rows);
   };
 
   const exportEUR = () => {
+    const fmt = (n: number) => n.toFixed(2).replace('.', ',');
     const rows = [
-      ['Monat', 'Einnahmen', 'Ausgaben', 'Gewinn'],
+      ['# EÜR-Übersicht', String(year)],
+      [],
+      ['Monat', 'Einnahmen', 'Ausgaben (brutto)', 'Gewinn'],
       ...data.byMonth.map((m, idx) => [
         `${MONTHS_DE[idx]} ${year}`,
-        m.revenue.toFixed(2).replace('.', ','),
-        m.expense.toFixed(2).replace('.', ','),
-        (m.revenue - m.expense).toFixed(2).replace('.', ','),
+        fmt(m.revenue),
+        fmt(m.expense),
+        fmt(m.revenue - m.expense),
       ]),
       [
         'GESAMT',
-        data.totalRevenue.toFixed(2).replace('.', ','),
-        data.totalExpense.toFixed(2).replace('.', ','),
-        data.profit.toFixed(2).replace('.', ','),
+        fmt(data.totalRevenue),
+        fmt(data.totalExpense),
+        fmt(data.profit),
+      ],
+      [],
+      ['# Ausgaben nach Elster-EÜR-Zeile'],
+      [
+        'EÜR-Zeile',
+        'Bezeichnung',
+        'Netto',
+        'Als Betriebsausgabe absetzbar',
+        'Nicht abzugsfähig',
+      ],
+      ...data.elsterRows.map((r) => [
+        String(r.line),
+        r.label,
+        fmt(r.net),
+        fmt(r.deductible),
+        fmt(r.nonDeductible),
+      ]),
+      [
+        'GESAMT',
+        '',
+        fmt(data.eurTotalNet),
+        fmt(data.eurTotalDeductible),
+        fmt(data.eurTotalNonDeductible),
       ],
     ];
     downloadCSV(`euer-${year}.csv`, rows);
+  };
+
+  const exportElsterEUR = () => {
+    const fmt = (n: number) => n.toFixed(2).replace('.', ',');
+    const rows = [
+      ['Elster-Zeile', 'Beschreibung', 'Betrag (Netto)'],
+      ...data.elsterRows.map((r) => [
+        String(r.line),
+        r.label,
+        fmt(r.deductible),
+      ]),
+    ];
+    downloadCSV(`elster-euer-${year}.csv`, rows);
   };
 
   const sortedCategories = useMemo(
@@ -287,6 +418,106 @@ export default function BerichtePage() {
             )}
           </section>
 
+          <section className="card mb-6">
+            <div className="flex items-baseline justify-between gap-3 mb-3 flex-wrap">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">
+                  Elster-Zuordnung (Anlage EÜR {year})
+                </h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Betriebsausgaben nach Elster-Zeile gruppiert. Bewirtung
+                  (Zeile 66) wird automatisch auf 70 % gekürzt — die Vorsteuer
+                  bleibt zu 100 % in der UStVA abziehbar.
+                </p>
+              </div>
+              <button
+                onClick={exportElsterEUR}
+                className="btn-secondary text-xs"
+                title="Zwei-Spalten-CSV mit Zeile und absetzbarem Netto — direkt in Elster übertragbar."
+              >
+                Elster-CSV
+              </button>
+            </div>
+            {data.elsterRows.length === 0 ? (
+              <p className="text-sm text-gray-500">
+                Keine Ausgaben für {year} erfasst.
+              </p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="text-xs uppercase text-gray-500 tracking-wider border-b border-gray-100">
+                  <tr>
+                    <th className="text-left py-2 w-16">Zeile</th>
+                    <th className="text-left py-2">Bezeichnung</th>
+                    <th className="text-right py-2 w-28">Netto</th>
+                    <th className="text-right py-2 w-32">Absetzbar</th>
+                    <th className="text-right py-2 w-32">Nicht abzugsfähig</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {data.elsterRows.map((r) => (
+                    <tr key={r.line}>
+                      <td className="py-2">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700">
+                          Z{r.line}
+                        </span>
+                      </td>
+                      <td className="py-2 text-gray-700">{r.label}</td>
+                      <td className="py-2 text-right tabular-nums text-gray-700">
+                        <SensitiveValue>{formatEUR(r.net)}</SensitiveValue>
+                      </td>
+                      <td className="py-2 text-right tabular-nums font-medium text-gray-900">
+                        <SensitiveValue>
+                          {formatEUR(r.deductible)}
+                        </SensitiveValue>
+                      </td>
+                      <td className="py-2 text-right tabular-nums text-orange-700">
+                        {r.nonDeductible > 0 ? (
+                          <SensitiveValue>
+                            {formatEUR(r.nonDeductible)}
+                          </SensitiveValue>
+                        ) : (
+                          <span className="text-gray-300">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="border-t-2 border-gray-200 font-semibold text-gray-900">
+                    <td className="py-2" colSpan={2}>
+                      Gesamt
+                    </td>
+                    <td className="py-2 text-right tabular-nums">
+                      <SensitiveValue>
+                        {formatEUR(data.eurTotalNet)}
+                      </SensitiveValue>
+                    </td>
+                    <td className="py-2 text-right tabular-nums">
+                      <SensitiveValue>
+                        {formatEUR(data.eurTotalDeductible)}
+                      </SensitiveValue>
+                    </td>
+                    <td className="py-2 text-right tabular-nums text-orange-700">
+                      <SensitiveValue>
+                        {formatEUR(data.eurTotalNonDeductible)}
+                      </SensitiveValue>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            )}
+            {data.bewirtungGrossSum > 0 && (
+              <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
+                <strong>Bewirtung (§ 4 Abs. 5 Nr. 2 EStG):</strong>{' '}
+                {formatEUR(data.bewirtungGrossSum)} brutto ={' '}
+                {formatEUR(data.bewirtungNetSum)} netto. Davon 70 % (
+                {formatEUR(
+                  Math.round(data.bewirtungNetSum * 0.7 * 100) / 100,
+                )}
+                ) als Betriebsausgabe abziehbar, 30 % steuerlich unbeachtlich.
+                Vorsteuer geht zu 100 % in die UStVA.
+              </div>
+            )}
+          </section>
+
           <section className="card">
             <h2 className="text-base font-semibold text-gray-900 mb-3">
               CSV-Export
@@ -299,10 +530,13 @@ export default function BerichtePage() {
                 Einnahmen als CSV
               </button>
               <button onClick={exportExpensesCSV} className="btn-secondary">
-                Ausgaben als CSV
+                Ausgaben als CSV (mit EÜR-Feldern)
               </button>
               <button onClick={exportEUR} className="btn-secondary">
-                EÜR als CSV
+                EÜR-Übersicht als CSV
+              </button>
+              <button onClick={exportElsterEUR} className="btn-secondary">
+                Elster-EÜR-Zuordnung
               </button>
             </div>
           </section>

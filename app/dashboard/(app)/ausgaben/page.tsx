@@ -4,8 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { listExpenses, deleteExpense, deleteFile } from '@/lib/firestore';
 import type { Expense, ExpenseCategory } from '@/lib/types';
-import { EXPENSE_CATEGORIES } from '@/lib/types';
-import { formatEUR, formatDateDE, grossToNet } from '@/lib/utils';
+import { EXPENSE_CATEGORIES, EXPENSE_CATEGORY_META } from '@/lib/types';
+import {
+  formatEUR,
+  formatDateDE,
+  grossToNet,
+  computeExpenseEurBreakdown,
+} from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 
 export default function AusgabenPage() {
@@ -64,21 +69,28 @@ export default function AusgabenPage() {
     let net = 0;
     let rcNet = 0;
     let rcVat = 0;
+    let eurDeductible = 0;
+    let nonDeductible = 0;
     for (const e of filtered) {
+      const meta = EXPENSE_CATEGORY_META[e.category];
+      const rate = e.vatRate ?? 0;
+      const eur = computeExpenseEurBreakdown(
+        e.amount,
+        rate,
+        meta?.deductibleRate ?? 1,
+        !!e.reverseCharge,
+      );
+      eurDeductible += eur.deductibleNet;
+      nonDeductible += eur.nonDeductibleNet;
       if (e.reverseCharge) {
-        // amount ist Netto, MwSt wird fiktiv berechnet und beidseitig
-        // deklariert -> zaehlt nicht zur "echten" Vorsteuer, aber zaehlt
-        // trotzdem zu den ausgegebenen Cash-Flows.
-        const rate = e.vatRate ?? 0;
-        rcNet += e.amount;
-        rcVat += Math.round(e.amount * rate * 100) / 100;
-        gross += e.amount; // fuer Cash-Sicht: was wurde bezahlt
-        net += e.amount;
+        rcNet += eur.net;
+        rcVat += eur.vat;
+        gross += eur.gross;
+        net += eur.net;
       } else {
-        const split = grossToNet(e.amount, e.vatRate ?? 0);
-        gross += split.gross;
-        vat += split.vat;
-        net += split.net;
+        gross += eur.gross;
+        vat += eur.vat;
+        net += eur.net;
       }
     }
     return {
@@ -87,6 +99,8 @@ export default function AusgabenPage() {
       net: Math.round(net * 100) / 100,
       rcNet: Math.round(rcNet * 100) / 100,
       rcVat: Math.round(rcVat * 100) / 100,
+      eurDeductible: Math.round(eurDeductible * 100) / 100,
+      nonDeductible: Math.round(nonDeductible * 100) / 100,
     };
   }, [filtered]);
   const totalFiltered = totals.gross;
@@ -139,9 +153,24 @@ export default function AusgabenPage() {
                 netto (§ 13b)
               </span>
             )}
+            {totals.nonDeductible > 0 && (
+              <span className="ml-2 text-orange-700">
+                · davon nicht abzugsfähig (Bewirtung 30 %){' '}
+                <SensitiveValue>
+                  {formatEUR(totals.nonDeductible)}
+                </SensitiveValue>
+              </span>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/ausgaben/migrate-eur"
+            className="btn-secondary text-xs"
+            title="Bestehende Belege einmalig auf die neuen EÜR-Kategorien mappen."
+          >
+            EÜR-Kategorien prüfen
+          </Link>
           <Link href="/dashboard/berichte/ustva" className="btn-secondary">
             UStVA-Übersicht
           </Link>
@@ -231,7 +260,36 @@ export default function AusgabenPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-700">{e.category}</td>
+                  <td className="px-4 py-3 text-gray-700">
+                    <div className="flex items-center gap-1.5">
+                      <span>{e.category}</span>
+                      {(() => {
+                        const meta = EXPENSE_CATEGORY_META[e.category];
+                        if (!meta) return null;
+                        const reduced = meta.deductibleRate < 1;
+                        return (
+                          <span
+                            className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                              reduced
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-blue-50 text-blue-700'
+                            }`}
+                            title={`EÜR ${meta.elsterLabel}${
+                              reduced
+                                ? ` — nur ${Math.round(
+                                    meta.deductibleRate * 100,
+                                  )} % abziehbar`
+                                : ''
+                            }`}
+                          >
+                            Z{meta.elsterLine}
+                            {reduced &&
+                              ` · ${Math.round(meta.deductibleRate * 100)} %`}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-gray-700">{e.supplier || '—'}</td>
                   <td className="px-4 py-3 text-right font-medium text-gray-900">
                     <SensitiveValue>{formatEUR(e.amount)}</SensitiveValue>

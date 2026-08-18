@@ -10,11 +10,16 @@ import {
   getGoogleAuth,
   uploadFile,
 } from '@/lib/firestore';
-import { EXPENSE_CATEGORIES, type ExpenseCategory } from '@/lib/types';
+import {
+  EXPENSE_CATEGORIES,
+  EXPENSE_CATEGORY_META,
+  type ExpenseCategory,
+} from '@/lib/types';
 import {
   formatEUR,
   defaultVatRateForDate,
   grossToNet,
+  computeExpenseEurBreakdown,
 } from '@/lib/utils';
 import { fileToBase64 } from '@/lib/file-utils';
 import { authedFetch } from '@/lib/api-client';
@@ -443,6 +448,79 @@ export default function NeueAusgabePage() {
               />
             </div>
           </div>
+
+          {(() => {
+            const meta = EXPENSE_CATEGORY_META[category];
+            const n = parseFloat(amount.replace(',', '.'));
+            const showBreakdown =
+              !isNaN(n) && n > 0 && meta.deductibleRate < 1;
+            const breakdown = showBreakdown
+              ? computeExpenseEurBreakdown(
+                  n,
+                  vatRate,
+                  meta.deductibleRate,
+                  reverseCharge,
+                )
+              : null;
+            const isReduced = meta.deductibleRate < 1;
+            return (
+              <div
+                className={`rounded-lg border p-3 text-sm ${
+                  isReduced
+                    ? 'border-amber-200 bg-amber-50/70 text-amber-900'
+                    : 'border-gray-200 bg-gray-50 text-gray-800'
+                }`}
+              >
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span
+                    className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                      isReduced
+                        ? 'bg-amber-200 text-amber-900'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    EÜR Zeile {meta.elsterLine}
+                  </span>
+                  <span className="font-medium">{meta.elsterLabel}</span>
+                  {isReduced && (
+                    <span className="ml-auto text-xs font-semibold">
+                      {Math.round(meta.deductibleRate * 100)} % abziehbar
+                    </span>
+                  )}
+                </div>
+                {meta.hint && (
+                  <p className="mt-1 text-xs opacity-80">{meta.hint}</p>
+                )}
+                {breakdown && (
+                  <div className="mt-2 pt-2 border-t border-amber-200 text-xs grid grid-cols-2 gap-y-0.5">
+                    <span className="opacity-70">Netto</span>
+                    <span className="text-right font-medium">
+                      {formatEUR(breakdown.net)}
+                    </span>
+                    <span className="opacity-70">
+                      Vorsteuer (100 % abziehbar)
+                    </span>
+                    <span className="text-right font-medium">
+                      {formatEUR(breakdown.vat)}
+                    </span>
+                    <span className="opacity-70">
+                      Betriebsausgabe EÜR (
+                      {Math.round(meta.deductibleRate * 100)} %)
+                    </span>
+                    <span className="text-right font-semibold">
+                      {formatEUR(breakdown.deductibleNet)}
+                    </span>
+                    <span className="opacity-70">
+                      Nicht abzugsfähig (privat)
+                    </span>
+                    <span className="text-right font-medium">
+                      {formatEUR(breakdown.nonDeductibleNet)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </section>
 
         {error && (

@@ -213,6 +213,48 @@ export function grossToNet(
 }
 
 /**
+ * Zerlegt einen Beleg in die EÜR-relevanten Betraege.
+ *
+ * Fuer Bewirtung (deductibleRate = 0.7) sind nur 70 % des Netto-Betrags
+ * als Betriebsausgabe abziehbar; die restlichen 30 % sind steuerlich
+ * unbeachtlich (keine Betriebsausgabe). Die Vorsteuer bleibt zu 100 %
+ * abziehbar — die Kuerzung wirkt ausschliesslich auf die Ertragsteuer.
+ *
+ * Bei Reverse Charge (§ 13b): `amount` ist bereits netto, es wurde
+ * nichts an USt vom Lieferant einbehalten, daher net = amount.
+ */
+export function computeExpenseEurBreakdown(
+  amount: number,
+  vatRate: number,
+  deductibleRate: number,
+  reverseCharge: boolean,
+): {
+  gross: number;
+  net: number;
+  vat: number;
+  deductibleNet: number;
+  nonDeductibleNet: number;
+} {
+  const rate = deductibleRate ?? 1;
+  let net: number;
+  let vat: number;
+  let gross: number;
+  if (reverseCharge) {
+    net = Math.round(amount * 100) / 100;
+    vat = Math.round(net * vatRate * 100) / 100;
+    gross = net;
+  } else {
+    const split = grossToNet(amount, vatRate);
+    net = split.net;
+    vat = split.vat;
+    gross = split.gross;
+  }
+  const deductibleNet = Math.round(net * rate * 100) / 100;
+  const nonDeductibleNet = Math.round((net - deductibleNet) * 100) / 100;
+  return { gross, net, vat, deductibleNet, nonDeductibleNet };
+}
+
+/**
  * Rechnet Netto/USt/Brutto ueber alle Positionen einer Rechnung —
  * mit position-spezifischem `vatRate` (fallback auf Rechnungs-Satz).
  * Notwendig, weil eine Rechnung Positionen mit unterschiedlichen
