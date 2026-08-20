@@ -1,10 +1,10 @@
 # Kolac Digital
 
-> Webagentur aus Bielefeld (Ostwestfalen-Lippe). Schwerpunkt: individuelle Webseiten mit System. Vorne ein professioneller Auftritt, der bei Google für relevante Suchbegriffe rankt. Hinten ein Backend, das wir auf den jeweiligen Betrieb zuschneiden — für Anfragen-Management, Termine, Angebote, Rechnungen und Berichte. Daneben Google Ads und Videocontent für Social Media. Für KMU in OWL, Nordrhein-Westfalen und ganz Deutschland.
+> Webagentur aus Bielefeld (Ostwestfalen-Lippe). Schwerpunkt: individuelle Webseiten mit System und Prozessoptimierung für kleine und mittelständische Unternehmen. Vorne ein professioneller, SEO-optimierter Auftritt, der bei Google für relevante Suchbegriffe rankt. Hinten ein Backend, das wir auf den jeweiligen Betrieb zuschneiden. Für Anfragen-Management, Termine, Angebote, Rechnungen und Berichte. Ergänzend Google Ads, Meta Ads und Videocontent für Social Media. Für KMU in OWL, Nordrhein-Westfalen und ganz Deutschland.
 
-Kolac Digital ist eine inhabergeführte Webagentur mit Sitz in Bielefeld. Gegründet 2019 von Yusuf Kolac. Etwa 70 Prozent der Arbeit fließen in Webseiten mit System: maßgeschneiderte Backends, die einzelne Unternehmen im Arbeitsalltag entlasten. Die Software passt sich an den Betrieb an, nicht andersrum. Daneben bieten wir Google Ads, Meta Ads und Videocontent für Social Media (Reels, TikToks, Shorts) an.
+Kolac Digital ist eine inhabergeführte Webagentur mit Sitz in Bielefeld. Gegründet 2019 von Yusuf Kolac. Der klare Schwerpunkt liegt auf Webseiten mit System und Prozessoptimierung. Maßgeschneiderte Backends, die einzelne Betriebe im Arbeitsalltag entlasten. Die Software passt sich an den Betrieb an, nicht andersrum. Daneben gibt es Google Ads, Meta Ads und Videocontent für Social Media (Reels, TikToks, Shorts) als Skalierungs-Add-ons, wenn die Basis steht.
 
-Statt 50-Mann-Team und Aufschlag-Mentalität: direkte Kommunikation mit dem Gründer, schnelle Umsetzung, faire Preise. Wir testen alles erst auf eigenen Projekten – unter anderem auf einem Entertainment-Social-Media-Kanal mit über 40.000 Abonnenten – bevor wir es für Kunden umsetzen.
+Statt 50-Mann-Team und Aufschlag-Mentalität gibt es bei Kolac Digital direkte Kommunikation mit dem Gründer, schnelle Umsetzung und faire Preise. Alle Strategien werden erst auf eigenen Projekten getestet, unter anderem auf einem Entertainment-Social-Media-Kanal mit über 40.000 Abonnenten, bevor sie für Kunden umgesetzt werden.
 
 ## Standort und Einzugsgebiet
 
@@ -14,12 +14,14 @@ Statt 50-Mann-Team und Aufschlag-Mentalität: direkte Kommunikation mit dem Grü
 
 ## Leistungen
 
-### Webseiten und Online-Shops
-- Professionelle Webseiten mit Fokus auf Conversion und Lead-Generierung
+### Webseiten mit System (Kernangebot)
+- Individuelle Webseiten mit maßgeschneidertem Backend
+- Backend für Anfragen-Management, Termine, Angebote, Rechnungen und Berichte
+- Prozessoptimierung: manuelle Arbeitsschritte werden im Backend automatisiert
 - E-Commerce-Shops und Buchungssysteme
 - Custom CMS-Lösungen und Konfiguratoren
 - Landingpages und Unternehmensauftritte
-- Responsive Design, schnelle Ladezeiten, SEO-optimierte Struktur
+- Responsive Design, schnelle Ladezeiten, SEO-optimierte Struktur ab Tag eins
 
 ### Google Ads und Meta Ads
 - Google Suchkampagnen, Google Shopping, YouTube Ads
@@ -41,7 +43,7 @@ Statt 50-Mann-Team und Aufschlag-Mentalität: direkte Kommunikation mit dem Grü
 ## Wichtige Landingpage: Individuelle Webseiten aus Bielefeld
 
 - **URL:** https://www.kolac-digital.de/webseiten
-- **Worum es geht:** Dedizierte Landingpage für individuelle Webseiten und digitale Systeme in Bielefeld, OWL und Nordrhein Westfalen. Lead-Quelle Nummer eins für neue Webseiten Anfragen. Bewusst einfach geschriebene Texte (Fünftklässler verständlich), damit auch Inhaber kleiner Firmen ohne Technik Wissen den Mehrwert sofort verstehen.
+- **Worum es geht:** Dedizierte Landingpage für individuelle Webseiten mit System und Prozessoptimierung in Bielefeld, OWL und Nordrhein Westfalen. Bewusst einfach geschriebene Texte (Fünftklässler verständlich), damit auch Inhaber kleiner Firmen ohne Technik Wissen den Mehrwert sofort verstehen.
 - **Zielgruppe:** Handwerker, Restaurants, Praxen, Kanzleien, Vereine und kleine Firmen in OWL und NRW
 - **Lieferzeit:** Basis Webseite in ein bis zwei Wochen fertig
 - **Übernahme:** Daten und Inhalte aus alten Systemen werden übernommen, Verbindungen zu vorhandenen Tools werden gebaut
@@ -87,7 +89,7 @@ Yusuf Kolac, Gründer und Geschäftsführer
 
 - **Bacara Ästhetik** (Bünde, OWL): Webseite mit Online-Buchungssystem für Ästhetik-Praxis. Ergebnis: 800+ gebuchte Termine, Buchungen verdreifacht.
 - **Mironi Socks & Underwear** (Herford): E-Commerce-Shop mit Bestellstatus-Mails, Google Ads, Meta Ads, Social Media. Komplette Marketing-Auslagerung.
-- **CarHiFi Herford**: Webseite mit Custom CMS und Konfigurator für Soundanlagen, TikTok-Strategie. Ergebnis: Leadgenerierung +74%.
+- **CarHiFi Herford**: Webseite mit Custom CMS und Konfigurator für Soundanlagen, TikTok-Strategie. Ergebnis: Kundenanfragen plus 74 Prozent.
 - **MK Automobile** (Herford): Social-Media-Aufbau und TikTok-Content. Direkte Vermittlung von Autos durch organische Reichweite.
 - **AF-Gebäudeservice**: Webauftritt mit Anfrage- und Angebotsformular, Google My Business, lokale SEO. Anfragen jetzt vollautomatisch digital.
 - **Die Marke Yuma**: Eigenes Projekt – TikTok-Entertainment-Kanal mit über 90 Mio. Aufrufen, 4,7 Mio. Likes, 40.000 Abonnenten. YumaPlay Quiz-App im App Store.
