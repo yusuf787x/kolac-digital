@@ -1591,8 +1591,34 @@ textarea {
 
 /* Referenzen CTA */
 .ref-cta-wrap {
-  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
   margin-top: 56px;
+}
+.ref-cta-btn-secondary {
+  background: #ffffff;
+  color: var(--color-blue);
+  border: 2px solid var(--color-blue);
+  box-shadow: none;
+  padding: 16px 32px;
+}
+.ref-cta-btn-secondary:hover {
+  background: var(--color-blue-light);
+  color: var(--color-blue);
+  box-shadow: 0 8px 24px rgba(0, 113, 227, 0.18);
+}
+@media (max-width: 640px) {
+  .ref-cta-wrap {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ref-cta-wrap .ref-cta-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .ref-cta-btn {
