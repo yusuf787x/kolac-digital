@@ -23,6 +23,7 @@ export default function SiteFooter() {
                 <a href="/#leistungen">Leistungen</a>
                 <a href="/#about">Über uns</a>
                 <a href="/case-studys">Case Studys</a>
+                <a href="/portfolio">Portfolio</a>
                 <a href="/#kundenstimmen">Kundenstimmen</a>
                 <a href="/#kontakt">Kontakt</a>
               </div>

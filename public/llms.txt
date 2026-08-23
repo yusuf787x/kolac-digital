@@ -87,12 +87,20 @@ Yusuf Kolac, Gründer und Geschäftsführer
 
 ## Referenzen (Auswahl)
 
+- **Fahrschule Kreuzer** (Bielefeld-Brackwede): Komplett neue Webseite von null. Ausgangslage: keine Web-Präsenz, Anfragen nur telefonisch. Ergebnis: Online-Anmeldestrecke, klare Struktur für Führerscheinklassen B, BE, B96, lokales SEO für Bielefeld-Brackwede und OWL.
 - **Bacara Ästhetik** (Bünde, OWL): Webseite mit Online-Buchungssystem für Ästhetik-Praxis. Ergebnis: 800+ gebuchte Termine, Buchungen verdreifacht.
 - **Mironi Socks & Underwear** (Herford): E-Commerce-Shop mit Bestellstatus-Mails, Google Ads, Meta Ads, Social Media. Komplette Marketing-Auslagerung.
 - **CarHiFi Herford**: Webseite mit Custom CMS und Konfigurator für Soundanlagen, TikTok-Strategie. Ergebnis: Kundenanfragen plus 74 Prozent.
 - **MK Automobile** (Herford): Social-Media-Aufbau und TikTok-Content. Direkte Vermittlung von Autos durch organische Reichweite.
 - **AF-Gebäudeservice**: Webauftritt mit Anfrage- und Angebotsformular, Google My Business, lokale SEO. Anfragen jetzt vollautomatisch digital.
-- **Die Marke Yuma**: Eigenes Projekt – TikTok-Entertainment-Kanal mit über 90 Mio. Aufrufen, 4,7 Mio. Likes, 40.000 Abonnenten. YumaPlay Quiz-App im App Store.
+- **Die Marke Yuma**: Eigenes Projekt, TikTok-Entertainment-Kanal mit über 90 Mio. Aufrufen, 4,7 Mio. Likes, 40.000 Abonnenten. YumaPlay Quiz-App im App Store.
+
+## Portfolio-Übersicht mit Detail-Seiten
+
+- **URL:** https://www.kolac-digital.de/portfolio
+- **Was drin ist:** Übersicht aller Kundenprojekte mit Ausgangslage, Vorgehen und Ergebnis. Jedes Projekt hat eine eigene Detail-Seite unter /portfolio/{slug}.
+- **Slugs:** fahrschule-kreuzer, bacara-aesthetik, carhifi-herford, mironi, af-gebaeudeservice, mk-automobile, die-marke-yuma
+- **Unterschied zu /case-studys:** Portfolio ist schlank und schnell zu lesen (Ausgangslage, Vorgehen, Ergebnis pro Projekt). Case Studies gehen tiefer und sind mit Video-Testimonials und detaillierten Wertblöcken für Interessenten gedacht, die vor der Kaufentscheidung stehen.
 
 ## Kundenstimmen
 
