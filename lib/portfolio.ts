@@ -58,7 +58,7 @@ export const portfolioProjects: PortfolioProject[] = [
     category: 'Fahrschule',
     location: 'Bielefeld-Brackwede',
     tag: 'Neue Webpräsenz von null',
-    overviewImage: '/images/portfolio/fahrschule-kreuzer.svg',
+    overviewImage: '/images/portfolio/fahrschule-kreuzer.jpg',
     imageAlt:
       'Neue Webseite der Fahrschule Kreuzer aus Bielefeld-Brackwede',
     services: [
