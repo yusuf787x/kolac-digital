@@ -4012,3 +4012,127 @@ textarea {
     font-size: 22px;
   }
 }
+
+/* ==============================================================
+   404 (app/not-found.tsx)
+   ============================================================== */
+
+.notfound-section {
+  padding: 140px 0 100px;
+  background: var(--color-offwhite);
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+}
+.notfound-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+.notfound-code {
+  font-family: var(--font-main);
+  font-size: 160px;
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  color: transparent;
+  background: linear-gradient(
+    180deg,
+    var(--color-blue) 0%,
+    #7cb2f3 60%,
+    rgba(124, 178, 243, 0.15) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  margin: 0 0 12px 0;
+  user-select: none;
+}
+.notfound-inner .section-label {
+  color: var(--color-blue);
+  margin-bottom: 16px;
+}
+.notfound-headline {
+  font-family: var(--font-main);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--color-black);
+  margin: 0 0 20px 0;
+}
+.notfound-explain {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-gray);
+  margin: 0 auto 14px auto;
+  max-width: 560px;
+}
+.notfound-explain strong {
+  color: var(--color-black);
+  font-weight: 700;
+}
+.notfound-explain em {
+  color: var(--color-blue);
+  font-style: normal;
+  font-weight: 600;
+}
+.notfound-actions {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+.notfound-link-secondary {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-blue);
+  text-decoration: none;
+  margin-left: 4px;
+}
+.notfound-link-secondary:hover {
+  text-decoration: underline;
+}
+.notfound-help {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-gray);
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.notfound-help a {
+  color: var(--color-blue);
+  text-decoration: none;
+  font-weight: 600;
+}
+.notfound-help a:hover {
+  text-decoration: underline;
+}
+@media (max-width: 700px) {
+  .notfound-section {
+    padding: 120px 0 70px;
+  }
+  .notfound-code {
+    font-size: 110px;
+  }
+  .notfound-headline {
+    font-size: 28px;
+  }
+  .notfound-explain {
+    font-size: 15px;
+  }
+  .notfound-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .notfound-actions .btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}
