@@ -20,25 +20,10 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/legal.css">
 </head>
-<body>
+<body class="legal-page-body">
 
-  <!-- Navigation -->
-  <nav class="navbar navbar-scrolled" role="navigation">
-    <div class="container">
-      <a href="/" class="nav-logo" aria-label="Kolac Digital – Startseite">
-        <img src="images/Logo Lang Schwarz.png" alt="Kolac Digital">
-      </a>
-      <div class="nav-links">
-        <a href="/#leistungen">Leistungen</a>
-        <a href="/#about">Über uns</a>
-        <a href="/#referenzen">Unsere Arbeit</a>
-        <a href="/#kundenstimmen">Kundenstimmen</a>
-      </div>
-      <div class="nav-cta">
-        <a href="/#kontakt" class="btn btn-primary">Projekt starten</a>
-      </div>
-    </div>
-  </nav>
+  <!-- Navigation (zentral aus /js/marketing-chrome.js gerendert) -->
+  <div data-marketing-header></div>
 
   <main class="legal-page">
     <div class="container">
@@ -135,33 +120,10 @@
   </main>
 
   <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="container">
-        <div class="footer-top">
-          <a href="/" class="footer-logo"><img src="images/Mit Schrift Weiß Lang.png" alt="Kolac Digital"></a>
-          <div class="footer-columns">
-            <div class="footer-col">
-              <span class="footer-col-title">Links</span>
-              <a href="/#leistungen">Leistungen</a>
-              <a href="/#about">Über uns</a>
-              <a href="/#referenzen">Unsere Arbeit</a>
-              <a href="/#kundenstimmen">Kundenstimmen</a>
-              <a href="/#kontakt">Kontakt</a>
-            </div>
-            <div class="footer-col">
-              <span class="footer-col-title">Rechtliches</span>
-              <a href="impressum.html">Impressum</a>
-              <a href="datenschutz.html">Datenschutz</a>
-              <a href="agb.html">AGB</a>
-            </div>
-          </div>
-        </div>
-        <p class="footer-copy">© 2019–2026 Kolac Digital · Beckhausstraße 108, 33611 Bielefeld · Alle Rechte vorbehalten.</p>
-      </div>
-    </div>
-  </footer>
+  <!-- Footer (zentral aus /js/marketing-chrome.js gerendert) -->
+  <div data-marketing-footer></div>
 
+  <script src="js/marketing-chrome.js" defer></script>
   <script src="js/cookie-consent.js"></script>
 </body>
 </html>
