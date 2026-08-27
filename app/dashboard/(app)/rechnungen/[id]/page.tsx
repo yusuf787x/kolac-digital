@@ -97,6 +97,18 @@ export default function RechnungDetailPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
 
+  // Zahlungs-Dialog (Ist-Versteuerung). Hooks muessen VOR den Early-
+  // Returns stehen, damit die Hook-Reihenfolge zwischen Renderphasen
+  // stabil bleibt (Rules of Hooks).
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const [payDate, setPayDate] = useState(
+    () => new Date().toISOString().slice(0, 10),
+  );
+  const [payAmount, setPayAmount] = useState<string>('');
+  const [payNote, setPayNote] = useState('');
+  const [paySubmitting, setPaySubmitting] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
   const refresh = async () => {
     const inv = await getInvoice(id);
     setInvoice(inv);
@@ -196,15 +208,6 @@ export default function RechnungDetailPage() {
   )
     .slice()
     .sort((a, b) => a.paidAt.toMillis() - b.paidAt.toMillis());
-
-  const [payDialogOpen, setPayDialogOpen] = useState(false);
-  const [payDate, setPayDate] = useState(
-    () => new Date().toISOString().slice(0, 10),
-  );
-  const [payAmount, setPayAmount] = useState<string>('');
-  const [payNote, setPayNote] = useState('');
-  const [paySubmitting, setPaySubmitting] = useState(false);
-  const [payError, setPayError] = useState<string | null>(null);
 
   const openPaymentDialog = (prefill?: number) => {
     setPayDate(new Date().toISOString().slice(0, 10));
@@ -617,9 +620,11 @@ export default function RechnungDetailPage() {
                 onClick={() => openPaymentDialog()}
                 disabled={updatingStatus}
                 className="btn-primary"
-                title="Zahlungseingang mit tatsaechlichem Datum erfassen (Ist-Versteuerung)"
+                title="Als bezahlt markieren — Datum des Zahlungseingangs bestätigen (Ist-Versteuerung)"
               >
-                Zahlungseingang erfassen…
+                {invoice.status === 'partially_paid'
+                  ? 'Weiteren Zahlungseingang erfassen…'
+                  : 'Als bezahlt markieren…'}
               </button>
               <button
                 onClick={handleSendReminder}
@@ -738,11 +743,13 @@ export default function RechnungDetailPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              Zahlungseingang erfassen
+              Zahlungseingang bestätigen
             </h3>
             <p className="text-xs text-gray-500 mb-4">
               Ist-Versteuerung: das Datum ist der Tag, an dem das Geld auf
-              dem Konto war. Danach richtet sich die UStVA-Zuordnung.
+              deinem Konto war. Meistens heute, kann aber in der
+              Vergangenheit liegen. Genau nach diesem Datum wird die USt
+              in der UStVA gebucht.
             </p>
             <div className="space-y-3">
               <div>
