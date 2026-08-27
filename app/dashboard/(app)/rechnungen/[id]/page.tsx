@@ -11,14 +11,17 @@ import {
   deleteInvoice,
   finalizeInvoiceWithNumber,
   getGoogleAuth,
+  addInvoicePayment,
+  removeInvoicePayment,
 } from '@/lib/firestore';
-import type { Invoice, Customer } from '@/lib/types';
+import type { Invoice, Customer, InvoicePayment } from '@/lib/types';
 import {
   formatEUR,
   formatDateDE,
   isOverdue,
   daysOverdue,
   computeInvoiceVat,
+  effectivePayments,
 } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import SensitiveValue from '@/components/ui/SensitiveValue';
@@ -181,28 +184,84 @@ export default function RechnungDetailPage() {
       sentAt: Timestamp.fromDate(new Date()),
     });
 
-  const markPaid = () =>
-    setStatus('paid', {
-      paidAmount: invoice.totalAmount,
-      paidAt: Timestamp.fromDate(new Date()),
-    });
+  // --- Ist-Versteuerung: Zahlungseingaenge ---
+  // Brutto-Gesamtbetrag (fuer die Rest-Berechnung)
+  const bruttoTotal =
+    Math.round(invoice.totalAmount * (1 + (invoice.vatRate ?? 0)) * 100) / 100;
+  const openBrutto =
+    Math.round((bruttoTotal - invoice.paidAmount) * 100) / 100;
 
-  const markPartiallyPaid = () => {
-    const input = prompt(
-      `Bezahlter Betrag (von ${formatEUR(invoice.totalAmount)}):`,
-      invoice.paidAmount > 0 ? invoice.paidAmount.toString() : '',
+  const paymentsList: InvoicePayment[] = (
+    effectivePayments(invoice) as InvoicePayment[]
+  )
+    .slice()
+    .sort((a, b) => a.paidAt.toMillis() - b.paidAt.toMillis());
+
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const [payDate, setPayDate] = useState(
+    () => new Date().toISOString().slice(0, 10),
+  );
+  const [payAmount, setPayAmount] = useState<string>('');
+  const [payNote, setPayNote] = useState('');
+  const [paySubmitting, setPaySubmitting] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
+  const openPaymentDialog = (prefill?: number) => {
+    setPayDate(new Date().toISOString().slice(0, 10));
+    setPayAmount(
+      (prefill ?? openBrutto).toFixed(2).replace('.', ','),
     );
-    if (input === null) return;
-    const amount = parseFloat(input.replace(',', '.'));
+    setPayNote('');
+    setPayError(null);
+    setPayDialogOpen(true);
+  };
+
+  const submitPayment = async () => {
+    setPayError(null);
+    const amount = parseFloat(payAmount.replace(',', '.'));
     if (isNaN(amount) || amount <= 0) {
-      alert('Ungültiger Betrag.');
+      setPayError('Bitte einen gueltigen Betrag angeben.');
       return;
     }
-    if (amount >= invoice.totalAmount) {
-      markPaid();
+    const [y, m, d] = payDate.split('-').map(Number);
+    if (!y || !m || !d) {
+      setPayError('Bitte ein gueltiges Datum angeben.');
       return;
     }
-    setStatus('partially_paid', { paidAmount: amount });
+    const dt = new Date(y, m - 1, d);
+    setPaySubmitting(true);
+    try {
+      await addInvoicePayment(invoice.id, {
+        paidAt: dt,
+        amount,
+        note: payNote.trim() || undefined,
+      });
+      setPayDialogOpen(false);
+      await refresh();
+    } catch (err) {
+      console.error(err);
+      setPayError(
+        `Speichern fehlgeschlagen: ${(err as Error).message}`,
+      );
+    } finally {
+      setPaySubmitting(false);
+    }
+  };
+
+  const handleRemovePayment = async (idx: number) => {
+    if (
+      !confirm(
+        'Diesen Zahlungseingang wirklich entfernen? Der Rechnungs-Status wird entsprechend zurueckgesetzt.',
+      )
+    )
+      return;
+    try {
+      await removeInvoicePayment(invoice.id, idx);
+      await refresh();
+    } catch (err) {
+      console.error(err);
+      alert(`Entfernen fehlgeschlagen: ${(err as Error).message}`);
+    }
   };
 
   const handleDelete = async () => {
@@ -551,21 +610,16 @@ export default function RechnungDetailPage() {
               Als versendet markieren
             </button>
           )}
-          {(invoice.status === 'sent' || invoice.status === 'partially_paid') && (
+          {(invoice.status === 'sent' ||
+            invoice.status === 'partially_paid') && (
             <>
               <button
-                onClick={markPaid}
+                onClick={() => openPaymentDialog()}
                 disabled={updatingStatus}
                 className="btn-primary"
+                title="Zahlungseingang mit tatsaechlichem Datum erfassen (Ist-Versteuerung)"
               >
-                Vollständig bezahlt
-              </button>
-              <button
-                onClick={markPartiallyPaid}
-                disabled={updatingStatus}
-                className="btn-secondary"
-              >
-                Teilweise bezahlt…
+                Zahlungseingang erfassen…
               </button>
               <button
                 onClick={handleSendReminder}
@@ -582,27 +636,175 @@ export default function RechnungDetailPage() {
             </>
           )}
           {invoice.status === 'paid' && (
-            <p className="text-sm text-gray-500">
-              Bezahlt
-              {invoice.paidAt && ` am ${formatDateDE(invoice.paidAt.toDate())}`}.
-            </p>
+            <button
+              onClick={() => openPaymentDialog(0)}
+              disabled={updatingStatus}
+              className="btn-secondary text-xs"
+              title="Weitere Zahlung nachtragen (z.B. Nachzahlung)"
+            >
+              Weiteren Zahlungseingang erfassen…
+            </button>
           )}
         </div>
-        {invoice.status === 'partially_paid' && (
+        {(invoice.status === 'partially_paid' ||
+          invoice.status === 'paid') && (
           <p className="mt-3 text-sm text-gray-700">
             Bezahlt:{' '}
             <strong>
-              <SensitiveValue>{formatEUR(invoice.paidAmount)}</SensitiveValue>
+              <SensitiveValue>
+                {formatEUR(invoice.paidAmount)}
+              </SensitiveValue>
             </strong>{' '}
             von{' '}
-            <SensitiveValue>{formatEUR(invoice.totalAmount)}</SensitiveValue>{' '}
-            · Rest{' '}
-            <strong className="text-orange-700">
-              <SensitiveValue>{formatEUR(remaining)}</SensitiveValue>
-            </strong>
+            <SensitiveValue>{formatEUR(bruttoTotal)}</SensitiveValue> brutto
+            {invoice.status === 'partially_paid' && (
+              <>
+                {' '}
+                · Rest{' '}
+                <strong className="text-orange-700">
+                  <SensitiveValue>{formatEUR(openBrutto)}</SensitiveValue>
+                </strong>
+              </>
+            )}
           </p>
         )}
       </section>
+
+      {/* Zahlungseingaenge (Ist-Versteuerung) */}
+      {paymentsList.length > 0 && (
+        <section className="card mb-6">
+          <div className="flex items-baseline justify-between mb-3">
+            <h2 className="text-base font-semibold text-gray-900">
+              Zahlungseingänge
+            </h2>
+            <span
+              className="text-xs text-gray-500"
+              title="Ist-Versteuerung (§ 20 UStG): USt wird dem Monat des jeweiligen Zahlungseingangs zugeordnet."
+            >
+              Ist-Prinzip
+            </span>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="text-xs uppercase text-gray-500 tracking-wider border-b border-gray-100">
+              <tr>
+                <th className="text-left py-2 w-32">Eingang am</th>
+                <th className="text-right py-2 w-32">Betrag brutto</th>
+                <th className="text-left py-2">Notiz</th>
+                <th className="py-2 w-16" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {paymentsList.map((p, i) => (
+                <tr key={i}>
+                  <td className="py-2 text-gray-800">
+                    {formatDateDE(p.paidAt.toDate())}
+                  </td>
+                  <td className="py-2 text-right tabular-nums font-medium text-gray-900">
+                    <SensitiveValue>{formatEUR(p.amount)}</SensitiveValue>
+                  </td>
+                  <td className="py-2 text-gray-600">{p.note ?? ''}</td>
+                  <td className="py-2 text-right">
+                    <button
+                      onClick={() => handleRemovePayment(i)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      entfernen
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {invoice.payments === undefined && invoice.paidAmount > 0 && (
+            <p className="mt-2 text-xs text-gray-500">
+              Diese Rechnung wurde noch vor der Ist-Umstellung als bezahlt
+              markiert. Der Eintrag oben ist ein Fallback aus dem alten
+              paidAt/paidAmount. Sobald du einen weiteren Zahlungseingang
+              erfasst oder die Rechnung migrierst, wird das explizit in
+              der Historie gespeichert.
+            </p>
+          )}
+        </section>
+      )}
+
+      {/* Payment-Dialog */}
+      {payDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setPayDialogOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              Zahlungseingang erfassen
+            </h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Ist-Versteuerung: das Datum ist der Tag, an dem das Geld auf
+              dem Konto war. Danach richtet sich die UStVA-Zuordnung.
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="label">Datum des Zahlungseingangs *</label>
+                <input
+                  type="date"
+                  className="input"
+                  value={payDate}
+                  onChange={(e) => setPayDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="label">Betrag (brutto, EUR) *</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="input"
+                  value={payAmount}
+                  onChange={(e) => setPayAmount(e.target.value)}
+                  placeholder="z.B. 1500,00"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Vorschlag: offener Restbetrag{' '}
+                  {formatEUR(Math.max(openBrutto, 0))}. Kann auch weniger
+                  oder mehr sein (Nachzahlung, Skonto, Rundungen).
+                </p>
+              </div>
+              <div>
+                <label className="label">Notiz (optional)</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={payNote}
+                  onChange={(e) => setPayNote(e.target.value)}
+                  placeholder="z.B. Überweisung, Anzahlung"
+                />
+              </div>
+            </div>
+            {payError && (
+              <div className="mt-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+                {payError}
+              </div>
+            )}
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setPayDialogOpen(false)}
+                className="btn-secondary"
+                disabled={paySubmitting}
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={submitPayment}
+                className="btn-primary"
+                disabled={paySubmitting}
+              >
+                {paySubmitting ? 'Speichern…' : 'Zahlungseingang speichern'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section className="card lg:col-span-1">

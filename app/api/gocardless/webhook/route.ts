@@ -355,13 +355,17 @@ async function createPaidInvoice(
   // Hier nur die Gruss-Formel.
   const closingText = 'Vielen Dank und liebe Grüße\nYusuf Kolac';
 
+  // Ist-Versteuerung: Zahlungseingang ist der GoCardless-Charge-Tag.
+  // paidAmount (brutto) + payments-Array werden konsistent gepflegt.
+  const bruttoAmount =
+    Math.round(totalAmount * (1 + vatRate) * 100) / 100;
   const invoiceDoc = {
     customerId: customer.id,
     invoiceNumber,
     invoiceDate: Timestamp.fromDate(chargedAt),
     dueDate: Timestamp.fromDate(chargedAt),
     status: 'paid' as const,
-    paidAmount: totalAmount,
+    paidAmount: bruttoAmount,
     totalAmount,
     vatRate,
     closingText,
@@ -369,6 +373,13 @@ async function createPaidInvoice(
     driveUrl: null,
     sentAt: Timestamp.now(),
     paidAt: Timestamp.fromDate(chargedAt),
+    payments: [
+      {
+        paidAt: Timestamp.fromDate(chargedAt),
+        amount: bruttoAmount,
+        note: 'GoCardless-Lastschrift',
+      },
+    ],
     items,
     gocardlessPaymentId: payment.id,
     gocardlessChargedAt: Timestamp.fromDate(chargedAt),

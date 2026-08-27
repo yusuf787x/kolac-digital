@@ -7,13 +7,15 @@ import {
   listExpenses,
   listCustomers,
 } from '@/lib/firestore';
-import type { Invoice, Expense, Customer } from '@/lib/types';
+import type { Invoice, Expense, Customer, InvoicePayment } from '@/lib/types';
 import {
   formatEUR,
   formatDateDE,
   computeVat,
   computeInvoiceVat,
   grossToNet,
+  effectivePayments,
+  computeIstOutputVatForInvoice,
 } from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 
@@ -83,7 +85,17 @@ export default function UStVAPage() {
       quartersSet.add(`${y}-Q${q}`);
       yearsSet.add(String(y));
     };
-    for (const i of invoices) addDate(i.invoiceDate.toDate());
+    // Ist-Versteuerung: fuer die Auswahl der Zeitraeume zaehlen nun
+    // die Zahlungseingaenge der Rechnungen (nicht mehr das
+    // Rechnungsdatum). Rechnungsdatum wird zusaetzlich beruecksichtigt,
+    // damit auch offene Rechnungen aus einem Monat in der Auswahl
+    // auftauchen, aber sie erzeugen erst mit Zahlungseingang USt.
+    for (const i of invoices) {
+      addDate(i.invoiceDate.toDate());
+      for (const p of effectivePayments(i) as InvoicePayment[]) {
+        addDate(p.paidAt.toDate());
+      }
+    }
     for (const e of expenses) addDate(e.date.toDate());
     // Aktuellen Zeitraum garantiert dazu, auch wenn noch keine Daten.
     monthsSet.add(defaultMonth);
@@ -103,27 +115,53 @@ export default function UStVAPage() {
   const periodData = useMemo(() => {
     const inRange = buildRangeFilter(periodValue);
 
-    // Entwuerfe ohne Rechnungsnummer sind nicht gebucht und gehen nicht
-    // in die UStVA — sie sind erst mit der Nummernvergabe verbindlich.
-    const monthInvoices = invoices.filter(
-      (i) => i.invoiceNumber !== null && inRange(i.invoiceDate.toDate()),
-    );
+    // Ist-Versteuerung (§ 20 UStG): USt wird dem Monat des tatsaechlichen
+    // Zahlungseingangs zugeordnet, nicht dem Rechnungsdatum. Entwuerfe
+    // ohne Rechnungsnummer sind grundsaetzlich nicht buchhaltungs-
+    // relevant. Alle anderen Rechnungen mit Zahlungseingang im Zeitraum
+    // fliessen anteilig ein.
+    const bookedInvoices = invoices.filter((i) => i.invoiceNumber !== null);
+    // `monthInvoices` sind jetzt: Rechnungen, die mindestens einen
+    // Zahlungseingang im Zeitraum haben. Dient fuer Listen/Exporte.
+    const monthInvoices = bookedInvoices.filter((i) => {
+      const pays = effectivePayments(i) as InvoicePayment[];
+      return pays.some((p) => inRange(p.paidAt.toDate()));
+    });
     const monthExpenses = expenses.filter((e) => inRange(e.date.toDate()));
 
-    // Output VAT: USt aus Verkaeufen — pro Position rechnen (jede
-    // Position kann eigenen Satz haben, z.B. 19% Beratung + 0% durch-
-    // laufender Posten fuer Werbebudget).
+    // Output VAT (Ist-Prinzip): anteilig aus den Zahlungseingaengen des
+    // Zeitraums je Rechnung. Bei gemischten Steuersaetzen wird
+    // proportional aufgeteilt (siehe computeIstOutputVatForInvoice).
     let outputNet = 0;
     let outputVat = 0;
     let outputGross = 0;
-    const outputByRate = new Map<number, { net: number; vat: number; gross: number }>();
-    for (const i of monthInvoices) {
-      const v = computeInvoiceVat(i.items, i.vatRate);
-      outputNet += v.net;
-      outputVat += v.vat;
-      outputGross += v.gross;
+    const outputByRate = new Map<
+      number,
+      { net: number; vat: number; gross: number }
+    >();
+    for (const i of bookedInvoices) {
+      const pays = effectivePayments(i) as InvoicePayment[];
+      if (pays.length === 0) continue;
+      const paymentsForCompute = pays.map((p) => ({
+        paidAt: p.paidAt.toDate(),
+        amount: p.amount,
+      }));
+      const v = computeIstOutputVatForInvoice(
+        i.items,
+        i.vatRate,
+        paymentsForCompute,
+        inRange,
+      );
+      if (v.paidGross <= 0) continue;
+      outputNet += v.paidNet;
+      outputVat += v.paidVat;
+      outputGross += v.paidGross;
       for (const r of v.byRate) {
-        const prev = outputByRate.get(r.rate) ?? { net: 0, vat: 0, gross: 0 };
+        const prev = outputByRate.get(r.rate) ?? {
+          net: 0,
+          vat: 0,
+          gross: 0,
+        };
         outputByRate.set(r.rate, {
           net: prev.net + r.net,
           vat: prev.vat + r.vat,
@@ -199,43 +237,57 @@ export default function UStVAPage() {
   }, [invoices, expenses, periodValue]);
 
   const handleDownloadInvoicesCsv = () => {
-    const rows = [
+    // Ist-Versteuerung: eine Zeile pro Zahlungseingang im Zeitraum.
+    // So sieht der Steuerberater direkt Datum und Betrag, wie sie in
+    // der UStVA gebucht werden.
+    const inRange = buildRangeFilter(periodValue);
+    const rows: string[][] = [
       [
         'Rechnungsnummer',
-        'Datum',
+        'Rechnungsdatum',
+        'Zahlungseingang am',
         'Kunde',
         'Beschreibung',
-        'Netto (EUR)',
+        'Zahlung brutto (EUR)',
+        'Anteil Netto (EUR)',
         'USt-Satz (%)',
-        'USt (EUR)',
-        'Brutto (EUR)',
-        'Status',
+        'Anteil USt (EUR)',
+        'Notiz',
       ],
-      ...periodData.monthInvoices.map((i) => {
-        const v = computeInvoiceVat(i.items, i.vatRate);
-        const cust = customers.get(i.customerId);
-        const desc =
-          i.items?.map((it) => it.description.split('\n')[0]).join('; ') ?? '';
-        // Bei mehreren Steuersaetzen in derselben Rechnung: "gemischt"
-        // statt eines einzelnen Prozentwerts.
+    ];
+    for (const i of periodData.monthInvoices) {
+      const cust = customers.get(i.customerId);
+      const desc =
+        i.items?.map((it) => it.description.split('\n')[0]).join('; ') ?? '';
+      const pays = (effectivePayments(i) as InvoicePayment[]).filter((p) =>
+        inRange(p.paidAt.toDate()),
+      );
+      for (const p of pays) {
+        const v = computeIstOutputVatForInvoice(
+          i.items,
+          i.vatRate,
+          [{ paidAt: p.paidAt.toDate(), amount: p.amount }],
+          () => true,
+        );
         const rateStr =
           v.byRate.length === 1
             ? String(Math.round(v.byRate[0].rate * 100))
             : v.byRate.map((r) => Math.round(r.rate * 100)).join('/');
-        return [
+        rows.push([
           i.invoiceNumber ?? '',
           formatDateDE(i.invoiceDate.toDate()),
+          formatDateDE(p.paidAt.toDate()),
           cust?.company ?? '—',
           desc,
-          fmtCsv(v.net),
+          fmtCsv(v.paidGross),
+          fmtCsv(v.paidNet),
           rateStr,
-          fmtCsv(v.vat),
-          fmtCsv(v.gross),
-          i.status,
-        ];
-      }),
-    ];
-    downloadCsv(`UStVA_Einnahmen_${periodValue}.csv`, rows);
+          fmtCsv(v.paidVat),
+          p.note ?? '',
+        ]);
+      }
+    }
+    downloadCsv(`UStVA_Einnahmen_Ist_${periodValue}.csv`, rows);
   };
 
   const handleDownloadExpensesCsv = () => {
@@ -361,10 +413,40 @@ export default function UStVAPage() {
           UStVA-Übersicht
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Umsatzsteuer-Voranmeldung. Alle Zahlen sind nach Belegdatum
-          gruppiert. Wechsel Kleinunternehmer → Regelbesteuerung: 01.07.2026.
-          Voranmeldungs-Rhythmus laut Finanzamt: <strong>quartalsweise</strong>.
+          Umsatzsteuer-Voranmeldung nach{' '}
+          <strong>Ist-Versteuerung</strong> (§ 20 UStG): die auf
+          Ausgangsrechnungen ausgewiesene USt wird dem Monat des tatsächlichen
+          Zahlungseingangs zugeordnet. Vorsteuer aus Ausgaben bleibt nach
+          Belegdatum (unverändert). Wechsel Kleinunternehmer → Regelbesteuerung:
+          01.07.2026. Voranmeldungs-Rhythmus laut Finanzamt:{' '}
+          <strong>quartalsweise</strong>.
         </p>
+        {(() => {
+          const openInvoices = invoices.filter(
+            (i) =>
+              i.invoiceNumber !== null &&
+              (effectivePayments(i) as InvoicePayment[]).length === 0,
+          );
+          if (openInvoices.length === 0) return null;
+          const openGross = openInvoices.reduce(
+            (s, i) =>
+              s +
+              Math.round(
+                i.totalAmount * (1 + (i.vatRate ?? 0)) * 100,
+              ) /
+                100,
+            0,
+          );
+          return (
+            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
+              <strong>{openInvoices.length}</strong> offene Rechnung
+              {openInvoices.length === 1 ? '' : 'en'} über{' '}
+              <strong>{formatEUR(openGross)}</strong> brutto sind noch nicht
+              in dieser UStVA enthalten. Bei Ist-Versteuerung erst mit
+              Zahlungseingang buchen.
+            </div>
+          );
+        })()}
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           {/* Zeitraum-Typ Toggle */}
@@ -471,49 +553,71 @@ export default function UStVAPage() {
             {periodData.monthInvoices.length > 0 && (
               <details className="mt-3">
                 <summary className="cursor-pointer text-xs text-gray-500">
-                  Details ({periodData.monthInvoices.length})
+                  Details ({periodData.monthInvoices.length}) · nach Zahlungseingang
                 </summary>
                 <table className="w-full text-xs mt-2">
                   <thead className="text-gray-500 uppercase tracking-wider">
                     <tr>
-                      <th className="text-left py-1.5">Datum</th>
+                      <th className="text-left py-1.5">Zahlung am</th>
                       <th className="text-left py-1.5">Rechnungsnr.</th>
                       <th className="text-left py-1.5">Kunde</th>
-                      <th className="text-right py-1.5">Netto</th>
-                      <th className="text-right py-1.5">USt</th>
-                      <th className="text-right py-1.5">Brutto</th>
+                      <th className="text-right py-1.5">Zahlung brutto</th>
+                      <th className="text-right py-1.5">Anteil Netto</th>
+                      <th className="text-right py-1.5">Anteil USt</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {periodData.monthInvoices.map((i) => {
-                      const v = computeInvoiceVat(i.items, i.vatRate);
-                      return (
-                        <tr key={i.id}>
-                          <td className="py-1.5">
-                            {formatDateDE(i.invoiceDate.toDate())}
-                          </td>
-                          <td className="py-1.5 font-mono">
-                            <Link
-                              href={`/dashboard/rechnungen/${i.id}`}
-                              className="text-brand-blue hover:underline"
-                            >
-                              {i.invoiceNumber}
-                            </Link>
-                          </td>
-                          <td className="py-1.5">
-                            {customers.get(i.customerId)?.company ?? '—'}
-                          </td>
-                          <td className="py-1.5 text-right">
-                            <SensitiveValue>{formatEUR(v.net)}</SensitiveValue>
-                          </td>
-                          <td className="py-1.5 text-right">
-                            <SensitiveValue>{formatEUR(v.vat)}</SensitiveValue>
-                          </td>
-                          <td className="py-1.5 text-right font-medium">
-                            <SensitiveValue>{formatEUR(v.gross)}</SensitiveValue>
-                          </td>
-                        </tr>
-                      );
+                    {periodData.monthInvoices.flatMap((i) => {
+                      const inRangeFn = buildRangeFilter(periodValue);
+                      const pays = (
+                        effectivePayments(i) as InvoicePayment[]
+                      ).filter((p) => inRangeFn(p.paidAt.toDate()));
+                      return pays.map((p, pi) => {
+                        const v = computeIstOutputVatForInvoice(
+                          i.items,
+                          i.vatRate,
+                          [
+                            {
+                              paidAt: p.paidAt.toDate(),
+                              amount: p.amount,
+                            },
+                          ],
+                          () => true,
+                        );
+                        return (
+                          <tr key={`${i.id}-${pi}`}>
+                            <td className="py-1.5">
+                              {formatDateDE(p.paidAt.toDate())}
+                            </td>
+                            <td className="py-1.5 font-mono">
+                              <Link
+                                href={`/dashboard/rechnungen/${i.id}`}
+                                className="text-brand-blue hover:underline"
+                              >
+                                {i.invoiceNumber}
+                              </Link>
+                            </td>
+                            <td className="py-1.5">
+                              {customers.get(i.customerId)?.company ?? '—'}
+                            </td>
+                            <td className="py-1.5 text-right font-medium">
+                              <SensitiveValue>
+                                {formatEUR(v.paidGross)}
+                              </SensitiveValue>
+                            </td>
+                            <td className="py-1.5 text-right">
+                              <SensitiveValue>
+                                {formatEUR(v.paidNet)}
+                              </SensitiveValue>
+                            </td>
+                            <td className="py-1.5 text-right">
+                              <SensitiveValue>
+                                {formatEUR(v.paidVat)}
+                              </SensitiveValue>
+                            </td>
+                          </tr>
+                        );
+                      });
                     })}
                   </tbody>
                 </table>

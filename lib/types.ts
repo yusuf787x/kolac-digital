@@ -55,6 +55,26 @@ export interface InvoiceItem {
   vatRate?: number;
 }
 
+/**
+ * Ein einzelner Zahlungseingang auf eine Ausgangsrechnung
+ * (Ist-Versteuerung). Datum = Tag, an dem das Geld auf unserem Konto
+ * war. Betrag = Brutto-Zahlung. Bei Voll-Zahlung genau ein Payment,
+ * bei Teilzahlungen mehrere.
+ *
+ * Legacy-Kompatibilitaet: aeltere Rechnungen ohne `payments`-Array
+ * werden ueber `effectivePayments()` synthetisch aus `paidAt` +
+ * `paidAmount` interpretiert. Auf der DB wird nichts umgeschrieben,
+ * solange nicht explizit migriert wird.
+ */
+export interface InvoicePayment {
+  /** Datum, an dem das Geld auf dem Konto war. Maßgeblich für UStVA (Ist). */
+  paidAt: Timestamp;
+  /** Brutto-Betrag der Teilzahlung in EUR. */
+  amount: number;
+  /** Optional: freier Vermerk (z.B. „Überweisung Restbetrag"). */
+  note?: string;
+}
+
 export interface Invoice {
   id: string;
   customerId: string;
@@ -82,7 +102,19 @@ export interface Invoice {
   pdfUrl: string | null;
   driveUrl: string | null;
   sentAt: Timestamp | null;
+  /**
+   * Zeitpunkt des LETZTEN Zahlungseingangs (fuer Anzeige + Legacy).
+   * Bei Ist-Versteuerung ist die vollstaendige Historie in `payments`
+   * gepflegt; `paidAt` spiegelt dann den letzten Payment-Eintrag.
+   */
   paidAt: Timestamp | null;
+  /**
+   * Historie aller Zahlungseingaenge (Ist-Versteuerung, § 20 UStG).
+   * Wenn gesetzt und nicht-leer, ist das die maßgebliche Quelle für die
+   * UStVA-Zuordnung. Fehlt/ist leer → Fallback ueber effectivePayments()
+   * aus paidAt + paidAmount.
+   */
+  payments?: InvoicePayment[];
   items: InvoiceItem[];
   /** Optional: ID des GoCardless-Payments, der diese Rechnung ausgelöst hat. */
   gocardlessPaymentId?: string;

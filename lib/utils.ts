@@ -213,6 +213,83 @@ export function grossToNet(
 }
 
 /**
+ * Ist-Versteuerung: gibt die effektiven Zahlungseingaenge einer
+ * Rechnung zurueck. Wenn `payments[]` gepflegt ist (neue Datensaetze),
+ * werden die verwendet. Bei Legacy-Rechnungen ohne payments-Array,
+ * aber mit paidAt + paidAmount > 0, wird synthetisch EIN Zahlungs-
+ * eingang zurueckgegeben (paidAt/paidAmount).
+ *
+ * Damit muss der DB-Datensatz nicht angepackt werden, um alte
+ * Rechnungen konsistent zu behandeln.
+ */
+export function effectivePayments(invoice: {
+  payments?: Array<{ paidAt: unknown; amount: number; note?: string }>;
+  paidAt: unknown;
+  paidAmount: number;
+}): Array<{ paidAt: unknown; amount: number; note?: string }> {
+  if (invoice.payments && invoice.payments.length > 0) {
+    return invoice.payments;
+  }
+  if (invoice.paidAt && invoice.paidAmount > 0) {
+    return [{ paidAt: invoice.paidAt, amount: invoice.paidAmount }];
+  }
+  return [];
+}
+
+/**
+ * Ist-Versteuerung: berechnet die im Zeitraum zu deklarierende
+ * Umsatzsteuer einer Rechnung basierend auf den Zahlungseingaengen
+ * in diesem Zeitraum.
+ *
+ * Methode: Anteil der Brutto-Zahlung im Zeitraum an der Gesamt-Brutto-
+ * Summe der Rechnung, angewandt auf Netto/USt/Brutto je Steuersatz.
+ * Bei gemischten Saetzen wird also proportional aufgeteilt — das ist
+ * eine praktikable Vereinfachung, weil eine echte "Zuordnung Zahlung
+ * zu Position" bei Ueberweisungen ohne Verwendungszweck sowieso
+ * nicht sauber moeglich ist.
+ *
+ * Rechnungen ohne Zahlung im Zeitraum liefern Nullen zurueck.
+ */
+export function computeIstOutputVatForInvoice(
+  invoiceItems: Array<{ totalPrice: number; vatRate?: number; optional?: boolean }>,
+  invoiceVatRate: number | null | undefined,
+  payments: Array<{ paidAt: Date; amount: number }>,
+  inPeriod: (d: Date) => boolean,
+): {
+  paidGross: number;
+  paidNet: number;
+  paidVat: number;
+  byRate: Array<{ rate: number; net: number; vat: number; gross: number }>;
+} {
+  const total = computeInvoiceVat(invoiceItems, invoiceVatRate ?? 0);
+  const totalGross = total.gross;
+  if (totalGross <= 0) {
+    return { paidGross: 0, paidNet: 0, paidVat: 0, byRate: [] };
+  }
+  const paidGross = payments
+    .filter((p) => inPeriod(p.paidAt))
+    .reduce((s, p) => s + p.amount, 0);
+  if (paidGross <= 0) {
+    return { paidGross: 0, paidNet: 0, paidVat: 0, byRate: [] };
+  }
+  const share = paidGross / totalGross;
+  const byRate = total.byRate.map((r) => ({
+    rate: r.rate,
+    net: Math.round(r.net * share * 100) / 100,
+    vat: Math.round(r.vat * share * 100) / 100,
+    gross: Math.round(r.gross * share * 100) / 100,
+  }));
+  const paidNet = Math.round(total.net * share * 100) / 100;
+  const paidVat = Math.round(total.vat * share * 100) / 100;
+  return {
+    paidGross: Math.round(paidGross * 100) / 100,
+    paidNet,
+    paidVat,
+    byRate,
+  };
+}
+
+/**
  * Zerlegt einen Beleg in die EÜR-relevanten Betraege.
  *
  * Fuer Bewirtung (deductibleRate = 0.7) sind nur 70 % des Netto-Betrags

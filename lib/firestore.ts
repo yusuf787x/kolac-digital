@@ -246,6 +246,148 @@ export async function deleteInvoice(id: string): Promise<void> {
   await deleteDoc(doc(db, 'invoices', id));
 }
 
+/**
+ * Ist-Versteuerung: ergaenzt einen Zahlungseingang auf einer Rechnung.
+ * Fuehrt atomar aus:
+ *   - haengt Payment an das payments[]-Array an
+ *   - erhoeht paidAmount um payment.amount
+ *   - setzt paidAt auf max(bisheriges paidAt, payment.paidAt) fuer Anzeige
+ *   - setzt Status auf 'paid' wenn paidAmount >= totalAmount (Brutto),
+ *     sonst 'partially_paid'
+ * Bei Legacy-Rechnungen ohne payments[]: das existierende paidAt +
+ * paidAmount wird ZUERST als erste Payment in ein neues Array
+ * gemigriert, dann wird die neue Payment ergaenzt. So bleibt keine
+ * bezahlte Summe unerklaert.
+ */
+export async function addInvoicePayment(
+  invoiceId: string,
+  payment: { paidAt: Date; amount: number; note?: string },
+): Promise<void> {
+  await runTransaction(db, async (tx) => {
+    const ref = doc(db, 'invoices', invoiceId);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('Rechnung nicht gefunden.');
+    const inv = snap.data() as Invoice;
+    const bruttoTotal = round2(
+      inv.totalAmount * (1 + (inv.vatRate ?? 0)),
+    );
+    const existing: Invoice['payments'] =
+      inv.payments && inv.payments.length > 0
+        ? inv.payments
+        : inv.paidAt && inv.paidAmount > 0
+          ? [{ paidAt: inv.paidAt, amount: inv.paidAmount }]
+          : [];
+    const newPayment = {
+      paidAt: Timestamp.fromDate(payment.paidAt),
+      amount: round2(payment.amount),
+      ...(payment.note ? { note: payment.note } : {}),
+    };
+    const nextPayments = [...existing, newPayment];
+    const newPaidAmount = round2(
+      nextPayments.reduce((s, p) => s + p.amount, 0),
+    );
+    const newPaidAt = nextPayments.reduce<Timestamp>(
+      (latest, p) => (p.paidAt.toMillis() > latest.toMillis() ? p.paidAt : latest),
+      nextPayments[0].paidAt,
+    );
+    const nextStatus =
+      newPaidAmount + 0.001 >= bruttoTotal ? 'paid' : 'partially_paid';
+    tx.update(ref, {
+      payments: nextPayments,
+      paidAmount: newPaidAmount,
+      paidAt: newPaidAt,
+      status: nextStatus,
+      updatedAt: serverTimestamp(),
+    });
+  });
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/**
+ * Ist-Versteuerung: entfernt einen einzelnen Zahlungseingang (per
+ * Index im payments-Array) und stellt paidAmount/paidAt/status
+ * konsistent nach. Setzt Status ggf. wieder auf 'sent', wenn alle
+ * Zahlungen entfernt sind.
+ */
+export async function removeInvoicePayment(
+  invoiceId: string,
+  index: number,
+): Promise<void> {
+  await runTransaction(db, async (tx) => {
+    const ref = doc(db, 'invoices', invoiceId);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('Rechnung nicht gefunden.');
+    const inv = snap.data() as Invoice;
+    const bruttoTotal = round2(
+      inv.totalAmount * (1 + (inv.vatRate ?? 0)),
+    );
+    const existing: Invoice['payments'] =
+      inv.payments && inv.payments.length > 0
+        ? inv.payments
+        : inv.paidAt && inv.paidAmount > 0
+          ? [{ paidAt: inv.paidAt, amount: inv.paidAmount }]
+          : [];
+    if (index < 0 || index >= existing.length) {
+      throw new Error('Zahlungseingang-Index ungueltig.');
+    }
+    const nextPayments = existing.filter((_, i) => i !== index);
+    if (nextPayments.length === 0) {
+      tx.update(ref, {
+        payments: [],
+        paidAmount: 0,
+        paidAt: null,
+        status: 'sent',
+        updatedAt: serverTimestamp(),
+      });
+      return;
+    }
+    const newPaidAmount = round2(
+      nextPayments.reduce((s, p) => s + p.amount, 0),
+    );
+    const newPaidAt = nextPayments.reduce<Timestamp>(
+      (latest, p) => (p.paidAt.toMillis() > latest.toMillis() ? p.paidAt : latest),
+      nextPayments[0].paidAt,
+    );
+    const nextStatus =
+      newPaidAmount + 0.001 >= bruttoTotal ? 'paid' : 'partially_paid';
+    tx.update(ref, {
+      payments: nextPayments,
+      paidAmount: newPaidAmount,
+      paidAt: newPaidAt,
+      status: nextStatus,
+      updatedAt: serverTimestamp(),
+    });
+  });
+}
+
+/**
+ * Migration einer Legacy-Rechnung: schreibt payments[] explizit
+ * auf Basis von paidAt + paidAmount. Nur aufrufen, wenn die Rechnung
+ * kein payments-Array hat. Der bestehende paidAt und paidAmount
+ * bleiben erhalten — der einzige Effekt ist, dass die Zahlung als
+ * expliziter Payment-Eintrag in der Historie steht.
+ */
+export async function migrateInvoiceToPayments(
+  invoiceId: string,
+): Promise<'ok' | 'skipped' | 'no-payment'> {
+  return runTransaction(db, async (tx) => {
+    const ref = doc(db, 'invoices', invoiceId);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) throw new Error('Rechnung nicht gefunden.');
+    const inv = snap.data() as Invoice;
+    if (inv.payments && inv.payments.length > 0) return 'skipped' as const;
+    if (!inv.paidAt || inv.paidAmount <= 0) return 'no-payment' as const;
+    tx.update(ref, {
+      payments: [{ paidAt: inv.paidAt, amount: inv.paidAmount }],
+      updatedAt: serverTimestamp(),
+    });
+    return 'ok' as const;
+  });
+}
+
 // ===================================================================
 // QUOTES (Angebote)
 // ===================================================================

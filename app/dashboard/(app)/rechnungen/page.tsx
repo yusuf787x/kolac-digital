@@ -96,6 +96,13 @@ export default function RechnungenPage() {
         </div>
         <div className="flex items-center gap-2">
           <Link
+            href="/dashboard/rechnungen/migrate-ist"
+            className="btn-secondary text-xs"
+            title="Alt-Rechnungen einmalig auf Ist-Versteuerungs-Historie ergaenzen."
+          >
+            Ist-Migration
+          </Link>
+          <Link
             href="/dashboard/rechnungen/gocardless"
             className="btn-secondary"
             title="Webhook-Log aller GoCardless-Events"
