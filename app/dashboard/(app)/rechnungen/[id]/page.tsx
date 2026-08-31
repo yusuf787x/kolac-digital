@@ -13,6 +13,8 @@ import {
   getGoogleAuth,
   addInvoicePayment,
   removeInvoicePayment,
+  createInvoiceDraft,
+  getSettings,
 } from '@/lib/firestore';
 import type { Invoice, Customer, InvoicePayment } from '@/lib/types';
 import {
@@ -88,6 +90,7 @@ export default function RechnungDetailPage() {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingDrive, setSyncingDrive] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
   const [finalizeMsg, setFinalizeMsg] = useState<string | null>(null);
 
   // Live-Vorschau: PDF wird beim Laden der Seite einmal client-seitig
@@ -278,6 +281,56 @@ export default function RechnungDetailPage() {
     } catch (err) {
       console.error(err);
       alert('Löschen fehlgeschlagen.');
+    }
+  };
+
+  /**
+   * Rechnung duplizieren: legt einen neuen ENTWURF mit denselben
+   * Positionen, MwSt-Einstellung, Kunde und Abschlusstext an.
+   * Rechnungsnummer, Zahlungen und Bezahlt-Status werden bewusst
+   * NICHT uebernommen — die neue Rechnung startet als Draft ohne
+   * Nummer und wird erst durch "Rechnung stellen" buchhaltungs-
+   * relevant. invoiceDate = heute, dueDate = heute + default.
+   */
+  const handleDuplicate = async () => {
+    if (duplicating) return;
+    setDuplicating(true);
+    try {
+      const settings = await getSettings();
+      const today = new Date();
+      const dueDate = new Date(today);
+      dueDate.setDate(dueDate.getDate() + settings.defaultPaymentDays);
+      const items = invoice.items.map((it, idx) => ({
+        position: idx + 1,
+        description: it.description,
+        quantity: it.quantity,
+        unitPrice: it.unitPrice,
+        totalPrice: it.totalPrice,
+        // Position-spezifischer VAT-Satz mit uebernehmen (z.B. 0% fuer
+        // durchlaufende Posten wie Werbebudget-Weiterberechnung).
+        ...(it.vatRate !== undefined ? { vatRate: it.vatRate } : {}),
+      }));
+      const totalNet = items.reduce((s, it) => s + it.totalPrice, 0);
+      const { id: newId } = await createInvoiceDraft({
+        customerId: invoice.customerId,
+        invoiceDate: Timestamp.fromDate(today),
+        dueDate: Timestamp.fromDate(dueDate),
+        status: 'draft',
+        paidAmount: 0,
+        totalAmount: totalNet,
+        vatRate: invoice.vatRate,
+        closingText: invoice.closingText,
+        pdfUrl: null,
+        driveUrl: null,
+        sentAt: null,
+        paidAt: null,
+        items,
+      });
+      router.push(`/dashboard/rechnungen/${newId}`);
+    } catch (err) {
+      console.error(err);
+      alert(`Duplizieren fehlgeschlagen: ${(err as Error).message}`);
+      setDuplicating(false);
     }
   };
 
@@ -574,6 +627,14 @@ export default function RechnungDetailPage() {
                 </button>
               </>
             )}
+            <button
+              onClick={handleDuplicate}
+              disabled={duplicating}
+              className="btn-secondary"
+              title="Neue Rechnung als Entwurf mit denselben Positionen anlegen"
+            >
+              {duplicating ? 'Dupliziere…' : 'Duplizieren'}
+            </button>
             <button
               onClick={handleDelete}
               className="btn-secondary text-red-600 hover:bg-red-50"
