@@ -199,18 +199,23 @@ export default function RechnungDetailPage() {
       sentAt: Timestamp.fromDate(new Date()),
     });
 
-  // --- Ist-Versteuerung: Zahlungseingaenge ---
-  // Brutto-Gesamtbetrag (fuer die Rest-Berechnung)
+  // --- Zahlungseingaenge ---
+  // Alle Betraege rund um Zahlungen sind BRUTTO. `totalAmount` ist netto,
+  // deshalb hier einmal hochrechnen. Die Zahlungshistorie ist die
+  // maßgebliche Quelle — daraus wird der bezahlte und der offene Betrag
+  // abgeleitet, nicht aus dem gespeicherten paidAmount.
   const bruttoTotal =
     Math.round(invoice.totalAmount * (1 + (invoice.vatRate ?? 0)) * 100) / 100;
-  const openBrutto =
-    Math.round((bruttoTotal - invoice.paidAmount) * 100) / 100;
 
   const paymentsList: InvoicePayment[] = (
     effectivePayments(invoice) as InvoicePayment[]
   )
     .slice()
     .sort((a, b) => a.paidAt.toMillis() - b.paidAt.toMillis());
+
+  const paidBrutto =
+    Math.round(paymentsList.reduce((s, p) => s + p.amount, 0) * 100) / 100;
+  const openBrutto = Math.round((bruttoTotal - paidBrutto) * 100) / 100;
 
   const openPaymentDialog = (prefill?: number) => {
     setPayDate(new Date().toISOString().slice(0, 10));
@@ -681,7 +686,7 @@ export default function RechnungDetailPage() {
                 onClick={() => openPaymentDialog()}
                 disabled={updatingStatus}
                 className="btn-primary"
-                title="Als bezahlt markieren — Datum des Zahlungseingangs bestätigen (Ist-Versteuerung)"
+                title="Als bezahlt markieren und Datum des Zahlungseingangs bestätigen"
               >
                 {invoice.status === 'partially_paid'
                   ? 'Weiteren Zahlungseingang erfassen…'
@@ -717,9 +722,7 @@ export default function RechnungDetailPage() {
           <p className="mt-3 text-sm text-gray-700">
             Bezahlt:{' '}
             <strong>
-              <SensitiveValue>
-                {formatEUR(invoice.paidAmount)}
-              </SensitiveValue>
+              <SensitiveValue>{formatEUR(paidBrutto)}</SensitiveValue>
             </strong>{' '}
             von{' '}
             <SensitiveValue>{formatEUR(bruttoTotal)}</SensitiveValue> brutto
@@ -736,20 +739,12 @@ export default function RechnungDetailPage() {
         )}
       </section>
 
-      {/* Zahlungseingaenge (Ist-Versteuerung) */}
+      {/* Zahlungseingaenge */}
       {paymentsList.length > 0 && (
         <section className="card mb-6">
-          <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-base font-semibold text-gray-900">
-              Zahlungseingänge
-            </h2>
-            <span
-              className="text-xs text-gray-500"
-              title="Ist-Versteuerung (§ 20 UStG): USt wird dem Monat des jeweiligen Zahlungseingangs zugeordnet."
-            >
-              Ist-Prinzip
-            </span>
-          </div>
+          <h2 className="text-base font-semibold text-gray-900 mb-3">
+            Zahlungseingänge
+          </h2>
           <table className="w-full text-sm">
             <thead className="text-xs uppercase text-gray-500 tracking-wider border-b border-gray-100">
               <tr>
@@ -781,15 +776,6 @@ export default function RechnungDetailPage() {
               ))}
             </tbody>
           </table>
-          {invoice.payments === undefined && invoice.paidAmount > 0 && (
-            <p className="mt-2 text-xs text-gray-500">
-              Diese Rechnung wurde noch vor der Ist-Umstellung als bezahlt
-              markiert. Der Eintrag oben ist ein Fallback aus dem alten
-              paidAt/paidAmount. Sobald du einen weiteren Zahlungseingang
-              erfasst oder die Rechnung migrierst, wird das explizit in
-              der Historie gespeichert.
-            </p>
-          )}
         </section>
       )}
 
@@ -807,10 +793,9 @@ export default function RechnungDetailPage() {
               Zahlungseingang bestätigen
             </h3>
             <p className="text-xs text-gray-500 mb-4">
-              Ist-Versteuerung: das Datum ist der Tag, an dem das Geld auf
-              deinem Konto war. Meistens heute, kann aber in der
-              Vergangenheit liegen. Genau nach diesem Datum wird die USt
-              in der UStVA gebucht.
+              Das Datum ist der Tag, an dem das Geld auf deinem Konto war.
+              Meistens heute, kann aber in der Vergangenheit liegen. Nach
+              diesem Datum wird die Umsatzsteuer in der UStVA gebucht.
             </p>
             <div className="space-y-3">
               <div>

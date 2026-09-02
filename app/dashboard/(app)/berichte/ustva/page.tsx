@@ -413,13 +413,9 @@ export default function UStVAPage() {
           UStVA-Übersicht
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Umsatzsteuer-Voranmeldung nach{' '}
-          <strong>Ist-Versteuerung</strong> (§ 20 UStG): die auf
-          Ausgangsrechnungen ausgewiesene USt wird dem Monat des tatsächlichen
-          Zahlungseingangs zugeordnet. Vorsteuer aus Ausgaben bleibt nach
-          Belegdatum (unverändert). Wechsel Kleinunternehmer → Regelbesteuerung:
-          01.07.2026. Voranmeldungs-Rhythmus laut Finanzamt:{' '}
-          <strong>quartalsweise</strong>.
+          Umsatzsteuer wird nach dem Datum des Zahlungseingangs gebucht,
+          Vorsteuer nach dem Belegdatum der Ausgabe. Voranmeldungs-Rhythmus
+          laut Finanzamt: <strong>quartalsweise</strong>.
         </p>
         {(() => {
           const openInvoices = invoices.filter(
@@ -442,8 +438,7 @@ export default function UStVAPage() {
               <strong>{openInvoices.length}</strong> offene Rechnung
               {openInvoices.length === 1 ? '' : 'en'} über{' '}
               <strong>{formatEUR(openGross)}</strong> brutto sind noch nicht
-              in dieser UStVA enthalten. Bei Ist-Versteuerung erst mit
-              Zahlungseingang buchen.
+              enthalten. Sie zählen erst, wenn das Geld eingegangen ist.
             </div>
           );
         })()}

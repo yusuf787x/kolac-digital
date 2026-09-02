@@ -96,11 +96,11 @@ export default function RechnungenPage() {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href="/dashboard/rechnungen/migrate-ist"
+            href="/dashboard/rechnungen/reparatur"
             className="btn-secondary text-xs"
-            title="Alt-Rechnungen einmalig auf Ist-Versteuerungs-Historie ergaenzen."
+            title="Zahlungsbeträge und Zahlungshistorie auf Konsistenz prüfen."
           >
-            Ist-Migration
+            Zahlungen prüfen
           </Link>
           <Link
             href="/dashboard/rechnungen/gocardless"

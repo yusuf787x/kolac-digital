@@ -18,10 +18,10 @@ Wichtige Enums: `InvoiceStatus` (draft/sent/paid/partially_paid/overdue), `Quote
 - **PDF** (`components/invoice/InvoicePDF.tsx`): pro Steuersatz eine USt-Zeile, GiroCode (Brutto) + Referral-Kasten „15% der ersten Rechnung als Auszahlung" nur auf letzter Seite (natural flow), sonst `fixed`-Footer mit Bank-Daten.
 - **Rich-Text-Beschreibungen**: `RichTextArea` aus Quote-Modul wird auch für Positions-Beschreibungen genutzt. `parseRichText` normalisiert HTML+Markdown.
 - **GoCardless Auto**: `app/api/gocardless/webhook/route.ts` legt Retainer-Rechnungen direkt mit Nummer über `createInvoiceWithNumber` an + versendet + Drive-Sync. Webhook schreibt Payments-Array mit `paidAt = chargedAt`, `amount = brutto`, `note = "GoCardless-Lastschrift"`.
-- **Ist-Versteuerung (§ 20 UStG)**: `Invoice.payments?: InvoicePayment[]` speichert die Historie aller Zahlungseingänge (paidAt, amount brutto, note). `paidAmount` ist Summe der Payments (brutto). `paidAt` spiegelt den letzten Zahlungseingang für Anzeige. Zahlungseingänge werden im Rechnungsdetail über einen Modal-Dialog erfasst (Datum + Betrag + Notiz), nicht mehr über `prompt()`.
-- **Firestore-API**: `addInvoicePayment(id, {paidAt, amount, note?})` und `removeInvoicePayment(id, index)` in `lib/firestore.ts` — atomar per Transaction, aktualisieren paidAmount + paidAt + Status. `migrateInvoiceToPayments(id)` legt für Alt-Rechnungen ein Payment aus paidAt+paidAmount an, ohne bestehende Felder zu überschreiben.
-- **Legacy-Fallback**: `effectivePayments(invoice)` in `lib/utils.ts` gibt bei fehlendem `payments[]` ein synthetisches Payment aus `paidAt + paidAmount` zurück. Damit funktioniert die UStVA ohne Migration.
-- **Migration**: `/dashboard/rechnungen/migrate-ist` listet Alt-Rechnungen mit paidAt aber ohne payments[], User bestätigt einzeln. Migration überschreibt NICHTS, ergänzt nur das Array.
+- **Zahlungseingänge**: `Invoice.payments: InvoicePayment[]` ist die maßgebliche Quelle (paidAt, amount, note). **Alle Zahlungsbeträge sind BRUTTO** — `totalAmount` bleibt netto, Brutto = `totalAmount * (1 + vatRate)`. `paidAmount` = Summe der Payments (brutto), `paidAt` = letzter Zahlungseingang (Anzeige). Erfassung im Rechnungsdetail über Modal-Dialog: Datum (Default heute, frei änderbar) + Betrag (Default offener Restbetrag) + Notiz.
+- **Firestore-API**: `addInvoicePayment(id, {paidAt, amount, note?})` und `removeInvoicePayment(id, index)` in `lib/firestore.ts` — atomar per Transaction, aktualisieren paidAmount + paidAt + Status. Status wird auf `paid` gesetzt sobald die Summe den Brutto-Betrag erreicht, sonst `partially_paid`.
+- **Netto/Brutto-Konvention**: Umsatz/Erlös wird immer NETTO gezählt (Dashboard-Kennzahlen), offene Forderungen und Zahlungseingänge immer BRUTTO. Das Rechnungsdetail leitet bezahlt/offen aus `payments[]` ab, nicht aus `paidAmount`.
+- **Datenprüfung**: `/dashboard/rechnungen/reparatur` (Button „Zahlungen prüfen") findet Rechnungen mit inkonsistenten Zahlungsdaten (Netto statt Brutto gespeichert, fehlende Historie, unvollständige Summe), zeigt Vorher/Nachher pro Rechnung und korrigiert erst nach Bestätigung. Analyse-Logik in `lib/invoice-repair.ts` (`analyzeInvoice`), idempotent — mehrfaches Ausführen bucht nichts doppelt.
 
 ## Angebote (`app/dashboard/(app)/angebote/`)
 
@@ -59,7 +59,7 @@ Drei Modi im „Neuer Vertrag"-Flow:
 ## Berichte (`app/dashboard/(app)/berichte/`)
 
 - **Einnahmen-CSV**: Rechnungs-Liste nach Jahr, Drafts ausgeschlossen.
-- **UStVA (Ist-Versteuerung)**: Ausgangs-USt wird dem Monat des tatsächlichen Zahlungseingangs zugeordnet (nicht mehr dem Rechnungsdatum). Aggregiert über `effectivePayments(invoice)` und `computeIstOutputVatForInvoice()` — bei gemischten Steuersätzen proportional aufgeteilt (paidGross/totalGross). Vorsteuer aus Ausgaben bleibt bei Belegdatum (unverändert). Header zeigt Info-Banner + Warnung mit Anzahl und Brutto-Summe der noch offenen Rechnungen. CSV-Export listet eine Zeile pro Zahlungseingang. Details-Tabelle zeigt nach Zahlung sortiert.
+- **UStVA**: Ausgangs-USt wird dem Monat des Zahlungseingangs zugeordnet, Vorsteuer dem Belegdatum der Ausgabe. Aggregiert über `effectivePayments(invoice)` und `computeIstOutputVatForInvoice()` — bei gemischten Steuersätzen proportional aufgeteilt (paidGross/totalGross). Warnung im Header zeigt Anzahl und Brutto-Summe der noch offenen Rechnungen. CSV-Export listet eine Zeile pro Zahlungseingang, Details-Tabelle ist nach Zahlung sortiert.
 - **Elster-Zuordnung (Anlage EÜR)**: Ausgaben nach Elster-Zeile gruppiert (Zeile + Bezeichnung + Netto + Absetzbar + Nicht-abzugsfähig), automatische Kürzung Bewirtung 70 %, eigener Elster-CSV-Export (2 Spalten Zeile/Betrag, direkt in Elster übertragbar).
 
 ## EÜR-Kategorien und Elster-Zuordnung

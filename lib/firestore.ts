@@ -363,31 +363,6 @@ export async function removeInvoicePayment(
   });
 }
 
-/**
- * Migration einer Legacy-Rechnung: schreibt payments[] explizit
- * auf Basis von paidAt + paidAmount. Nur aufrufen, wenn die Rechnung
- * kein payments-Array hat. Der bestehende paidAt und paidAmount
- * bleiben erhalten — der einzige Effekt ist, dass die Zahlung als
- * expliziter Payment-Eintrag in der Historie steht.
- */
-export async function migrateInvoiceToPayments(
-  invoiceId: string,
-): Promise<'ok' | 'skipped' | 'no-payment'> {
-  return runTransaction(db, async (tx) => {
-    const ref = doc(db, 'invoices', invoiceId);
-    const snap = await tx.get(ref);
-    if (!snap.exists()) throw new Error('Rechnung nicht gefunden.');
-    const inv = snap.data() as Invoice;
-    if (inv.payments && inv.payments.length > 0) return 'skipped' as const;
-    if (!inv.paidAt || inv.paidAmount <= 0) return 'no-payment' as const;
-    tx.update(ref, {
-      payments: [{ paidAt: inv.paidAt, amount: inv.paidAmount }],
-      updatedAt: serverTimestamp(),
-    });
-    return 'ok' as const;
-  });
-}
-
 // ===================================================================
 // QUOTES (Angebote)
 // ===================================================================

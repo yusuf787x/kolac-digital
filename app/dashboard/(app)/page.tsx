@@ -89,14 +89,18 @@ export default function DashboardHomePage() {
     let overdueAmount = 0;
 
     invoices.forEach((inv) => {
-      // Revenue counts: paid amount of paid + partially_paid invoices,
-      // attributed to the invoice date (cash-basis / Kleinunternehmer).
+      // Umsatz wird NETTO gezaehlt (die USt ist durchlaufender Posten).
+      // `paidAmount` ist immer BRUTTO, deshalb bei Teilzahlungen erst
+      // auf netto zurueckrechnen. Offene Forderungen dagegen brutto,
+      // weil das der Betrag ist, den der Kunde noch ueberweisen muss.
       const date = inv.invoiceDate.toDate();
+      const rate = inv.vatRate ?? 0;
+      const bruttoTotal = Math.round(inv.totalAmount * (1 + rate) * 100) / 100;
       const earned =
         inv.status === 'paid'
           ? inv.totalAmount
           : inv.status === 'partially_paid'
-            ? inv.paidAmount
+            ? Math.round((inv.paidAmount / (1 + rate)) * 100) / 100
             : 0;
 
       if (date.getFullYear() === thisYear) revenueThisYear += earned;
@@ -111,8 +115,8 @@ export default function DashboardHomePage() {
       if (inv.status === 'sent' || inv.status === 'partially_paid') {
         const remaining =
           inv.status === 'partially_paid'
-            ? inv.totalAmount - inv.paidAmount
-            : inv.totalAmount;
+            ? Math.round((bruttoTotal - inv.paidAmount) * 100) / 100
+            : bruttoTotal;
         openCount++;
         openAmount += remaining;
         if (isOverdue(inv.status, inv.dueDate.toDate())) {
