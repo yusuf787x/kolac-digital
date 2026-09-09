@@ -775,3 +775,97 @@ export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
   'Geschenke',
   'Sonstiges',
 ];
+
+// ===================================================================
+// BLOG / CONTENT-HUB
+// ===================================================================
+
+export type BlogCategory =
+  | 'Webseiten mit System'
+  | 'Prozesse digitalisieren'
+  | 'SEO und Sichtbarkeit'
+  | 'Google Ads'
+  | 'Preise und Ablauf'
+  | 'Branchen';
+
+export const BLOG_CATEGORIES: BlogCategory[] = [
+  'Webseiten mit System',
+  'Prozesse digitalisieren',
+  'SEO und Sichtbarkeit',
+  'Google Ads',
+  'Preise und Ablauf',
+  'Branchen',
+];
+
+/** Frage-Antwort-Paar. Wird als FAQPage-Schema ausgespielt. */
+export interface BlogFaqItem {
+  question: string;
+  answer: string;
+}
+
+export type BlogStatus = 'draft' | 'published';
+
+/**
+ * Ein Blogartikel. Liegt in Firestore, damit neue Beitraege ohne
+ * Deploy live gehen koennen. Die Blog-Seiten rendern statisch beim
+ * Build und ziehen neue Artikel per ISR nach.
+ *
+ * Die Felder sind bewusst so geschnitten, dass daraus ohne weitere
+ * Arbeit sauberes Article- und FAQPage-Schema entsteht.
+ */
+export interface BlogPost {
+  id: string;
+  /** URL-Teil unter /blog/. Kleinbuchstaben, Bindestriche. */
+  slug: string;
+  title: string;
+  /** Teaser fuer Uebersicht und OG-Beschreibung. Zwei bis drei Saetze. */
+  excerpt: string;
+  /**
+   * Kurzantwort ganz oben im Artikel. Der wichtigste Baustein fuer
+   * KI-Systeme: in sich abgeschlossen, ohne Vorwissen lesbar, damit
+   * ChatGPT und Google AI Overviews die Passage direkt zitieren
+   * koennen.
+   */
+  tldr: string;
+  /** Artikeltext als Markdown (Ueberschriften, Listen, Fettung). */
+  body: string;
+  category: BlogCategory;
+  /** Suchbegriffe, auf die der Artikel abzielt. */
+  targetKeywords: string[];
+  /** Wird unten im Artikel und als FAQPage-Schema ausgegeben. */
+  faq: BlogFaqItem[];
+  metaTitle: string;
+  metaDescription: string;
+  status: BlogStatus;
+  /** Emoji als leichtgewichtiges Titelbild in der Uebersicht. */
+  heroEmoji: string;
+  /** Geschaetzte Lesezeit in Minuten. */
+  readingMinutes: number;
+  /** Woher der Text stammt. Rein informativ fuers Dashboard. */
+  source: 'manual' | 'ai';
+  publishedAt: Timestamp | null;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+/**
+ * Themen-Warteschlange fuer die automatische Erstellung. Der
+ * woechentliche Lauf nimmt sich das naechste offene Thema mit der
+ * hoechsten Prioritaet und erzeugt daraus einen Entwurf.
+ */
+export interface BlogTopic {
+  id: string;
+  /** Arbeitstitel, dient als Briefing fuer die Erstellung. */
+  title: string;
+  /** Worauf der Artikel hinauslaufen soll. Ein bis zwei Saetze. */
+  angle: string;
+  category: BlogCategory;
+  targetKeywords: string[];
+  /** Kleinere Zahl wird zuerst abgearbeitet. */
+  priority: number;
+  status: 'open' | 'generated' | 'skipped';
+  /** Gesetzt, sobald daraus ein Artikel entstanden ist. */
+  generatedPostId: string | null;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}

@@ -75,3 +75,4 @@ User-agent: YandexBot
 Allow: /
 
 Sitemap: https://www.kolac-digital.de/sitemap.xml
+Sitemap: https://www.kolac-digital.de/sitemap-blog.xml

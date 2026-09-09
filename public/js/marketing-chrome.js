@@ -92,6 +92,7 @@
                   <a href="${home}#about">Über uns</a>
                   <a href="/case-studys">Case Studys</a>
                   <a href="/portfolio">Portfolio</a>
+                  <a href="/blog">Ratgeber</a>
                   <a href="${home}#kundenstimmen">Kundenstimmen</a>
                   <a href="${home}#kontakt">Kontakt</a>
                 </div>

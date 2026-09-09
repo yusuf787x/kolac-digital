@@ -20,7 +20,7 @@ interface NavItem {
   /** Kurzform fuer die schmale Bottom-Nav. */
   shortLabel?: string;
   icon: string;
-  group: 'Allgemein' | 'Vertrieb' | 'Buchhaltung' | 'System';
+  group: 'Allgemein' | 'Vertrieb' | 'Buchhaltung' | 'Marketing' | 'System';
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -48,6 +48,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/rechnungen', label: 'Rechnungen', icon: '📄', group: 'Buchhaltung' },
   { href: '/dashboard/ausgaben', label: 'Ausgaben', icon: '💸', group: 'Buchhaltung' },
   { href: '/dashboard/berichte', label: 'Berichte', icon: '📈', group: 'Buchhaltung' },
+  { href: '/dashboard/blog', label: 'Blog', icon: '✍️', group: 'Marketing' },
   {
     href: '/dashboard/einstellungen',
     label: 'Einstellungen',
@@ -73,6 +74,7 @@ const GROUP_ORDER: NavItem['group'][] = [
   'Allgemein',
   'Vertrieb',
   'Buchhaltung',
+  'Marketing',
   'System',
 ];
 

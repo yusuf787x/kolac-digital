@@ -24,6 +24,8 @@ import type {
   Customer,
   Invoice,
   Expense,
+  BlogPost,
+  BlogTopic,
   Quote,
   Settings,
   GoogleAuth,
@@ -1418,4 +1420,114 @@ function cryptoId(): string {
     return (crypto as { randomUUID: () => string }).randomUUID();
   }
   return `id-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+// ===================================================================
+// BLOG / CONTENT-HUB
+// ===================================================================
+
+const blogCol = () => collection(db, 'blogPosts');
+const blogTopicsCol = () => collection(db, 'blogTopics');
+
+/** Alle Artikel, neueste zuerst. Fuer das Dashboard. */
+export async function listBlogPosts(): Promise<BlogPost[]> {
+  const snap = await getDocs(query(blogCol(), orderBy('createdAt', 'desc')));
+  return snap.docs.map((d) => fromDoc<BlogPost>(d));
+}
+
+/**
+ * Nur veroeffentlichte Artikel, neueste zuerst. Wird von den
+ * oeffentlichen Blog-Seiten genutzt.
+ */
+export async function listPublishedBlogPosts(): Promise<BlogPost[]> {
+  const snap = await getDocs(
+    query(blogCol(), where('status', '==', 'published')),
+  );
+  const posts = snap.docs.map((d) => fromDoc<BlogPost>(d));
+  // Sortierung bewusst im Code statt per orderBy, damit kein
+  // zusammengesetzter Index noetig ist.
+  return posts.sort((a, b) => {
+    const am = a.publishedAt?.toMillis() ?? 0;
+    const bm = b.publishedAt?.toMillis() ?? 0;
+    return bm - am;
+  });
+}
+
+export async function getBlogPost(id: string): Promise<BlogPost | null> {
+  const snap = await getDoc(doc(db, 'blogPosts', id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as BlogPost;
+}
+
+/** Artikel ueber den URL-Teil finden. Fuer /blog/[slug]. */
+export async function getBlogPostBySlug(
+  slug: string,
+): Promise<BlogPost | null> {
+  const snap = await getDocs(query(blogCol(), where('slug', '==', slug)));
+  if (snap.empty) return null;
+  return fromDoc<BlogPost>(snap.docs[0]);
+}
+
+export async function createBlogPost(
+  data: Omit<BlogPost, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(blogCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateBlogPost(
+  id: string,
+  data: Partial<Omit<BlogPost, 'id' | 'createdAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'blogPosts', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteBlogPost(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'blogPosts', id));
+}
+
+/** Themen-Warteschlange, hoechste Prioritaet zuerst. */
+export async function listBlogTopics(): Promise<BlogTopic[]> {
+  const snap = await getDocs(blogTopicsCol());
+  const topics = snap.docs.map((d) => fromDoc<BlogTopic>(d));
+  return topics.sort((a, b) => {
+    if (a.status !== b.status) {
+      // Offene Themen zuerst.
+      if (a.status === 'open') return -1;
+      if (b.status === 'open') return 1;
+    }
+    return a.priority - b.priority;
+  });
+}
+
+export async function createBlogTopic(
+  data: Omit<BlogTopic, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(blogTopicsCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateBlogTopic(
+  id: string,
+  data: Partial<Omit<BlogTopic, 'id' | 'createdAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'blogTopics', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteBlogTopic(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'blogTopics', id));
 }
