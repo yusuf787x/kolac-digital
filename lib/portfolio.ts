@@ -279,30 +279,32 @@ export const portfolioProjects: PortfolioProject[] = [
     imageAlt: 'TikTok-Kanal und YumaPlay-App der Marke Yuma',
     services: [
       'TikTok-Entertainment-Kanal aufgebaut und skaliert',
-      'YumaPlay Quiz-App selbst entwickelt und veröffentlicht',
+      'YUMA PLAY Quiz-App selbst entwickelt, für iOS und Android',
+      'Eigene Webseite yumaplay.de für die App gebaut',
       'Community-Aufbau durch viralen Content',
     ],
     keyWin:
       'Über 90 Millionen Aufrufe, 4,7 Millionen Likes und 40.000 Abonnenten aufgebaut.',
-    link: 'https://yusuf787x.github.io/yumaplay-web/',
-    linkText: 'App ansehen',
+    link: 'https://yumaplay.de/',
+    linkText: 'yumaplay.de ansehen',
     socialLink: 'https://www.tiktok.com/@the.yuma.show',
     socialLinkText: 'TikTok ansehen',
     intro:
-      'Yuma ist ein eigenes Projekt von Kolac Digital. Ein Entertainment-Kanal auf TikTok, plus eine eigene Quiz-App im App Store. Genutzt als Labor, um Content-Strategien vor dem Kundeneinsatz zu testen.',
+      'Yuma ist ein eigenes Projekt von Kolac Digital. Ein Entertainment-Kanal auf TikTok, dazu die Quiz-App YUMA PLAY mit eigener Webseite unter yumaplay.de. Genutzt als Labor, um Content-Strategien vor dem Kundeneinsatz zu testen.',
     situation:
       'Wenn du Kunden Strategien fürs Wachstum verkaufst, sollten die vorher auf eigenen Projekten funktioniert haben. Yuma ist genau das: ein Testfeld für Content-Formate, Community-Aufbau und App-Entwicklung.',
     approach: [
       'Entertainment-Kanal auf TikTok mit klarem Format-Repertoire.',
-      'Eigene Quiz-App YumaPlay entwickelt, in Swift gebaut und im App Store veröffentlicht.',
+      'Eigene Quiz-App YUMA PLAY entwickelt und für iOS und Android veröffentlicht. Elf Quizmodi aus den Videos, allein oder reihum mit bis zu zehn Leuten auf einem Handy.',
+      'Webseite yumaplay.de gebaut, die die App vorstellt und in die Stores führt.',
       'Community aufgebaut durch interaktive und virale Inhalte.',
     ],
     outcome:
-      'Über 90 Millionen Aufrufe, 4,7 Millionen Likes und 40.000 Abonnenten. Alle Erkenntnisse fließen in die Arbeit für Kunden zurück.',
+      'Über 90 Millionen Aufrufe, 4,7 Millionen Likes und 40.000 Abonnenten. Aus dem Kanal ist mit YUMA PLAY ein eigenes Produkt entstanden, inklusive App in beiden Stores und eigener Webseite. Alle Erkenntnisse fließen in die Arbeit für Kunden zurück.',
     metaTitle:
-      'Die Marke Yuma · TikTok und Quiz-App · Eigenes Projekt von Kolac Digital',
+      'Die Marke Yuma · TikTok und Quiz-App YUMA PLAY · Projekt von Kolac Digital',
     metaDescription:
-      'Yuma ist das eigene Entertainment-Projekt von Kolac Digital. TikTok-Kanal mit über 40.000 Abonnenten und eigene Quiz-App im App Store.',
+      'Yuma ist das eigene Entertainment-Projekt von Kolac Digital. TikTok-Kanal mit über 40.000 Abonnenten, die Quiz-App YUMA PLAY für iOS und Android und die Webseite yumaplay.de.',
   },
 ];
 
