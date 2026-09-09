@@ -31,6 +31,7 @@ async function refreshPublicPages(slug?: string) {
   }
 }
 import { estimateReadingMinutes } from '@/lib/blog-markdown';
+import { SEED_BLOG_TOPICS } from '@/lib/blog-seed-topics';
 
 type Tab = 'posts' | 'topics';
 
@@ -70,6 +71,13 @@ export default function BlogDashboardPage() {
     () => topics.filter((t) => t.status === 'open'),
     [topics],
   );
+
+  // Vorbereitete Themen, die noch nicht in der Warteschlange stehen.
+  // Wird beim Nachliefern neuer Vorschlaege wieder groesser als null.
+  const missingSeeds = useMemo(() => {
+    const have = new Set(topics.map((t) => t.title));
+    return SEED_BLOG_TOPICS.filter((t) => !have.has(t.title)).length;
+  }, [topics]);
 
   const addTopic = async () => {
     if (!newTitle.trim()) return;
@@ -275,6 +283,23 @@ export default function BlogDashboardPage() {
 
       {tab === 'topics' && (
         <>
+          {missingSeeds > 0 && (
+            <div className="card mb-4 bg-blue-50 border-blue-200">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-blue-900">
+                  <strong>{missingSeeds}</strong> vorbereitete Themen stehen
+                  noch nicht in der Warteschlange.
+                </p>
+                <Link
+                  href="/dashboard/blog/themen-laden"
+                  className="btn-primary shrink-0"
+                >
+                  Ansehen und laden
+                </Link>
+              </div>
+            </div>
+          )}
+
           <section className="card mb-4">
             <h2 className="text-base font-semibold text-gray-900 mb-3">
               Thema in die Warteschlange legen
@@ -337,16 +362,8 @@ export default function BlogDashboardPage() {
 
           {topics.length === 0 ? (
             <div className="card text-sm text-gray-600">
-              <p className="mb-3">
-                Noch keine Themen. Du kannst oben eins eintragen, oder die
-                vorbereiteten Start-Themen laden.
-              </p>
-              <Link
-                href="/dashboard/blog/themen-laden"
-                className="btn-secondary"
-              >
-                Start-Themen laden
-              </Link>
+              Noch keine Themen in der Warteschlange. Trag oben eins ein
+              oder lade die vorbereiteten Vorschläge.
             </div>
           ) : (
             <div className="space-y-2">
