@@ -782,11 +782,11 @@ export default function RechnungDetailPage() {
       {/* Payment-Dialog */}
       {payDialogOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
           onClick={() => setPayDialogOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
+            className="bg-white rounded-2xl shadow-xl max-w-md w-full p-5 sm:p-6 modal-panel"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-1">

@@ -176,3 +176,150 @@ svg text.privacy-blurred {
     font-weight: 600;
   }
 }
+
+/* ==============================================================
+   Dashboard: Bedienbarkeit auf dem Handy
+   ==============================================================
+   Greift global fuer alle Dashboard-Seiten, damit nicht jede der
+   41 Seiten einzeln angefasst werden muss.
+   ============================================================== */
+
+/* Unten Platz fuer die Mobile-Navigationsleiste plus Home-Indicator.
+   Auf Desktop gibt es keine Leiste, dort faellt der Abstand weg. */
+.dashboard-main {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .dashboard-main {
+    padding-bottom: 0;
+  }
+}
+
+/* Tabellen: waagerecht scrollbar statt abgeschnitten.
+   Wird auf den Wrapper gesetzt, der bisher overflow-hidden hatte. */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.table-wrap > table {
+  min-width: max-content;
+}
+/* Ab Tablet passt der Inhalt wieder in die Breite. */
+@media (min-width: 768px) {
+  .table-wrap > table {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Karten duerfen auf schmalen Displays nicht so viel Rand fressen. */
+  .card {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  /* Bedienelemente auf Fingergroesse. Apple und Google empfehlen
+     mindestens 44 Pixel Hoehe. */
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* 16px Schriftgroesse verhindert, dass iOS beim Antippen eines
+     Eingabefeldes automatisch hereinzoomt. */
+  .input,
+  input[type='text'],
+  input[type='email'],
+  input[type='tel'],
+  input[type='number'],
+  input[type='date'],
+  input[type='search'],
+  input[type='password'],
+  select,
+  textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  textarea {
+    min-height: 88px;
+  }
+
+  /* Tabellen etwas kompakter, damit weniger gescrollt werden muss. */
+  .table-wrap table {
+    font-size: 0.8125rem;
+  }
+  .table-wrap th,
+  .table-wrap td {
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+    white-space: nowrap;
+  }
+  /* Die Textspalte darf umbrechen, sonst wird die Tabelle endlos breit. */
+  .table-wrap td[data-wrap],
+  .table-wrap th[data-wrap] {
+    white-space: normal;
+    min-width: 10rem;
+  }
+}
+
+/* Lange Werte ohne Leerzeichen (E-Mail, IBAN, URL) sprengen sonst
+   das Layout auf schmalen Displays. */
+@media (max-width: 767px) {
+  .break-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+/* Dialoge: nie hoeher als der Bildschirm, Inhalt scrollt. */
+.modal-panel {
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Sicherheitsnetz: Tabellen, die direkt in einer Karte stehen und
+   keinen eigenen table-wrap haben, werden auf schmalen Displays
+   trotzdem scrollbar statt abgeschnitten. */
+@media (max-width: 767px) {
+  .card:has(> table),
+  .card:has(> section > table),
+  .card > details:has(table) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .card > table,
+  .card > details > table {
+    min-width: max-content;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Seitentitel sind auf dem Handy sonst zu wuchtig und brechen
+     ungluecklich um. Gilt nur im Dashboard, nicht auf der Website. */
+  .dashboard-main h1.text-3xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+  .dashboard-main h1.text-2xl {
+    font-size: 1.375rem;
+    line-height: 1.875rem;
+  }
+
+  /* Aktionsleisten duerfen umbrechen statt zu ueberlaufen. */
+  .dashboard-main header .btn-primary,
+  .dashboard-main header .btn-secondary {
+    flex: 1 1 auto;
+  }
+}
+
+/* Kanban und andere waagerecht scrollende Bereiche: auf dem Handy
+   mit Fingerschwung bedienbar und ohne Ueberdehnen der Seite. */
+.dashboard-main [class*='overflow-x-auto'] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}

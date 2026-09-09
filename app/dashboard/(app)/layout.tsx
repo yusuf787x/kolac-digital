@@ -38,7 +38,10 @@ export default function DashboardLayout({
     <PrivacyProvider>
       <div className="min-h-screen bg-gray-50">
         <Sidebar />
-        <main className="md:pl-64 pb-20 md:pb-0">
+        {/* dashboard-main haelt unten Platz fuer die Mobile-Leiste plus die
+            Home-Indicator-Zone, damit der letzte Button einer Seite nie
+            darunter verschwindet. Auf Desktop faellt der Abstand weg. */}
+        <main className="md:pl-64 dashboard-main">
           <div className="sticky top-0 z-20 border-b border-gray-100 bg-gray-50/80 backdrop-blur px-4 sm:px-6 lg:px-8 py-3">
             <div className="max-w-7xl mx-auto flex items-center gap-3">
               <div className="flex-1 min-w-0">
@@ -47,7 +50,7 @@ export default function DashboardLayout({
               <PrivacyToggle />
             </div>
           </div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             {children}
           </div>
         </main>

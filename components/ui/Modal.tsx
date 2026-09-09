@@ -40,27 +40,30 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-8"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/40 px-3 py-4 sm:px-4 sm:py-8"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className={`w-full ${maxWidth} rounded-xl bg-white shadow-xl`}
+        className={`w-full ${maxWidth} rounded-xl bg-white shadow-xl my-auto`}
         role="dialog"
         aria-modal="true"
+        style={{ marginBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
       >
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 sm:px-5 sm:py-4">
+          <h2 className="text-base font-semibold text-gray-900 min-w-0 truncate">
+            {title}
+          </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-700 text-xl leading-none"
+            className="shrink-0 w-9 h-9 -mr-1.5 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 text-2xl leading-none"
             aria-label="Schließen"
           >
             ×
           </button>
         </div>
-        <div className="px-5 py-5">{children}</div>
+        <div className="px-4 py-4 sm:px-5 sm:py-5">{children}</div>
       </div>
     </div>
   );

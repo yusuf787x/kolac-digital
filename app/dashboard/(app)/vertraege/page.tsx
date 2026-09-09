@@ -77,7 +77,7 @@ export default function VertraegePage() {
 
   return (
     <div>
-      <header className="flex items-center justify-between mb-8">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">Verträge</h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -136,7 +136,7 @@ export default function VertraegePage() {
             : 'Keine Verträge für diese Filter.'}
         </div>
       ) : (
-        <div className="card overflow-hidden p-0">
+        <div className="card p-0 table-wrap">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 tracking-wider">
               <tr>

@@ -213,7 +213,7 @@ export default function DealFormModal({
               value={nc.company}
               onChange={(e) => setNc({ ...nc, company: e.target.value })}
             />
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <select
                 className="input"
                 value={nc.salutation}
@@ -240,7 +240,7 @@ export default function DealFormModal({
                 onChange={(e) => setNc({ ...nc, lastName: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input
                 className="input"
                 type="email"
@@ -277,7 +277,7 @@ export default function DealFormModal({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="label">Dealwert (EUR)</label>
             <input
@@ -304,7 +304,7 @@ export default function DealFormModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="label">Erwartetes Abschlussdatum</label>
             <input

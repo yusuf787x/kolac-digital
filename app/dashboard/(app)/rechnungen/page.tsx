@@ -82,7 +82,7 @@ export default function RechnungenPage() {
 
   return (
     <div>
-      <header className="flex items-center justify-between mb-8">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8">
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">Rechnungen</h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -94,7 +94,7 @@ export default function RechnungenPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/dashboard/rechnungen/reparatur"
             className="btn-secondary text-xs"
@@ -156,7 +156,7 @@ export default function RechnungenPage() {
             : 'Keine Rechnungen für diese Filter.'}
         </div>
       ) : (
-        <div className="card overflow-hidden p-0">
+        <div className="card p-0 table-wrap">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 tracking-wider">
               <tr>

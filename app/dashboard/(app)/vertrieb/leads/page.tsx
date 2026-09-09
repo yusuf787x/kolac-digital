@@ -158,7 +158,7 @@ export default function LeadListePage() {
             : 'Keine Treffer für deinen Filter.'}
         </div>
       ) : (
-        <div className="card overflow-hidden p-0">
+        <div className="card p-0 table-wrap">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 tracking-wider">
               <tr>

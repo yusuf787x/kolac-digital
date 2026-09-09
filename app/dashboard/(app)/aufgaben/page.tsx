@@ -726,11 +726,11 @@ function TaskEditor({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center px-4"
+      className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center px-3 py-4 sm:px-4"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-5 sm:p-6 modal-panel"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">

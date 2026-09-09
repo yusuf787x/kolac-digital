@@ -63,8 +63,8 @@ export default function NewLeadModal({ onClose, onCreated }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl w-full max-w-lg shadow-lg">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white rounded-xl w-full max-w-lg shadow-lg modal-panel">
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="flex items-start justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Neuer Lead</h2>
@@ -89,7 +89,7 @@ export default function NewLeadModal({ onClose, onCreated }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label">Ansprechpartner</label>
               <input
@@ -116,7 +116,7 @@ export default function NewLeadModal({ onClose, onCreated }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label">Telefon</label>
               <input
@@ -148,7 +148,7 @@ export default function NewLeadModal({ onClose, onCreated }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label">Ort</label>
               <input
