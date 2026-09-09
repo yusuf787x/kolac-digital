@@ -79,7 +79,7 @@ export default function SiteHeader({
           <a
             href="/"
             className="nav-logo"
-            aria-label="Kolac Digital – Startseite"
+            aria-label="Kolac Digital, Startseite"
           >
             <img
               src="/images/Logo Lang Schwarz.png"

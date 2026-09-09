@@ -37,7 +37,7 @@ export default function SiteFooter() {
             </div>
           </div>
           <p className="footer-copy">
-            © 2019–{year} Kolac Digital · Beckhausstraße 108, 33611 Bielefeld ·
+            © 2019-{year} Kolac Digital · Beckhausstraße 108, 33611 Bielefeld ·
             Alle Rechte vorbehalten.
           </p>
         </div>
