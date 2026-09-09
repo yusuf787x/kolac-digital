@@ -145,4 +145,6 @@ Artikel-Produktion ohne API-Kosten: der Text wird in einem Claude-Chat erzeugt u
 
 **Dashboard**: `/dashboard/blog` mit Artikeln und Themen. Freigeben und zurückziehen per Klick. `/dashboard/blog/themen-laden` legt zehn vorbereitete Start-Themen an. Editor mit Vorschau, Zeichenzählern, Kurzfassungs-Punkten, Titelbild-Feldern und FAQ-Pflege.
 
+**Bild-Upload**: `components/dashboard/ImageUploadField.tsx` im Editor. Datei hineinziehen oder auswählen, `lib/image-optimize.ts` verkleinert im Browser per Canvas auf max. 1600x1200 und komprimiert zu WebP (Fallback JPG, Qualität 0.82). Upload nach Firebase Storage unter `blog/<slug>-<zeitstempel>.<ext>`, die Download-Adresse ist öffentlich abrufbar. Quota- und Rechte-Fehler werden verständlich gemeldet, als Rückfalloption lässt sich eine Adresse von Hand eintragen. Entfernen löscht die Datei auch aus dem Speicher, sofern sie von dort stammt.
+
 **CTA**: `components/marketing/BlogCta.tsx`. Ziel steht in `PRIMARY_HREF`. Sobald die VSL-Landingpage steht, wird dort getauscht und alle Artikel zeigen dorthin.

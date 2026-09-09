@@ -13,6 +13,7 @@ import type { BlogPost, BlogCategory, BlogFaqItem } from '@/lib/types';
 import { BLOG_CATEGORIES } from '@/lib/types';
 import { estimateReadingMinutes } from '@/lib/blog-markdown';
 import ArticleBody from '@/components/marketing/ArticleBody';
+import ImageUploadField from '@/components/dashboard/ImageUploadField';
 
 interface Props {
   /** Vorhandener Artikel. Fehlt er, wird ein neuer angelegt. */
@@ -328,34 +329,32 @@ export default function BlogEditor({ post }: Props) {
                 der Seite nicht angezeigt.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="label">Bild-URL</label>
-                <input
-                  className="input"
-                  value={heroImageUrl}
-                  onChange={(e) => setHeroImageUrl(e.target.value)}
-                  placeholder="/images/blog/…  oder  https://…"
-                />
-              </div>
-              <div>
-                <label className="label">Alternativtext</label>
-                <input
-                  className="input"
-                  value={imageAlt}
-                  onChange={(e) => setImageAlt(e.target.value)}
-                  placeholder="Was auf dem Bild zu sehen ist"
-                />
-              </div>
-            </div>
-            {heroImageUrl.trim() && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={heroImageUrl}
-                alt={imageAlt || 'Vorschau'}
-                className="rounded-lg border border-gray-200 max-h-56 object-cover w-full"
+            <div>
+              <label className="label">Titelbild</label>
+              <ImageUploadField
+                value={heroImageUrl}
+                onChange={setHeroImageUrl}
+                slug={slug || title}
+                alt={imageAlt}
               />
-            )}
+            </div>
+
+            <div>
+              <label className="label">
+                Alternativtext
+                {heroImageUrl && !imageAlt.trim() && (
+                  <span className="ml-2 font-normal text-xs text-amber-700">
+                    fehlt noch, zählt für Google und Screenreader
+                  </span>
+                )}
+              </label>
+              <input
+                className="input"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+                placeholder="Was auf dem Bild zu sehen ist"
+              />
+            </div>
           </section>
 
           <section className="card">

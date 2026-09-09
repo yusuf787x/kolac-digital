@@ -389,6 +389,10 @@ export default function BlogPastePage() {
                     Alternativtext: {parsed.imageAlt}
                   </p>
                 )}
+                <p className="text-xs text-gray-400 mt-2">
+                  Das Bild lädst du gleich im Editor hoch, direkt hier im
+                  Dashboard.
+                </p>
               </div>
             </div>
 

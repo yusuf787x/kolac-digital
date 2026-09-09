@@ -42,11 +42,31 @@ stimmt jeder künftige Artikel automatisch.
 ## Bilder
 
 Der Artikel funktioniert auch ohne Bild, dann steht das Emoji in der
-Übersicht. Wenn du ein Bild willst: `imagePrompt` gibt dir die Vorlage.
-Bild erzeugen oder auswählen, unter `/public/images/blog/` ablegen und im
-Editor unter Titelbild die URL eintragen, zum Beispiel
-`/images/blog/webseite-kosten.webp`. Alternativtext nicht vergessen, der
-zählt für Google und für Screenreader.
+Übersicht.
+
+Wenn du ein Bild willst: Der Auftragstext liefert unter `imagePrompt`
+eine Beschreibung, was passen würde. Damit erzeugst du eins oder suchst
+eins raus. Dann im Editor unter **Titelbild** einfach hineinziehen oder
+anklicken und auswählen. Das war es.
+
+Was dabei automatisch passiert:
+
+- Das Bild wird im Browser auf höchstens 1600 mal 1200 Pixel verkleinert
+- Es wird als WebP komprimiert, falls dein Browser das kann, sonst als JPG
+- Es landet in Firebase Storage unter `blog/` mit einem Namen aus dem
+  Artikel-Slug
+- Die Adresse wird direkt in den Artikel eingetragen
+
+Ein Handyfoto mit vier Megabyte wird so meist auf unter 200 Kilobyte
+gedrückt. Das ist wichtig, weil Ladezeit direkt in die Google-Bewertung
+einfließt.
+
+**Alternativtext nicht vergessen.** Der steht im Feld darunter und kommt
+meistens schon aus dem Auftragstext mit. Er zählt für Google und für
+Menschen, die einen Screenreader nutzen.
+
+Wenn du lieber ein Bild von woanders einbindest, klapp unter dem
+Upload-Feld „Bild-Adresse von Hand eintragen" auf.
 
 ## Warum kein Auto-Publish
 
