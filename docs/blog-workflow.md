@@ -3,7 +3,25 @@
 Ohne API-Kosten. Du nutzt Claude im Chat, das Dashboard übernimmt den Rest.
 Aufwand pro Artikel: etwa zehn Minuten.
 
-## Der Ablauf
+## Einmal einrichten: Claude-Projekt
+
+Der schnellste Weg. Im Dashboard unter Blog auf **Basis-Anweisung**, Text
+kopieren, in Claude ein Projekt anlegen und den Text als
+Projektanweisung hinterlegen.
+
+Danach reicht im Projekt eine kurze Nachricht:
+
+```
+Thema: Jeder verpasste Anruf kostet dich einen Auftrag
+Richtung: Reaktionszeit und Rückrufquote zeigen
+Kategorie: Prozesse digitalisieren
+Zielbegriffe: handwerker erreichbarkeit anfragen
+```
+
+Antwort kopieren, im Dashboard unter **Artikel einfügen** einsetzen,
+fertig.
+
+## Der Ablauf ohne Projekt
 
 1. **Dashboard öffnen**: `/dashboard/blog` → Button „+ Artikel aus Claude"
 2. **Thema wählen**: entweder aus der Warteschlange oder frei eintragen

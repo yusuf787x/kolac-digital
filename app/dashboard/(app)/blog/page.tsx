@@ -152,6 +152,9 @@ export default function BlogDashboardPage() {
           >
             Blog ansehen
           </a>
+          <Link href="/dashboard/blog/anweisung" className="btn-secondary">
+            Basis-Anweisung
+          </Link>
           <Link href="/dashboard/blog/neu" className="btn-secondary">
             Selbst schreiben
           </Link>
