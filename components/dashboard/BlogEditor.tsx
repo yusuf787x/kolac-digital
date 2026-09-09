@@ -12,6 +12,7 @@ import {
 import type { BlogPost, BlogCategory, BlogFaqItem } from '@/lib/types';
 import { BLOG_CATEGORIES } from '@/lib/types';
 import { estimateReadingMinutes } from '@/lib/blog-markdown';
+import { authedFetch } from '@/lib/api-client';
 import ArticleBody from '@/components/marketing/ArticleBody';
 import ImageUploadField from '@/components/dashboard/ImageUploadField';
 
@@ -116,6 +117,16 @@ export default function BlogEditor({ post }: Props) {
           source: 'manual',
           publishedAt: publish ? Timestamp.fromDate(new Date()) : null,
         });
+      }
+      // Oeffentliche Seiten sofort neu bauen lassen.
+      try {
+        await authedFetch('/api/blog/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: data.slug }),
+        });
+      } catch (err) {
+        console.warn('Seiten konnten nicht sofort erneuert werden:', err);
       }
       router.push('/dashboard/blog');
     } catch (err) {

@@ -16,6 +16,20 @@ import {
 import type { BlogPost, BlogTopic, BlogCategory } from '@/lib/types';
 import { BLOG_CATEGORIES } from '@/lib/types';
 import { formatDateDE } from '@/lib/utils';
+import { authedFetch } from '@/lib/api-client';
+
+/** Blog-Seiten sofort neu bauen lassen, damit Aenderungen live sind. */
+async function refreshPublicPages(slug?: string) {
+  try {
+    await authedFetch('/api/blog/revalidate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug }),
+    });
+  } catch (err) {
+    console.warn('Seiten konnten nicht sofort erneuert werden:', err);
+  }
+}
 import { estimateReadingMinutes } from '@/lib/blog-markdown';
 
 type Tab = 'posts' | 'topics';
@@ -96,6 +110,12 @@ export default function BlogDashboardPage() {
             ? (p.publishedAt ?? Timestamp.fromDate(new Date()))
             : p.publishedAt,
       });
+      await refreshPublicPages(p.slug);
+      setStatus(
+        next === 'published'
+          ? 'Veröffentlicht. Die Seite ist in wenigen Sekunden online.'
+          : 'Zurückgezogen. Der Artikel ist nicht mehr öffentlich.',
+      );
       await refresh();
     } catch (err) {
       setError((err as Error).message);
@@ -105,6 +125,7 @@ export default function BlogDashboardPage() {
   const removePost = async (p: BlogPost) => {
     if (!confirm(`"${p.title}" wirklich löschen?`)) return;
     await deleteBlogPost(p.id);
+    await refreshPublicPages(p.slug);
     await refresh();
   };
 
