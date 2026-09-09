@@ -827,6 +827,13 @@ export interface BlogPost {
    * koennen.
    */
   tldr: string;
+  /**
+   * Drei bis fuenf Kernaussagen als Kasten "Alles auf einen Blick".
+   * Steht direkt unter der Kurzantwort. Wer nur ueberfliegt, hat
+   * danach das Wichtigste. Gut fuer Verweildauer und fuer
+   * KI-Systeme, die kompakte Fakten bevorzugen.
+   */
+  keyTakeaways: string[];
   /** Artikeltext als Markdown (Ueberschriften, Listen, Fettung). */
   body: string;
   category: BlogCategory;
@@ -839,6 +846,16 @@ export interface BlogPost {
   status: BlogStatus;
   /** Emoji als leichtgewichtiges Titelbild in der Uebersicht. */
   heroEmoji: string;
+  /**
+   * Beschreibung fuer ein passendes Titelbild. Wird nicht angezeigt,
+   * sondern dient als Vorlage, um das Bild spaeter zu erzeugen oder
+   * auszuwaehlen.
+   */
+  imagePrompt: string;
+  /** Alternativtext fuer das Titelbild. Pflicht, sobald ein Bild da ist. */
+  imageAlt: string;
+  /** URL des Titelbilds. Leer, solange keins hinterlegt wurde. */
+  heroImageUrl: string | null;
   /** Geschaetzte Lesezeit in Minuten. */
   readingMinutes: number;
   /** Woher der Text stammt. Rein informativ fuers Dashboard. */

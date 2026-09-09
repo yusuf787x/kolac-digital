@@ -129,22 +129,20 @@ Statische Landing + `/case-studys/[slug]/page.tsx` (Bacara, CarHifi, Kolac Digit
 
 ## Blog / Content-Hub (`app/blog/` + `app/dashboard/(app)/blog/`)
 
-Automatisierte Artikel-Produktion für SEO und Auffindbarkeit in KI-Systemen.
+Artikel-Produktion ohne API-Kosten: der Text wird in einem Claude-Chat erzeugt und per Copy-Paste ins Dashboard übernommen. Ablauf und Format sind in `docs/blog-workflow.md` beschrieben.
 
-**Datenmodell** (`lib/types.ts`): `BlogPost` (slug, title, excerpt, tldr, body als Markdown, category, targetKeywords, faq[], meta, status draft/published, heroEmoji, readingMinutes, source manual/ai) und `BlogTopic` als Themen-Warteschlange (title, angle, category, keywords, priority, status).
+**Datenmodell** (`lib/types.ts`): `BlogPost` mit slug, title, excerpt, `tldr` (Kurzantwort), `keyTakeaways[]` (Kasten „Alles auf einen Blick"), body als Markdown, category, targetKeywords, faq[], meta-Angaben, `imagePrompt`/`imageAlt`/`heroImageUrl`, status draft/published, heroEmoji, readingMinutes. Dazu `BlogTopic` als Themen-Warteschlange.
 
-**Öffentliche Seiten**: `/blog` (Übersicht mit Aufmacher + Raster) und `/blog/[slug]`. Statisch beim Build über `generateStaticParams`, neue Artikel kommen per ISR (`revalidate 600`) ohne Deploy dazu. Gelesen wird über `lib/blog-server.ts` mit dem **Admin-SDK**, weil die Firestore-Rules nur den Inhaber zulassen. Nebeneffekt: Entwürfe können nicht nach außen gelangen, dort wird immer auf `published` gefiltert.
+**Öffentliche Seiten**: `/blog` und `/blog/[slug]`. Statisch beim Build über `generateStaticParams`, neue Artikel per ISR (`revalidate 600`) ohne Deploy. Gelesen wird über `lib/blog-server.ts` mit dem **Admin-SDK**, weil die Firestore-Rules nur den Inhaber zulassen. Dort wird immer auf `published` gefiltert, Entwürfe können also nicht nach außen gelangen.
 
-**SEO und GEO pro Artikel**: BlogPosting-, FAQPage- und BreadcrumbList-Schema. Eigene Meta-Angaben, Canonical, OG- und Twitter-Tags. Die `tldr`-Box oben im Artikel ist bewusst als zitierfähige Passage für ChatGPT und AI Overviews gebaut, die FAQ-Antworten ebenso. Inhaltsverzeichnis mit Sprungmarken ab drei Überschriften.
+**SEO und GEO pro Artikel**: BlogPosting-, FAQPage- und BreadcrumbList-Schema, eigene Meta-Angaben, Canonical, OG- und Twitter-Tags. Die `tldr`-Box und die FAQ-Antworten sind bewusst als zitierfähige Passagen für ChatGPT und AI Overviews gebaut. Inhaltsverzeichnis mit Sprungmarken ab drei Überschriften. `/sitemap-blog.xml` wird dynamisch erzeugt und ist in `robots.txt` eingetragen.
 
-**Markdown**: eigener schlanker Parser in `lib/blog-markdown.ts` (H2/H3 mit Sprungmarken, Listen, Zitate, Fettung, Links), gerendert von `components/marketing/ArticleBody.tsx`. Keine zusätzliche Abhängigkeit.
+**Markdown**: eigener Parser in `lib/blog-markdown.ts` (H2/H3 mit Sprungmarken, Listen, Zitate, Fettung, Links), gerendert von `components/marketing/ArticleBody.tsx`. Keine zusätzliche Abhängigkeit.
 
-**CTA**: `components/marketing/BlogCta.tsx`. Ziel ist zentral in `PRIMARY_HREF` gesetzt. Sobald die VSL-Landingpage steht, wird dort eine Konstante getauscht und alle Artikel zeigen dorthin.
+**Auftragstext**: `lib/blog-prompt.ts`, Konstante `BLOG_AUTHOR_PROMPT`. Enthält alle Fakten über Kolac Digital (Preise, Leistungen, Referenzen), die Stilregeln (du-Ansprache, einfache Sprache, keine Gedankenstriche) und das JSON-Ausgabeformat. **Preise und Positionierung werden an dieser einen Stelle gepflegt** und wirken auf alle künftigen Artikel.
 
-**Erstellung**: `app/api/blog/generate/route.ts` erzeugt aus einem Thema einen fertigen Entwurf. Das Briefing steht in `lib/blog-prompt.ts` und enthält alle Fakten über Kolac Digital (Preise, Leistungen, Referenzen), die Stilregeln (du-Ansprache, einfache Sprache, keine Gedankenstriche) und die SEO/GEO-Vorgaben. `sanitizeArticleText` entfernt Gedankenstriche als Absicherung. Preise und Positionierung werden **an dieser einen Stelle** gepflegt und wirken sofort auf alle künftigen Artikel.
+**Übernahme**: `/dashboard/blog/einfuegen` führt in drei Schritten durch Thema wählen, Auftragstext kopieren, Antwort einfügen. `parsePastedArticle` verkraftet Codeblöcke und Text drumherum, prüft Pflichtfelder und meldet doppelte Slugs. `sanitizeArticleText` entfernt Gedankenstriche als Absicherung. Vorschau zeigt Google-Snippet mit Zeichenzählern, Kurzfassung, Bildvorschlag und den gerenderten Text.
 
-**Automatik**: Vercel-Cron `/api/cron/blog` dienstags um 6 Uhr. Nimmt das nächste offene Thema mit der niedrigsten Prioritätszahl, erzeugt einen **Entwurf** und schickt eine Mail. Bewusst kein Auto-Publish, damit kein ungeprüfter Text mit falschen Angaben über das eigene Geschäft online geht. Absicherung über `CRON_SECRET`.
+**Dashboard**: `/dashboard/blog` mit Artikeln und Themen. Freigeben und zurückziehen per Klick. `/dashboard/blog/themen-laden` legt zehn vorbereitete Start-Themen an. Editor mit Vorschau, Zeichenzählern, Kurzfassungs-Punkten, Titelbild-Feldern und FAQ-Pflege.
 
-**Dashboard**: `/dashboard/blog` mit zwei Bereichen (Artikel und Themen). Artikel freigeben oder zurückziehen per Klick. `/dashboard/blog/themen-laden` legt zehn vorbereitete Start-Themen an, überspringt bereits vorhandene. Editor mit Vorschau, Zeichenzählern für Meta-Angaben und FAQ-Pflege.
-
-**Sitemap**: `/sitemap-blog.xml` wird dynamisch aus den veröffentlichten Artikeln erzeugt und ist in `robots.txt` als zweite Sitemap eingetragen.
+**CTA**: `components/marketing/BlogCta.tsx`. Ziel steht in `PRIMARY_HREF`. Sobald die VSL-Landingpage steht, wird dort getauscht und alle Artikel zeigen dorthin.

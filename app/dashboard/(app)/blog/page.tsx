@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Timestamp } from 'firebase/firestore';
 import {
   listBlogPosts,
@@ -18,18 +17,15 @@ import type { BlogPost, BlogTopic, BlogCategory } from '@/lib/types';
 import { BLOG_CATEGORIES } from '@/lib/types';
 import { formatDateDE } from '@/lib/utils';
 import { estimateReadingMinutes } from '@/lib/blog-markdown';
-import { authedFetch } from '@/lib/api-client';
 
 type Tab = 'posts' | 'topics';
 
 export default function BlogDashboardPage() {
-  const router = useRouter();
   const [tab, setTab] = useState<Tab>('posts');
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [topics, setTopics] = useState<BlogTopic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   // Formular fuer ein neues Thema
@@ -85,60 +81,6 @@ export default function BlogDashboardPage() {
     }
   };
 
-  /** Erzeugt aus einem Thema einen Entwurf und legt ihn an. */
-  const generate = async (topic: BlogTopic) => {
-    setGeneratingId(topic.id);
-    setStatus('Artikel wird geschrieben. Das dauert ein bis zwei Minuten.');
-    setError(null);
-    try {
-      const res = await authedFetch('/api/blog/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: topic.title,
-          angle: topic.angle,
-          category: topic.category,
-          keywords: topic.targetKeywords,
-          existingTitles: posts.map((p) => p.title),
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        throw new Error(json.error ?? `HTTP ${res.status}`);
-      }
-      const a = json.data;
-      const postId = await createBlogPost({
-        slug: a.slug,
-        title: a.title,
-        excerpt: a.excerpt,
-        tldr: a.tldr,
-        body: a.body,
-        category: topic.category,
-        targetKeywords: a.targetKeywords ?? topic.targetKeywords,
-        faq: a.faq ?? [],
-        metaTitle: a.metaTitle,
-        metaDescription: a.metaDescription,
-        status: 'draft',
-        heroEmoji: a.heroEmoji || '📄',
-        readingMinutes: estimateReadingMinutes(a.body),
-        source: 'ai',
-        publishedAt: null,
-      });
-      await updateBlogTopic(topic.id, {
-        status: 'generated',
-        generatedPostId: postId,
-      });
-      setStatus('Entwurf ist fertig. Bitte prüfen und dann freigeben.');
-      await refresh();
-      router.push(`/dashboard/blog/${postId}`);
-    } catch (err) {
-      setError(`Erstellung fehlgeschlagen: ${(err as Error).message}`);
-      setStatus(null);
-    } finally {
-      setGeneratingId(null);
-    }
-  };
-
   const togglePublish = async (p: BlogPost) => {
     const next = p.status === 'published' ? 'draft' : 'published';
     if (
@@ -189,8 +131,11 @@ export default function BlogDashboardPage() {
           >
             Blog ansehen
           </a>
-          <Link href="/dashboard/blog/neu" className="btn-primary">
-            + Artikel schreiben
+          <Link href="/dashboard/blog/neu" className="btn-secondary">
+            Selbst schreiben
+          </Link>
+          <Link href="/dashboard/blog/einfuegen" className="btn-primary">
+            + Artikel aus Claude
           </Link>
         </div>
       </header>
@@ -417,15 +362,12 @@ export default function BlogDashboardPage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-2 shrink-0">
                       {t.status === 'open' && (
-                        <button
-                          onClick={() => generate(t)}
-                          disabled={generatingId !== null}
+                        <Link
+                          href={`/dashboard/blog/einfuegen?thema=${t.id}`}
                           className="btn-primary text-xs"
                         >
-                          {generatingId === t.id
-                            ? 'Schreibt…'
-                            : 'Artikel schreiben'}
-                        </button>
+                          Artikel erstellen
+                        </Link>
                       )}
                       {t.generatedPostId && (
                         <Link

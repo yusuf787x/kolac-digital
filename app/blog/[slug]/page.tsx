@@ -106,6 +106,13 @@ export default async function BlogArticlePage({ params }: Props) {
     },
     keywords: post.targetKeywords.join(', '),
     articleSection: post.category,
+    ...(post.heroImageUrl
+      ? {
+          image: post.heroImageUrl.startsWith('http')
+            ? post.heroImageUrl
+            : `${site.baseUrl}${post.heroImageUrl}`,
+        }
+      : {}),
   };
 
   const faqJsonLd =
@@ -167,9 +174,18 @@ export default async function BlogArticlePage({ params }: Props) {
           </div>
 
           <header className="article-header">
-            <div className="article-emoji" aria-hidden="true">
-              {post.heroEmoji}
-            </div>
+            {post.heroImageUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={post.heroImageUrl}
+                alt={post.imageAlt || post.title}
+                className="article-hero-image"
+              />
+            ) : (
+              <div className="article-emoji" aria-hidden="true">
+                {post.heroEmoji}
+              </div>
+            )}
             <h1 className="article-title">{post.title}</h1>
             <p className="article-meta">
               Von Yusuf Kolac
@@ -184,6 +200,19 @@ export default async function BlogArticlePage({ params }: Props) {
             <span className="article-tldr-label">Kurz gesagt</span>
             <p>{post.tldr}</p>
           </div>
+
+          {post.keyTakeaways && post.keyTakeaways.length > 0 && (
+            <div className="article-takeaways">
+              <span className="article-takeaways-label">
+                Alles auf einen Blick
+              </span>
+              <ul>
+                {post.keyTakeaways.map((k, i) => (
+                  <li key={i}>{k}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {headings.length > 2 && (
             <nav className="article-toc" aria-label="Inhalt">

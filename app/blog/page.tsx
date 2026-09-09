@@ -120,9 +120,18 @@ export default async function BlogIndexPage() {
                   href={`/blog/${featured.slug}`}
                   className="blog-featured"
                 >
-                  <div className="blog-featured-emoji" aria-hidden="true">
-                    {featured.heroEmoji}
-                  </div>
+                  {featured.heroImageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={featured.heroImageUrl}
+                      alt={featured.imageAlt || featured.title}
+                      className="blog-featured-image"
+                    />
+                  ) : (
+                    <div className="blog-featured-emoji" aria-hidden="true">
+                      {featured.heroEmoji}
+                    </div>
+                  )}
                   <div className="blog-featured-body">
                     <span className="blog-card-category">
                       {featured.category}
@@ -147,9 +156,18 @@ export default async function BlogIndexPage() {
                       href={`/blog/${p.slug}`}
                       className="blog-card"
                     >
-                      <div className="blog-card-emoji" aria-hidden="true">
-                        {p.heroEmoji}
-                      </div>
+                      {p.heroImageUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={p.heroImageUrl}
+                          alt={p.imageAlt || p.title}
+                          className="blog-card-image"
+                        />
+                      ) : (
+                        <div className="blog-card-emoji" aria-hidden="true">
+                          {p.heroEmoji}
+                        </div>
+                      )}
                       <span className="blog-card-category">{p.category}</span>
                       <h2 className="blog-card-title">{p.title}</h2>
                       <p className="blog-card-excerpt">{p.excerpt}</p>

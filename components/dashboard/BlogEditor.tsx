@@ -53,6 +53,12 @@ export default function BlogEditor({ post }: Props) {
     post?.targetKeywords.join(', ') ?? '',
   );
   const [faq, setFaq] = useState<BlogFaqItem[]>(post?.faq ?? []);
+  const [takeaways, setTakeaways] = useState<string[]>(
+    post?.keyTakeaways ?? [],
+  );
+  const [imagePrompt, setImagePrompt] = useState(post?.imagePrompt ?? '');
+  const [imageAlt, setImageAlt] = useState(post?.imageAlt ?? '');
+  const [heroImageUrl, setHeroImageUrl] = useState(post?.heroImageUrl ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
@@ -71,6 +77,10 @@ export default function BlogEditor({ post }: Props) {
         excerpt: excerpt.trim(),
         tldr: tldr.trim(),
         body,
+        keyTakeaways: takeaways.map((t) => t.trim()).filter(Boolean),
+        imagePrompt: imagePrompt.trim(),
+        imageAlt: imageAlt.trim(),
+        heroImageUrl: heroImageUrl.trim() || null,
         category,
         targetKeywords: keywords
           .split(',')
@@ -262,6 +272,90 @@ export default function BlogEditor({ post }: Props) {
                 onChange={(e) => setTldr(e.target.value)}
               />
             </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="label mb-0">
+                  Alles auf einen Blick ({takeaways.length})
+                </label>
+                <button
+                  onClick={() => setTakeaways([...takeaways, ''])}
+                  className="btn-secondary text-xs"
+                >
+                  + Punkt
+                </button>
+              </div>
+              <div className="space-y-2">
+                {takeaways.map((t, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input
+                      className="input flex-1"
+                      value={t}
+                      onChange={(e) => {
+                        const next = [...takeaways];
+                        next[i] = e.target.value;
+                        setTakeaways(next);
+                      }}
+                      placeholder="Kernaussage als vollständiger Satz"
+                    />
+                    <button
+                      onClick={() =>
+                        setTakeaways(takeaways.filter((_, j) => j !== i))
+                      }
+                      className="text-xs text-red-600 hover:underline shrink-0"
+                    >
+                      weg
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="card space-y-4">
+            <h2 className="text-base font-semibold text-gray-900">Titelbild</h2>
+            <div>
+              <label className="label">Bildvorschlag</label>
+              <textarea
+                className="input"
+                rows={2}
+                value={imagePrompt}
+                onChange={(e) => setImagePrompt(e.target.value)}
+                placeholder="Beschreibung für ein passendes Bild"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Vorlage, um das Bild zu erzeugen oder auszuwählen. Wird auf
+                der Seite nicht angezeigt.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="label">Bild-URL</label>
+                <input
+                  className="input"
+                  value={heroImageUrl}
+                  onChange={(e) => setHeroImageUrl(e.target.value)}
+                  placeholder="/images/blog/…  oder  https://…"
+                />
+              </div>
+              <div>
+                <label className="label">Alternativtext</label>
+                <input
+                  className="input"
+                  value={imageAlt}
+                  onChange={(e) => setImageAlt(e.target.value)}
+                  placeholder="Was auf dem Bild zu sehen ist"
+                />
+              </div>
+            </div>
+            {heroImageUrl.trim() && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={heroImageUrl}
+                alt={imageAlt || 'Vorschau'}
+                className="rounded-lg border border-gray-200 max-h-56 object-cover w-full"
+              />
+            )}
           </section>
 
           <section className="card">
