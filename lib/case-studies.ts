@@ -220,6 +220,131 @@ export const caseStudies: CaseStudy[] = [
     },
   },
   {
+    slug: 'akquise-helfer',
+    company: 'Akquise-Helfer',
+    category: 'Vertriebsdienstleister',
+    resultTeaser:
+      'Vier Unternehmen, zwei Inhaber, ein System. Nachdem mehrere Dienstleister abgesagt hatten.',
+    overviewIconKey: 'panel',
+    screenshot: '/images/akquisehelfer-dashboard.jpg',
+    screenshotAlt:
+      'Dashboard der Individualsoftware von Akquise-Helfer mit konsolidierter Ansicht über vier Unternehmen, Umsatzsteuer je Person und Aufschlüsselung je Betrieb. Konkrete Zahlen sind unkenntlich gemacht.',
+    dashboardUrl: 'system.akquise-helfer.de',
+    screenshotSection: {
+      headline: 'Ein Cockpit für vier Unternehmen',
+      description:
+        'Oben die konsolidierte Sicht über alle Betriebe, rechts die Umsatzsteuer je Person, unten die Aufschlüsselung je Unternehmen mit eigener EÜR. Links die dreizehn Bereiche, die je Unternehmen einzeln freigeschaltet werden. Die Beträge im Bild sind unkenntlich gemacht.',
+    },
+    hero: {
+      headline: 'Die Software, die angeblich nicht baubar war',
+      subline:
+        'Akquise-Helfer hatte mit mehreren Dienstleistern gesprochen. Alle sagten ab: zu komplex, nicht umsetzbar. Heute läuft das System auf dem eigenen Server und deckt Buchhaltung, Vertrieb und Projekte für vier Unternehmen ab.',
+    },
+    founder: {
+      headline: 'Wer dahintersteht',
+      paragraph:
+        'Akquise-Helfer aus Hofbieber macht strategische Telefonakquise und Kundengewinnung für mittelständische Betriebe. Kein Callcenter-Skript, keine Provision, keine Mindestlaufzeit. Geführt wird das Unternehmen von zwei Personen, die daneben noch weitere Firmen betreiben. Genau daraus entstand die Aufgabe, an der andere gescheitert sind.',
+    },
+    problem: {
+      headline: 'Warum Standardsoftware hier nicht funktioniert',
+      paragraphs: [
+        'Zwei Inhaber, vier Unternehmen, teils gemeinsam geführt, teils strikt getrennt. Das eine Unternehmen gehört steuerlich der einen Person, ein anderes der zweiten, eines wird gemeinsam bespielt. Wer welche Zahlen sehen darf, ist in jedem Fall anders.',
+        'Handelsübliche Buchhaltungsprogramme kennen genau ein Unternehmen. Wer mehrere führt, zahlt mehrere Lizenzen, pflegt Kunden mehrfach und hat trotzdem keinen Blick über alles. Umgekehrt zeigen Mehrfirmen-Systeme jedem alles, sobald er drin ist. Beides passte nicht.',
+        'Dazu kam die steuerliche Feinheit: Jedes Unternehmen gibt eine eigene EÜR ab, die Umsatzsteuer wird aber je Person zusammengefasst, weil umsatzsteuerlich die Person der Unternehmer ist. Kein Standardprodukt bildet das ab.',
+        'Mehrere Dienstleister wurden angefragt. Alle winkten ab. Die Begründung war jedes Mal ähnlich: zu komplex, nicht sinnvoll umsetzbar.',
+      ],
+    },
+    situation: {
+      headline: 'Was vorher der Alltag war',
+      paragraphs: [
+        'Belege sammelten sich in Monatsordnern, die Zuordnung passierte im Kopf oder in Tabellen. Rechnungen und Angebote entstanden in getrennten Dokumenten, Kunden lagen mehrfach in verschiedenen Listen.',
+        'Beim Blick auf die Zahlen musste jedes Unternehmen einzeln zusammengesucht werden. Eine Frage wie "wie stehen wir insgesamt da" war eine halbe Tagesaufgabe.',
+        'Für ein Unternehmen, dessen Kerngeschäft die systematische Akquise für andere ist, war das ein unangenehmer Widerspruch: außen Struktur verkaufen, innen mit Ordnern arbeiten.',
+      ],
+    },
+    values: {
+      headline: 'Was wir gebaut haben',
+      intro:
+        'Kein Baukasten, kein zugekauftes System. Eine Anwendung, die genau die Struktur dieses Unternehmens abbildet und auf dem eigenen Server läuft.',
+      blocks: [
+        {
+          iconKey: 'panel',
+          title: 'Trennung von Eigentum und Zugriff',
+          description:
+            'Wem ein Unternehmen steuerlich gehört und wer es sehen darf, sind zwei verschiedene Dinge. Genau so ist es gebaut. Ein Betrieb kann gemeinsam bespielt werden, während zwei andere für die jeweils andere Person unsichtbar bleiben, nicht einmal im Umschalter tauchen sie auf.',
+        },
+        {
+          iconKey: 'shield',
+          title: 'Rechte als Matrix aus Unternehmen mal Bereich',
+          description:
+            'Ein Mitarbeiter hat keine feste Rolle, sondern je Unternehmen eine eigene Auswahl an Bereichen. Eine Aushilfe sieht bei einem Betrieb nur Leads und Zeiterfassung, bei den anderen gar nichts. Nicht freigegebene Bereiche verschwinden aus der Navigation, der direkte Aufruf wird abgefangen.',
+        },
+        {
+          iconKey: 'chart',
+          title: 'EÜR je Unternehmen, Umsatzsteuer je Person',
+          description:
+            'Jeder Betrieb gibt seine eigene Einnahmenüberschussrechnung ab. Die Umsatzsteuer wird dagegen je Person zusammengefasst, weil das steuerlich so gehört. Dazu eine Gesamtübersicht über alles für die Führungsebene.',
+        },
+        {
+          iconKey: 'inbox',
+          title: 'Belege lesen sich selbst ein',
+          description:
+            'Der Ordner in der Cloud wird abgerufen, Datum, Betrag, Absender und Umsatzsteuer werden erkannt und als Entwurf angelegt. Was nicht sicher gelesen wurde, etwa eine abfotografierte Quittung, wird als unsicher markiert statt still falsch übernommen. Beim Prüfen steht das Dokument direkt neben dem Formular.',
+        },
+        {
+          iconKey: 'document',
+          title: 'Rechnungen und Angebote als echtes PDF',
+          description:
+            'Die Vorschau im Dialog ist das Dokument, das später beim Kunden landet, und sie aktualisiert sich beim Tippen. Positionen können Überschriften, Fließtext oder optionale Zeilen sein. Layout, Logo, Akzentfarbe und Bankverbindung sind je Unternehmen einstellbar, inklusive QR-Code fürs Überweisen.',
+        },
+        {
+          iconKey: 'automation',
+          title: 'Nach Zahlungseingang gerechnet',
+          description:
+            'Maßgeblich ist das Datum, an dem das Geld geflossen ist, nicht das Rechnungsdatum. Eine als bezahlt markierte Rechnung fällt automatisch in die Voranmeldung dieses Zeitraums. Unbezahlte Rechnungen tauchen in keiner Voranmeldung und in keiner EÜR auf.',
+        },
+        {
+          iconKey: 'search',
+          title: 'Leads, Kunden und Projekte in einem Strang',
+          description:
+            'Das Kerngeschäft ist Akquise, also liegt das Lead-Management im selben System wie alles andere. Kunden haben mehrere Ansprechpartner, Tags und Wiedervorlagen. Ein Negativ-Filter beantwortet Fragen wie: zeige alle Kontakte, die nicht angerufen wurden und keine Wiedervorlage haben.',
+        },
+        {
+          iconKey: 'calendar',
+          title: 'Zeiten, Reisekosten und Widerspruchserkennung',
+          description:
+            'Zeiten werden je Projekt und Person erfasst und lassen sich auswerten. Bei den Reisekosten rechnet das System Familienheimfahrten und Unterwegstage nach den geltenden Sätzen und meldet sich, wenn sich zwei Angaben am selben Tag widersprechen.',
+        },
+      ],
+    },
+    results: {
+      headline: 'Was sich geändert hat',
+      points: [
+        'Vier Unternehmen laufen in einem System statt in vier getrennten Insellösungen.',
+        'Die Frage nach dem Gesamtbild beantwortet ein Blick aufs Dashboard statt einer Sammelaktion.',
+        'Belege kommen aus dem Cloud-Ordner herein und werden vorausgefüllt, statt einzeln abgetippt zu werden.',
+        'Jede Person sieht genau die Unternehmen und Bereiche, die für sie gedacht sind, ohne dass jemand daran denken muss.',
+        'Die Buchhaltung folgt der tatsächlichen Steuersystematik: EÜR je Betrieb, Umsatzsteuer je Person, gerechnet nach Zahlungseingang.',
+        'Alle Daten liegen auf dem eigenen Server des Kunden, nicht bei einem Anbieter.',
+      ],
+      closing:
+        'Das Entscheidende ist nicht die Zahl der Bereiche, sondern dass die Software der Struktur des Unternehmens folgt statt umgekehrt. Genau daran waren die vorherigen Anfragen gescheitert.',
+    },
+    bridge: {
+      headline: 'Wann sich so etwas lohnt',
+      paragraphs: [
+        'Nicht jeder Betrieb braucht eine eigene Software. Wer ein Unternehmen führt und mit einem üblichen Buchhaltungsprogramm zurechtkommt, sollte dabei bleiben. Das sagen wir auch im Erstgespräch, wenn es so ist.',
+        'Interessant wird es, sobald die eigene Struktur nicht in fertige Produkte passt: mehrere Firmen, ungewöhnliche Zuständigkeiten, Abläufe, die sonst niemand so hat. Dann zahlt man bei Standardlösungen doppelt, einmal für die Lizenz und einmal für die Umwege im Alltag.',
+        'Wenn du dir gerade anhörst, dass dein Vorhaben zu komplex sei, lohnt sich ein zweites Gespräch. Manchmal ist es das. Oft ist es nur noch nicht sauber zerlegt worden.',
+      ],
+    },
+    technical: {
+      headline: 'Technisch dahinter',
+      paragraph:
+        'Next.js mit React, Docker als Container, Caddy als vorgelagerter Server mit verschlüsselter Verbindung. Gehostet auf dem eigenen Server des Kunden, ausdrücklich auf dessen Wunsch. PDFs werden im Browser erzeugt und selbst gerendert statt an den Betrachter des Browsers abgegeben, damit die Vorschau überall gleich aussieht. Die Belegerkennung und die Cloud-Anbindung laufen über eine eigene Server-Schicht, Zugangsdaten liegen verschlüsselt in einem eigenen Speicherbereich.',
+    },
+  },
+  {
     slug: 'carhifi-herford',
     company: 'CarHifi Herford',
     category: 'Car-Hifi und Fachhandel',

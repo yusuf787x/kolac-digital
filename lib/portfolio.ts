@@ -90,6 +90,45 @@ export const portfolioProjects: PortfolioProject[] = [
       'Wie Kolac Digital für die Fahrschule Kreuzer in Bielefeld-Brackwede eine komplette Webseite von Grund auf gebaut hat. Von null Web-Präsenz zu online buchbaren Anfragen.',
   },
   {
+    slug: 'akquise-helfer',
+    company: 'Akquise-Helfer',
+    category: 'Vertriebsdienstleister',
+    location: 'Hofbieber',
+    tag: 'Individualsoftware für vier Unternehmen',
+    overviewImage: '/images/akquisehelfer-dashboard.jpg',
+    imageAlt:
+      'Dashboard der Individualsoftware von Akquise-Helfer mit konsolidierter Ansicht über vier Unternehmen. Konkrete Zahlen sind unkenntlich gemacht.',
+    services: [
+      'Eigene Software für Buchhaltung, Vertrieb und Projekte',
+      'Vier Unternehmen mit getrennten Rechten in einem System',
+      'Automatische Belegerkennung aus dem Cloud-Ordner',
+      'Auf dem eigenen Server des Kunden gehostet',
+    ],
+    keyWin:
+      'Mehrere Dienstleister hatten abgesagt, es sei zu komplex. Heute läuft das System im Tagesgeschäft.',
+    link: 'https://www.akquise-helfer.de/',
+    linkText: 'Website ansehen',
+    caseStudyUrl: '/case-studys/akquise-helfer',
+    intro:
+      'Für Akquise-Helfer haben wir eine eigene Software gebaut, die vier Unternehmen mit zwei Inhabern in einem System abbildet. Buchhaltung, Belege, Rechnungen, Angebote, Verträge, Leads, Projekte, Zeiten und Reisekosten laufen darin zusammen. Gehostet auf dem eigenen Server des Kunden.',
+    situation:
+      'Akquise-Helfer macht strategische Telefonakquise für mittelständische Betriebe. Geführt wird das Unternehmen von zwei Personen, die daneben weitere Firmen betreiben, teils gemeinsam, teils strikt getrennt. Handelsübliche Buchhaltungsprogramme kennen genau ein Unternehmen, Mehrfirmen-Systeme zeigen dagegen jedem alles. Dazu kam die steuerliche Feinheit, dass jeder Betrieb eine eigene EÜR abgibt, die Umsatzsteuer aber je Person zusammengefasst wird. Mehrere Dienstleister wurden vorher angefragt und sagten ab: zu komplex, nicht umsetzbar.',
+    approach: [
+      'Eigentum und Zugriff getrennt gedacht: wem ein Unternehmen steuerlich gehört und wer es sehen darf, sind zwei verschiedene Fragen. Ein Betrieb wird gemeinsam bespielt, zwei andere bleiben für die jeweils andere Person unsichtbar.',
+      'Rechte als Matrix aus Unternehmen mal Bereich. Eine Person kann bei einem Betrieb nur Leads und Zeiterfassung sehen und bei den anderen gar nichts. Nicht freigegebene Bereiche verschwinden aus der Navigation.',
+      'Buchhaltung nach der tatsächlichen Steuersystematik: eigene EÜR je Unternehmen, Umsatzsteuer je Person zusammengefasst, gerechnet nach Zahlungseingang statt nach Rechnungsdatum.',
+      'Belegerkennung aus dem Cloud-Ordner. Datum, Betrag, Absender und Umsatzsteuer werden gelesen, Unsicheres wird als unsicher markiert statt still falsch übernommen.',
+      'Rechnungen und Angebote als echtes PDF mit Live-Vorschau, Layout und Bankverbindung je Unternehmen einstellbar, inklusive QR-Code fürs Überweisen.',
+      'Auf dem eigenen Server des Kunden ausgeliefert, mit Container und verschlüsselter Verbindung.',
+    ],
+    outcome:
+      'Vier Unternehmen laufen in einem System statt in vier Insellösungen. Die Frage nach dem Gesamtbild beantwortet ein Blick aufs Dashboard. Belege kommen vorausgefüllt herein, jede Person sieht genau das, was für sie gedacht ist, und alle Daten liegen auf dem eigenen Server. Das Entscheidende ist nicht die Zahl der Funktionen, sondern dass die Software der Struktur des Unternehmens folgt statt umgekehrt.',
+    metaTitle:
+      'Akquise-Helfer · Individualsoftware für vier Unternehmen · Kolac Digital',
+    metaDescription:
+      'Wie Kolac Digital für Akquise-Helfer eine eigene Software für vier Unternehmen gebaut hat, nachdem mehrere Dienstleister abgesagt hatten. Buchhaltung, Leads und Projekte auf dem eigenen Server.',
+  },
+  {
     slug: 'bacara-aesthetik',
     company: 'Bacara Ästhetik',
     category: 'Ästhetik-Praxis',
