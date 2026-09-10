@@ -17,9 +17,9 @@ import ZeitfresserRechner from '@/components/marketing/ZeitfresserRechner';
 
 export const metadata: Metadata = {
   title:
-    'Webagentur Bielefeld · Webseiten mit System ab 1.500 € | Kolac Digital',
+    'Webagentur Bielefeld · Webseiten mit System | Kolac Digital',
   description:
-    'Webagentur aus Bielefeld baut deine Webseite mit System. Vorne SEO-stark bei Google. Hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten. Für KMU in OWL, NRW und ganz Deutschland. Ab 1.500 €.',
+    'Webagentur aus Bielefeld baut deine Webseite mit System. Vorne SEO-stark bei Google. Hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten. Für KMU in OWL, NRW und ganz Deutschland.',
   alternates: {
     canonical: `${site.baseUrl}/webseiten`,
   },
@@ -28,9 +28,9 @@ export const metadata: Metadata = {
     locale: 'de_DE',
     url: `${site.baseUrl}/webseiten`,
     title:
-      'Webagentur Bielefeld · Webseiten mit System ab 1.500 € | Kolac Digital',
+      'Webagentur Bielefeld · Webseiten mit System | Kolac Digital',
     description:
-      'Webseite mit System aus Bielefeld. Vorne SEO-stark, hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten. Ab 1.500 €.',
+      'Webseite mit System aus Bielefeld. Vorne SEO-stark, hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten.',
     siteName: 'Kolac Digital',
     images: [
       {
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title:
-      'Webagentur Bielefeld · Webseiten mit System ab 1.500 € | Kolac Digital',
+      'Webagentur Bielefeld · Webseiten mit System | Kolac Digital',
     description:
       'Individuelle Webseite mit Backend. Anfragen, Termine, Angebote, Berichte. Aus Bielefeld für KMU in OWL, NRW und ganz Deutschland.',
     images: ['/images/bacara-website.webp'],
@@ -141,14 +141,10 @@ function StructuredData() {
     ...packages.map((p) => ({
       name: p.name,
       description: p.description,
-      price: p.priceLow,
-      currency: p.priceCurrency,
     })),
     {
       name: bausteinAddOn.name,
       description: bausteinAddOn.description,
-      price: bausteinAddOn.priceLow,
-      currency: bausteinAddOn.priceCurrency,
     },
   ];
 
@@ -160,19 +156,12 @@ function StructuredData() {
     areaServed: serviceAreas,
     description:
       'Individuelle Webseiten mit System. Inklusive professioneller Fotos, Google-NFC-Tag, SEO und KI-Suchmaschinen-Optimierung.',
+    // Bewusst ohne Preisangaben: das Angebot wird individuell
+    // kalkuliert, eine Zahl im Schema waere irrefuehrend.
     offers: allOffers.map((o) => ({
       '@type': 'Offer',
       name: o.name,
       description: o.description,
-      priceCurrency: o.currency,
-      price: o.price,
-      priceSpecification: {
-        '@type': 'PriceSpecification',
-        priceCurrency: o.currency,
-        price: o.price,
-        minPrice: o.price,
-        valueAddedTaxIncluded: false,
-      },
       availability: 'https://schema.org/InStock',
       url: `${pageUrl}#preise`,
     })),
@@ -1026,9 +1015,8 @@ function Pricing() {
                 </span>
               )}
               <h3 className="text-lg font-semibold text-gray-900">{p.name}</h3>
-              <div className="mt-3 flex items-baseline gap-1">
-                <span className="text-sm text-gray-500">{p.pricePrefix}</span>
-                <span className="text-3xl font-semibold text-gray-900">
+              <div className="mt-3">
+                <span className="text-xl font-semibold text-gray-900">
                   {p.priceMain}
                 </span>
               </div>
@@ -1092,10 +1080,7 @@ function Pricing() {
               </p>
             </div>
             <div className="text-right">
-              <span className="text-xs text-amber-900">
-                {bausteinAddOn.pricePrefix}
-              </span>
-              <p className="text-3xl font-semibold text-amber-900">
+              <p className="text-xl font-semibold text-amber-900">
                 {bausteinAddOn.priceMain}
               </p>
               <p className="text-xs text-amber-800">{bausteinAddOn.priceNote}</p>

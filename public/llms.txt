@@ -49,11 +49,11 @@ Statt 50-Mann-Team und Aufschlag-Mentalität gibt es bei Kolac Digital direkte K
 - **Übernahme:** Daten und Inhalte aus alten Systemen werden übernommen, Verbindungen zu vorhandenen Tools werden gebaut
 - **Bewertung:** 5,0 von 5 bei Google (7 Bewertungen)
 
-### Preise auf /webseiten (immer "ab", nie Fixpreis)
+### Preise
 
-- **Basis Webseite:** ab 1.500 € Einrichtung plus ab 99 € im Monat. Individuell gebaut, Hosting, Wartung und kleine Änderungen im Monatspreis dabei.
-- **Funktionsbausteine:** ab 500 €. Zum Beispiel Onlinebuchung, Termin Kalender oder Anbindung an einen Shop.
-- **Individualprojekte:** ab 3.000 €. Komplexe Systeme mit eigener Datenbank, individueller Logik und Datenübernahme aus alten Systemen. Je nach Umfang auch deutlich mehr.
+Kolac Digital nennt bewusst keine Pauschalpreise. Der Umfang unterscheidet sich von Betrieb zu Betrieb zu stark: eine Webseite mit drei Seiten ist etwas anderes als ein System mit Terminbuchung, Kundenverwaltung und Anbindung an vorhandene Programme.
+
+Der Ablauf: kostenloses Erstgespraech, danach ein festes Angebot mit allen Positionen. Was darin steht, gilt. Zur einmaligen Einrichtung kommt eine monatliche Betreuung, in der Hosting, Wartung und kleine Aenderungen enthalten sind. Der Monatsbeitrag startet erst, wenn die Seite live ist.
 
 ### Drei Schritte Ablauf
 

@@ -31,10 +31,8 @@ Ergänzend, aber ausdrücklich nachrangig: Google Ads, Meta Ads und Videocontent
 
 ## Harte Fakten, die stimmen müssen
 
-- Basis-Webseite: ab 1.500 Euro Einrichtung plus ab 99 Euro pro Monat. Hosting, Wartung und kleine Änderungen sind im Monatspreis enthalten.
-- Funktionsbausteine wie Onlinebuchung oder Terminkalender: ab 500 Euro.
-- Individualprojekte mit eigener Datenbank und Datenübernahme: ab 3.000 Euro.
-- Alle Preise sind Startpreise. Niemals einen Fixpreis behaupten.
+- **Preise: Nenne niemals konkrete Zahlen.** Kolac Digital veröffentlicht bewusst keine Preise, weil der Umfang von Betrieb zu Betrieb zu stark schwankt. Wenn ein Artikel das Thema Kosten berührt, erkläre stattdessen, wovon der Preis abhängt (Seitenzahl, Funktionen wie Terminbuchung oder Kundenverwaltung, Datenübernahme aus Altsystemen, Anbindung an vorhandene Programme) und verweise auf das kostenlose Erstgespräch mit anschließendem festem Angebot. Erfinde auch keine Spannen oder Richtwerte.
+- Zur einmaligen Einrichtung kommt eine monatliche Betreuung, in der Hosting, Wartung und kleine Änderungen enthalten sind. Der Monatsbeitrag startet erst, wenn die Seite live ist. Auch hier ohne Zahlen.
 - Basis-Webseite ist in ein bis zwei Wochen fertig, Individualprojekte brauchen vier bis acht Wochen.
 - Ablauf: kostenloses Erstgespräch, Entwurf nach wenigen Tagen, Umsetzung mit Zwischenfreigaben, Live-Gang.
 - Region: Bielefeld, Ostwestfalen-Lippe, Nordrhein-Westfalen. Deutschlandweite Projekte laufen remote.

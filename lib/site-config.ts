@@ -37,16 +37,13 @@ export const site = {
 export interface PackageTier {
   id: string;
   name: string;
-  pricePrefix: string;
+  /** Kurzer Hinweis statt einer Zahl, z.B. "Individuelles Angebot". */
   priceMain: string;
   priceSub?: string;
   description: string;
   bullets: string[];
   highlight?: boolean;
   badge?: string;
-  /** Schema.org Offer Preise */
-  priceLow: number;
-  priceCurrency: 'EUR';
 }
 
 /**
@@ -57,9 +54,8 @@ export const packages: PackageTier[] = [
   {
     id: 'basis',
     name: 'Basis Webseite',
-    pricePrefix: 'ab',
-    priceMain: '1.500 €',
-    priceSub: 'plus ab 99 € im Monat',
+    priceMain: 'Individuelles Angebot',
+    priceSub: 'Einrichtung plus monatliche Betreuung',
     description:
       'Eine moderne Webseite für deine Firma. Komplett für dich gebaut und sofort startklar.',
     bullets: [
@@ -72,15 +68,12 @@ export const packages: PackageTier[] = [
     ],
     badge: 'Empfohlen',
     highlight: true,
-    priceLow: 1500,
-    priceCurrency: 'EUR',
   },
   {
     id: 'individual',
     name: 'Individualprojekt',
-    pricePrefix: 'ab',
-    priceMain: '3.000 €',
-    priceSub: 'je nach Umfang auch mehr',
+    priceMain: 'Individuelles Angebot',
+    priceSub: 'Umfang bestimmt den Preis',
     description:
       'Für alle die ein eigenes System brauchen. Mit Datenbank, eigener Logik und voller Verknüpfung.',
     bullets: [
@@ -90,16 +83,13 @@ export const packages: PackageTier[] = [
       'Eigene Datenbank für deine Kunden und Aufträge',
       'Wir planen alles vorher gemeinsam',
     ],
-    priceLow: 3000,
-    priceCurrency: 'EUR',
   },
 ];
 
 /** Add-On Funktionsbausteine. Wird separat angezeigt, nicht als drittes Paket. */
 export const bausteinAddOn = {
   name: 'Funktionsbausteine',
-  pricePrefix: 'ab',
-  priceMain: '500 €',
+  priceMain: 'Nach Bedarf',
   priceNote: 'on top zur Basis Webseite',
   description:
     'Du brauchst eine bestimmte Funktion zusätzlich? Wir bauen sie dir individuell oben drauf. Den genauen Preis besprechen wir nach deinem Bedarf.',
@@ -111,8 +101,8 @@ export const bausteinAddOn = {
     { icon: '🔌', label: 'Anbindung an dein bestehendes System' },
     { icon: '💳', label: 'Online Zahlungen und Rechnungen' },
   ],
-  /** Für Schema.org */
-  priceLow: 500,
+  /** Platzhalter, wird nicht mehr als Zahl ausgewiesen. */
+  priceLow: 0,
   priceCurrency: 'EUR' as const,
 };
 
@@ -142,7 +132,7 @@ export const includedBonuses: IncludedBonus[] = [
   {
     icon: 'seo',
     title: 'SEO Optimierung von Anfang an',
-    value: 'Wert ca. 500 €',
+    value: 'Im Paket enthalten',
     description:
       'Hohes Ranking bei Google für relevante Suchbegriffe rund um dein Unternehmen, ohne dafür extra Werbegeld auszugeben. Wir bauen die Seite so, dass Suchmaschinen sie verstehen und vorne zeigen.',
   },
@@ -312,7 +302,7 @@ export const faqs: FaqItem[] = [
   {
     question: 'Was kostet eine Webseite bei euch?',
     answer:
-      'Eine Basis Webseite startet ab 1.500 € Einrichtung plus ab 99 € im Monat. Im Monatspreis sind Hosting, Wartung und kleine Änderungen direkt mit drin. Du musst dir also nicht für jede Kleinigkeit Sorgen um eine extra Rechnung machen. Den Monatsbeitrag startest du außerdem erst, wenn deine Seite live ist und du grünes Licht gibst. Bis dahin gehst du nicht in Vorleistung. Wenn dein Projekt größer ist, sage ich dir vorher genau was es kostet. Du bekommst nie eine Überraschung auf der Rechnung.',
+      'Das hängt davon ab, was du brauchst. Eine Webseite für einen Handwerksbetrieb mit drei Seiten ist etwas anderes als ein System mit Terminbuchung, Kundenverwaltung und Anbindung an dein bestehendes Programm. Deshalb nenne ich keine Pauschalpreise, die am Ende sowieso nicht passen. Im kostenlosen Erstgespräch schauen wir uns deinen Betrieb an, danach bekommst du ein festes Angebot mit allen Positionen. Was drin steht, gilt. Du bekommst nie eine Überraschung auf der Rechnung. Im Monatspreis für die laufende Betreuung sind Hosting, Wartung und kleine Änderungen enthalten, und er startet erst, wenn deine Seite live ist und du grünes Licht gibst.',
   },
   {
     question: 'Wie lange dauert das?',

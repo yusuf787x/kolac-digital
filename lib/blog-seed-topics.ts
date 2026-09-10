@@ -17,9 +17,9 @@ export interface SeedTopic {
 
 export const SEED_BLOG_TOPICS: SeedTopic[] = [
   {
-    title: 'Was kostet eine Webseite in Bielefeld?',
+    title: 'Wovon der Preis einer Webseite wirklich abhaengt',
     angle:
-      'Ehrliche Preisspanne nennen und erklaeren, wovon der Preis wirklich abhaengt. Baukasten, Freelancer und Agentur gegenueberstellen. Klar sagen, was bei uns ab 1.500 Euro drin ist und was ein Individualprojekt teurer macht.',
+      'Die Faktoren erklaeren, die den Preis bestimmen: Seitenzahl, Funktionen wie Terminbuchung oder Kundenverwaltung, Datenuebernahme, Anbindung an vorhandene Programme. Baukasten, Freelancer und Agentur gegenueberstellen. WICHTIG: keine eigenen Zahlen oder Spannen nennen, sondern auf das kostenlose Erstgespraech mit festem Angebot verweisen.',
     category: 'Preise und Ablauf',
     targetKeywords: [
       'was kostet eine webseite',
