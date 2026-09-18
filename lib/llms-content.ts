@@ -97,6 +97,7 @@ Yusuf Kolac, Gründer und Geschäftsführer
 ## Referenzen (Auswahl)
 
 - **Akquise-Helfer** (Hofbieber): Individualsoftware fuer vier Unternehmen mit zwei Inhabern. Buchhaltung, Belege mit automatischer Erkennung, Rechnungen, Angebote, Vertraege, Lead-Management, Projekte, Zeiterfassung und Reisekosten in einem System. Eigentum und Zugriff sind getrennt, Rechte werden je Unternehmen und Bereich vergeben. EUER je Unternehmen, Umsatzsteuer je Person, gerechnet nach Zahlungseingang. Gehostet auf dem eigenen Server des Kunden. Besonderheit: mehrere andere Dienstleister hatten das Projekt vorher als zu komplex abgelehnt.
+- **PaderPuls Krankenfahrdienst** (Paderborn): Komplettes Rebranding und Relaunch der Webseite. Ausgangslage: veraltete Seite mit schlechtem Ranking. Vorgehen: neues Design, Texte überarbeitet, Leistungen und Referenzen ergänzt, eigene Unterseiten für alle Leistungen sowie für alle Orte im Kreis Paderborn und Kreis Höxter, SEO und GEO. Ergebnis: mehr Sichtbarkeit und aktiv mehr Kundenanfragen und Anrufe. https://www.pader-puls.de
 - **Fahrschule Kreuzer** (Bielefeld-Brackwede): Komplett neue Webseite von null. Ausgangslage: keine Web-Präsenz, Anfragen nur telefonisch. Ergebnis: Online-Anmeldestrecke, klare Struktur für Führerscheinklassen B, BE, B96, lokales SEO für Bielefeld-Brackwede und OWL.
 - **Bacara Ästhetik** (Bünde, OWL): Webseite mit Online-Buchungssystem für Ästhetik-Praxis. Ergebnis: 800+ gebuchte Termine, Buchungen verdreifacht.
 - **Mironi Socks & Underwear** (Herford): E-Commerce-Shop mit Bestellstatus-Mails, Google Ads, Meta Ads, Social Media. Komplette Marketing-Auslagerung.
@@ -109,7 +110,7 @@ Yusuf Kolac, Gründer und Geschäftsführer
 
 - **URL:** https://www.kolac-digital.de/portfolio
 - **Was drin ist:** Übersicht aller Kundenprojekte mit Ausgangslage, Vorgehen und Ergebnis. Jedes Projekt hat eine eigene Detail-Seite unter /portfolio/{slug}.
-- **Slugs:** akquise-helfer, fahrschule-kreuzer, bacara-aesthetik, carhifi-herford, mironi, af-gebaeudeservice, mk-automobile, die-marke-yuma
+- **Slugs:** paderpuls, akquise-helfer, fahrschule-kreuzer, bacara-aesthetik, carhifi-herford, mironi, af-gebaeudeservice, mk-automobile, die-marke-yuma
 - **Unterschied zu /case-studys:** Portfolio ist schlank und schnell zu lesen (Ausgangslage, Vorgehen, Ergebnis pro Projekt). Case Studies gehen tiefer und sind mit Video-Testimonials und detaillierten Wertblöcken für Interessenten gedacht, die vor der Kaufentscheidung stehen.
 
 ## Kundenstimmen

@@ -53,6 +53,44 @@ export interface PortfolioProject {
 
 export const portfolioProjects: PortfolioProject[] = [
   {
+    slug: 'paderpuls',
+    company: 'PaderPuls Krankenfahrdienst',
+    category: 'Krankenfahrdienst',
+    location: 'Paderborn',
+    tag: 'Rebranding und Relaunch',
+    overviewImage: '/images/portfolio/paderpuls.jpg',
+    imageAlt:
+      'Neue Webseite von PaderPuls Krankenfahrdienst aus Paderborn: Startseite mit Servicehotline, Leistungen und Google-Bewertung',
+    services: [
+      'Komplettes Rebranding und neues Design',
+      'Texte überarbeitet, Leistungen und Referenzen ergänzt',
+      'SEO und GEO für Paderborn, Kreis Paderborn und Kreis Höxter',
+      'Kontakt-, Rückruf- und Bewerbungsformular',
+    ],
+    keyWin:
+      'Von einer veralteten Seite, die kaum gefunden wurde, zu einem modernen Auftritt, der aktiv mehr Anfragen und Anrufe bringt.',
+    link: 'https://www.pader-puls.de/',
+    linkText: 'Website ansehen',
+    intro:
+      'Für PaderPuls, einen familiengeführten Krankenfahrdienst aus Paderborn, haben wir die Webseite komplett neu aufgesetzt: neues Design, neue Struktur, überarbeitete Texte und eine Suchmaschinen-Optimierung, die auf Paderborn, den Kreis Paderborn und den Kreis Höxter zielt. Vorher eine alte Seite, die schlecht rankte. Nachher ein Auftritt mit Leben drin, der Vertrauen aufbaut und spürbar mehr Kundenanfragen und Anrufe bringt.',
+    situation:
+      'PaderPuls fährt Patientinnen und Patienten zur Dialyse, zur Chemotherapie, zum Arzt und ins Krankenhaus, rund um die Uhr und mit 4,9 Sternen bei Google. Die bisherige Webseite spiegelte das nicht wider: ein Baukasten-Layout, in dem noch Platzhalter aus der Vorlage steckten, wenig Text, keine Unterseiten zu den einzelnen Leistungen und kaum lokale Signale. Bei Google-Suchen nach Krankenfahrten in Paderborn tauchte die Seite weit hinten auf. Wer sie trotzdem fand, sah keinen Grund, gerade hier anzurufen.',
+    approach: [
+      'Rebranding und neues Design auf Basis des Logos: klares Blau, große Schrift, Fotos von echten Fahrgästen statt Symbolgrafiken. Servicehotline und WhatsApp sind auf jeder Seite mit einem Klick erreichbar.',
+      'Bestehende Texte überarbeitet und um Referenzen ergänzt: Partnerkliniken und Dialysezentren, die echte Google-Bewertung, Zahlen zu Fahrten und Kilometern. Die Über-uns-Seite stellt das Team und die Werte in den Vordergrund, familiengeführt und lokal verwurzelt.',
+      'Alle Leistungen als eigene Unterseiten: Dialysefahrten, Chemo- und Strahlentherapie, Arztfahrten, Rollstuhl- und Tragestuhltransport, Klinikfahrten, Privatfahrten sowie neu Fern- und Auslandsfahrten, Flughafentransfer, Umzugsfahrten, Behindertenfahrten und Schulfahrten. Jede Seite beantwortet Kosten, Ablauf und Verordnung.',
+      'Lokale Sichtbarkeit: eigene Seiten für alle Paderborner Stadtteile, alle Städte im Kreis Paderborn und im Kreis Höxter, mit echten Fahrzeiten und den Kliniken vor Ort. Dazu eine FAQ-Seite mit den Fragen, die am Telefon täglich kommen.',
+      'SEO und GEO technisch sauber: strukturierte Daten (LocalBusiness, Service, FAQ, JobPosting), kanonische URLs, Weiterleitungen aller alten URLs, llms.txt für KI-Suchsysteme, Vorschaubild für Social Media und Ladezeiten mit Lighthouse-Werten zwischen 95 und 99.',
+      'Mehr Wege zur Anfrage: Kontaktformular, Rückruf-Formular und eine Karriereseite mit Bewerbungsformular für Fahrerinnen und Fahrer. Impressum und Datenschutz auf den aktuellen Stand gebracht.',
+    ],
+    outcome:
+      'Aus fünf dünnen Seiten wurden über 40 Seiten mit echtem Inhalt, die für Krankenfahrten in Paderborn und der Region gefunden werden. Die Seite wirkt so, wie der Betrieb arbeitet: verlässlich, freundlich, nah. Das Ergebnis ist messbar: PaderPuls bekommt über die Webseite aktiv mehr Kundenanfragen und Anrufe, und Interessenten wissen schon vor dem Anruf, dass die Fahrt mit der Krankenkasse abgerechnet wird.',
+    metaTitle:
+      'PaderPuls Krankenfahrdienst Paderborn · Rebranding und Relaunch · Kolac Digital',
+    metaDescription:
+      'Wie Kolac Digital für PaderPuls aus Paderborn die veraltete Webseite durch ein modernes Rebranding mit SEO und GEO ersetzt hat. Mehr Sichtbarkeit, mehr Anfragen, mehr Anrufe.',
+  },
+  {
     slug: 'fahrschule-kreuzer',
     company: 'Fahrschule Kreuzer',
     category: 'Fahrschule',
