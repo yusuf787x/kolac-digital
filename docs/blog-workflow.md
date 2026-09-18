@@ -93,6 +93,24 @@ echtes Risiko. Außerdem straft Google reinen Massen-Content ab. Ein Blick
 über den Entwurf vor der Freigabe kostet zwei Minuten und schützt vor
 beidem.
 
+## Nach der Freigabe
+
+Nichts weiter zu tun. Mit der Freigabe werden Übersicht, Sitemap, RSS-Feed,
+llms.txt und die Startseite neu gebaut. Der Artikel steht damit innerhalb
+weniger Sekunden in allen vier Kanälen, über die Google, Bing und
+KI-Crawler neue Inhalte finden.
+
+Was trotzdem hilft, weil Google neue Seiten sonst erst nach Tagen oder
+Wochen holt: in der Search Console die Artikel-URL in die URL-Prüfung
+eingeben und "Indexierung beantragen" klicken. Das geht für etwa zehn
+URLs am Tag und ist der einzige Weg, der wirklich beschleunigt. Die
+Sitemap neu einzureichen bringt dagegen nichts, Google liest sie ohnehin
+regelmäßig.
+
+Einmalig: den Feed `https://www.kolac-digital.de/blog/feed.xml` in der
+Search Console unter Sitemaps hinzufügen. Google akzeptiert RSS dort wie
+eine Sitemap, und die Bing Webmaster Tools ebenso.
+
 ## Rhythmus
 
 Ein Artikel pro Woche reicht. Nach einem halben Jahr sind das gut zwanzig

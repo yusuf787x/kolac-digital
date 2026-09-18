@@ -2368,18 +2368,8 @@ textarea {
     font-size: 17px;
   }
 
-  /* Nav */
-  .nav-links {
-    display: flex;
-  }
-
-  .hamburger {
-    display: none;
-  }
-
-  .mobile-menu {
-    display: none;
-  }
+  /* Nav: Desktop-Links erst ab 900px, siehe eigener Block unten.
+     Mit sechs Eintraegen brechen sie darunter um. */
 
   /* Hero */
   .hero {
@@ -2532,7 +2522,24 @@ textarea {
 
 /* ==========================================================================
    DESKTOP – 1024px+
-   ========================================================================== */
+   ========================================================================== */
+
+/* Desktop-Navigation ab 900px. Darunter Hamburger, weil sechs Links
+   plus Logo bei 768px nicht mehr in eine Zeile passen. */
+@media (min-width: 900px) {
+  .nav-links {
+    display: flex;
+  }
+
+  .hamburger {
+    display: none;
+  }
+
+  .mobile-menu {
+    display: none;
+  }
+}
+
 @media (min-width: 1024px) {
   .container {
     padding: 0 60px;
@@ -4730,4 +4737,41 @@ textarea {
   .blog-featured-image {
     height: 170px;
   }
+}
+
+/* ==========================================================================
+   Ratgeber auf der Startseite (neueste Artikel, geladen aus /blog/latest.json)
+   ========================================================================== */
+.ratgeber-section {
+  padding: 80px 0;
+  background: var(--color-offwhite);
+  position: relative;
+  z-index: 10;
+}
+.ratgeber-section[hidden] {
+  display: none;
+}
+.ratgeber-intro {
+  max-width: 720px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+.ratgeber-intro .section-label {
+  color: var(--color-blue);
+  margin-bottom: 12px;
+}
+.ratgeber-intro .section-headline {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+.ratgeber-intro .section-subline {
+  color: var(--color-gray);
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0 auto;
+  max-width: 560px;
+}
+.ratgeber-more {
+  text-align: center;
+  margin-top: 32px;
 }

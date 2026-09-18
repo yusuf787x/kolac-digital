@@ -22,7 +22,13 @@ export async function POST(req: Request) {
     // Ohne Angabe werden nur die Uebersichtsseiten erneuert.
   }
 
-  const paths = ['/blog', '/sitemap-blog.xml'];
+  const paths = [
+    '/blog',
+    '/sitemap-blog.xml',
+    '/blog/feed.xml',
+    '/blog/latest.json',
+    '/llms.txt',
+  ];
   if (slug) paths.push(`/blog/${slug}`);
 
   for (const p of paths) {

@@ -37,7 +37,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: post.metaTitle,
     description: post.metaDescription,
     keywords: post.targetKeywords,
-    alternates: { canonical: url },
+    alternates: {
+      canonical: url,
+      types: { 'application/rss+xml': `${site.baseUrl}/blog/feed.xml` },
+    },
     openGraph: {
       type: 'article',
       locale: 'de_DE',

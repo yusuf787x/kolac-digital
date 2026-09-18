@@ -93,6 +93,8 @@ export default function SiteHeader({
             <a href={`${prefix}#leistungen`}>Leistungen</a>
             <a href={`${prefix}#about`}>Über uns</a>
             <a href="/case-studys">Case Studys</a>
+            <a href="/portfolio">Portfolio</a>
+            <a href="/blog">Ratgeber</a>
             <a href={`${prefix}#kundenstimmen`}>Kundenstimmen</a>
           </div>
 
@@ -136,6 +138,12 @@ export default function SiteHeader({
         </a>
         <a href="/case-studys" onClick={close}>
           Case Studys
+        </a>
+        <a href="/portfolio" onClick={close}>
+          Portfolio
+        </a>
+        <a href="/blog" onClick={close}>
+          Ratgeber
         </a>
         <a href={`${prefix}#kundenstimmen`} onClick={close}>
           Kundenstimmen

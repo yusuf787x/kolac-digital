@@ -13,7 +13,10 @@ export const metadata: Metadata = {
   title: 'Ratgeber für Webseiten und digitale Abläufe | Kolac Digital',
   description:
     'Praxisnahe Beiträge zu Webseiten mit System, digitalen Abläufen, SEO und Google Ads. Von der Webagentur Kolac Digital aus Bielefeld, geschrieben für Betriebe in OWL und ganz Deutschland.',
-  alternates: { canonical: `${site.baseUrl}/blog` },
+  alternates: {
+    canonical: `${site.baseUrl}/blog`,
+    types: { 'application/rss+xml': `${site.baseUrl}/blog/feed.xml` },
+  },
   openGraph: {
     type: 'website',
     locale: 'de_DE',

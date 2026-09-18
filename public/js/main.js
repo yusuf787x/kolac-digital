@@ -410,6 +410,83 @@
   }
 
   /* ---------- 3. Init after render ---------- */
+  /* ---------- 3b. Ratgeber: neueste Artikel ---------- */
+  // Die Startseite ist statisch, die Artikel liegen in Firestore.
+  // Deshalb kommen die drei neuesten per JSON von der Blog-Route.
+  // Schlaegt das fehl, bleibt die Sektion einfach ausgeblendet.
+  async function renderRatgeber() {
+    const section = document.querySelector('[data-ratgeber]');
+    const grid = document.querySelector('[data-ratgeber-grid]');
+    if (!section || !grid) return;
+
+    try {
+      const res = await fetch('/blog/latest.json');
+      if (!res.ok) throw new Error('latest.json ' + res.status);
+      const data = await res.json();
+      const posts = Array.isArray(data.posts) ? data.posts : [];
+      if (posts.length === 0) return;
+
+      grid.innerHTML = '';
+      posts.forEach((p) => {
+        const card = document.createElement('a');
+        card.className = 'blog-card';
+        card.href = '/blog/' + p.slug;
+
+        if (p.heroImageUrl) {
+          const img = document.createElement('img');
+          img.className = 'blog-card-image';
+          img.src = p.heroImageUrl;
+          img.alt = p.imageAlt || p.title;
+          img.loading = 'lazy';
+          card.appendChild(img);
+        } else {
+          const emoji = document.createElement('div');
+          emoji.className = 'blog-card-emoji';
+          emoji.setAttribute('aria-hidden', 'true');
+          emoji.textContent = p.heroEmoji || '📄';
+          card.appendChild(emoji);
+        }
+
+        const cat = document.createElement('span');
+        cat.className = 'blog-card-category';
+        cat.textContent = p.category || '';
+        card.appendChild(cat);
+
+        const title = document.createElement('h3');
+        title.className = 'blog-card-title';
+        title.textContent = p.title;
+        card.appendChild(title);
+
+        const excerpt = document.createElement('p');
+        excerpt.className = 'blog-card-excerpt';
+        excerpt.textContent = p.excerpt || '';
+        card.appendChild(excerpt);
+
+        const meta = document.createElement('span');
+        meta.className = 'blog-card-meta';
+        const parts = [];
+        if (p.publishedAt) {
+          parts.push(
+            new Date(p.publishedAt).toLocaleDateString('de-DE', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })
+          );
+        }
+        if (p.readingMinutes) parts.push(p.readingMinutes + ' Min.');
+        meta.textContent = parts.join(' · ');
+        card.appendChild(meta);
+
+        grid.appendChild(card);
+      });
+
+      section.hidden = false;
+    } catch (err) {
+      console.warn('Ratgeber konnte nicht geladen werden:', err);
+    }
+  }
+
   function initAfterRender() {
     initRotatingHeadlines();
     initScrollReveal();
@@ -420,6 +497,7 @@
     initContactForm();
     initTestimonialSlider();
     initBgFloatingElements();
+    renderRatgeber();
   }
 
   /* ---------- 4. Typewriter Headlines ---------- */

@@ -1,4 +1,13 @@
-# Kolac Digital
+/**
+ * Basistext der llms.txt. Wird von app/llms.txt/route.ts ausgeliefert
+ * und dort um die veroeffentlichten Blog-Artikel ergaenzt, damit
+ * KI-Systeme die Artikel finden, ohne dass jemand die Datei pflegen
+ * muss.
+ *
+ * {{BLOG}} markiert die Stelle, an der die Artikel eingesetzt werden.
+ * Aenderungen an Fakten, Leistungen oder Referenzen gehoeren hierher.
+ */
+export const LLMS_BASE = `# Kolac Digital
 
 > Webagentur aus Bielefeld (Ostwestfalen-Lippe). Schwerpunkt: individuelle Webseiten mit System und Prozessoptimierung für kleine und mittelständische Unternehmen. Vorne ein professioneller, SEO-optimierter Auftritt, der bei Google für relevante Suchbegriffe rankt. Hinten ein Backend, das wir auf den jeweiligen Betrieb zuschneiden. Für Anfragen-Management, Termine, Angebote, Rechnungen und Berichte. Ergänzend Google Ads, Meta Ads und Videocontent für Social Media. Für KMU in OWL, Nordrhein-Westfalen und ganz Deutschland.
 
@@ -10,7 +19,7 @@ Statt 50-Mann-Team und Aufschlag-Mentalität gibt es bei Kolac Digital direkte K
 
 - **Hauptsitz:** Beckhausstraße 108, 33611 Bielefeld, Deutschland
 - **Region:** Ostwestfalen-Lippe (OWL), Nordrhein-Westfalen
-- **Aktiv in:** Bielefeld, Herford, Bünde, Minden, Osnabrück, Gütersloh, Paderborn, Detmold, Lemgo, Lippstadt – sowie deutschlandweit
+- **Aktiv in:** Bielefeld, Herford, Bünde, Minden, Osnabrück, Gütersloh, Paderborn, Detmold, Lemgo, Lippstadt sowie deutschlandweit
 
 ## Leistungen
 
@@ -115,6 +124,7 @@ Yusuf Kolac, Gründer und Geschäftsführer
 
 > "Seit der neuen Website kommen Anfragen automatisch rein – kein Anruf mehr nötig." – Alessandro F., AF-Gebäudeservice
 
+{{BLOG}}
 ## Häufige Suchanfragen, für die Kolac Digital relevant ist
 
 ### Webseiten mit System (Schwerpunkt)
@@ -173,5 +183,6 @@ Yusuf Kolac, Gründer und Geschäftsführer
 - Direkte Kommunikation mit dem Gründer (kein Account-Manager-Filter)
 - Schnelle Umsetzung statt monatelanger Planungsphasen
 - Faire, transparente Preise ohne typischen Agentur-Aufschlag
-- Praxiserprobte Strategien – auf eigenen Projekten getestet, bevor sie an Kunden weitergegeben werden
+- Praxiserprobte Strategien, auf eigenen Projekten getestet, bevor sie an Kunden weitergegeben werden
 - Spezialisiert auf inhabergeführte Unternehmen, KMUs, Praxen, Handwerksbetriebe und E-Commerce
+`;

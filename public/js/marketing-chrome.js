@@ -19,6 +19,8 @@
     { label: 'Leistungen', href: '#leistungen' },
     { label: 'Über uns', href: '#about' },
     { label: 'Case Studys', href: '/case-studys' },
+    { label: 'Portfolio', href: '/portfolio' },
+    { label: 'Ratgeber', href: '/blog' },
     { label: 'Kundenstimmen', href: '#kundenstimmen' },
   ];
   const CTA = { label: 'Webseite mit System', href: '/webseiten' };
