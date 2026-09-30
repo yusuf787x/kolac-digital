@@ -47,6 +47,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/vertraege', label: 'Verträge', icon: '✍️', group: 'Buchhaltung' },
   { href: '/dashboard/rechnungen', label: 'Rechnungen', icon: '📄', group: 'Buchhaltung' },
   { href: '/dashboard/ausgaben', label: 'Ausgaben', icon: '💸', group: 'Buchhaltung' },
+  { href: '/dashboard/fahrten', label: 'Fahrten', icon: '🚗', group: 'Buchhaltung' },
   { href: '/dashboard/berichte', label: 'Berichte', icon: '📈', group: 'Buchhaltung' },
   { href: '/dashboard/blog', label: 'Blog', icon: '✍️', group: 'Marketing' },
   {

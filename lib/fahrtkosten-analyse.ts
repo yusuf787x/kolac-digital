@@ -30,6 +30,12 @@ export type FahrtkostenVerdict =
   | 'fahrzeughaltung'
   /** Hotel, Bahn, Flug, Taxi. Bleibt unabhaengig davon abziehbar. */
   | 'reise_bleibt'
+  /**
+   * CarSharing, Mietwagen, Taxi. Fremde Fahrzeuge, die nicht unter die
+   * Kilometerpauschale fallen. Bleiben mit vollem Vorsteuerabzug
+   * abziehbar, gehoeren aber in die Kategorie Kfz-Kosten (Zeile 70).
+   */
+  | 'mietfahrzeug'
   /** In einer Fahrt-Kategorie, aber nicht zuzuordnen. Bitte pruefen. */
   | 'unklar';
 
@@ -121,6 +127,37 @@ const HALTUNG = [
   'vergoelst',
 ];
 
+/**
+ * Fahrzeuge, die dir nicht gehoeren und die du pro Fahrt bezahlst.
+ * Die Kilometerpauschale deckt nur das eigene Fahrzeug ab, deshalb
+ * bleiben diese Kosten vollstaendig abziehbar, auch die Vorsteuer.
+ */
+const MIETFAHRZEUG = [
+  'carsharing',
+  'car-sharing',
+  'car sharing',
+  'cambio',
+  'stadtmobil',
+  'greenwheels',
+  'book-n-drive',
+  'teilauto',
+  'miles mobility',
+  'share now',
+  'sixt share',
+  'mietwagen',
+  'leihwagen',
+  'sixt',
+  'europcar',
+  'hertz',
+  'avis',
+  'enterprise rent',
+  'buchbinder',
+  'taxi',
+  'uber',
+  'bolt.eu',
+  'free now',
+];
+
 /** Reisekosten, die neben der Kilometerpauschale bestehen bleiben. */
 const REISE_OK = [
   'hotel',
@@ -139,13 +176,6 @@ const REISE_OK = [
   'eurowings',
   'ryanair',
   'flugticket',
-  'taxi',
-  'uber',
-  'bolt',
-  'mietwagen',
-  'sixt',
-  'europcar',
-  'hertz',
 ];
 
 function findMatch(haystack: string, needles: string[]): string | null {
@@ -166,12 +196,16 @@ export function classifyExpense(e: Expense): FahrtkostenFinding | null {
   let verdict: FahrtkostenVerdict | null = null;
   let matched = '';
 
+  const m = findMatch(haystack, MIETFAHRZEUG);
   const t = findMatch(haystack, TREIBSTOFF);
   const n = findMatch(haystack, NEBENKOSTEN);
   const h = findMatch(haystack, HALTUNG);
   const r = findMatch(haystack, REISE_OK);
 
-  if (t) {
+  if (m) {
+    verdict = 'mietfahrzeug';
+    matched = m;
+  } else if (t) {
     verdict = 'treibstoff';
     matched = t;
   } else if (n) {
@@ -227,6 +261,20 @@ export interface FahrtkostenAnalyse {
   jahre: number[];
   /** Monate mit gezogener Vorsteuer. Fuer berichtigte Voranmeldungen. */
   ustvaMonate: string[];
+  /**
+   * Vorsteuer-Korrektur je Quartal. Wer vierteljaehrlich voranmeldet,
+   * liest hier direkt ab, um wie viel die Vorsteuer im jeweiligen
+   * Zeitraum zu kuerzen ist.
+   */
+  vorsteuerProQuartal: Array<{
+    quartal: string;
+    vorsteuer: number;
+    belege: number;
+  }>;
+  /** Belege, die bereits ausgebucht sind. */
+  bereitsAusgebucht: FahrtkostenFinding[];
+  /** Belege, die noch ausgebucht werden muessen. */
+  offen: FahrtkostenFinding[];
 }
 
 const BETROFFEN: FahrtkostenVerdict[] = [
@@ -244,7 +292,9 @@ export function analysiereFahrtkosten(
     .sort((a, b) => a.expense.date.toMillis() - b.expense.date.toMillis());
 
   const betroffen = findings.filter((f) => BETROFFEN.includes(f.verdict));
-  const bleibt = findings.filter((f) => f.verdict === 'reise_bleibt');
+  const bleibt = findings.filter(
+    (f) => f.verdict === 'reise_bleibt' || f.verdict === 'mietfahrzeug',
+  );
   const unklar = findings.filter((f) => f.verdict === 'unklar');
 
   const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -264,9 +314,30 @@ export function analysiereFahrtkosten(
     ),
   ).sort();
 
+  const quartalMap = new Map<string, { vorsteuer: number; belege: number }>();
+  for (const f of betroffen) {
+    const d = f.expense.date.toDate();
+    const q = `${d.getFullYear()}-Q${Math.floor(d.getMonth() / 3) + 1}`;
+    const prev = quartalMap.get(q) ?? { vorsteuer: 0, belege: 0 };
+    quartalMap.set(q, {
+      vorsteuer: prev.vorsteuer + f.vat,
+      belege: prev.belege + 1,
+    });
+  }
+  const vorsteuerProQuartal = Array.from(quartalMap.entries())
+    .map(([quartal, v]) => ({
+      quartal,
+      vorsteuer: round2(v.vorsteuer),
+      belege: v.belege,
+    }))
+    .sort((a, b) => a.quartal.localeCompare(b.quartal));
+
   return {
     findings,
     betroffen,
+    bereitsAusgebucht: betroffen.filter((f) => !!f.expense.excluded),
+    offen: betroffen.filter((f) => !f.expense.excluded),
+    vorsteuerProQuartal,
     bleibt,
     unklar,
     summeBrutto: round2(betroffen.reduce((a, f) => a + f.gross, 0)),
@@ -282,5 +353,6 @@ export const VERDICT_LABEL: Record<FahrtkostenVerdict, string> = {
   fahrzeugnebenkosten: 'Fahrzeug-Nebenkosten',
   fahrzeughaltung: 'Fahrzeug-Haltung',
   reise_bleibt: 'Reisekosten, bleibt',
+  mietfahrzeug: 'Mietfahrzeug, bleibt',
   unklar: 'Unklar, bitte prüfen',
 };

@@ -2,9 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { listInvoices, listExpenses, listCustomers } from '@/lib/firestore';
-import type { Invoice, Expense, Customer } from '@/lib/types';
-import { EXPENSE_CATEGORY_META } from '@/lib/types';
+import {
+  listInvoices,
+  listExpenses,
+  listCustomers,
+  listBusinessTrips,
+} from '@/lib/firestore';
+import type { Invoice, Expense, Customer, BusinessTrip } from '@/lib/types';
+import { EXPENSE_CATEGORY_META, TRAVEL_EXPENSE_META } from '@/lib/types';
 import {
   formatEUR,
   formatDateDE,
@@ -20,16 +25,23 @@ const MONTHS_DE = [
 export default function BerichtePage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [trips, setTrips] = useState<BusinessTrip[]>([]);
   const [customerMap, setCustomerMap] = useState<Map<string, Customer>>(new Map());
   const [loading, setLoading] = useState(true);
   const [year, setYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
-    Promise.all([listInvoices(), listExpenses(), listCustomers()])
-      .then(([inv, exp, cust]) => {
+    Promise.all([
+      listInvoices(),
+      listExpenses(),
+      listCustomers(),
+      listBusinessTrips(),
+    ])
+      .then(([inv, exp, cust, tr]) => {
         setInvoices(inv);
         setExpenses(exp);
         setCustomerMap(new Map(cust.map((c) => [c.id, c])));
+        setTrips(tr);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -38,8 +50,9 @@ export default function BerichtePage() {
     const set = new Set<number>([new Date().getFullYear()]);
     invoices.forEach((i) => set.add(i.invoiceDate.toDate().getFullYear()));
     expenses.forEach((e) => set.add(e.date.toDate().getFullYear()));
+    trips.forEach((t) => set.add(t.date.toDate().getFullYear()));
     return Array.from(set).sort((a, b) => b - a);
-  }, [invoices, expenses]);
+  }, [invoices, expenses, trips]);
 
   const data = useMemo(() => {
     const byMonth: { revenue: number; expense: number }[] = Array.from(
@@ -79,6 +92,8 @@ export default function BerichtePage() {
     expenses.forEach((e) => {
       const d = e.date.toDate();
       if (d.getFullYear() !== year) return;
+      // Ausgebuchte Belege zaehlen nicht in die EÜR.
+      if (e.excluded) return;
       byMonth[d.getMonth()].expense += e.amount;
       byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount;
 
@@ -118,6 +133,31 @@ export default function BerichtePage() {
       1,
     );
 
+    // Geschaeftsfahrten mit dem Privatwagen. Eigene EÜR-Zeile, weil
+    // steuerlich eine Nutzungseinlage. Keine Umsatzsteuer im Spiel,
+    // deshalb ist der Betrag zugleich netto und abziehbar.
+    const yearTrips = trips.filter(
+      (t) => t.date.toDate().getFullYear() === year,
+    );
+    const tripSum =
+      Math.round(yearTrips.reduce((a, t) => a + t.amount, 0) * 100) / 100;
+    const tripKm =
+      Math.round(yearTrips.reduce((a, t) => a + t.totalKm, 0) * 10) / 10;
+    if (tripSum > 0) {
+      byElsterLine.set(TRAVEL_EXPENSE_META.elsterLine, {
+        label: TRAVEL_EXPENSE_META.elsterLabel,
+        kennzahl: TRAVEL_EXPENSE_META.kennzahl,
+        net: tripSum,
+        deductible: tripSum,
+        nonDeductible: 0,
+      });
+      eurTotalNet += tripSum;
+      eurTotalDeductible += tripSum;
+      yearTrips.forEach((t) => {
+        byMonth[t.date.toDate().getMonth()].expense += t.amount;
+      });
+    }
+
     const elsterRows = Array.from(byElsterLine.entries())
       .map(([line, v]) => ({
         line,
@@ -130,6 +170,9 @@ export default function BerichtePage() {
       .sort((a, b) => a.line - b.line);
 
     return {
+      tripSum,
+      tripKm,
+      tripCount: yearTrips.length,
       byMonth,
       byCategory,
       totalRevenue,
@@ -444,6 +487,16 @@ export default function BerichtePage() {
                   100 % in der UStVA abziehbar. Zeilennummern nach Anlage EÜR
                   2025, die Kennzahl daneben ist über Jahre stabil.
                 </p>
+                {data.tripSum > 0 && (
+                  <p className="text-xs text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+                    <strong>Nicht vergessen:</strong> Die{' '}
+                    <SensitiveValue>{formatEUR(data.tripSum)}</SensitiveValue>{' '}
+                    aus {data.tripCount} Fahrten ({data.tripKm} km) müssen
+                    zusätzlich in Zeile 107 (Kennzahl 123) als Nutzungseinlage
+                    eingetragen werden. Elster prüft beide Felder
+                    gegeneinander und meldet sonst einen Fehler.
+                  </p>
+                )}
               </div>
               <button
                 onClick={exportElsterEUR}

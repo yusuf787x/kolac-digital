@@ -127,7 +127,15 @@ export default function UStVAPage() {
       const pays = effectivePayments(i) as InvoicePayment[];
       return pays.some((p) => inRange(p.paidAt.toDate()));
     });
-    const monthExpenses = expenses.filter((e) => inRange(e.date.toDate()));
+    // Ausgebuchte Belege zaehlen nicht mit. Das sind Belege, deren
+    // Kosten anderweitig abgegolten sind, etwa durch eine
+    // Kilometerpauschale. Aus ihnen darf keine Vorsteuer gezogen werden.
+    const monthExpenses = expenses.filter(
+      (e) => inRange(e.date.toDate()) && !e.excluded,
+    );
+    const excludedInPeriod = expenses.filter(
+      (e) => inRange(e.date.toDate()) && !!e.excluded,
+    );
 
     // Output VAT (Ist-Prinzip): anteilig aus den Zahlungseingaengen des
     // Zeitraums je Rechnung. Bei gemischten Steuersaetzen wird
@@ -217,6 +225,7 @@ export default function UStVAPage() {
     const regularExpenses = monthExpenses.filter((e) => !e.reverseCharge);
 
     return {
+      excludedInPeriod,
       monthInvoices,
       monthExpenses,
       regularExpenses,

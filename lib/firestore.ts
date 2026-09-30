@@ -40,6 +40,8 @@ import type {
   ContractType,
   Task,
   TaskColumn,
+  BusinessTrip,
+  ExpenseExclusion,
 } from './types';
 import {
   buildInvoiceNumber,
@@ -556,6 +558,69 @@ export async function updateExpense(
 
 export async function deleteExpense(id: string): Promise<void> {
   await deleteDoc(doc(db, 'expenses', id));
+}
+
+/**
+ * Nimmt einen Beleg aus der Buchhaltung, ohne ihn zu loeschen. Der
+ * Datensatz bleibt vollstaendig erhalten und wird nur markiert, damit
+ * er in EÜR und Umsatzsteuervoranmeldung nicht mehr mitzaehlt.
+ */
+export async function excludeExpense(
+  id: string,
+  exclusion: Omit<ExpenseExclusion, 'at'>,
+): Promise<void> {
+  await updateDoc(doc(db, 'expenses', id), {
+    excluded: { ...exclusion, at: Timestamp.now() },
+  });
+}
+
+/** Macht eine Ausbuchung rueckgaengig. */
+export async function includeExpense(id: string): Promise<void> {
+  await updateDoc(doc(db, 'expenses', id), { excluded: null });
+}
+
+// ===================================================================
+// Geschaeftsfahrten (Kilometerpauschale)
+// ===================================================================
+
+const tripsCol = () => collection(db, 'businessTrips');
+
+export async function listBusinessTrips(): Promise<BusinessTrip[]> {
+  const snap = await getDocs(query(tripsCol(), orderBy('date', 'desc')));
+  return snap.docs.map((d) => fromDoc<BusinessTrip>(d));
+}
+
+export async function getBusinessTrip(
+  id: string,
+): Promise<BusinessTrip | null> {
+  const snap = await getDoc(doc(db, 'businessTrips', id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() } as BusinessTrip;
+}
+
+export async function createBusinessTrip(
+  data: Omit<BusinessTrip, 'id' | 'createdAt' | 'updatedAt'>,
+): Promise<string> {
+  const ref = await addDoc(tripsCol(), {
+    ...data,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function updateBusinessTrip(
+  id: string,
+  data: Partial<Omit<BusinessTrip, 'id' | 'createdAt'>>,
+): Promise<void> {
+  await updateDoc(doc(db, 'businessTrips', id), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteBusinessTrip(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'businessTrips', id));
 }
 
 // ===================================================================

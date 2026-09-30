@@ -299,6 +299,26 @@ export const TRAVEL_EXPENSE_META: ExpenseCategoryMeta = {
 /** Kilometersatz fuer betriebliche Fahrten mit einem Privatfahrzeug. */
 export const KM_PAUSCHALE_EUR = 0.3;
 
+/**
+ * Ein Beleg wurde aus der Buchhaltung genommen, bleibt aber als
+ * Nachweis im System. Wird gesetzt, wenn die Kosten anderweitig
+ * abgegolten sind, etwa durch eine Kilometerpauschale.
+ *
+ * Belege mit gesetztem `excluded` zaehlen NICHT mehr in EÜR und
+ * Umsatzsteuervoranmeldung. Der Datensatz selbst bleibt unangetastet,
+ * damit der Beleg bei einer Pruefung vorgelegt werden kann.
+ */
+export interface ExpenseExclusion {
+  /** Zeitpunkt der Ausbuchung. */
+  at: Timestamp;
+  /** Grund. Aktuell nur einer, das Feld bleibt erweiterbar. */
+  reason: 'kilometerpauschale';
+  /** Fahrt, an die der Beleg als Nachweis geheftet wurde. */
+  tripId?: string | null;
+  /** Freitext fuer die Akte. */
+  note?: string;
+}
+
 export interface Expense {
   id: string;
   date: Timestamp;
@@ -321,6 +341,11 @@ export interface Expense {
   supplier: string;
   receiptUrl: string | null;
   driveUrl: string | null;
+  /**
+   * Gesetzt, wenn der Beleg nicht mehr in die Buchhaltung einfliesst.
+   * Siehe ExpenseExclusion. Undefined oder null heisst: zaehlt normal.
+   */
+  excluded?: ExpenseExclusion | null;
   createdAt: Timestamp;
 }
 
@@ -946,4 +971,63 @@ export interface BlogTopic {
   generatedPostId: string | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+}
+
+/**
+ * Eine betriebliche Fahrt mit einem Fahrzeug, das nicht zum
+ * Betriebsvermoegen gehoert.
+ *
+ * Steuerlich ist das eine Nutzungseinlage. Abgerechnet wird mit der
+ * Kilometerpauschale auf die TATSAECHLICH GEFAHRENEN Kilometer, also
+ * Hin- und Rueckweg zusammen. Das ist nicht zu verwechseln mit der
+ * Entfernungspauschale fuer den Weg zur ersten Betriebsstaette, die
+ * nur die einfache Entfernung ansetzt.
+ *
+ * Aus der Pauschale ist kein Vorsteuerabzug moeglich, weil ihr keine
+ * Rechnung mit ausgewiesener Umsatzsteuer zugrunde liegt.
+ *
+ * Nachweispflicht: Datum, Ziel, Anlass und Kilometer muessen
+ * aufgezeichnet werden. Belege wie Tankquittungen sind dafuer kein
+ * Ersatz, koennen aber als Indiz beigeheftet werden.
+ */
+export interface BusinessTrip {
+  id: string;
+  date: Timestamp;
+  /** Startadresse. Standard ist der Betriebssitz. */
+  startAddress: string;
+  /** Name des Ziels, z. B. der Firmenname. */
+  destinationName: string;
+  destinationAddress: string;
+  /** Anlass der Fahrt. Pflichtangabe fuer den Nachweis. */
+  purpose: string;
+  /** Einfache Entfernung in km. */
+  distanceKm: number;
+  /** true, wenn auch zurueckgefahren wurde. */
+  roundTrip: boolean;
+  /** Tatsaechlich gefahrene Kilometer insgesamt. */
+  totalKm: number;
+  /**
+   * Kilometersatz zum Zeitpunkt der Fahrt. Wird mitgespeichert, damit
+   * eine spaetere Aenderung des Satzes alte Fahrten nicht rueckwirkend
+   * verfaelscht.
+   */
+  ratePerKm: number;
+  /** totalKm * ratePerKm. */
+  amount: number;
+  /** Belege, die als Nachweis an dieser Fahrt haengen. */
+  receiptExpenseIds: string[];
+  note?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+/** Rechnet die Kilometer und den Betrag einer Fahrt aus. */
+export function computeTripAmount(
+  distanceKm: number,
+  roundTrip: boolean,
+  ratePerKm: number = KM_PAUSCHALE_EUR,
+): { totalKm: number; amount: number } {
+  const totalKm = Math.round(distanceKm * (roundTrip ? 2 : 1) * 10) / 10;
+  const amount = Math.round(totalKm * ratePerKm * 100) / 100;
+  return { totalKm, amount };
 }
