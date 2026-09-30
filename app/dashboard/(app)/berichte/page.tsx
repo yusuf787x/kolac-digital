@@ -50,7 +50,13 @@ export default function BerichtePage() {
     // EÜR-Ansicht: nach Elster-Zeile gruppiert, mit Bewirtungs-Kuerzung.
     const byElsterLine = new Map<
       number,
-      { label: string; net: number; deductible: number; nonDeductible: number }
+      {
+        label: string;
+        kennzahl: number;
+        net: number;
+        deductible: number;
+        nonDeductible: number;
+      }
     >();
     let eurTotalNet = 0;
     let eurTotalDeductible = 0;
@@ -93,6 +99,7 @@ export default function BerichtePage() {
       }
       const bucket = byElsterLine.get(meta.elsterLine) ?? {
         label: meta.elsterLabel,
+        kennzahl: meta.kennzahl,
         net: 0,
         deductible: 0,
         nonDeductible: 0,
@@ -115,6 +122,7 @@ export default function BerichtePage() {
       .map(([line, v]) => ({
         line,
         label: v.label,
+        kennzahl: v.kennzahl,
         net: Math.round(v.net * 100) / 100,
         deductible: Math.round(v.deductible * 100) / 100,
         nonDeductible: Math.round(v.nonDeductible * 100) / 100,
@@ -166,6 +174,7 @@ export default function BerichtePage() {
         'Posten',
         'Kategorie',
         'EÜR-Zeile',
+        'Kennzahl',
         'Lieferant',
         'Brutto',
         'Netto',
@@ -190,6 +199,7 @@ export default function BerichtePage() {
             e.description,
             e.category,
             meta ? String(meta.elsterLine) : '',
+            meta ? String(meta.kennzahl) : '',
             e.supplier,
             fmt(eur.gross),
             fmt(eur.net),
@@ -225,6 +235,7 @@ export default function BerichtePage() {
       ['# Ausgaben nach Elster-EÜR-Zeile'],
       [
         'EÜR-Zeile',
+        'Kennzahl',
         'Bezeichnung',
         'Netto',
         'Als Betriebsausgabe absetzbar',
@@ -232,6 +243,7 @@ export default function BerichtePage() {
       ],
       ...data.elsterRows.map((r) => [
         String(r.line),
+        String(r.kennzahl),
         r.label,
         fmt(r.net),
         fmt(r.deductible),
@@ -239,6 +251,7 @@ export default function BerichtePage() {
       ]),
       [
         'GESAMT',
+        '',
         '',
         fmt(data.eurTotalNet),
         fmt(data.eurTotalDeductible),
@@ -251,9 +264,10 @@ export default function BerichtePage() {
   const exportElsterEUR = () => {
     const fmt = (n: number) => n.toFixed(2).replace('.', ',');
     const rows = [
-      ['Elster-Zeile', 'Beschreibung', 'Betrag (Netto)'],
+      ['Elster-Zeile', 'Kennzahl', 'Beschreibung', 'Betrag (Netto)'],
       ...data.elsterRows.map((r) => [
         String(r.line),
+        String(r.kennzahl),
         r.label,
         fmt(r.deductible),
       ]),
@@ -426,14 +440,15 @@ export default function BerichtePage() {
                 </h2>
                 <p className="text-xs text-gray-500 mt-1">
                   Betriebsausgaben nach Elster-Zeile gruppiert. Bewirtung
-                  (Zeile 66) wird automatisch auf 70 % gekürzt — die Vorsteuer
-                  bleibt zu 100 % in der UStVA abziehbar.
+                  wird automatisch auf 70 % gekürzt. Die Vorsteuer bleibt zu
+                  100 % in der UStVA abziehbar. Zeilennummern nach Anlage EÜR
+                  2025, die Kennzahl daneben ist über Jahre stabil.
                 </p>
               </div>
               <button
                 onClick={exportElsterEUR}
                 className="btn-secondary text-xs"
-                title="Zwei-Spalten-CSV mit Zeile und absetzbarem Netto — direkt in Elster übertragbar."
+                title="CSV mit Zeile, Kennzahl und absetzbarem Netto. Direkt in Elster übertragbar."
               >
                 Elster-CSV
               </button>
@@ -447,6 +462,7 @@ export default function BerichtePage() {
                 <thead className="text-xs uppercase text-gray-500 tracking-wider border-b border-gray-100">
                   <tr>
                     <th className="text-left py-2 w-16">Zeile</th>
+                    <th className="text-left py-2 w-20">Kennzahl</th>
                     <th className="text-left py-2">Bezeichnung</th>
                     <th className="text-right py-2 w-28">Netto</th>
                     <th className="text-right py-2 w-32">Absetzbar</th>
@@ -459,6 +475,11 @@ export default function BerichtePage() {
                       <td className="py-2">
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700">
                           Z{r.line}
+                        </span>
+                      </td>
+                      <td className="py-2">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-gray-100 text-gray-600 tabular-nums">
+                          {r.kennzahl}
                         </span>
                       </td>
                       <td className="py-2 text-gray-700">{r.label}</td>

@@ -141,17 +141,34 @@ export type ExpenseCategory =
   | 'Sonstiges';
 
 /**
- * EÜR-Zuordnung (Anlage EÜR, Stand 2024/2025) und Absetzbarkeit
- * je Kategorie. `deductibleRate` = 0.7 bedeutet: nur 70 % gehen als
- * Betriebsausgabe in die EÜR (Bewirtung, § 4 Abs. 5 Nr. 2 EStG).
- * Die Vorsteuer bleibt in allen Faellen zu 100 % abziehbar — die
- * Kuerzung wirkt nur auf die Ertragsteuer, nicht auf die USt.
+ * EÜR-Zuordnung und Absetzbarkeit je Kategorie.
  *
- * Zeilennummern beziehen sich auf Anlage EÜR 2024. Aendern sich
- * die Formulare, muessen sie hier einmalig gepflegt werden.
+ * Quelle: BMF-Schreiben vom 29.08.2025, GZ IV C 6 - S 2142/00023/010/001,
+ * Vordruck "Anlage EÜR 2025". Die Zeilennummern wurden gegen das
+ * amtliche Formular geprueft. Die Anlage EÜR 2025 ist mit der 2024er
+ * inhaltlich identisch.
+ *
+ * WICHTIG: Zeilennummern verschieben sich von Jahr zu Jahr. Die
+ * `kennzahl` (die dreistellige Nummer im grauen Kasten neben dem
+ * Eingabefeld) ist dagegen ueber Jahre stabil und das eigentliche
+ * Zuordnungsmerkmal in Elster. Deshalb wird beides gefuehrt: im
+ * Zweifel gilt die Kennzahl.
+ *
+ * `deductibleRate` = 0.7 bedeutet: nur 70 % gehen als Betriebsausgabe
+ * in die EÜR (Bewirtung, § 4 Abs. 5 Nr. 2 EStG). Die Vorsteuer bleibt
+ * in allen Faellen zu 100 % abziehbar, die Kuerzung wirkt nur auf die
+ * Ertragsteuer.
+ *
+ * Methodik: Das System rechnet mit Netto-Betraegen (Nettomethode).
+ * Deshalb bleiben Zeile 57 (gezahlte Vorsteuer) und Zeile 58 (an das
+ * Finanzamt gezahlte USt) in der Anlage EÜR LEER. Wer sie zusaetzlich
+ * fuellt, zieht die Vorsteuer doppelt ab.
  */
 export interface ExpenseCategoryMeta {
+  /** Zeilennummer in der Anlage EÜR 2025. Aendert sich jaehrlich. */
   elsterLine: number;
+  /** Amtliche Kennzahl neben dem Feld. Ueber Jahre stabil. */
+  kennzahl: number;
   elsterLabel: string;
   deductibleRate: number;
   hint?: string;
@@ -162,81 +179,125 @@ export const EXPENSE_CATEGORY_META: Record<
   ExpenseCategoryMeta
 > = {
   'Software/Tools': {
-    elsterLine: 62,
-    elsterLabel: 'Sonstige unbeschränkt abziehbare Betriebsausgaben',
+    elsterLine: 50,
+    kennzahl: 228,
+    elsterLabel: 'Laufende EDV-Kosten (z. B. Beratung, Wartung, Reparatur)',
     deductibleRate: 1,
+    hint: 'Laufende Lizenzen und Abos gehoeren hierher. Einmalig gekaufte Software ueber 800 € netto ist ein immaterielles Wirtschaftsgut und laeuft ueber die AfA (Zeile 32).',
   },
   'Werbung/Ads': {
-    elsterLine: 46,
-    elsterLabel: 'Werbekosten',
+    elsterLine: 54,
+    kennzahl: 224,
+    elsterLabel: 'Werbekosten (z. B. Inserate, Werbespots, Plakate)',
     deductibleRate: 1,
   },
   Hardware: {
-    elsterLine: 33,
+    elsterLine: 36,
+    kennzahl: 132,
     elsterLabel:
-      'Sofortabschreibung geringwertiger Wirtschaftsgüter (bis 800 € netto)',
+      'Aufwendungen für geringwertige Wirtschaftsgüter nach § 6 Abs. 2 EStG',
     deductibleRate: 1,
-    hint: 'Bei Anschaffungskosten über 800 € netto: über AfA (Zeile 32) verteilen.',
+    hint: 'Nur bis 800 € netto je Gegenstand. Darueber verteilt sich der Betrag ueber die AfA (Zeile 33, Uebertrag aus Anlage AVEÜR).',
   },
   Reisen: {
-    elsterLine: 46,
-    elsterLabel: 'Reisekosten Unternehmer (ohne Kfz-Kosten)',
+    elsterLine: 44,
+    kennzahl: 221,
+    elsterLabel:
+      'Übernachtungs- und Reisenebenkosten bei Geschäftsreisen des Steuerpflichtigen',
     deductibleRate: 1,
+    hint: 'Hotel, Bahn, Flug, Parkgebuehren auf Reisen. Verpflegungspauschalen gehoeren NICHT hierher, die laufen ueber Zeile 64. Fahrtkosten mit dem eigenen Wagen ueber Zeile 70 oder 71.',
   },
   'Kfz-Kosten': {
-    elsterLine: 36,
-    elsterLabel: 'Übrige Fahrzeugkosten (ohne AfA und Zinsen)',
+    elsterLine: 70,
+    kennzahl: 146,
+    elsterLabel:
+      'Sonstige tatsächliche Fahrtkosten ohne AfA und Zinsen (z. B. Reparaturen, Wartungen, Treibstoff, Kosten für Flugstrecken, Kosten für öffentliche Verkehrsmittel)',
     deductibleRate: 1,
+    hint: 'Nur fuer Fahrzeuge im Betriebsvermoegen. Tankbelege fuer einen Privatwagen gehoeren hier NICHT hinein, siehe TRAVEL_EXPENSE_META (Zeile 71).',
   },
   Büro: {
-    elsterLine: 62,
-    elsterLabel: 'Sonstige unbeschränkt abziehbare Betriebsausgaben',
+    elsterLine: 51,
+    kennzahl: 229,
+    elsterLabel: 'Arbeitsmittel (z. B. Bürobedarf, Porto, Fachliteratur)',
     deductibleRate: 1,
   },
   'Miete Büro': {
-    elsterLine: 37,
-    elsterLabel: 'Miete/Pacht für Geschäftsräume',
+    elsterLine: 39,
+    kennzahl: 150,
+    elsterLabel:
+      'Miete/Pacht für Geschäftsräume und betrieblich genutzte Grundstücke',
     deductibleRate: 1,
+    hint: 'Ein haeusliches Arbeitszimmer gehoert NICHT hierher, sondern in Zeile 65 oder als Tagespauschale in Zeile 66.',
   },
   Weiterbildung: {
-    elsterLine: 49,
-    elsterLabel: 'Fortbildungskosten',
+    elsterLine: 45,
+    kennzahl: 281,
+    elsterLabel: 'Fortbildungskosten (ohne Reisekosten)',
     deductibleRate: 1,
   },
   'Telefon/Internet': {
-    elsterLine: 45,
-    elsterLabel: 'Aufwendungen für Kommunikation (Telefon, Internet, Porto)',
+    elsterLine: 43,
+    kennzahl: 280,
+    elsterLabel: 'Aufwendungen für Telekommunikation (z. B. Telefon, Internet)',
     deductibleRate: 1,
   },
   Versicherungen: {
-    elsterLine: 62,
-    elsterLabel: 'Sonstige unbeschränkt abziehbare Betriebsausgaben',
+    elsterLine: 49,
+    kennzahl: 223,
+    elsterLabel:
+      'Beiträge, Gebühren, Abgaben und Versicherungen (ohne solche für Gebäude und Kfz)',
     deductibleRate: 1,
-    hint: 'Nur betriebliche Versicherungen (z.B. Berufshaftpflicht). Private Kranken-/Rentenversicherung gehört nicht in die EÜR.',
+    hint: 'Nur betriebliche Versicherungen, z. B. Berufshaftpflicht. Private Kranken- und Rentenversicherung gehoert nicht in die EÜR, sondern in die Anlage Vorsorgeaufwand.',
   },
   Fremdleistungen: {
-    elsterLine: 27,
-    elsterLabel: 'Bezogene Fremdleistungen (Subunternehmer, Freelancer)',
+    elsterLine: 29,
+    kennzahl: 110,
+    elsterLabel: 'Bezogene Fremdleistungen',
     deductibleRate: 1,
   },
   Bewirtung: {
-    elsterLine: 66,
+    elsterLine: 63,
+    kennzahl: 175,
     elsterLabel: 'Bewirtungsaufwendungen (nur 70 % abziehbar)',
     deductibleRate: 0.7,
-    hint: 'Nur 70 % des Netto-Betrags gehen in die EÜR. Vorsteuer zu 100 % abziehbar. Bewirtungsbeleg mit Anlass und Teilnehmern aufheben.',
+    hint: 'Zeile 63 hat ZWEI Felder: Kennzahl 165 fuer den nicht abziehbaren Teil (30 %) und Kennzahl 175 fuer den abziehbaren (70 %). Vorsteuer bleibt zu 100 % abziehbar. Beleg mit Anlass und Teilnehmern aufheben.',
   },
   Geschenke: {
-    elsterLine: 65,
-    elsterLabel: 'Geschenke an Geschäftspartner (nur bis 35 € netto pro Empfänger/Jahr)',
+    elsterLine: 62,
+    kennzahl: 174,
+    elsterLabel:
+      'Geschenke an Geschäftspartner (nur bis 35 € netto pro Empfänger und Jahr)',
     deductibleRate: 1,
-    hint: 'Ueberschreitet ein Geschenk 35 € netto pro Empfänger/Jahr, ist es GAR NICHT abziehbar — dann als privat verbuchen.',
+    hint: 'Zeile 62 hat ZWEI Felder: Kennzahl 164 nicht abziehbar, 174 abziehbar. Ueberschreitet ein Geschenk 35 € netto pro Empfaenger und Jahr, ist es GAR NICHT abziehbar, dann gehoert der volle Betrag in Kennzahl 164.',
   },
   Sonstiges: {
-    elsterLine: 62,
-    elsterLabel: 'Sonstige unbeschränkt abziehbare Betriebsausgaben',
+    elsterLine: 60,
+    kennzahl: 183,
+    elsterLabel: 'Übrige unbeschränkt abziehbare Betriebsausgaben',
     deductibleRate: 1,
   },
 };
+
+/**
+ * Fahrtkosten mit einem Fahrzeug, das nicht zum Betriebsvermoegen
+ * gehoert. Eigene Zeile, weil das steuerlich eine Nutzungseinlage ist
+ * und nicht zu den normalen Kfz-Kosten zaehlt.
+ *
+ * Aus der Kilometerpauschale ist KEIN Vorsteuerabzug moeglich, weil es
+ * sich um eine Pauschale handelt und nicht um eine Leistung mit
+ * ausgewiesener Umsatzsteuer.
+ */
+export const TRAVEL_EXPENSE_META: ExpenseCategoryMeta = {
+  elsterLine: 71,
+  kennzahl: 147,
+  elsterLabel:
+    'Fahrtkosten für nicht zum Betriebsvermögen gehörende Fahrzeuge (Nutzungseinlage)',
+  deductibleRate: 1,
+  hint: 'Derselbe Betrag ist zusaetzlich in Zeile 107 (Kennzahl 123) als Nutzungseinlage zu erfassen. Elster prueft beides gegeneinander.',
+};
+
+/** Kilometersatz fuer betriebliche Fahrten mit einem Privatfahrzeug. */
+export const KM_PAUSCHALE_EUR = 0.3;
 
 export interface Expense {
   id: string;

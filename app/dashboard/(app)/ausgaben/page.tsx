@@ -165,6 +165,13 @@ export default function AusgabenPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
+            href="/dashboard/ausgaben/fahrtkosten-analyse"
+            className="btn-secondary text-xs"
+            title="Zeigt alle Belege rund um Autofahrten und was bei Umstellung auf die Kilometerpauschale entfällt."
+          >
+            Fahrtkosten prüfen
+          </Link>
+          <Link
             href="/dashboard/ausgaben/migrate-eur"
             className="btn-secondary text-xs"
             title="Bestehende Belege einmalig auf die neuen EÜR-Kategorien mappen."
@@ -254,7 +261,7 @@ export default function AusgabenPage() {
                     {e.reverseCharge && (
                       <span
                         className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800"
-                        title="Reverse Charge (§ 13b UStG) — EU-Ausland ohne MwSt."
+                        title="Reverse Charge (§ 13b UStG). EU-Ausland ohne MwSt."
                       >
                         RC § 13b
                       </span>
@@ -276,7 +283,7 @@ export default function AusgabenPage() {
                             }`}
                             title={`EÜR ${meta.elsterLabel}${
                               reduced
-                                ? ` — nur ${Math.round(
+                                ? `, nur ${Math.round(
                                     meta.deductibleRate * 100,
                                   )} % abziehbar`
                                 : ''
