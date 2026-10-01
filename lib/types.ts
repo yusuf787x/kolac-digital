@@ -1031,3 +1031,18 @@ export function computeTripAmount(
   const amount = Math.round(totalKm * ratePerKm * 100) / 100;
   return { totalKm, amount };
 }
+
+/**
+ * Beschraenkt abziehbare Betriebsausgaben haben in der Anlage EÜR ZWEI
+ * Felder nebeneinander: links der nicht abziehbare Anteil, rechts der
+ * abziehbare. In EXPENSE_CATEGORY_META steht die Kennzahl des
+ * abziehbaren Felds. Hier die Gegenstuecke.
+ *
+ * Quelle: Anlage EÜR 2025, Zeilen 62 bis 67.
+ */
+export const NICHT_ABZIEHBAR_KENNZAHL: Record<number, number> = {
+  62: 164, // Geschenke
+  63: 165, // Bewirtungsaufwendungen
+  65: 162, // Häusliches Arbeitszimmer
+  67: 168, // Sonstige beschränkt abziehbare Betriebsausgaben
+};

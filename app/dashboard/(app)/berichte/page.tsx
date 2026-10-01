@@ -9,13 +9,18 @@ import {
   listBusinessTrips,
 } from '@/lib/firestore';
 import type { Invoice, Expense, Customer, BusinessTrip } from '@/lib/types';
-import { EXPENSE_CATEGORY_META, TRAVEL_EXPENSE_META } from '@/lib/types';
+import {
+  EXPENSE_CATEGORY_META,
+  TRAVEL_EXPENSE_META,
+  NICHT_ABZIEHBAR_KENNZAHL,
+} from '@/lib/types';
 import {
   formatEUR,
   formatDateDE,
   computeExpenseEurBreakdown,
 } from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
+import { buildEurReport, pruefeEurReport } from '@/lib/euer-report';
 
 const MONTHS_DE = [
   'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
@@ -55,28 +60,12 @@ export default function BerichtePage() {
   }, [invoices, expenses, trips]);
 
   const data = useMemo(() => {
-    const byMonth: { revenue: number; expense: number }[] = Array.from(
-      { length: 12 },
-      () => ({ revenue: 0, expense: 0 }),
-    );
-    const byCategory: Record<string, number> = {};
-    // EÜR-Ansicht: nach Elster-Zeile gruppiert, mit Bewirtungs-Kuerzung.
-    const byElsterLine = new Map<
-      number,
-      {
-        label: string;
-        kennzahl: number;
-        net: number;
-        deductible: number;
-        nonDeductible: number;
-      }
-    >();
-    let eurTotalNet = 0;
-    let eurTotalDeductible = 0;
-    let eurTotalNonDeductible = 0;
-    let bewirtungGrossSum = 0;
-    let bewirtungNetSum = 0;
+    // Die steuerkritische Rechnung liegt in lib/euer-report.ts und ist
+    // dort mit Testfaellen abgedeckt. Hier kommen nur die Einnahmen und
+    // die Darstellung dazu.
+    const report = buildEurReport(expenses, trips, year);
 
+    const byMonth = report.byMonth.map((expense) => ({ revenue: 0, expense }));
     invoices.forEach((inv) => {
       const d = inv.invoiceDate.toDate();
       if (d.getFullYear() !== year) return;
@@ -89,104 +78,37 @@ export default function BerichtePage() {
       byMonth[d.getMonth()].revenue += earned;
     });
 
-    expenses.forEach((e) => {
-      const d = e.date.toDate();
-      if (d.getFullYear() !== year) return;
-      // Ausgebuchte Belege zaehlen nicht in die EÜR.
-      if (e.excluded) return;
-      byMonth[d.getMonth()].expense += e.amount;
-      byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount;
-
-      const meta = EXPENSE_CATEGORY_META[e.category];
-      if (!meta) return;
-      const eur = computeExpenseEurBreakdown(
-        e.amount,
-        e.vatRate ?? 0,
-        meta.deductibleRate,
-        !!e.reverseCharge,
-      );
-      eurTotalNet += eur.net;
-      eurTotalDeductible += eur.deductibleNet;
-      eurTotalNonDeductible += eur.nonDeductibleNet;
-      if (e.category === 'Bewirtung') {
-        bewirtungGrossSum += eur.gross;
-        bewirtungNetSum += eur.net;
-      }
-      const bucket = byElsterLine.get(meta.elsterLine) ?? {
-        label: meta.elsterLabel,
-        kennzahl: meta.kennzahl,
-        net: 0,
-        deductible: 0,
-        nonDeductible: 0,
-      };
-      bucket.net += eur.net;
-      bucket.deductible += eur.deductibleNet;
-      bucket.nonDeductible += eur.nonDeductibleNet;
-      byElsterLine.set(meta.elsterLine, bucket);
-    });
-
     const totalRevenue = byMonth.reduce((a, m) => a + m.revenue, 0);
     const totalExpense = byMonth.reduce((a, m) => a + m.expense, 0);
-    const profit = totalRevenue - totalExpense;
     const maxBar = Math.max(
       ...byMonth.flatMap((m) => [m.revenue, m.expense]),
       1,
     );
 
-    // Geschaeftsfahrten mit dem Privatwagen. Eigene EÜR-Zeile, weil
-    // steuerlich eine Nutzungseinlage. Keine Umsatzsteuer im Spiel,
-    // deshalb ist der Betrag zugleich netto und abziehbar.
-    const yearTrips = trips.filter(
-      (t) => t.date.toDate().getFullYear() === year,
-    );
-    const tripSum =
-      Math.round(yearTrips.reduce((a, t) => a + t.amount, 0) * 100) / 100;
-    const tripKm =
-      Math.round(yearTrips.reduce((a, t) => a + t.totalKm, 0) * 10) / 10;
-    if (tripSum > 0) {
-      byElsterLine.set(TRAVEL_EXPENSE_META.elsterLine, {
-        label: TRAVEL_EXPENSE_META.elsterLabel,
-        kennzahl: TRAVEL_EXPENSE_META.kennzahl,
-        net: tripSum,
-        deductible: tripSum,
-        nonDeductible: 0,
-      });
-      eurTotalNet += tripSum;
-      eurTotalDeductible += tripSum;
-      yearTrips.forEach((t) => {
-        byMonth[t.date.toDate().getMonth()].expense += t.amount;
-      });
-    }
-
-    const elsterRows = Array.from(byElsterLine.entries())
-      .map(([line, v]) => ({
-        line,
-        label: v.label,
-        kennzahl: v.kennzahl,
-        net: Math.round(v.net * 100) / 100,
-        deductible: Math.round(v.deductible * 100) / 100,
-        nonDeductible: Math.round(v.nonDeductible * 100) / 100,
-      }))
-      .sort((a, b) => a.line - b.line);
-
     return {
-      tripSum,
-      tripKm,
-      tripCount: yearTrips.length,
+      tripSum: report.tripSum,
+      tripKm: report.tripKm,
+      tripCount: report.tripCount,
+      yearTrips: trips
+        .filter((t) => t.date.toDate().getFullYear() === year)
+        .sort((a, b) => a.date.toMillis() - b.date.toMillis()),
       byMonth,
-      byCategory,
-      totalRevenue,
-      totalExpense,
-      profit,
+      byCategory: report.byCategory,
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      totalExpense: Math.round(totalExpense * 100) / 100,
+      profit: Math.round((totalRevenue - totalExpense) * 100) / 100,
       maxBar,
-      elsterRows,
-      eurTotalNet: Math.round(eurTotalNet * 100) / 100,
-      eurTotalDeductible: Math.round(eurTotalDeductible * 100) / 100,
-      eurTotalNonDeductible: Math.round(eurTotalNonDeductible * 100) / 100,
-      bewirtungGrossSum: Math.round(bewirtungGrossSum * 100) / 100,
-      bewirtungNetSum: Math.round(bewirtungNetSum * 100) / 100,
+      elsterRows: report.zeilen,
+      eurTotalNet: report.totalNet,
+      eurTotalDeductible: report.totalDeductible,
+      eurTotalNonDeductible: report.totalNonDeductible,
+      bewirtungGrossSum: report.bewirtungGross,
+      bewirtungNetSum: report.bewirtungNet,
+      excludedCount: report.excludedCount,
+      excludedGross: report.excludedGross,
+      pruefungen: pruefeEurReport(report),
     };
-  }, [invoices, expenses, year]);
+  }, [invoices, expenses, trips, year]);
 
   const exportInvoicesCSV = () => {
     const rows = [
@@ -225,6 +147,8 @@ export default function BerichtePage() {
         'Abziehbar (EÜR)',
         'Nicht abzugsfähig',
         'Reverse Charge',
+        'In EÜR',
+        'Bemerkung',
       ],
       ...expenses
         .filter((e) => e.date.toDate().getFullYear() === year)
@@ -237,21 +161,46 @@ export default function BerichtePage() {
             meta?.deductibleRate ?? 1,
             !!e.reverseCharge,
           );
+          // Ausgebuchte Belege bleiben als Nachweis in der Liste, zaehlen
+          // aber mit null, damit eine Summenbildung in der Tabelle stimmt.
+          const aus = !!e.excluded;
           return [
             formatDateDE(e.date.toDate()),
             e.description,
             e.category,
-            meta ? String(meta.elsterLine) : '',
-            meta ? String(meta.kennzahl) : '',
+            aus ? '' : meta ? String(meta.elsterLine) : '',
+            aus ? '' : meta ? String(meta.kennzahl) : '',
             e.supplier,
             fmt(eur.gross),
-            fmt(eur.net),
-            fmt(eur.vat),
-            fmt(eur.deductibleNet),
-            fmt(eur.nonDeductibleNet),
+            aus ? fmt(0) : fmt(eur.net),
+            aus ? fmt(0) : fmt(eur.vat),
+            aus ? fmt(0) : fmt(eur.deductibleNet),
+            aus ? fmt(0) : fmt(eur.nonDeductibleNet),
             e.reverseCharge ? 'ja' : '',
+            aus ? 'nein' : 'ja',
+            aus
+              ? 'Ausgebucht, mit der Kilometerpauschale abgegolten. Beleg bleibt als Nachweis.'
+              : '',
           ];
         }),
+      // Fahrten erscheinen als eigene Zeilen, damit die Ausgabenliste
+      // vollstaendig ist und die Summe zur EÜR passt.
+      ...data.yearTrips.map((t) => [
+        formatDateDE(t.date.toDate()),
+        `Fahrt nach ${t.destinationName}: ${t.purpose}`,
+        'Fahrtkosten (Pauschale)',
+        String(TRAVEL_EXPENSE_META.elsterLine),
+        String(TRAVEL_EXPENSE_META.kennzahl),
+        `${t.totalKm} km × ${fmt(t.ratePerKm)} €`,
+        fmt(t.amount),
+        fmt(t.amount),
+        fmt(0),
+        fmt(t.amount),
+        fmt(0),
+        '',
+        'ja',
+        'Kilometerpauschale, kein Vorsteuerabzug möglich.',
+      ]),
     ];
     downloadCSV(`ausgaben-${year}.csv`, rows);
   };
@@ -306,15 +255,59 @@ export default function BerichtePage() {
 
   const exportElsterEUR = () => {
     const fmt = (n: number) => n.toFixed(2).replace('.', ',');
-    const rows = [
-      ['Elster-Zeile', 'Kennzahl', 'Beschreibung', 'Betrag (Netto)'],
-      ...data.elsterRows.map((r) => [
-        String(r.line),
-        String(r.kennzahl),
-        r.label,
-        fmt(r.deductible),
-      ]),
+    const rows: string[][] = [
+      [`# Anlage EÜR ${year}: Felder zum Abtippen`],
+      ['# Jede Zeile ist ein Feld in Elster. Von oben nach unten abarbeiten.'],
+      [],
+      ['Elster-Zeile', 'Kennzahl', 'Beschreibung', 'Betrag', 'Hinweis'],
+      ...data.elsterRows.flatMap((r) => {
+        // Bei beschraenkt abziehbaren Posten hat Elster zwei Felder.
+        // Beide werden ausgegeben, sonst wird eins davon vergessen.
+        const zeilen: string[][] = [];
+        if (r.nonDeductible > 0) {
+          const kzNicht = NICHT_ABZIEHBAR_KENNZAHL[r.line];
+          zeilen.push([
+            String(r.line),
+            kzNicht ? String(kzNicht) : '',
+            `${r.label}, nicht abziehbarer Anteil`,
+            fmt(r.nonDeductible),
+            'linkes Feld in Elster',
+          ]);
+        }
+        zeilen.push([
+          String(r.line),
+          String(r.kennzahl),
+          r.label,
+          fmt(r.deductible),
+          r.nonDeductible > 0 ? 'rechtes Feld in Elster' : '',
+        ]);
+        return zeilen;
+      }),
+      [],
+      ['SUMME Betriebsausgaben (zur Kontrolle)', '', '', fmt(data.eurTotalDeductible), ''],
+      [],
     ];
+
+    if (data.tripSum > 0) {
+      rows.push(
+        ['# PFLICHTFELD, das gern vergessen wird'],
+        [
+          '107',
+          '123',
+          'Einlagen einschließlich Sach-, Leistungs- und Nutzungseinlagen',
+          fmt(data.tripSum),
+          `Gegenstueck zu Zeile ${TRAVEL_EXPENSE_META.elsterLine}. Elster prueft beide Felder gegeneinander und meldet sonst einen Fehler.`,
+        ],
+        [],
+      );
+    }
+
+    rows.push(
+      ['# Felder, die LEER bleiben muessen'],
+      ['57', '185', 'Gezahlte und abziehbare Vorsteuerbeträge', '', 'leer lassen: es wird mit Nettobeträgen gerechnet'],
+      ['58', '186', 'An das Finanzamt gezahlte Umsatzsteuer', '', 'leer lassen: es wird mit Nettobeträgen gerechnet'],
+    );
+
     downloadCSV(`elster-euer-${year}.csv`, rows);
   };
 
@@ -592,6 +585,107 @@ export default function BerichtePage() {
             )}
           </section>
 
+          {/* Schritt-fuer-Schritt-Uebertragung nach Elster */}
+          <section className="card">
+            <h2 className="text-base font-semibold text-gray-900 mb-1">
+              Übertragung nach Elster
+            </h2>
+            <p className="text-xs text-gray-500 mb-4">
+              Von oben nach unten abarbeiten. Felder, die leer bleiben
+              müssen, stehen bewusst mit drin.
+            </p>
+
+            <ol className="space-y-3">
+              <ElsterSchritt
+                nummer={1}
+                titel="Betriebsausgaben eintragen"
+                text={`${data.elsterRows.length} Zeilen, zusammen ${formatEUR(data.eurTotalDeductible)}. Stehen oben in der Tabelle mit Zeile und Kennzahl.`}
+              />
+
+              {data.elsterRows.some((r) => r.nonDeductible > 0) && (
+                <ElsterSchritt
+                  nummer={2}
+                  titel="Beschränkt abziehbare Posten haben zwei Felder"
+                  warnung
+                  text="Bewirtung und Geschenke stehen in Elster mit zwei Eingabefeldern nebeneinander: links der nicht abziehbare Anteil, rechts der abziehbare. Beide müssen gefüllt werden."
+                >
+                  <ul className="mt-1.5 space-y-1">
+                    {data.elsterRows
+                      .filter((r) => r.nonDeductible > 0)
+                      .map((r) => (
+                        <li key={r.line} className="tabular-nums">
+                          Zeile {r.line}: Kennzahl{' '}
+                          {NICHT_ABZIEHBAR_KENNZAHL[r.line] ?? '?'} ={' '}
+                          <SensitiveValue>
+                            {formatEUR(r.nonDeductible)}
+                          </SensitiveValue>{' '}
+                          · Kennzahl {r.kennzahl} ={' '}
+                          <SensitiveValue>
+                            {formatEUR(r.deductible)}
+                          </SensitiveValue>
+                        </li>
+                      ))}
+                  </ul>
+                </ElsterSchritt>
+              )}
+
+              {data.tripSum > 0 && (
+                <ElsterSchritt
+                  nummer={data.elsterRows.some((r) => r.nonDeductible > 0) ? 3 : 2}
+                  titel="Nutzungseinlage nicht vergessen"
+                  warnung
+                  text={`Die Fahrtkosten stehen in Zeile ${TRAVEL_EXPENSE_META.elsterLine} (Kennzahl ${TRAVEL_EXPENSE_META.kennzahl}). Derselbe Betrag muss ZUSÄTZLICH in Zeile 107, Kennzahl 123 als Nutzungseinlage. Elster rechnet beide Felder gegeneinander und lehnt die Abgabe sonst ab.`}
+                >
+                  <div className="mt-1.5 tabular-nums">
+                    Zeile {TRAVEL_EXPENSE_META.elsterLine} (Kennzahl{' '}
+                    {TRAVEL_EXPENSE_META.kennzahl}) ={' '}
+                    <SensitiveValue>{formatEUR(data.tripSum)}</SensitiveValue>
+                    <br />
+                    Zeile 107 (Kennzahl 123) ={' '}
+                    <SensitiveValue>{formatEUR(data.tripSum)}</SensitiveValue>
+                  </div>
+                </ElsterSchritt>
+              )}
+
+              <ElsterSchritt
+                nummer={
+                  2 +
+                  (data.elsterRows.some((r) => r.nonDeductible > 0) ? 1 : 0) +
+                  (data.tripSum > 0 ? 1 : 0)
+                }
+                titel="Diese Felder bleiben leer"
+                text="Hier wird mit Nettobeträgen gerechnet. Wer Zeile 57 oder 58 zusätzlich füllt, zieht die Vorsteuer doppelt ab."
+              >
+                <ul className="mt-1.5 space-y-0.5">
+                  <li>Zeile 57 (Kennzahl 185): gezahlte Vorsteuerbeträge</li>
+                  <li>Zeile 58 (Kennzahl 186): an das Finanzamt gezahlte USt</li>
+                </ul>
+              </ElsterSchritt>
+            </ol>
+
+            {data.pruefungen.filter((h) => h.art === 'hinweis').length > 0 && (
+              <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+                <strong>Unerwartete Abweichung:</strong>
+                <ul className="mt-1 list-disc pl-4 space-y-0.5">
+                  {data.pruefungen
+                    .filter((h) => h.art === 'hinweis')
+                    .map((h, i) => (
+                      <li key={i}>{h.text}</li>
+                    ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="mt-4 flex items-center gap-2">
+              <button onClick={exportElsterEUR} className="btn-primary text-sm">
+                Übertragungsliste als CSV
+              </button>
+              <span className="text-xs text-gray-500">
+                enthält alle Felder oben, inklusive der leeren
+              </span>
+            </div>
+          </section>
+
           <section className="card">
             <h2 className="text-base font-semibold text-gray-900 mb-3">
               CSV-Export
@@ -664,4 +758,50 @@ function downloadCSV(filename: string, rows: string[][]) {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(link.href);
+}
+
+/** Ein Schritt in der Elster-Uebertragungsliste. */
+function ElsterSchritt({
+  nummer,
+  titel,
+  text,
+  warnung,
+  children,
+}: {
+  nummer: number;
+  titel: string;
+  text: string;
+  warnung?: boolean;
+  children?: React.ReactNode;
+}) {
+  return (
+    <li
+      className={`flex gap-3 rounded-lg border p-3 ${
+        warnung
+          ? 'border-amber-200 bg-amber-50/70'
+          : 'border-gray-200 bg-gray-50/60'
+      }`}
+    >
+      <span
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
+          warnung ? 'bg-amber-500' : 'bg-gray-400'
+        }`}
+      >
+        {nummer}
+      </span>
+      <div className="text-xs">
+        <div
+          className={`font-semibold ${warnung ? 'text-amber-900' : 'text-gray-900'}`}
+        >
+          {titel}
+        </div>
+        <p className={warnung ? 'text-amber-900 mt-0.5' : 'text-gray-600 mt-0.5'}>
+          {text}
+        </p>
+        <div className={warnung ? 'text-amber-900' : 'text-gray-700'}>
+          {children}
+        </div>
+      </div>
+    </li>
+  );
 }
