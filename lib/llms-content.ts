@@ -83,6 +83,16 @@ Der Ablauf: kostenloses Erstgespraech, danach ein festes Angebot mit allen Posit
 - digitale Systeme Bielefeld
 - Hosting und Wartung Bielefeld
 
+## KI-Beratung und Automatisierung
+
+- **URL:** https://www.kolac-digital.de/ki-beratung
+- **Worum es geht:** Beratung kleiner und mittlerer Unternehmen in Nordrhein-Westfalen zum Einsatz von künstlicher Intelligenz. Identifikation von Anwendungsfeldern und Zielen, Definition und Priorisierung konkreter Anwendungsfälle unter Berücksichtigung technischer und organisatorischer Voraussetzungen, Strukturen und Prozesse für ein effizientes und verantwortungsvolles KI-Management, Regeln zur Qualitätssicherung nach europäischer KI-Verordnung und Datenschutz.
+- **Testversion:** Auf Wunsch Bau und Test einer Testversion für einen konkreten Anwendungsfall mit echten Daten, inklusive Auswertung, ob der angestrebte Nutzen erreicht wird.
+- **Automatisierung:** Wiederkehrende Abläufe wie Belegerfassung, Anfragen, Angebote, Rechnungen und Auswertungen.
+- **Aus der Praxis:** KI-gestützte Belegerkennung (Datum, Betrag, Absender, Umsatzsteuer aus PDFs und Fotos, unsichere Werte werden markiert, Buchung erst nach menschlicher Prüfung), Visitenkarten-Erkennung für Kundensysteme, Redaktionsablauf mit fester Faktenbasis und Freigabe.
+- **Grundsätze:** KI schlägt vor, der Mensch entscheidet. Unsicherheit wird angezeigt. Datensparsamkeit, Betrieb auf eigenem Server möglich. Rückfallverfahren bei Ausfall eines Dienstes.
+- **Förderung:** Hinweis auf NRW.BANK.Impuls KI (50 Prozent Zuschuss, bis 25.000 Euro in zwei Jahren) für KMU mit Sitz in NRW. Antrag vor Projektbeginn.
+
 ## Kontakt
 
 - **Telefon:** +49 176 95762018
