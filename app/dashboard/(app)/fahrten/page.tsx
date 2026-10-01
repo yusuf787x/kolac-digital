@@ -15,6 +15,8 @@ import {
 } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
 import { site } from '@/lib/site-config';
+import { FAHRTZIELE } from '@/lib/fahrten-ziele';
+import Link from 'next/link';
 import { Timestamp } from 'firebase/firestore';
 
 /** Betriebssitz als Standard-Startadresse. */
@@ -212,6 +214,12 @@ export default function FahrtenPage() {
           Nutzungseinlage in die EÜR, Zeile {TRAVEL_EXPENSE_META.elsterLine}{' '}
           (Kennzahl {TRAVEL_EXPENSE_META.kennzahl}).
         </p>
+        <Link
+          href="/dashboard/fahrten/rekonstruktion"
+          className="text-sm text-blue-600 hover:underline mt-2 inline-block"
+        >
+          Zurückliegende Fahrten aus Tankbelegen rekonstruieren →
+        </Link>
       </header>
 
       {error && (
@@ -225,6 +233,32 @@ export default function FahrtenPage() {
         <h2 className="text-base font-semibold text-gray-900 mb-3">
           {editId ? 'Fahrt bearbeiten' : 'Fahrt erfassen'}
         </h2>
+        <div className="mb-4">
+          <label className="label">Häufige Ziele</label>
+          <div className="flex flex-wrap gap-1.5">
+            {FAHRTZIELE.map((z) => (
+              <button
+                key={z.name}
+                type="button"
+                onClick={() => {
+                  setDestinationName(z.name);
+                  setDestinationAddress(z.address);
+                  setDistanceKm(String(z.distanceKm).replace('.', ','));
+                  if (!purpose.trim()) setPurpose(z.defaultPurpose);
+                }}
+                className="px-2.5 py-1 rounded-full border border-gray-200 bg-white text-xs text-gray-700 hover:border-blue-400 hover:text-blue-700"
+              >
+                {z.name}
+                <span className="text-gray-400 ml-1">{z.distanceKm} km</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-1.5">
+            Echte Straßenentfernung ab Betriebssitz, einfache Strecke. Bist
+            du anders gefahren, trag die tatsächliche Strecke ein.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="label">Datum</label>
