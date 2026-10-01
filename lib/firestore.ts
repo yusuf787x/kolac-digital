@@ -705,6 +705,16 @@ function sortKey(a: Activity): number {
   return (a.dueDate ?? a.createdAt)?.toMillis?.() ?? 0;
 }
 
+/**
+ * Alle Aktivitaeten. Wird fuer die Rekonstruktion zurueckliegender
+ * Fahrten gebraucht, wo jeder dokumentierte Geschaeftsvorfall ein
+ * moeglicher Anlass fuer eine Fahrt ist.
+ */
+export async function listActivities(): Promise<Activity[]> {
+  const snap = await getDocs(activitiesCol());
+  return snap.docs.map((d) => fromDoc<Activity>(d));
+}
+
 /** Alle noch offenen (nicht erledigten) Aktivitäten mit Fälligkeitsdatum. */
 export async function listOpenActivities(): Promise<Activity[]> {
   const snap = await getDocs(

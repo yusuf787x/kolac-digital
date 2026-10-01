@@ -7,13 +7,33 @@ import {
   listExpenses,
   listBusinessTrips,
   createBusinessTrip,
+  listCustomers,
+  listInvoices,
+  listQuotes,
+  listDeals,
+  listActivities,
 } from '@/lib/firestore';
-import type { Expense, BusinessTrip } from '@/lib/types';
+import type {
+  Expense,
+  BusinessTrip,
+  Customer,
+  Invoice,
+  Quote,
+  Deal,
+  Activity,
+} from '@/lib/types';
 import { computeTripAmount, KM_PAUSCHALE_EUR } from '@/lib/types';
 import { formatEUR, formatDateDE } from '@/lib/utils';
 import { site } from '@/lib/site-config';
 import { FAHRTZIELE, kmAusLitern } from '@/lib/fahrten-ziele';
 import { classifyExpense } from '@/lib/fahrtkosten-analyse';
+import {
+  sammleAnker,
+  ohneBereitsErfasste,
+  QUELLE_LABEL,
+  STAERKE_TEXT,
+  type Fahrtanker,
+} from '@/lib/fahrten-anker';
 
 const HOME = `${site.street}, ${site.zip} ${site.city}`;
 
@@ -47,6 +67,12 @@ interface Entwurf {
 export default function RekonstruktionPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [trips, setTrips] = useState<BusinessTrip[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [ankerGewaehlt, setAnkerGewaehlt] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,10 +82,23 @@ export default function RekonstruktionPage() {
 
   const load = useCallback(() => {
     setLoading(true);
-    Promise.all([listExpenses(), listBusinessTrips()])
-      .then(([e, t]) => {
+    Promise.all([
+      listExpenses(),
+      listBusinessTrips(),
+      listCustomers(),
+      listInvoices(),
+      listQuotes(),
+      listDeals(),
+      listActivities(),
+    ])
+      .then(([e, t, c, i, q, d, a]) => {
         setExpenses(e);
         setTrips(t);
+        setCustomers(c);
+        setInvoices(i);
+        setQuotes(q);
+        setDeals(d);
+        setActivities(a);
       })
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
@@ -129,6 +168,52 @@ export default function RekonstruktionPage() {
       return d >= zeitraum.von && d <= zeitraum.bis;
     });
   }, [trips, zeitraum]);
+
+  /**
+   * Zeitraum fuer die Ankersuche: vom ersten Tankbeleg bis zum letzten,
+   * grosszuegig auf ganze Monate erweitert. Fahrten ohne Tankbeleg
+   * zaehlen genauso, deshalb wird nicht auf die Belegtage eingeengt.
+   */
+  const anker = useMemo(() => {
+    if (!zeitraum) return [];
+    const von = new Date(zeitraum.von);
+    von.setDate(1);
+    von.setHours(0, 0, 0, 0);
+    const bis = new Date(zeitraum.bis);
+    bis.setMonth(bis.getMonth() + 1, 0);
+    bis.setHours(23, 59, 59, 999);
+    const alle = sammleAnker({
+      customers,
+      invoices,
+      quotes,
+      deals,
+      activities,
+      von,
+      bis,
+    });
+    return ohneBereitsErfasste(alle, trips);
+  }, [customers, invoices, quotes, deals, activities, trips, zeitraum]);
+
+  const ankerUebernehmen = () => {
+    const neu: Entwurf[] = [];
+    for (const a of anker) {
+      if (!ankerGewaehlt.has(a.key)) continue;
+      neu.push({
+        key: `anker-${a.key}`,
+        date: a.date.toISOString().slice(0, 10),
+        destinationName: a.ziel?.name ?? a.customerName,
+        destinationAddress: a.ziel?.address ?? a.customerAddress,
+        purpose: a.ziel?.defaultPurpose ?? a.label,
+        distanceKm: a.ziel?.distanceKm ?? 0,
+        roundTrip: true,
+      });
+    }
+    setEntwuerfe((prev) => {
+      const vorhandeneKeys = new Set(prev.map((e) => e.key));
+      return [...prev, ...neu.filter((n) => !vorhandeneKeys.has(n.key))];
+    });
+    setAnkerGewaehlt(new Set());
+  };
 
   const entwurfSumme = useMemo(() => {
     let km = 0;
@@ -348,6 +433,103 @@ export default function RekonstruktionPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Anker aus dem eigenen System */}
+      <section className="card mb-5">
+        <h2 className="text-base font-semibold text-gray-900 mb-1">
+          Vorschläge aus deinen Geschäftsvorfällen
+        </h2>
+        <p className="text-xs text-gray-500 mb-3">
+          Tage, an denen laut deinem eigenen System etwas mit einem Kunden
+          lief. Das sind Anhaltspunkte, keine Beweise. Hak nur ab, wo du
+          wirklich hingefahren bist.
+        </p>
+
+        {anker.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            Keine Vorgänge im Zeitraum gefunden, zu denen eine Fahrt passen
+            könnte.
+          </p>
+        ) : (
+          <>
+            <div className="table-wrap mb-3">
+              <table className="w-full text-sm">
+                <thead className="text-xs uppercase text-gray-500 tracking-wider border-b border-gray-100">
+                  <tr>
+                    <th className="py-2 w-8" />
+                    <th className="text-left py-2 w-24">Datum</th>
+                    <th className="text-left py-2">Kunde und Vorgang</th>
+                    <th className="text-left py-2 w-28">Hinweis</th>
+                    <th className="text-right py-2 w-28">Strecke</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {anker.map((a: Fahrtanker) => (
+                    <tr key={a.key}>
+                      <td className="py-2">
+                        <input
+                          type="checkbox"
+                          checked={ankerGewaehlt.has(a.key)}
+                          onChange={() =>
+                            setAnkerGewaehlt((prev) => {
+                              const n = new Set(prev);
+                              if (n.has(a.key)) n.delete(a.key);
+                              else n.add(a.key);
+                              return n;
+                            })
+                          }
+                          className="rounded border-gray-300"
+                        />
+                      </td>
+                      <td className="py-2 text-gray-600 whitespace-nowrap">
+                        {formatDateDE(a.date)}
+                      </td>
+                      <td className="py-2">
+                        <div className="text-gray-900">{a.customerName}</div>
+                        <div className="text-xs text-gray-500">
+                          {QUELLE_LABEL[a.quelle]}: {a.label}
+                        </div>
+                      </td>
+                      <td className="py-2">
+                        <span
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold ${
+                            a.staerke === 'stark'
+                              ? 'bg-green-50 text-green-700'
+                              : a.staerke === 'mittel'
+                                ? 'bg-amber-50 text-amber-700'
+                                : 'bg-gray-100 text-gray-500'
+                          }`}
+                          title={STAERKE_TEXT[a.staerke]}
+                        >
+                          {a.staerke}
+                        </span>
+                      </td>
+                      <td className="py-2 text-right text-gray-700">
+                        {a.ziel ? (
+                          <span className="tabular-nums">
+                            {a.ziel.distanceKm} km
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">
+                            km eintragen
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button
+              onClick={ankerUebernehmen}
+              disabled={ankerGewaehlt.size === 0}
+              className="btn-secondary text-sm disabled:opacity-50"
+            >
+              {ankerGewaehlt.size} ausgewählte übernehmen
+            </button>
+          </>
+        )}
       </section>
 
       {/* Entwurf */}
