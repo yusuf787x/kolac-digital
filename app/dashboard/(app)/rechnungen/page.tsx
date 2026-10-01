@@ -103,6 +103,13 @@ export default function RechnungenPage() {
             Zahlungen prüfen
           </Link>
           <Link
+            href="/dashboard/rechnungen/zahlungen-zusammenfassen"
+            className="btn-secondary text-xs"
+            title="Zahlungseingänge zusammenfassen, die eine frühere Korrektur aufgeteilt hat. Ändert keine Beträge."
+          >
+            Zahlungen zusammenfassen
+          </Link>
+          <Link
             href="/dashboard/rechnungen/gocardless"
             className="btn-secondary"
             title="Webhook-Log aller GoCardless-Events"

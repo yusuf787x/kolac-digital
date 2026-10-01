@@ -18,6 +18,11 @@ import {
   computeIstOutputVatForInvoice,
 } from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
+import {
+  buildUstvaDetail,
+  summiereDetail,
+  formatRate,
+} from '@/lib/ustva-detail';
 
 interface PeriodOption {
   value: string; // "2026-07" | "2026-Q3" | "2026"
@@ -28,7 +33,7 @@ type PeriodType = 'month' | 'quarter' | 'year';
 
 /**
  * Elster-Kennzahl-Zuordnung fuer Umsatz-Steuersaetze
- * (Sektion 3 — steuerpflichtige Umsaetze / Bemessungsgrundlage).
+ * (Sektion 3, steuerpflichtige Umsaetze und Bemessungsgrundlage).
  */
 function outputKZForRate(rate: number): string {
   if (Math.abs(rate - 0.19) < 0.001) return '81';
@@ -224,7 +229,12 @@ export default function UStVAPage() {
     const zahllast = outputVat + rcVat - inputVat - rcVat;
     const regularExpenses = monthExpenses.filter((e) => !e.reverseCharge);
 
+    const detailRows = buildUstvaDetail(monthInvoices, inRange);
+    const detailSumme = summiereDetail(detailRows);
+
     return {
+      detailRows,
+      detailSumme,
       excludedInPeriod,
       monthInvoices,
       monthExpenses,
@@ -246,55 +256,75 @@ export default function UStVAPage() {
   }, [invoices, expenses, periodValue]);
 
   const handleDownloadInvoicesCsv = () => {
-    // Ist-Versteuerung: eine Zeile pro Zahlungseingang im Zeitraum.
-    // So sieht der Steuerberater direkt Datum und Betrag, wie sie in
-    // der UStVA gebucht werden.
-    const inRange = buildRangeFilter(periodValue);
+    // Eine Zeile je Rechnung und Steuersatz. Eine Rechnung mit 19 % und
+    // 0 % ergibt also zwei Zeilen, eine Rechnung mit mehreren
+    // Zahlungseingaengen aber nur eine. Damit laesst sich die Spalte
+    // "Anteil USt" direkt gegen die Kennzahlen der Voranmeldung
+    // summieren, ohne dass etwas doppelt gezaehlt wird.
     const rows: string[][] = [
       [
         'Rechnungsnummer',
         'Rechnungsdatum',
         'Zahlungseingang am',
+        'Zahlungseingänge',
         'Kunde',
         'Beschreibung',
         'Zahlung brutto (EUR)',
         'Anteil Netto (EUR)',
         'USt-Satz (%)',
         'Anteil USt (EUR)',
-        'Notiz',
       ],
     ];
-    for (const i of periodData.monthInvoices) {
-      const cust = customers.get(i.customerId);
+    const invById = new Map(periodData.monthInvoices.map((i) => [i.id, i]));
+    for (const row of periodData.detailRows) {
+      const i = invById.get(row.invoiceId);
+      const cust = customers.get(row.customerId);
       const desc =
-        i.items?.map((it) => it.description.split('\n')[0]).join('; ') ?? '';
-      const pays = (effectivePayments(i) as InvoicePayment[]).filter((p) =>
-        inRange(p.paidAt.toDate()),
-      );
-      for (const p of pays) {
-        const v = computeIstOutputVatForInvoice(
-          i.items,
-          i.vatRate,
-          [{ paidAt: p.paidAt.toDate(), amount: p.amount }],
-          () => true,
-        );
-        const rateStr =
-          v.byRate.length === 1
-            ? String(Math.round(v.byRate[0].rate * 100))
-            : v.byRate.map((r) => Math.round(r.rate * 100)).join('/');
+        i?.items?.map((it) => it.description.split('\n')[0]).join('; ') ?? '';
+      const datum = row.paymentDates
+        .map((d) => formatDateDE(d))
+        .join(' + ');
+      for (const x of row.byRate) {
         rows.push([
-          i.invoiceNumber ?? '',
-          formatDateDE(i.invoiceDate.toDate()),
-          formatDateDE(p.paidAt.toDate()),
-          cust?.company ?? '—',
+          row.invoiceNumber ?? '',
+          i ? formatDateDE(i.invoiceDate.toDate()) : '',
+          datum,
+          String(row.paymentCount),
+          cust?.company ?? '',
           desc,
-          fmtCsv(v.paidGross),
-          fmtCsv(v.paidNet),
-          rateStr,
-          fmtCsv(v.paidVat),
-          p.note ?? '',
+          fmtCsv(x.gross),
+          fmtCsv(x.net),
+          String(Math.round(x.rate * 100)),
+          fmtCsv(x.vat),
         ]);
       }
+    }
+    rows.push([]);
+    rows.push([
+      'SUMME',
+      '',
+      '',
+      '',
+      '',
+      '',
+      fmtCsv(periodData.detailSumme.gross),
+      fmtCsv(periodData.detailSumme.net),
+      '',
+      fmtCsv(periodData.detailSumme.vat),
+    ]);
+    for (const x of periodData.detailSumme.byRate) {
+      rows.push([
+        `davon ${Math.round(x.rate * 100)} %`,
+        '',
+        '',
+        '',
+        '',
+        '',
+        fmtCsv(x.gross),
+        fmtCsv(x.net),
+        String(Math.round(x.rate * 100)),
+        fmtCsv(x.vat),
+      ]);
     }
     downloadCsv(`UStVA_Einnahmen_Ist_${periodValue}.csv`, rows);
   };
@@ -554,77 +584,137 @@ export default function UStVAPage() {
             >
               CSV: Rechnungen-Liste
             </button>
-            {periodData.monthInvoices.length > 0 && (
+            {periodData.detailRows.length > 0 && (
               <details className="mt-3">
                 <summary className="cursor-pointer text-xs text-gray-500">
-                  Details ({periodData.monthInvoices.length}) · nach Zahlungseingang
+                  Details ({periodData.detailRows.length} Rechnungen) · nach
+                  Zahlungseingang
                 </summary>
-                <table className="w-full text-xs mt-2">
-                  <thead className="text-gray-500 uppercase tracking-wider">
-                    <tr>
-                      <th className="text-left py-1.5">Zahlung am</th>
-                      <th className="text-left py-1.5">Rechnungsnr.</th>
-                      <th className="text-left py-1.5">Kunde</th>
-                      <th className="text-right py-1.5">Zahlung brutto</th>
-                      <th className="text-right py-1.5">Anteil Netto</th>
-                      <th className="text-right py-1.5">Anteil USt</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {periodData.monthInvoices.flatMap((i) => {
-                      const inRangeFn = buildRangeFilter(periodValue);
-                      const pays = (
-                        effectivePayments(i) as InvoicePayment[]
-                      ).filter((p) => inRangeFn(p.paidAt.toDate()));
-                      return pays.map((p, pi) => {
-                        const v = computeIstOutputVatForInvoice(
-                          i.items,
-                          i.vatRate,
-                          [
-                            {
-                              paidAt: p.paidAt.toDate(),
-                              amount: p.amount,
-                            },
-                          ],
-                          () => true,
-                        );
-                        return (
-                          <tr key={`${i.id}-${pi}`}>
-                            <td className="py-1.5">
-                              {formatDateDE(p.paidAt.toDate())}
-                            </td>
-                            <td className="py-1.5 font-mono">
-                              <Link
-                                href={`/dashboard/rechnungen/${i.id}`}
-                                className="text-brand-blue hover:underline"
+                <p className="text-[11px] text-gray-500 mt-1.5">
+                  Eine Zeile je Rechnung. Hat eine Rechnung mehrere
+                  Zahlungseingänge im Zeitraum, sind sie hier
+                  zusammengefasst. Die Aufteilung nach Steuersatz steht
+                  darunter, damit auch Positionen mit 0 % sichtbar sind.
+                </p>
+                <div className="table-wrap">
+                  <table className="w-full text-xs mt-2">
+                    <thead className="text-gray-500 uppercase tracking-wider">
+                      <tr>
+                        <th className="text-left py-1.5">Zahlung am</th>
+                        <th className="text-left py-1.5">Rechnungsnr.</th>
+                        <th className="text-left py-1.5">Kunde</th>
+                        <th className="text-right py-1.5">Zahlung brutto</th>
+                        <th className="text-right py-1.5">Netto</th>
+                        <th className="text-right py-1.5">USt</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {periodData.detailRows.map((row) => (
+                        <tr key={row.invoiceId} className="align-top">
+                          <td className="py-1.5 whitespace-nowrap">
+                            {formatDateDE(row.paymentDates[0])}
+                            {row.mehrfachZahlung && (
+                              <div className="text-[10px] text-gray-500">
+                                {row.paymentCount} Zahlungen, letzte{' '}
+                                {formatDateDE(
+                                  row.paymentDates[row.paymentDates.length - 1],
+                                )}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-1.5 font-mono">
+                            <Link
+                              href={`/dashboard/rechnungen/${row.invoiceId}`}
+                              className="text-brand-blue hover:underline"
+                            >
+                              {row.invoiceNumber}
+                            </Link>
+                            {row.mehrfachZahlung && (
+                              <span
+                                className="ml-1.5 inline-flex items-center px-1 py-0.5 rounded text-[9px] font-semibold bg-gray-100 text-gray-600"
+                                title="Mehrere Zahlungseingänge auf dieselbe Rechnung. Hier zusammengefasst, die Umsatzsteuer wird nur einmal berechnet."
                               >
-                                {i.invoiceNumber}
-                              </Link>
-                            </td>
-                            <td className="py-1.5">
-                              {customers.get(i.customerId)?.company ?? '—'}
-                            </td>
-                            <td className="py-1.5 text-right font-medium">
+                                {row.paymentCount}x
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-1.5">
+                            {customers.get(row.customerId)?.company ?? '?'}
+                            {row.byRate.length > 1 && (
+                              <div className="text-[10px] text-gray-500 mt-0.5">
+                                {row.byRate
+                                  .map(
+                                    (x) =>
+                                      `${formatRate(x.rate)}: ${x.net.toFixed(2).replace('.', ',')} € netto`,
+                                  )
+                                  .join(' · ')}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-1.5 text-right font-medium">
+                            <SensitiveValue>
+                              {formatEUR(row.paidGross)}
+                            </SensitiveValue>
+                          </td>
+                          <td className="py-1.5 text-right">
+                            <SensitiveValue>
+                              {formatEUR(row.paidNet)}
+                            </SensitiveValue>
+                          </td>
+                          <td className="py-1.5 text-right">
+                            {row.paidVat === 0 ? (
+                              <span className="text-gray-400">0,00 €</span>
+                            ) : (
                               <SensitiveValue>
-                                {formatEUR(v.paidGross)}
+                                {formatEUR(row.paidVat)}
                               </SensitiveValue>
-                            </td>
-                            <td className="py-1.5 text-right">
-                              <SensitiveValue>
-                                {formatEUR(v.paidNet)}
-                              </SensitiveValue>
-                            </td>
-                            <td className="py-1.5 text-right">
-                              <SensitiveValue>
-                                {formatEUR(v.paidVat)}
-                              </SensitiveValue>
-                            </td>
-                          </tr>
-                        );
-                      });
-                    })}
-                  </tbody>
-                </table>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="border-t-2 border-gray-200 font-semibold">
+                      <tr>
+                        <td className="py-1.5" colSpan={3}>
+                          Summe Detail
+                        </td>
+                        <td className="py-1.5 text-right">
+                          <SensitiveValue>
+                            {formatEUR(periodData.detailSumme.gross)}
+                          </SensitiveValue>
+                        </td>
+                        <td className="py-1.5 text-right">
+                          <SensitiveValue>
+                            {formatEUR(periodData.detailSumme.net)}
+                          </SensitiveValue>
+                        </td>
+                        <td className="py-1.5 text-right">
+                          <SensitiveValue>
+                            {formatEUR(periodData.detailSumme.vat)}
+                          </SensitiveValue>
+                        </td>
+                      </tr>
+                      {periodData.detailSumme.byRate.map((x) => (
+                        <tr key={x.rate} className="font-normal text-gray-500">
+                          <td className="py-1" colSpan={3}>
+                            davon {formatRate(x.rate)}
+                          </td>
+                          <td className="py-1 text-right">
+                            <SensitiveValue>
+                              {formatEUR(x.gross)}
+                            </SensitiveValue>
+                          </td>
+                          <td className="py-1 text-right">
+                            <SensitiveValue>{formatEUR(x.net)}</SensitiveValue>
+                          </td>
+                          <td className="py-1 text-right">
+                            <SensitiveValue>{formatEUR(x.vat)}</SensitiveValue>
+                          </td>
+                        </tr>
+                      ))}
+                    </tfoot>
+                  </table>
+                </div>
               </details>
             )}
           </section>
@@ -633,7 +723,7 @@ export default function UStVAPage() {
           <section className="card">
             <div className="flex items-start justify-between mb-3 gap-2 flex-wrap">
               <h2 className="text-base font-semibold text-gray-900">
-                Ausgaben — reguläre Vorsteuer ({periodData.regularExpenses.length}{' '}
+                Ausgaben, reguläre Vorsteuer ({periodData.regularExpenses.length}{' '}
                 Beleg{periodData.regularExpenses.length === 1 ? '' : 'e'})
               </h2>
               <span className="text-[10px] font-mono px-2 py-1 rounded bg-brand-blue/10 text-brand-blue">
@@ -708,12 +798,12 @@ export default function UStVAPage() {
               <div className="flex items-start justify-between mb-3 gap-2 flex-wrap">
                 <div>
                   <h2 className="text-base font-semibold text-gray-900">
-                    Reverse Charge (§ 13b UStG) — {periodData.rcExpenses.length}{' '}
+                    Reverse Charge (§ 13b UStG), {periodData.rcExpenses.length}{' '}
                     Rechnung{periodData.rcExpenses.length === 1 ? '' : 'en'}
                   </h2>
                   <p className="text-xs text-gray-600 mt-1">
                     EU-Ausland ohne MwSt. Fiktive USt wird als Steuerschuld
-                    UND als Vorsteuer deklariert — Netto-Effekt null.
+                    UND als Vorsteuer deklariert, Netto-Effekt null.
                   </p>
                 </div>
                 <span className="text-[10px] font-mono px-2 py-1 rounded bg-amber-100 text-amber-800">
@@ -832,7 +922,7 @@ export default function UStVAPage() {
                   </tr>
                   <tr className="border-t-2 border-gray-200">
                     <td className="py-1.5">
-                      Reverse Charge — Bemessungsgrundlage
+                      Reverse Charge, Bemessungsgrundlage
                     </td>
                     <td className="py-1.5">Sektion 5 · Zeile 30</td>
                     <td className="py-1.5 font-mono">KZ 46</td>
@@ -840,7 +930,7 @@ export default function UStVAPage() {
                   </tr>
                   <tr>
                     <td className="py-1.5">
-                      Reverse Charge — geschuldete USt
+                      Reverse Charge, geschuldete USt
                     </td>
                     <td className="py-1.5">Sektion 5 · Zeile 30</td>
                     <td className="py-1.5 font-mono">KZ 47</td>

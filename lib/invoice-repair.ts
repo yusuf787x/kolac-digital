@@ -1,5 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import type { Invoice, InvoicePayment } from './types';
+import { computeInvoiceVat } from './utils';
 
 /**
  * Einmalige Datenbereinigung der Zahlungs-Felder.
@@ -10,7 +11,7 @@ import type { Invoice, InvoicePayment } from './types';
  * (netto statt brutto), und die Rechnung sah aus wie teilbezahlt.
  *
  * Diese Analyse findet solche Faelle und schlaegt die Korrektur vor.
- * Sie schreibt nichts — das macht die Reparatur-Seite nach Bestaetigung.
+ * Sie schreibt nichts. Das macht die Reparatur-Seite nach Bestaetigung.
  */
 
 export type RepairKind =
@@ -60,7 +61,13 @@ function resolvePaymentDate(inv: Invoice): {
  * korrigiert werden muss. Entwuerfe ohne Nummer werden ignoriert.
  */
 export function analyzeInvoice(inv: Invoice): RepairPlan {
-  const bruttoTotal = round2(inv.totalAmount * (1 + (inv.vatRate ?? 0)));
+  // Brutto IMMER ueber die Positionen rechnen. `totalAmount * (1 + vatRate)`
+  // ist falsch, sobald eine Rechnung Positionen mit unterschiedlichen
+  // Steuersaetzen hat, etwa 19 % Beratung plus 0 % durchlaufender Posten.
+  // Dann faellt der Aufschlag zu hoch aus.
+  const bruttoTotal = round2(
+    computeInvoiceVat(inv.items ?? [], inv.vatRate).gross,
+  );
   const currentPaidAmount = round2(inv.paidAmount ?? 0);
   const existingPayments = inv.payments ?? [];
   const paymentsSum = round2(
@@ -127,6 +134,31 @@ export function analyzeInvoice(inv: Invoice): RepairPlan {
     // Wenn schon Payments da sind, deren Summe stimmt, aber paidAmount
     // abweicht: paidAmount an die Summe angleichen statt neu zu bauen.
     if (existingPayments.length > 0 && !nearlyEqual(paymentsSum, bruttoTotal)) {
+      const fehlbetrag = round2(bruttoTotal - paymentsSum);
+      // Wenn genau EIN Zahlungseingang erfasst ist, wird dieser auf den
+      // Brutto-Betrag angehoben. Eine zweite Zahlung anzulegen waere
+      // sachlich falsch: es gab nur eine Ueberweisung, und in der
+      // Umsatzsteuer-Detailansicht saehe die Rechnung sonst aus, als
+      // waere sie doppelt erfasst.
+      if (existingPayments.length === 1 && fehlbetrag > 0) {
+        return {
+          ...base,
+          kind: 'summe-weicht-ab',
+          reason: `Status ist "bezahlt", aber es sind nur ${paymentsSum.toFixed(2)} € statt ${bruttoTotal.toFixed(2)} € brutto erfasst. Der vorhandene Zahlungseingang wird auf den Brutto-Betrag angehoben.`,
+          nextPaidAmount: bruttoTotal,
+          nextPayments: [
+            {
+              ...existingPayments[0],
+              amount: bruttoTotal,
+              note: 'Auf Brutto-Gesamtbetrag korrigiert',
+            },
+          ],
+          assumedDate: existingPayments[0].paidAt.toDate(),
+          dateSource: 'paidAt',
+        };
+      }
+      // Mehrere Zahlungen: das sind echte Teilzahlungen, da wird nichts
+      // zusammengefasst. Der Rest kommt als eigener Eingang dazu.
       return {
         ...base,
         kind: 'summe-weicht-ab',
@@ -136,7 +168,7 @@ export function analyzeInvoice(inv: Invoice): RepairPlan {
           ...existingPayments,
           {
             paidAt: Timestamp.fromDate(date),
-            amount: round2(bruttoTotal - paymentsSum),
+            amount: fehlbetrag,
             note: 'Korrektur auf Brutto-Gesamtbetrag',
           },
         ],
@@ -201,3 +233,97 @@ export const DATE_SOURCE_LABELS: Record<
   faelligkeit: 'Fälligkeitsdatum (fristgemäß angenommen)',
   rechnungsdatum: 'Rechnungsdatum',
 };
+
+
+/**
+ * Fuehrt Zahlungseingaenge zusammen, die durch eine fruehere
+ * Datenbereinigung kuenstlich aufgeteilt wurden.
+ *
+ * Hintergrund: eine aeltere Fassung dieser Reparatur hat bei
+ * Rechnungen, in denen nur der Netto-Betrag als bezahlt stand, den
+ * fehlenden Umsatzsteuer-Anteil als ZWEITEN Zahlungseingang ergaenzt.
+ * Rechnerisch stimmt die Summe, und auch die Umsatzsteuer wird korrekt
+ * nur einmal berechnet. In der Detailansicht sieht die Rechnung aber
+ * aus, als waere sie doppelt erfasst.
+ *
+ * Diese Funktion erkennt solche Paare und schlaegt vor, sie wieder zu
+ * einem Zahlungseingang zusammenzufassen. Betraege und Summen aendern
+ * sich dabei nicht, nur die Anzahl der Eintraege.
+ */
+export interface MergePlan {
+  invoice: Invoice;
+  /** true, wenn es etwas zusammenzufassen gibt. */
+  needsMerge: boolean;
+  reason: string;
+  before: InvoicePayment[];
+  after: InvoicePayment[];
+  /** Summe vorher und nachher. Muss identisch sein. */
+  sumBefore: number;
+  sumAfter: number;
+}
+
+const KORREKTUR_NOTIZEN = [
+  'Korrektur auf Brutto-Gesamtbetrag',
+  'Auf Brutto-Gesamtbetrag korrigiert',
+];
+
+export function planPaymentMerge(inv: Invoice): MergePlan {
+  const payments = inv.payments ?? [];
+  const sumBefore = round2(payments.reduce((s, p) => s + p.amount, 0));
+  const base = {
+    invoice: inv,
+    before: payments,
+    sumBefore,
+    sumAfter: sumBefore,
+  };
+
+  const korrekturen = payments.filter(
+    (p) => p.note && KORREKTUR_NOTIZEN.includes(p.note),
+  );
+  if (payments.length < 2 || korrekturen.length === 0) {
+    return {
+      ...base,
+      needsMerge: false,
+      reason: 'Keine kuenstlich aufgeteilten Zahlungen.',
+      after: payments,
+    };
+  }
+
+  // Alles ausser den Korrektur-Eintraegen bleibt stehen. Die Korrektur-
+  // betraege werden auf den ersten echten Zahlungseingang addiert.
+  const echte = payments.filter(
+    (p) => !(p.note && KORREKTUR_NOTIZEN.includes(p.note)),
+  );
+  if (echte.length === 0) {
+    return {
+      ...base,
+      needsMerge: false,
+      reason: 'Nur Korrektur-Eintraege vorhanden, hier wird nichts angefasst.',
+      after: payments,
+    };
+  }
+
+  const korrekturSumme = round2(
+    korrekturen.reduce((s, p) => s + p.amount, 0),
+  );
+  const sortiert = [...echte].sort(
+    (a, b) => a.paidAt.toMillis() - b.paidAt.toMillis(),
+  );
+  const after: InvoicePayment[] = sortiert.map((p, i) =>
+    i === 0
+      ? {
+          ...p,
+          amount: round2(p.amount + korrekturSumme),
+          note: 'Brutto-Zahlungseingang (Netto und USt zusammengefasst)',
+        }
+      : p,
+  );
+
+  return {
+    ...base,
+    needsMerge: true,
+    reason: `${payments.length} Eintraege, davon ${korrekturen.length} aus einer frueheren Korrektur. Werden zu ${after.length} Zahlungseingang/-eingaengen zusammengefasst. Die Summe bleibt bei ${sumBefore.toFixed(2)} €.`,
+    after,
+    sumAfter: round2(after.reduce((s, p) => s + p.amount, 0)),
+  };
+}
