@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { authenticate, authErrorResponse } from '@/lib/server-auth';
+import { submitToIndexNow } from '@/lib/indexnow';
+import { site } from '@/lib/site-config';
 
 export const runtime = 'nodejs';
 
@@ -39,5 +41,14 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, erneuert: paths });
+  // Bing und Co. sofort Bescheid geben. Auch beim Zurueckziehen,
+  // dann holen sie sich die 404 und nehmen den Artikel raus.
+  const indexnow = await submitToIndexNow(
+    [
+      `${site.baseUrl}/blog`,
+      ...(slug ? [`${site.baseUrl}/blog/${slug}`] : []),
+    ],
+  );
+
+  return NextResponse.json({ ok: true, erneuert: paths, indexnow });
 }
