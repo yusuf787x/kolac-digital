@@ -190,9 +190,11 @@ export function buildContactNotificationEmail(opts: {
   phone: string;
   email: string;
   message: string;
+  company?: string;
+  service?: string;
   source: string;
 }): { from: string; replyTo: string; subject: string; html: string; text: string } {
-  const { name, phone, email, message, source } = opts;
+  const { name, phone, email, message, company, service, source } = opts;
   const safe = (s: string) =>
     s
       .replace(/&/g, '&amp;')
@@ -206,6 +208,8 @@ export function buildContactNotificationEmail(opts: {
       <tr><td style="color:#6b7280;">Name</td><td><strong>${safe(name)}</strong></td></tr>
       <tr><td style="color:#6b7280;">Telefon</td><td><a href="tel:${safe(phone)}" style="color:#2563eb;">${safe(phone)}</a></td></tr>
       <tr><td style="color:#6b7280;">E-Mail</td><td><a href="mailto:${safe(email)}" style="color:#2563eb;">${safe(email)}</a></td></tr>
+      ${company ? `<tr><td style="color:#6b7280;">Unternehmen</td><td>${safe(company)}</td></tr>` : ''}
+      ${service ? `<tr><td style="color:#6b7280;">Anliegen</td><td>${safe(service)}</td></tr>` : ''}
       <tr><td style="color:#6b7280;">Quelle</td><td>${safe(source)}</td></tr>
     </table>
     ${message ? `<p style="color:#6b7280; margin-bottom:6px;">Nachricht</p><div style="background:#f9fafb; border-left:3px solid #2563eb; padding:10px 12px; border-radius:4px;">${safe(message).replace(/\n/g, '<br/>')}</div>` : ''}
@@ -218,6 +222,8 @@ export function buildContactNotificationEmail(opts: {
     `Name: ${name}`,
     `Telefon: ${phone}`,
     `E-Mail: ${email}`,
+    company ? `Unternehmen: ${company}` : '',
+    service ? `Anliegen: ${service}` : '',
     `Quelle: ${source}`,
     '',
     message ? `Nachricht:\n${message}` : '',

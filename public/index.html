@@ -872,6 +872,8 @@
             <label for="message">Nachricht</label>
             <textarea id="message" name="message" placeholder="Erzähl uns kurz von deinem Projekt..."></textarea>
           </div>
+          <!-- Spamschutz: fuer Menschen unsichtbar, Bots fuellen es aus -->
+          <input class="zeitfresser-form-honeypot" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
           <button type="submit" class="form-submit">Nachricht senden</button>
         </form>
       </div>

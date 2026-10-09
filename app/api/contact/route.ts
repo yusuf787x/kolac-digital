@@ -9,6 +9,10 @@ interface Body {
   phone?: string;
   email?: string;
   message?: string;
+  /** Optional, z.B. aus dem Kontaktformular der Startseite. */
+  company?: string;
+  /** Optional, gewaehltes Anliegen ("Webseite", "Google Ads", …). */
+  service?: string;
   source?: string;
   /** Honeypot Feld. Wenn gefüllt, ist es ein Bot. */
   website?: string;
@@ -45,6 +49,8 @@ export async function POST(req: Request) {
   const phone = (body.phone ?? '').trim();
   const email = (body.email ?? '').trim();
   const message = (body.message ?? '').trim();
+  const company = (body.company ?? '').trim().slice(0, 200);
+  const service = (body.service ?? '').trim().slice(0, 100);
   const source = (body.source ?? 'Webseiten Landingpage').trim();
 
   if (!name) {
@@ -68,6 +74,8 @@ export async function POST(req: Request) {
     phone,
     email,
     message,
+    company,
+    service,
     source,
   });
 

@@ -721,31 +721,36 @@
       submitBtn.textContent = 'Wird gesendet...';
       submitBtn.disabled = true;
 
-      // Web3Forms – JSON format
+      // Versand ueber die eigene Route (/api/contact, Mail per Resend).
+      // Das Anliegen geht als lesbarer Text mit, nicht als interner Wert.
+      var serviceSelect = form.querySelector('#service');
+      var serviceLabel =
+        serviceSelect && serviceSelect.value
+          ? serviceSelect.options[serviceSelect.selectedIndex].text
+          : '';
       var payload = {
-        access_key: '32c71b72-7062-453d-a6a8-8b877f0aa323',
-        subject: 'Neue Kontaktanfrage über kolac-digital.de',
-        from_name: 'Kolac Digital Website',
         name: data.name,
         email: data.email,
         phone: data.phone || '',
         company: data.company || '',
-        service: data.service || '',
-        message: data.message || ''
+        service: serviceLabel,
+        message: data.message || '',
+        source: 'Kontaktformular (Startseite)',
+        website: data.website || ''
       };
 
-      fetch('https://api.web3forms.com/submit', {
+      fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
+        .then((res) => res.json().then((result) => ({ ok: res.ok, result: result })))
+        .then(({ ok, result }) => {
+          if (ok && result.ok) {
             alert('Danke für deine Nachricht! Wir melden uns innerhalb von 24 Stunden bei dir.');
             form.reset();
           } else {
-            console.error('Web3Forms error:', result);
+            console.error('Kontaktformular Fehler:', result);
             alert('Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreib uns direkt an yusuf@kolac-digital.de');
           }
         })
