@@ -1,5 +1,10 @@
 /* ==========================================================================
-   Cookie Consent – DSGVO-compliant
+   Einwilligungs-Banner
+   Die Seite setzt keine Cookies. Gespeichert wird nur die Auswahl selbst
+   (localStorage, Schluessel kolac_cookie_consent). Einwilligungspflichtig
+   ist allein YouTube ("functional"), auch genutzt von
+   components/case-studies/VideoTestimonial.tsx. Die Ratgeber-Zaehlung
+   (lib/blog-tracking.ts) laeuft ohne Speicherung auf dem Geraet.
    ========================================================================== */
 (function () {
   'use strict';
@@ -30,9 +35,10 @@
     banner.innerHTML =
       '<div class="cookie-banner-inner">' +
         '<p class="cookie-banner-text">' +
-          'Wir verwenden Cookies, um dir die bestmögliche Erfahrung zu bieten. ' +
-          'Funktionale Cookies ermöglichen die Einbindung externer Inhalte (z.\u00a0B. YouTube-Videos). ' +
-          '<a href="datenschutz.html">Mehr erfahren</a>' +
+          'Wir setzen keine Tracking- oder Werbe-Cookies. ' +
+          'Externe Inhalte wie YouTube-Videos laden wir nur, wenn du zustimmst. ' +
+          'Deine Auswahl speichern wir lokal in deinem Browser. ' +
+          '<a href="/datenschutz.html">Mehr erfahren</a>' +
         '</p>' +
         '<div class="cookie-banner-actions">' +
           '<button class="cookie-btn cookie-btn-accept" id="cookie-accept-all">Alle akzeptieren</button>' +
@@ -51,27 +57,33 @@
     overlay.id = 'cookie-modal-overlay';
     overlay.innerHTML =
       '<div class="cookie-modal">' +
-        '<h3>Cookie-Einstellungen</h3>' +
-        '<p>Wähle aus, welche Cookies du zulassen möchtest. Notwendige Cookies sind für den Betrieb der Website erforderlich und können nicht deaktiviert werden.</p>' +
+        '<h3>Datenschutz-Einstellungen</h3>' +
+        '<p>Wähle aus, was du zulassen möchtest. Das Notwendige ist für den Betrieb der Website erforderlich und lässt sich nicht abschalten.</p>' +
         '<div class="cookie-category">' +
           '<div class="cookie-category-header">' +
-            '<span class="cookie-category-name">Notwendige Cookies</span>' +
+            '<span class="cookie-category-name">Notwendig</span>' +
             '<label class="cookie-toggle">' +
               '<input type="checkbox" checked disabled>' +
               '<span class="cookie-toggle-slider"></span>' +
             '</label>' +
           '</div>' +
-          '<p class="cookie-category-desc">Speichern deine Cookie-Einstellungen. Keine Tracking-Daten.</p>' +
+          '<p class="cookie-category-desc">Speichert nur deine Auswahl hier im lokalen Speicher deines Browsers. Keine Cookies, keine Tracking-Daten.</p>' +
         '</div>' +
         '<div class="cookie-category">' +
           '<div class="cookie-category-header">' +
-            '<span class="cookie-category-name">Funktionale Cookies</span>' +
+            '<span class="cookie-category-name">Externe Medien (YouTube)</span>' +
             '<label class="cookie-toggle">' +
               '<input type="checkbox" id="cookie-toggle-functional">' +
               '<span class="cookie-toggle-slider"></span>' +
             '</label>' +
           '</div>' +
-          '<p class="cookie-category-desc">Ermöglichen die Einbindung externer Inhalte wie YouTube-Videos. Ohne diese Cookies wird ein Platzhalter anstelle des Videos angezeigt.</p>' +
+          '<p class="cookie-category-desc">Lädt Kundenvideos von YouTube (Google) im erweiterten Datenschutzmodus. Dabei werden deine IP-Adresse und technische Daten an YouTube übertragen. Ohne Zustimmung siehst du nur ein Vorschaubild.</p>' +
+        '</div>' +
+        '<div class="cookie-category">' +
+          '<div class="cookie-category-header">' +
+            '<span class="cookie-category-name">Reichweitenmessung im Ratgeber</span>' +
+          '</div>' +
+          '<p class="cookie-category-desc">Wir zählen Aufrufe und Klicks im Ratgeber ohne Cookies, ohne Speicherung auf deinem Gerät und ohne IP-Adresse. Es entstehen nur Summen, daher ist keine Einwilligung nötig. Details in der <a href="/datenschutz.html#reichweitenmessung">Datenschutzerklärung</a>.</p>' +
         '</div>' +
         '<div class="cookie-modal-actions">' +
           '<button class="cookie-btn cookie-btn-essential" id="cookie-modal-cancel">Abbrechen</button>' +

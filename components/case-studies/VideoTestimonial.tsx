@@ -7,20 +7,55 @@ interface Props {
   data: VT;
 }
 
+/** Gleicher Schluessel wie public/js/cookie-consent.js. */
+const CONSENT_KEY = 'kolac_cookie_consent';
+
+function hasYouTubeConsent(): boolean {
+  try {
+    const raw = window.localStorage.getItem(CONSENT_KEY);
+    return raw ? JSON.parse(raw).functional === true : false;
+  } catch {
+    return false;
+  }
+}
+
+function grantYouTubeConsent() {
+  try {
+    const raw = window.localStorage.getItem(CONSENT_KEY);
+    const consent = raw ? JSON.parse(raw) : {};
+    window.localStorage.setItem(
+      CONSENT_KEY,
+      JSON.stringify({
+        ...consent,
+        essential: true,
+        functional: true,
+        timestamp: new Date().toISOString(),
+      }),
+    );
+  } catch {
+    // Ohne localStorage gilt die Einwilligung nur fuer dieses Video.
+  }
+}
+
 /**
  * Video-Testimonial-Karte identisch zur Homepage-Kundenstimmen-Sektion.
- * Zeigt zuerst das YouTube-Thumbnail mit Play-Button, laedt das iframe
- * erst beim Klick (Performance + Datenschutz — kein YouTube-Cookie
- * ohne Interaktion).
+ *
+ * Datenschutz: Das Vorschaubild liegt lokal unter
+ * /public/images/video/<youtubeId>.jpg, vor dem Klick geht also keine
+ * Anfrage an YouTube. Ohne gespeicherte Einwilligung erscheint beim
+ * Klick zuerst ein Hinweis, erst danach wird das iframe geladen.
+ * Neue Videos brauchen deshalb ein lokales Vorschaubild.
  */
 export default function VideoTestimonial({ data }: Props) {
-  const [playing, setPlaying] = useState(false);
-  const thumb = `https://img.youtube.com/vi/${data.youtubeId}/maxresdefault.jpg`;
+  const [state, setState] = useState<'idle' | 'ask' | 'playing'>('idle');
+  const thumb = `/images/video/${data.youtubeId}.jpg`;
+
+  const start = () => setState(hasYouTubeConsent() ? 'playing' : 'ask');
 
   return (
     <div className="video-card">
       <div className="video-wrapper" data-youtube-id={data.youtubeId}>
-        {playing ? (
+        {state === 'playing' ? (
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${data.youtubeId}?autoplay=1&rel=0`}
             title={data.alt}
@@ -41,11 +76,11 @@ export default function VideoTestimonial({ data }: Props) {
             role="button"
             tabIndex={0}
             aria-label="Video abspielen"
-            onClick={() => setPlaying(true)}
+            onClick={start}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                setPlaying(true);
+                start();
               }
             }}
           >
@@ -60,6 +95,25 @@ export default function VideoTestimonial({ data }: Props) {
                 <path d="M27 33V14l18.4 9.5z" fill="#fff" />
               </svg>
             </div>
+          </div>
+        )}
+        {state === 'ask' && (
+          <div className="video-consent-notice">
+            <p>
+              Dieses Video wird von YouTube bereitgestellt. Beim Abspielen
+              wird eine Verbindung zu YouTube (Google) aufgebaut und deine
+              IP-Adresse übertragen.{' '}
+              <a href="/datenschutz.html#youtube">Mehr dazu</a>
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                grantYouTubeConsent();
+                setState('playing');
+              }}
+            >
+              YouTube erlauben und abspielen
+            </button>
           </div>
         )}
       </div>

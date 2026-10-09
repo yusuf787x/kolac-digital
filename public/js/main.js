@@ -1027,9 +1027,10 @@
           var notice = document.createElement('div');
           notice.className = 'video-consent-notice';
           notice.innerHTML =
-            '<p>Dieses Video wird von YouTube bereitgestellt. ' +
-            'Bitte akzeptiere funktionale Cookies, um es abzuspielen.</p>' +
-            '<button>Cookies akzeptieren</button>';
+            '<p>Dieses Video wird von YouTube bereitgestellt. Beim Abspielen wird eine ' +
+            'Verbindung zu YouTube (Google) aufgebaut und deine IP-Adresse übertragen. ' +
+            '<a href="/datenschutz.html#youtube">Mehr dazu</a></p>' +
+            '<button>YouTube erlauben und abspielen</button>';
           notice.querySelector('button').addEventListener('click', function () {
             // Accept functional cookies and reload video
             if (window.CookieConsent) {
