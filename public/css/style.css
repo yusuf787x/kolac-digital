@@ -2002,6 +2002,16 @@ textarea {
   background: #005bb5;
 }
 
+.video-consent-notice p {
+  margin: 0;
+  max-width: 420px;
+}
+
+.video-consent-notice a {
+  color: #fff;
+  text-decoration: underline;
+}
+
 .video-info {
   padding: 20px 24px 24px;
 }
@@ -2522,7 +2532,7 @@ textarea {
 
 /* ==========================================================================
    DESKTOP – 1024px+
-   ========================================================================== */
+   ========================================================================== */
 
 /* Desktop-Navigation ab 900px. Darunter Hamburger, weil sechs Links
    plus Logo bei 768px nicht mehr in eine Zeile passen. */
@@ -4201,6 +4211,153 @@ textarea {
   border-radius: 16px;
 }
 
+/* --- Suche und Kategorie-Filter --- */
+.blog-filter {
+  max-width: 980px;
+  margin: 0 auto 28px;
+}
+.blog-search {
+  position: relative;
+  max-width: 560px;
+  margin: 0 auto 16px;
+}
+.blog-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-gray-light);
+  pointer-events: none;
+}
+.blog-search-input {
+  width: 100%;
+  height: 50px;
+  padding: 0 44px 0 46px;
+  font-family: var(--font-main);
+  font-size: 16px;
+  color: var(--color-black);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.blog-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+.blog-search-input:focus {
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 4px var(--color-blue-light);
+}
+.blog-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-offwhite);
+  color: var(--color-gray);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.blog-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.blog-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-dark);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.blog-chip:hover {
+  border-color: #cbd5e1;
+}
+.blog-chip.is-active {
+  color: #ffffff;
+  background: var(--color-black);
+  border-color: var(--color-black);
+}
+.blog-chip-count {
+  font-size: 12px;
+  color: var(--color-gray-light);
+}
+.blog-chip.is-active .blog-chip-count {
+  color: rgba(255, 255, 255, 0.7);
+}
+.blog-result-count {
+  margin: 16px 0 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-gray);
+}
+.blog-empty .btn {
+  margin-top: 16px;
+}
+@media (max-width: 620px) {
+  .blog-chips {
+    justify-content: flex-start;
+  }
+}
+
+/* --- War das hilfreich? --- */
+.article-feedback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 40px 0 0 0;
+  padding: 18px 22px;
+  background: var(--color-offwhite);
+  border-radius: 12px;
+}
+.article-feedback-question,
+.article-feedback-thanks {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-black);
+}
+.article-feedback-actions {
+  display: flex;
+  gap: 8px;
+}
+.article-feedback-actions button {
+  min-height: 40px;
+  padding: 0 16px;
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-dark);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.article-feedback-actions button:hover {
+  border-color: var(--color-blue);
+  color: var(--color-blue);
+}
+
 .blog-featured {
   display: grid;
   grid-template-columns: 140px 1fr;
@@ -4558,6 +4715,37 @@ textarea {
   font-size: 15px;
   line-height: 1.7;
   color: var(--color-gray);
+}
+
+/* --- Quellen --- */
+.article-sources {
+  margin: 44px 0 0 0;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+.article-sources h2 {
+  font-family: var(--font-main);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-black);
+  margin: 0 0 12px 0;
+}
+.article-sources ol {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-gray);
+}
+.article-sources a {
+  color: var(--color-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
 }
 
 /* --- Handlungsaufforderung --- */

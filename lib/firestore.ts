@@ -26,6 +26,9 @@ import type {
   Expense,
   BlogPost,
   BlogTopic,
+  BlogStat,
+  BlogStatDay,
+  BlogSearchStat,
   Quote,
   Settings,
   GoogleAuth,
@@ -1605,4 +1608,31 @@ export async function updateBlogTopic(
 
 export async function deleteBlogTopic(id: string): Promise<void> {
   await deleteDoc(doc(db, 'blogTopics', id));
+}
+
+// Ratgeber-Statistik. Geschrieben wird nur serverseitig ueber
+// /api/blog/track, hier wird nur gelesen.
+
+export async function listBlogStats(): Promise<BlogStat[]> {
+  const snap = await getDocs(collection(db, 'blogStats'));
+  return snap.docs.map((d) => d.data() as BlogStat);
+}
+
+/** Tageswerte ab einem Datum (JJJJ-MM-TT), aufsteigend. */
+export async function listBlogStatDays(sinceDate: string): Promise<BlogStatDay[]> {
+  const snap = await getDocs(
+    query(
+      collection(db, 'blogStatsDaily'),
+      where('date', '>=', sinceDate),
+      orderBy('date', 'asc'),
+    ),
+  );
+  return snap.docs.map((d) => d.data() as BlogStatDay);
+}
+
+export async function listBlogSearches(max = 100): Promise<BlogSearchStat[]> {
+  const snap = await getDocs(
+    query(collection(db, 'blogSearches'), orderBy('count', 'desc'), limit(max)),
+  );
+  return snap.docs.map((d) => d.data() as BlogSearchStat);
 }

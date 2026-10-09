@@ -2,7 +2,7 @@
 
 Zentrale Referenz aller Features des Business-Dashboards. Verweis-Ziel für andere Projekte (via User-Skill `kolac-digital`).
 
-Repository-Root: `/Users/yusufkolac/Documents/03Orga/kolac digital/kolac-digital`
+Repository-Root: `/Users/yusufkolac/Documents/Code/internal/kolac-digital-web`
 Stack: Next.js 14 App Router, Firebase (Firestore + Storage + Admin), Tailwind, `@react-pdf/renderer`, `pdf-lib`.
 
 ## Datenmodell (`lib/types.ts`)
@@ -106,6 +106,8 @@ Drei Modi im „Neuer Vertrag"-Flow:
 
 Statische Landing + `/case-studys/[slug]/page.tsx` (Bacara, CarHifi, Kolac Digital) mit shared `SiteHeader`/`SiteFooter`, Video-Testimonials (YouTube nocookie), 3D-Icons für Overview-Cards.
 
+**Datenschutz-Grundsatz: keine Verbindung zu Dritten vor einer Zustimmung.** Schriften für die statischen HTML-Seiten liegen lokal (`public/fonts/`, `public/css/fonts.css`), die Next-Seiten nutzen `next/font` (wird beim Build selbst gehostet). YouTube-Vorschaubilder liegen unter `public/images/video/<youtubeId>.jpg`, ein neues Video braucht dort ein Bild. Videos laden erst nach Einwilligung, der Schlüssel `kolac_cookie_consent` im localStorage gilt für die Startseite (`public/js/main.js`) und die Case Studys (`components/case-studies/VideoTestimonial.tsx`) gleichermaßen. Banner und Einstellungen: `public/js/cookie-consent.js`. Neue externe Dienste immer in `public/datenschutz.html` nachtragen.
+
 ## Style-Regeln
 
 - **Kein Gedankenstrich** (— / –) in nutzerseitigem Text (UI, PDF, Buttons, Dialoge). Bindestrich in Wörtern (SEPA-QR, MwSt-Satz) ist OK. Siehe Memory `style_no_em_dash`.
@@ -131,11 +133,19 @@ Statische Landing + `/case-studys/[slug]/page.tsx` (Bacara, CarHifi, Kolac Digit
 
 Artikel-Produktion ohne API-Kosten: der Text wird in einem Claude-Chat erzeugt und per Copy-Paste ins Dashboard übernommen. Ablauf und Format sind in `docs/blog-workflow.md` beschrieben.
 
-**Datenmodell** (`lib/types.ts`): `BlogPost` mit slug, title, excerpt, `tldr` (Kurzantwort), `keyTakeaways[]` (Kasten „Alles auf einen Blick"), body als Markdown, category, targetKeywords, faq[], meta-Angaben, `imagePrompt`/`imageAlt`/`heroImageUrl`, status draft/published, heroEmoji, readingMinutes. Dazu `BlogTopic` als Themen-Warteschlange.
+**Datenmodell** (`lib/types.ts`): `BlogPost` mit slug, title, excerpt, `tldr` (Kurzantwort), `keyTakeaways[]` (Kasten „Alles auf einen Blick"), body als Markdown, category, targetKeywords, faq[], `sources[]` (Primärquellen mit Titel, Herausgeber, Datum, URL), meta-Angaben, `imagePrompt`/`imageAlt`/`heroImageUrl`, status draft/published, heroEmoji, readingMinutes. Dazu `BlogTopic` als Themen-Warteschlange.
 
 **Öffentliche Seiten**: `/blog` und `/blog/[slug]`. Statisch beim Build über `generateStaticParams`, neue Artikel per ISR (`revalidate 600`) ohne Deploy. Gelesen wird über `lib/blog-server.ts` mit dem **Admin-SDK**, weil die Firestore-Rules nur den Inhaber zulassen. Dort wird immer auf `published` gefiltert, Entwürfe können also nicht nach außen gelangen.
 
-**SEO und GEO pro Artikel**: BlogPosting-, FAQPage- und BreadcrumbList-Schema, eigene Meta-Angaben, Canonical, OG- und Twitter-Tags. Die `tldr`-Box und die FAQ-Antworten sind bewusst als zitierfähige Passagen für ChatGPT und AI Overviews gebaut. Inhaltsverzeichnis mit Sprungmarken ab drei Überschriften. `/sitemap-blog.xml` wird dynamisch erzeugt und ist in `robots.txt` eingetragen.
+**Suche und Filter in der Übersicht**: `components/marketing/BlogBrowser.tsx`. Kategorie-Chips mit Anzahl und Volltextsuche über Titel, Teaser, Kurzantwort, Kernaussagen und Zielbegriffe. Gefiltert wird im Browser, der Server rendert weiterhin alle Beiträge vor. Umlaut-Schreibweisen sind egal („Gebäude“, „Gebaeude“, „Gebaude“). Filter und Suche stehen in der Adresse (`?kategorie=…&suche=…`), die Canonical bleibt `/blog`.
+
+**Ratgeber-Zählung**: `lib/blog-tracking.ts` + `POST /api/blog/track`. Ohne Cookies, ohne IP, ohne Besucherkennung, nur Summen. Gezählt werden Aufrufe der Übersicht und der Artikel mit grober Herkunft (Google, KI-Assistenten, andere Suchmaschinen, Social, intern, direkt), „gelesen“ (Artikelende gesehen und mindestens 20 Sekunden auf der Seite), „War dieser Beitrag hilfreich?“ (Ja/Nein), Klicks auf Erstgespräch, Telefon, E-Mail und Leistungsseiten, Kategorie-Klicks und Suchbegriffe samt Trefferzahl. Die Route schreibt per Admin-SDK nach `blogStats/{postId}`, `blogStatsDaily/{JJJJ-MM-TT}` und `blogSearches/{begriff}`. Bots werden am User-Agent aussortiert, unbekannte Artikel-IDs verworfen.
+
+**Ratgeber-Statistik**: `/dashboard/blog/statistik`. Kennzahlen für 7, 30 oder 90 Tage, Tagesverlauf, Highlights (meistgelesen, am hilfreichsten, meiste Anfragen-Klicks), sortierbare Tabelle je Beitrag, Herkunft der Leser, Kategorie-Klicks, „Suchen ohne Treffer“ als Themenideen. Schalter „Diesen Browser nicht mitzählen“ für eigene Besuche.
+
+**Keyword-Strategie**: `docs/blog-keyword-strategie.md`. Regeln für die Themenwahl (Kaufnähe zum eigenen Angebot, Long-Tail, Blog füttert Leistungsseiten), Cluster mit Hubs, Liste der zu meidenden Begriffe, Empfehlungen für Leistungsseiten.
+
+**SEO und GEO pro Artikel**: BlogPosting-, FAQPage- und BreadcrumbList-Schema, eigene Meta-Angaben, Canonical, OG- und Twitter-Tags. Die `tldr`-Box und die FAQ-Antworten sind bewusst als zitierfähige Passagen für ChatGPT und AI Overviews gebaut. Quellen werden im Fließtext belegt und zusätzlich als Liste „Quellen“ unter dem Artikel (`components/marketing/ArticleSources.tsx`) sowie als `citation` im BlogPosting-Schema ausgegeben. Inhaltsverzeichnis mit Sprungmarken ab drei Überschriften. `/sitemap-blog.xml` wird dynamisch erzeugt und ist in `robots.txt` eingetragen.
 
 **Markdown**: eigener Parser in `lib/blog-markdown.ts` (H2/H3 mit Sprungmarken, Listen, Zitate, Fettung, Links), gerendert von `components/marketing/ArticleBody.tsx`. Keine zusätzliche Abhängigkeit.
 
@@ -143,7 +153,7 @@ Artikel-Produktion ohne API-Kosten: der Text wird in einem Claude-Chat erzeugt u
 
 **Übernahme**: `/dashboard/blog/einfuegen` führt in drei Schritten durch Thema wählen, Auftragstext kopieren, Antwort einfügen. `parsePastedArticle` verkraftet Codeblöcke und Text drumherum, prüft Pflichtfelder und meldet doppelte Slugs. `sanitizeArticleText` entfernt Gedankenstriche als Absicherung. Vorschau zeigt Google-Snippet mit Zeichenzählern, Kurzfassung, Bildvorschlag und den gerenderten Text.
 
-**Dashboard**: `/dashboard/blog` mit Artikeln und Themen. Freigeben und zurückziehen per Klick. `/dashboard/blog/themen-laden` legt zehn vorbereitete Start-Themen an. Editor mit Vorschau, Zeichenzählern, Kurzfassungs-Punkten, Titelbild-Feldern und FAQ-Pflege.
+**Dashboard**: `/dashboard/blog` mit Artikeln und Themen. Freigeben und zurückziehen per Klick. `/dashboard/blog/themen-laden` legt die vorbereiteten Themen aus `lib/blog-seed-topics.ts` an (Start-Themen plus 20 aus der Keyword-Recherche Oktober 2026), vorhandene Titel werden übersprungen. Editor mit Vorschau, Zeichenzählern, Kurzfassungs-Punkten, Titelbild-Feldern und FAQ-Pflege.
 
 **Bild-Upload**: `components/dashboard/ImageUploadField.tsx` im Editor. Datei hineinziehen oder auswählen, `lib/image-optimize.ts` verkleinert im Browser per Canvas auf max. 1600x1200 und komprimiert zu WebP (Fallback JPG, Qualität 0.82). Upload nach Firebase Storage unter `blog/<slug>-<zeitstempel>.<ext>`, die Download-Adresse ist öffentlich abrufbar. Quota- und Rechte-Fehler werden verständlich gemeldet, als Rückfalloption lässt sich eine Adresse von Hand eintragen. Entfernen löscht die Datei auch aus dem Speicher, sofern sie von dort stammt.
 

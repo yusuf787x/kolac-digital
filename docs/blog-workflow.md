@@ -56,6 +56,26 @@ stimmt jeder künftige Artikel automatisch.
 | `imageAlt` | Alternativtext für das Bild |
 | `targetKeywords` | Suchbegriffe, auf die der Artikel zielt |
 | `faq` | Fragen und Antworten, werden als FAQPage ausgespielt |
+| `sources` | Primärquellen mit Titel, Herausgeber, Datum und URL. Erscheinen als Liste „Quellen“ unter dem Artikel und als `citation` im Schema |
+
+## Quellen
+
+Zahlen, Rechtsaussagen und Fristen werden im Fließtext belegt, mit
+Herausgeber und Jahr direkt an der Aussage. Zusätzlich kommen drei bis
+sechs Primärquellen ins Feld `sources`: Gesetze bei
+gesetze-im-internet.de, Gerichte, Behörden, offizielle Doku,
+Originalstudien, Kammern. Keine Agenturen, Anbieter oder SEO-Blogs.
+
+Ausgehende Links bringen kein Ranking. Sie lohnen sich für Vertrauen
+beim Leser, für KI-Systeme, die belegte Aussagen bevorzugen, und als
+Qualitätssignal (E-E-A-T).
+
+**Vor dem Veröffentlichen jeden Link einmal anklicken.** Die Vorschau
+zeigt die Quellen klickbar. KI-Chats raten gern Unterseiten, die es
+nicht gibt. Ungültige URLs sortiert das Einfügen automatisch aus.
+
+**Einmal im Jahr alle Quellen durchklicken.** Tote Links wirken
+schlechter als gar keine. Nachpflegen geht im Editor unter „Quellen“.
 
 ## Bilder
 

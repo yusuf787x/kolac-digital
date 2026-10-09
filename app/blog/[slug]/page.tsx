@@ -10,6 +10,9 @@ import { formatDateDE } from '@/lib/utils';
 import { extractHeadings } from '@/lib/blog-markdown';
 import ArticleBody from '@/components/marketing/ArticleBody';
 import BlogCta from '@/components/marketing/BlogCta';
+import ArticleSources from '@/components/marketing/ArticleSources';
+import ArticleTracker from '@/components/marketing/ArticleTracker';
+import ArticleFeedback from '@/components/marketing/ArticleFeedback';
 import type { BlogPost } from '@/lib/types';
 
 export const revalidate = 600;
@@ -81,6 +84,7 @@ export default async function BlogArticlePage({ params }: Props) {
   const url = `${site.baseUrl}/blog/${post.slug}`;
   const headings = extractHeadings(post.body);
   const published = post.publishedAt?.toDate();
+  const sources = post.sources ?? [];
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
@@ -109,6 +113,20 @@ export default async function BlogArticlePage({ params }: Props) {
     },
     keywords: post.targetKeywords.join(', '),
     articleSection: post.category,
+    // Belege maschinenlesbar, damit Suchmaschinen und KI-Systeme die
+    // Quellen dem Artikel zuordnen koennen.
+    ...(sources.length > 0
+      ? {
+          citation: sources.map((s) => ({
+            '@type': 'CreativeWork',
+            name: s.title,
+            url: s.url,
+            ...(s.publisher
+              ? { publisher: { '@type': 'Organization', name: s.publisher } }
+              : {}),
+          })),
+        }
+      : {}),
     ...(post.heroImageUrl
       ? {
           image: post.heroImageUrl.startsWith('http')
@@ -232,6 +250,11 @@ export default async function BlogArticlePage({ params }: Props) {
 
           <ArticleBody markdown={post.body} />
 
+          {/* Markiert das Artikelende fuer die Zaehlung "gelesen". */}
+          <div id="artikel-ende" aria-hidden="true" />
+          <ArticleTracker postId={post.id} endId="artikel-ende" />
+          <ArticleFeedback postId={post.id} />
+
           {post.faq.length > 0 && (
             <section className="article-faq">
               <h2>Häufige Fragen dazu</h2>
@@ -243,6 +266,8 @@ export default async function BlogArticlePage({ params }: Props) {
               ))}
             </section>
           )}
+
+          <ArticleSources sources={sources} />
 
           <BlogCta />
 

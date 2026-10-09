@@ -9,11 +9,18 @@ import {
   updateBlogPost,
   deleteBlogPost,
 } from '@/lib/firestore';
-import type { BlogPost, BlogCategory, BlogFaqItem } from '@/lib/types';
+import type {
+  BlogPost,
+  BlogCategory,
+  BlogFaqItem,
+  BlogSource,
+} from '@/lib/types';
 import { BLOG_CATEGORIES } from '@/lib/types';
 import { estimateReadingMinutes } from '@/lib/blog-markdown';
 import { authedFetch } from '@/lib/api-client';
 import ArticleBody from '@/components/marketing/ArticleBody';
+import ArticleSources from '@/components/marketing/ArticleSources';
+import { cleanSources } from '@/lib/blog-prompt';
 import ImageUploadField from '@/components/dashboard/ImageUploadField';
 
 interface Props {
@@ -55,6 +62,7 @@ export default function BlogEditor({ post }: Props) {
     post?.targetKeywords.join(', ') ?? '',
   );
   const [faq, setFaq] = useState<BlogFaqItem[]>(post?.faq ?? []);
+  const [sources, setSources] = useState<BlogSource[]>(post?.sources ?? []);
   const [takeaways, setTakeaways] = useState<string[]>(
     post?.keyTakeaways ?? [],
   );
@@ -89,6 +97,8 @@ export default function BlogEditor({ post }: Props) {
           .map((k) => k.trim())
           .filter(Boolean),
         faq: faq.filter((f) => f.question.trim() && f.answer.trim()),
+        // Unvollstaendige Zeilen und ungueltige URLs fallen raus.
+        sources: cleanSources(sources),
         metaTitle: metaTitle.trim() || title.trim(),
         metaDescription: metaDescription.trim() || excerpt.trim(),
         heroEmoji: heroEmoji || '📄',
@@ -199,6 +209,7 @@ export default function BlogEditor({ post }: Props) {
             <p>{tldr}</p>
           </div>
           <ArticleBody markdown={body} />
+          <ArticleSources sources={cleanSources(sources)} />
         </div>
       ) : (
         <div className="space-y-4">
@@ -477,6 +488,94 @@ export default function BlogEditor({ post }: Props) {
                   />
                 </div>
               ))}
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-base font-semibold text-gray-900">
+                Quellen ({sources.length})
+              </h2>
+              <button
+                onClick={() =>
+                  setSources([
+                    ...sources,
+                    { title: '', publisher: '', date: '', url: '' },
+                  ])
+                }
+                className="btn-secondary text-xs"
+              >
+                + Quelle
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">
+              Nur Primärquellen: Gesetz, Gericht, Behörde, offizielle Doku,
+              Originalstudie, Kammer. Drei bis sechs reichen. Einmal im Jahr
+              durchklicken, ob die Links noch gehen.
+            </p>
+            <div className="space-y-3">
+              {sources.map((s, i) => {
+                const set = (patch: Partial<BlogSource>) => {
+                  const next = [...sources];
+                  next[i] = { ...s, ...patch };
+                  setSources(next);
+                };
+                return (
+                  <div
+                    key={i}
+                    className="border border-gray-200 rounded-lg p-3 space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="input flex-1"
+                        value={s.title}
+                        onChange={(e) => set({ title: e.target.value })}
+                        placeholder="Titel, z.B. § 5 DDG"
+                      />
+                      <button
+                        onClick={() =>
+                          setSources(sources.filter((_, j) => j !== i))
+                        }
+                        className="text-xs text-red-600 hover:underline shrink-0"
+                      >
+                        weg
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-2">
+                      <input
+                        className="input"
+                        value={s.publisher}
+                        onChange={(e) => set({ publisher: e.target.value })}
+                        placeholder="Herausgeber"
+                      />
+                      <input
+                        className="input"
+                        value={s.date}
+                        onChange={(e) => set({ date: e.target.value })}
+                        placeholder="Stand, z.B. 2026"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="input flex-1 font-mono text-sm"
+                        value={s.url}
+                        onChange={(e) => set({ url: e.target.value })}
+                        placeholder="https://…"
+                      />
+                      {s.url.trim() && (
+                        <a
+                          href={s.url.trim()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:underline shrink-0"
+                        >
+                          prüfen
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
 

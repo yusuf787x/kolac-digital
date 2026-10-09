@@ -9,6 +9,8 @@
  * und laesst sich dort mit einem Klick kopieren.
  */
 
+import type { BlogSource } from './types';
+
 export const BLOG_AUTHOR_PROMPT = `Du schreibst einen Ratgeber-Artikel für den Blog von Kolac Digital.
 
 ## Was der Artikel leisten soll
@@ -62,7 +64,7 @@ Inhaberinnen und Inhaber kleiner Betriebe: Handwerk, Gastronomie, Praxen, Kanzle
 - Gliedere mit ## Zwischenüberschriften. Fünf bis acht Stück. Jede Überschrift soll für sich verständlich sein und möglichst eine echte Frage der Zielgruppe aufgreifen.
 - Nutze Aufzählungen, wo sie den Text übersichtlicher machen, aber schreibe keine reine Stichpunktsammlung.
 - Markdown: ## und ### für Überschriften, ** für Fettung, - für Aufzählungen, 1. für nummerierte Listen, > für einen hervorgehobenen Hinweis.
-- Interne Links als Markdown setzen, wo sie sachlich passen: [Webseiten mit System](/webseiten), [unsere Projekte](/portfolio), [Case Studys](/case-studys). Höchstens drei pro Artikel.
+- Interne Links als Markdown setzen, wo sie sachlich passen: [Webseiten mit System](/webseiten), [KI-Beratung und Automatisierung](/ki-beratung), [unsere Projekte](/portfolio), [Case Studys](/case-studys). Höchstens drei pro Artikel. Themen zu Automatisierung und KI verlinken auf /ki-beratung, alle anderen bevorzugt auf /webseiten.
 
 ## Wichtig für Google und KI-Systeme
 
@@ -70,6 +72,17 @@ Inhaberinnen und Inhaber kleiner Betriebe: Handwerk, Gastronomie, Praxen, Kanzle
 - Das Feld "tldr" ist die wichtigste Passage. Es beantwortet die Kernfrage in drei bis fünf Sätzen vollständig, ohne dass man den Rest gelesen hat. KI-Systeme zitieren genau solche Passagen. Nenne darin einmal "Kolac Digital", damit die Quelle zuordenbar ist.
 - "keyTakeaways" sind drei bis fünf Kernaussagen, jede ein vollständiger Satz mit einer konkreten Information. Keine Überschriften-Fragmente.
 - Die FAQ-Antworten müssen für sich stehen. Jede Antwort ist zwei bis vier Sätze lang und wiederholt kurz den Kontext der Frage, statt auf den Artikel zu verweisen.
+
+## Quellen und Belege
+
+Jede Zahl, jede Rechtsaussage und jede Frist aus fremder Hand braucht eine nachprüfbare Herkunft. Das schafft Vertrauen beim Leser, und KI-Systeme zitieren bevorzugt Texte, die ihre Aussagen belegen.
+
+- **Inline belegen, direkt an der Aussage.** Nenne im Fließtext immer Herausgeber und Jahr, zum Beispiel "laut Patchstack State of WordPress Security 2026" oder "nach § 5 DDG". Die Nennung im Satz wirkt auch dann, wenn ein KI-System den Link nicht übernimmt. Verlinke die Stelle zusätzlich als Markdown-Link, wenn es eine Primärquelle ist.
+- **Drei bis sechs Quellen pro Artikel.** Nicht mehr, sonst wirkt der Text wie eine Hausarbeit. Wenn das Thema keine fremden Zahlen oder Rechtsfragen braucht, dürfen es auch weniger sein. Erfinde keine Belege, nur um die Zahl zu erreichen.
+- **Nur Primärquellen verlinken:** Gesetze direkt bei gesetze-im-internet.de, Urteile beim Gericht oder in einer amtlichen Urteilsdatenbank, offizielle Dokumentation (Google-Hilfe, DENIC, Bundesnetzagentur, BSI, Datenschutzbehörden), Originalstudien selbst statt Artikel über die Studie, IHK und Handwerkskammer, Statistisches Bundesamt.
+- **Nicht verlinken:** andere Webagenturen, Softwareanbieter, die ihr eigenes Produkt bewerben, SEO-Blogs, Kanzlei-Blogs. Eine Zahl aus so einer Quelle darf im Text bleiben, wenn sie als Branchenschätzung gekennzeichnet ist ("Anbieter von KI-Telefonassistenten schätzen, dass ..."). Sie kommt dann nicht in die Quellenliste.
+- **Nur URLs, die du wirklich aufgerufen hast.** Wenn du im Web suchen kannst, prüfe jede URL. Wenn du eine Adresse nicht sicher kennst, rate keine Unterseite. Nimm dann die Startseite der Primärquelle oder lass den Beleg weg und formuliere die Aussage allgemeiner. Ein toter Link schadet mehr als gar keiner.
+- Jede Quelle aus dem Feld "sources" muss im Text auch tatsächlich vorkommen.
 
 ## Ausgabe
 
@@ -98,6 +111,14 @@ Antworte mit genau einem JSON-Objekt in einem Codeblock. Kein Text davor oder da
     { "question": "Frage?", "answer": "Antwort in zwei bis vier Sätzen, für sich verständlich." },
     { "question": "Zweite Frage?", "answer": "Zweite Antwort." },
     { "question": "Dritte Frage?", "answer": "Dritte Antwort." }
+  ],
+  "sources": [
+    {
+      "title": "Name des Dokuments, z.B. § 5 DDG oder der Titel der Studie",
+      "publisher": "Herausgeber, z.B. Bundesministerium der Justiz",
+      "date": "Stand oder Erscheinungsjahr, z.B. 2026 oder März 2026",
+      "url": "https://vollständige-url-zur-primärquelle"
+    }
   ]
 }
 \`\`\`
@@ -153,6 +174,38 @@ export interface PastedArticle {
   imageAlt?: string;
   targetKeywords?: string[];
   faq?: Array<{ question: string; answer: string }>;
+  sources?: BlogSource[];
+}
+
+/**
+ * Behaelt nur vollstaendige Quellen mit gueltiger http(s)-URL. Was aus
+ * dem Chat kommt, ist nicht immer sauber, und ein kaputter Link in der
+ * Quellenliste wirkt schlechter als gar keiner.
+ */
+export function cleanSources(raw: unknown): BlogSource[] {
+  if (!Array.isArray(raw)) return [];
+  const out: BlogSource[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const s = item as Record<string, unknown>;
+    const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+    const url = str(s.url);
+    const title = str(s.title);
+    if (!url || !title) continue;
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') continue;
+    } catch {
+      continue;
+    }
+    out.push({
+      title,
+      url,
+      publisher: str(s.publisher),
+      date: str(s.date),
+    });
+  }
+  return out;
 }
 
 /**
@@ -227,5 +280,7 @@ export function parsePastedArticle(raw: string): {
     };
   }
 
-  return { ok: true, data: sanitizeArticleText(a as PastedArticle) };
+  const article = sanitizeArticleText(a as PastedArticle);
+  article.sources = cleanSources(article.sources);
+  return { ok: true, data: article };
 }

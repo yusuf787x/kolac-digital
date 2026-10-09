@@ -18,6 +18,7 @@ import {
 } from '@/lib/blog-prompt';
 import { estimateReadingMinutes } from '@/lib/blog-markdown';
 import ArticleBody from '@/components/marketing/ArticleBody';
+import ArticleSources from '@/components/marketing/ArticleSources';
 
 /**
  * Der Weg vom Thema zum fertigen Artikel, ohne API-Kosten.
@@ -147,6 +148,7 @@ export default function BlogPastePage() {
         category,
         targetKeywords: parsed.targetKeywords ?? [],
         faq: parsed.faq ?? [],
+        sources: parsed.sources ?? [],
         metaTitle: parsed.metaTitle?.trim() || parsed.title.trim(),
         metaDescription:
           parsed.metaDescription?.trim() || parsed.excerpt.trim(),
@@ -430,6 +432,21 @@ export default function BlogPastePage() {
                   </div>
                 ))}
               </div>
+            )}
+
+            {parsed.sources && parsed.sources.length > 0 ? (
+              <>
+                <p className="mt-6 text-xs text-gray-500">
+                  Klick jede Quelle einmal an. Ein toter Link wirkt schlechter
+                  als gar keiner.
+                </p>
+                <ArticleSources sources={parsed.sources} />
+              </>
+            ) : (
+              <p className="mt-6 text-xs text-amber-700">
+                Keine Quellen mitgeliefert. Wenn der Artikel Zahlen oder
+                Rechtsaussagen enthält, lass sie im Chat nachreichen.
+              </p>
             )}
           </section>
 

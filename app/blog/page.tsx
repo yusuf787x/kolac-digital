@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { getPublishedPosts } from '@/lib/blog-server';
 import { site } from '@/lib/site-config';
 import { formatDateDE } from '@/lib/utils';
+import { normalizeSearch } from '@/lib/blog-tracking';
 import BlogCta from '@/components/marketing/BlogCta';
-import type { BlogPost } from '@/lib/types';
+import BlogBrowser, {
+  type BlogListItem,
+} from '@/components/marketing/BlogBrowser';
+import { BLOG_CATEGORIES, type BlogPost } from '@/lib/types';
 
 /** Alle 10 Minuten nach neuen Artikeln schauen. */
 export const revalidate = 600;
@@ -77,8 +80,30 @@ export default async function BlogIndexPage() {
     ],
   };
 
-  const featured = posts[0];
-  const rest = posts.slice(1);
+  // Kategorien in der festen Reihenfolge, nur die mit Beitraegen.
+  const categories = BLOG_CATEGORIES.filter((c) => byCategory.has(c));
+  const items: BlogListItem[] = posts.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    excerpt: p.excerpt,
+    category: p.category,
+    heroEmoji: p.heroEmoji,
+    heroImageUrl: p.heroImageUrl ?? null,
+    imageAlt: p.imageAlt ?? '',
+    readingMinutes: p.readingMinutes,
+    publishedLabel: p.publishedAt ? formatDateDE(p.publishedAt.toDate()) : '',
+    searchText: normalizeSearch(
+      [
+        p.title,
+        p.excerpt,
+        p.tldr,
+        p.category,
+        ...(p.targetKeywords ?? []),
+        ...(p.keyTakeaways ?? []),
+      ].join(' '),
+    ),
+  }));
 
   return (
     <>
@@ -117,74 +142,7 @@ export default async function BlogIndexPage() {
               </p>
             </div>
           ) : (
-            <>
-              {featured && (
-                <Link
-                  href={`/blog/${featured.slug}`}
-                  className="blog-featured"
-                >
-                  {featured.heroImageUrl ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={featured.heroImageUrl}
-                      alt={featured.imageAlt || featured.title}
-                      className="blog-featured-image"
-                    />
-                  ) : (
-                    <div className="blog-featured-emoji" aria-hidden="true">
-                      {featured.heroEmoji}
-                    </div>
-                  )}
-                  <div className="blog-featured-body">
-                    <span className="blog-card-category">
-                      {featured.category}
-                    </span>
-                    <h2 className="blog-featured-title">{featured.title}</h2>
-                    <p className="blog-featured-excerpt">{featured.excerpt}</p>
-                    <span className="blog-card-meta">
-                      {featured.publishedAt &&
-                        formatDateDE(featured.publishedAt.toDate())}
-                      {' · '}
-                      {featured.readingMinutes} Min. Lesezeit
-                    </span>
-                  </div>
-                </Link>
-              )}
-
-              {rest.length > 0 && (
-                <div className="blog-grid">
-                  {rest.map((p) => (
-                    <Link
-                      key={p.slug}
-                      href={`/blog/${p.slug}`}
-                      className="blog-card"
-                    >
-                      {p.heroImageUrl ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={p.heroImageUrl}
-                          alt={p.imageAlt || p.title}
-                          className="blog-card-image"
-                        />
-                      ) : (
-                        <div className="blog-card-emoji" aria-hidden="true">
-                          {p.heroEmoji}
-                        </div>
-                      )}
-                      <span className="blog-card-category">{p.category}</span>
-                      <h2 className="blog-card-title">{p.title}</h2>
-                      <p className="blog-card-excerpt">{p.excerpt}</p>
-                      <span className="blog-card-meta">
-                        {p.publishedAt &&
-                          formatDateDE(p.publishedAt.toDate())}
-                        {' · '}
-                        {p.readingMinutes} Min.
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </>
+            <BlogBrowser posts={items} categories={categories} />
           )}
 
           <div className="blog-cta-wrap">

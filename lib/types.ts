@@ -889,6 +889,22 @@ export interface BlogFaqItem {
   answer: string;
 }
 
+/**
+ * Beleg fuer eine Aussage im Artikel. Nur Primaerquellen: Gesetzestext,
+ * Gericht, Behoerde, offizielle Doku, Originalstudie, Kammer. Keine
+ * Agenturen, Anbieter oder SEO-Blogs. Wird unten im Artikel als
+ * Quellenliste und als citation im BlogPosting-Schema ausgespielt.
+ */
+export interface BlogSource {
+  /** Titel des Dokuments, z.B. "§ 5 DDG" oder der Studienname. */
+  title: string;
+  url: string;
+  /** Herausgeber, z.B. "Bundesministerium der Justiz" oder "Patchstack". */
+  publisher: string;
+  /** Stand oder Erscheinungsdatum, frei formuliert ("2026", "März 2026"). */
+  date: string;
+}
+
 export type BlogStatus = 'draft' | 'published';
 
 /**
@@ -927,6 +943,11 @@ export interface BlogPost {
   targetKeywords: string[];
   /** Wird unten im Artikel und als FAQPage-Schema ausgegeben. */
   faq: BlogFaqItem[];
+  /**
+   * Belegte Quellen. Fehlt bei aelteren Artikeln, deshalb optional.
+   * Nicht zu verwechseln mit `source` (wer den Text erstellt hat).
+   */
+  sources?: BlogSource[];
   metaTitle: string;
   metaDescription: string;
   status: BlogStatus;
@@ -949,6 +970,51 @@ export interface BlogPost {
   publishedAt: Timestamp | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+}
+
+/**
+ * Summen je Artikel aus der Ratgeber-Zaehlung (blogStats/{postId}).
+ * Geschrieben nur ueber /api/blog/track, gelesen im Dashboard.
+ * Alle Zaehler fehlen, solange das Ereignis noch nie vorkam.
+ */
+export interface BlogStat {
+  postId: string;
+  slug: string;
+  title: string;
+  views?: number;
+  /** Artikelende gesehen und mindestens 20 Sekunden auf der Seite. */
+  reads?: number;
+  helpfulYes?: number;
+  helpfulNo?: number;
+  /** Klicks auf Erstgespraech, Telefon, E-Mail oder Leistungsseite. */
+  ctaClicks?: number;
+  /** Aufrufe nach grober Herkunft (google, ki, suche, social, …). */
+  referrers?: Record<string, number>;
+  lastViewAt?: Timestamp;
+}
+
+/** Tageswerte (blogStatsDaily/{JJJJ-MM-TT}). */
+export interface BlogStatDay {
+  date: string;
+  indexViews?: number;
+  indexReferrers?: Record<string, number>;
+  views?: number;
+  reads?: number;
+  ctaClicks?: number;
+  /** Aufrufe je Artikel-ID an diesem Tag. */
+  posts?: Record<string, number>;
+  /** Wie oft eine Kategorie im Filter gewaehlt wurde. */
+  categories?: Record<string, number>;
+}
+
+/** Ein Suchbegriff aus dem Ratgeber (blogSearches/{begriff}). */
+export interface BlogSearchStat {
+  term: string;
+  count: number;
+  /** Wie oft die Suche ohne Treffer blieb. Gute Themenideen. */
+  zeroResults?: number;
+  lastResults: number;
+  lastAt?: Timestamp;
 }
 
 /**
