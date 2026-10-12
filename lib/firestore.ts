@@ -4,6 +4,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  deleteField,
   getDoc,
   getDocs,
   setDoc,
@@ -606,20 +607,32 @@ export async function getBusinessTrip(
 export async function createBusinessTrip(
   data: Omit<BusinessTrip, 'id' | 'createdAt' | 'updatedAt'>,
 ): Promise<string> {
+  // Firestore lehnt undefined ab, leere optionale Felder (z.B. note)
+  // werden deshalb gar nicht erst geschrieben.
+  const clean = Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined),
+  );
   const ref = await addDoc(tripsCol(), {
-    ...data,
+    ...clean,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
   return ref.id;
 }
 
+/**
+ * Ein explizit auf undefined gesetztes Feld wird geloescht, damit z.B.
+ * eine geleerte Notiz beim Bearbeiten auch wirklich verschwindet.
+ */
 export async function updateBusinessTrip(
   id: string,
   data: Partial<Omit<BusinessTrip, 'id' | 'createdAt'>>,
 ): Promise<void> {
+  const clean = Object.fromEntries(
+    Object.entries(data).map(([k, v]) => [k, v === undefined ? deleteField() : v]),
+  );
   await updateDoc(doc(db, 'businessTrips', id), {
-    ...data,
+    ...clean,
     updatedAt: serverTimestamp(),
   });
 }
