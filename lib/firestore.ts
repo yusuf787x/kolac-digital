@@ -50,6 +50,7 @@ import {
   buildInvoiceNumber,
   buildOrderConfirmationNumber,
   buildQuoteNumber,
+  invoiceGrossTotal,
   tsToMillis,
 } from './utils';
 import { SEED_TEMPLATES } from './sales';
@@ -269,15 +270,13 @@ export async function deleteInvoice(id: string): Promise<void> {
 export async function addInvoicePayment(
   invoiceId: string,
   payment: { paidAt: Date; amount: number; note?: string },
-): Promise<void> {
-  await runTransaction(db, async (tx) => {
+): Promise<InvoicePaymentPatch> {
+  return runTransaction(db, async (tx) => {
     const ref = doc(db, 'invoices', invoiceId);
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error('Rechnung nicht gefunden.');
     const inv = snap.data() as Invoice;
-    const bruttoTotal = round2(
-      inv.totalAmount * (1 + (inv.vatRate ?? 0)),
-    );
+    const bruttoTotal = invoiceGrossTotal(inv);
     const existing: Invoice['payments'] =
       inv.payments && inv.payments.length > 0
         ? inv.payments
@@ -297,17 +296,22 @@ export async function addInvoicePayment(
       (latest, p) => (p.paidAt.toMillis() > latest.toMillis() ? p.paidAt : latest),
       nextPayments[0].paidAt,
     );
-    const nextStatus =
-      newPaidAmount + 0.001 >= bruttoTotal ? 'paid' : 'partially_paid';
-    tx.update(ref, {
+    const patch: InvoicePaymentPatch = {
       payments: nextPayments,
       paidAmount: newPaidAmount,
       paidAt: newPaidAt,
-      status: nextStatus,
-      updatedAt: serverTimestamp(),
-    });
+      status: newPaidAmount + 0.001 >= bruttoTotal ? 'paid' : 'partially_paid',
+    };
+    tx.update(ref, { ...patch, updatedAt: serverTimestamp() });
+    return patch;
   });
 }
+
+/** Felder, die addInvoicePayment auf der Rechnung setzt. */
+export type InvoicePaymentPatch = Pick<
+  Invoice,
+  'payments' | 'paidAmount' | 'paidAt' | 'status'
+>;
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
@@ -328,9 +332,7 @@ export async function removeInvoicePayment(
     const snap = await tx.get(ref);
     if (!snap.exists()) throw new Error('Rechnung nicht gefunden.');
     const inv = snap.data() as Invoice;
-    const bruttoTotal = round2(
-      inv.totalAmount * (1 + (inv.vatRate ?? 0)),
-    );
+    const bruttoTotal = invoiceGrossTotal(inv);
     const existing: Invoice['payments'] =
       inv.payments && inv.payments.length > 0
         ? inv.payments

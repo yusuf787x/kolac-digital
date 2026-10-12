@@ -23,6 +23,7 @@ import {
   formatDateDE,
   isOverdue,
   daysOverdue,
+  invoiceGrossTotal,
 } from '@/lib/utils';
 import { activityDef } from '@/lib/sales';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
@@ -95,7 +96,7 @@ export default function DashboardHomePage() {
       // weil das der Betrag ist, den der Kunde noch ueberweisen muss.
       const date = inv.invoiceDate.toDate();
       const rate = inv.vatRate ?? 0;
-      const bruttoTotal = Math.round(inv.totalAmount * (1 + rate) * 100) / 100;
+      const bruttoTotal = invoiceGrossTotal(inv);
       const earned =
         inv.status === 'paid'
           ? inv.totalAmount

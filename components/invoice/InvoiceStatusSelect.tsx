@@ -2,13 +2,13 @@
 
 import { useState, type MouseEvent } from 'react';
 import { Timestamp } from 'firebase/firestore';
-import { updateInvoice } from '@/lib/firestore';
+import { addInvoicePayment, updateInvoice } from '@/lib/firestore';
 import type { Invoice, InvoiceStatus } from '@/lib/types';
 import {
   STATUS_SELECT_CLASSES,
   SETTABLE_STATUSES,
 } from '@/lib/invoice-status';
-import { formatEUR } from '@/lib/utils';
+import { effectivePayments, formatEUR, invoiceGrossTotal } from '@/lib/utils';
 
 interface Props {
   invoice: Invoice;
@@ -32,17 +32,28 @@ export default function InvoiceStatusSelect({
     const newStatus = rawNew as InvoiceStatus;
     if (newStatus === invoice.status && computedStatus !== 'overdue') return;
 
+    // Zahlungen sind immer BRUTTO. `totalAmount` ist netto, deshalb
+    // nie direkt als bezahlten Betrag verwenden.
+    const bruttoTotal = invoiceGrossTotal(invoice);
+    const alreadyPaid =
+      Math.round(
+        effectivePayments(invoice).reduce((s, p) => s + p.amount, 0) * 100,
+      ) / 100;
+    const openBrutto = Math.round((bruttoTotal - alreadyPaid) * 100) / 100;
+
+    // "Bezahlt" heisst: der komplette offene Brutto-Betrag ist eingegangen.
+    // Wird als Zahlungseingang erfasst, damit die UStVA ihn sieht.
+    let paymentAmount: number | null = null;
     let patch: Partial<Invoice> = { status: newStatus };
 
     if (newStatus === 'paid') {
-      patch.paidAmount = invoice.totalAmount;
-      patch.paidAt = Timestamp.fromDate(new Date());
+      if (openBrutto > 0) paymentAmount = openBrutto;
     } else if (newStatus === 'sent') {
       if (!invoice.sentAt) patch.sentAt = Timestamp.fromDate(new Date());
     } else if (newStatus === 'partially_paid') {
       const input = prompt(
-        `Bezahlter Betrag (von ${formatEUR(invoice.totalAmount)}):`,
-        invoice.paidAmount > 0 ? invoice.paidAmount.toString() : '',
+        `Eingegangener Betrag brutto (offen: ${formatEUR(openBrutto)} von ${formatEUR(bruttoTotal)}):`,
+        '',
       );
       if (input === null) return; // user cancelled — leave status alone
       const amount = parseFloat(input.replace(',', '.'));
@@ -50,24 +61,27 @@ export default function InvoiceStatusSelect({
         alert('Ungültiger Betrag.');
         return;
       }
-      if (amount >= invoice.totalAmount) {
-        // full amount entered — promote to "paid"
-        patch.status = 'paid';
-        patch.paidAmount = invoice.totalAmount;
-        patch.paidAt = Timestamp.fromDate(new Date());
-      } else {
-        patch.paidAmount = amount;
-      }
+      // Status (teilbezahlt oder bezahlt) ergibt sich aus der Summe.
+      paymentAmount = amount;
     } else if (newStatus === 'draft') {
       patch.paidAmount = 0;
       patch.paidAt = null;
+      patch.payments = [];
       patch.sentAt = null;
     }
 
     setUpdating(true);
     try {
-      await updateInvoice(invoice.id, patch);
-      onUpdated(patch);
+      if (paymentAmount !== null) {
+        const paymentPatch = await addInvoicePayment(invoice.id, {
+          paidAt: new Date(),
+          amount: paymentAmount,
+        });
+        onUpdated(paymentPatch);
+      } else {
+        await updateInvoice(invoice.id, patch);
+        onUpdated(patch);
+      }
     } catch (err) {
       console.error(err);
       alert(`Status-Änderung fehlgeschlagen: ${(err as Error).message}`);

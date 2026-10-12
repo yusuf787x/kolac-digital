@@ -394,3 +394,20 @@ export function computeInvoiceVat(
     byRate,
   };
 }
+
+/**
+ * Brutto-Gesamtbetrag einer Rechnung. Pro Position gerechnet, damit
+ * gemischte Steuersaetze stimmen. `totalAmount * (1 + vatRate)` waere
+ * dort falsch. Alte Rechnungen ohne Positionen fallen auf totalAmount
+ * zurueck.
+ */
+export function invoiceGrossTotal(invoice: {
+  items?: Array<{ totalPrice: number; vatRate?: number; optional?: boolean }>;
+  totalAmount: number;
+  vatRate?: number;
+}): number {
+  if (invoice.items && invoice.items.length > 0) {
+    return computeInvoiceVat(invoice.items, invoice.vatRate).gross;
+  }
+  return Math.round(invoice.totalAmount * (1 + (invoice.vatRate ?? 0)) * 100) / 100;
+}

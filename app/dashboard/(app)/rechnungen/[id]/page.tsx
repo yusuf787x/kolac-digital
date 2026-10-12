@@ -24,6 +24,7 @@ import {
   daysOverdue,
   computeInvoiceVat,
   effectivePayments,
+  invoiceGrossTotal,
 } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import SensitiveValue from '@/components/ui/SensitiveValue';
@@ -204,8 +205,7 @@ export default function RechnungDetailPage() {
   // deshalb hier einmal hochrechnen. Die Zahlungshistorie ist die
   // maßgebliche Quelle — daraus wird der bezahlte und der offene Betrag
   // abgeleitet, nicht aus dem gespeicherten paidAmount.
-  const bruttoTotal =
-    Math.round(invoice.totalAmount * (1 + (invoice.vatRate ?? 0)) * 100) / 100;
+  const bruttoTotal = invoiceGrossTotal(invoice);
 
   const paymentsList: InvoicePayment[] = (
     effectivePayments(invoice) as InvoicePayment[]
