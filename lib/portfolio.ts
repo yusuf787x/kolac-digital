@@ -10,6 +10,8 @@
  * Antwort-Bloecke.
  */
 
+import type { ProjectScreenshot } from '@/lib/case-studies';
+
 export interface PortfolioProject {
   slug: string;
   /** Kurzname (Overview-Card + Header). */
@@ -45,6 +47,8 @@ export interface PortfolioProject {
   approach: string[];
   /** Outcome-Absatz: was hat sich fuer den Kunden veraendert. */
   outcome: string;
+  /** Optional: weitere Screenshots, erscheinen nach "Was wir gebaut haben". */
+  gallery?: ProjectScreenshot[];
 
   /** SEO-Meta pro Detail-Seite. */
   metaTitle: string;
@@ -165,6 +169,71 @@ export const portfolioProjects: PortfolioProject[] = [
       'Akquise-Helfer · Individualsoftware für vier Unternehmen · Kolac Digital',
     metaDescription:
       'Wie Kolac Digital für Akquise-Helfer eine eigene Software für vier Unternehmen gebaut hat, nachdem mehrere Dienstleister abgesagt hatten. Buchhaltung, Leads und Projekte auf dem eigenen Server.',
+  },
+  {
+    slug: 'wagenpuls',
+    company: 'wagenpuls',
+    category: 'Software für Autohändler',
+    location: 'Göttingen',
+    tag: 'SaaS-Produkt von null',
+    overviewImage: '/images/portfolio/wagenpuls.jpg',
+    imageAlt:
+      'Landingpage von wagenpuls, der Software für freie Autohändler, mit Überschrift und Vorschau des Überblicks',
+    services: [
+      'Händlersoftware vom Ankauf bis zur Abrechnung',
+      'Differenzbesteuerung nach §25a, Verträge und digitale Unterschrift',
+      'Anbindung an mobile.de, DATEV, sevdesk und Lexware Office',
+      'Landingpage, Rundgang und Handbuch für die Sichtbarkeit bei Google',
+    ],
+    keyWin:
+      'In rund acht Wochen von der Idee zur fertigen Software für Autohändler, die Händler selbst testen und buchen.',
+    link: 'https://wagenpuls.de/',
+    linkText: 'wagenpuls.de ansehen',
+    caseStudyUrl: '/case-studys/wagenpuls',
+    intro:
+      'wagenpuls ist eine Software für freie Autohändler, ein schlankes Dealer-Management-System vom Ankauf bis zur Abrechnung. Für die Flamira UG aus Göttingen haben wir das Produkt komplett gestaltet und entwickelt: die Anwendung selbst, die Steuerlogik, die Schnittstellen zu Börsen und Buchhaltung, Registrierung und Bezahlung sowie die Webseite, über die Händler das Produkt finden.',
+    situation:
+      'Freie Autohändler mit fünf bis hundertzwanzig Fahrzeugen arbeiten oft mit Excel, Word und Zetteln. Was ein Auto nach Aufbereitung und Steuer wirklich gebracht hat, weiß man erst beim Steuerberater, und bei der Differenzbesteuerung nach §25a ist man sich jedes Mal unsicher. Die etablierten Händlersysteme lösen das zwar, kosten aber ein Vielfaches, oft mit Einrichtungsgebühr und Außendienst. Die Idee hinter wagenpuls: dieselben Grundfunktionen, selbst einzurichten und für kleine Betriebe bezahlbar.',
+    approach: [
+      'Fachlogik zuerst: der Weg eines Fahrzeugs von der Ankaufsanfrage über Aufbereitung, Inserat, Verkauf und Übergabe bis zur Abrechnung, abgebildet in einer Vorgangsleiste in der Fahrzeugakte.',
+      'Ankaufsrechner, der rückwärts rechnet: vom erwarteten Verkaufspreis über Kosten, Zielmarge und Umsatzsteuer auf die Differenz zum maximalen Ankaufspreis.',
+      'Kalkulation mit automatisch erkanntem Steuerfall. Differenzbesteuerung, Regelbesteuerung, innergemeinschaftliche Lieferung und Ausfuhr werden aus Ankauf und Käufer abgeleitet und sind durch automatisierte Tests abgesichert.',
+      'Kaufvertrag, Ankaufsvertrag, Übergabeprotokoll, Rechnung und Preisschild nach Pkw-EnVKV aus einem Datensatz, digital auf dem Handy des Kunden unterschrieben.',
+      'Schnittstellen: Inserate und Anfragen über mobile.de, Export für AutoScout24, Buchungsstapel für DATEV, Anbindung an sevdesk und Lexware Office, E-Rechnung im Format XRechnung.',
+      'Vom Einzelsystem zum Produkt: Selbstregistrierung, Testzugang mit Beispieldaten, Pakete und Bezahlung, jeder Betrieb technisch vom anderen getrennt. Dazu Landingpage, Rundgang mit echten Bildschirmfotos und ein Handbuch mit über siebzig Artikeln.',
+    ],
+    outcome:
+      'In rund acht Wochen ist aus der Idee ein Produkt geworden, das am Markt steht: elf Bereiche in einer Anwendung, Schnittstellen zu Börsen und Buchhaltung ohne Aufpreis, Server in Deutschland und über tausend automatisierte Tests im Hintergrund. Händler registrieren sich selbst, testen mit Beispieldaten und buchen ohne Vertriebsgespräch. Und das Handbuch sorgt dafür, dass wagenpuls bei Fragen zu Differenzbesteuerung, Kaufvertrag und Gewährleistung gefunden wird.',
+    gallery: [
+      {
+        src: '/images/wagenpuls/ueberblick.webp',
+        alt: 'Überblick in wagenpuls mit Rohertrag des Monats, verkauften Fahrzeugen, Standzeit, überfälligen Zahlungen und gebundenem Kapital. Beispieldaten.',
+        title: 'Der Überblick',
+        caption:
+          'Rohertrag, Verkäufe und Standzeit des Monats, darunter die überfälligen Zahlungen und das gebundene Kapital. Alle Zahlen sind Beispieldaten.',
+        url: 'wagenpuls.de',
+      },
+      {
+        src: '/images/wagenpuls/ankaufsrechner.webp',
+        alt: 'Ankaufsrechner in wagenpuls, der den maximalen Ankaufspreis rückwärts aus Verkaufspreis, Kosten und Zielmarge nach §25a berechnet.',
+        title: 'Der Ankaufsrechner',
+        caption:
+          'Zielmarge verschieben, und der maximale Ankaufspreis rechnet live mit. Das Angebot geht direkt aus dieser Ansicht raus.',
+        url: 'wagenpuls.de/ankauf',
+      },
+      {
+        src: '/images/wagenpuls/kalkulation.webp',
+        alt: 'Kalkulation in wagenpuls mit Differenzbesteuerung nach §25a, Marge, Rohertrag und Preisuntergrenze eines Fahrzeugs.',
+        title: 'Die Kalkulation je Fahrzeug',
+        caption:
+          'Steuerfall automatisch erkannt, Umsatzsteuer aus der Marge, Rohertrag und Preisuntergrenze auf einen Blick.',
+        url: 'wagenpuls.de/fahrzeuge/kalkulation',
+      },
+    ],
+    metaTitle:
+      'wagenpuls · Software für Autohändler entwickelt · Projekt von Kolac Digital',
+    metaDescription:
+      'Wie Kolac Digital mit wagenpuls eine Software für freie Autohändler gebaut hat: Ankauf, Bestand, §25a-Kalkulation, Verträge und mobile.de-Anbindung als SaaS, in rund acht Wochen am Markt.',
   },
   {
     slug: 'bacara-aesthetik',

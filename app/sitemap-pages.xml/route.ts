@@ -13,11 +13,13 @@ import { renderUrlset, xmlResponse, type SitemapEntry } from '@/lib/sitemap-xml'
 const PORTFOLIO_LASTMOD: Record<string, string> = {
   paderpuls: '2026-09-18',
   'akquise-helfer': '2026-09-10',
+  wagenpuls: '2026-10-13',
 };
 const PORTFOLIO_LASTMOD_DEFAULT = '2026-08-23';
 
 const CASE_STUDY_LASTMOD: Record<string, string> = {
   'akquise-helfer': '2026-09-10',
+  wagenpuls: '2026-10-13',
 };
 const CASE_STUDY_LASTMOD_DEFAULT = '2026-08-14';
 

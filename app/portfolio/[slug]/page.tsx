@@ -266,6 +266,47 @@ export default function PortfolioProjectPage({ params }: Props) {
         </div>
       </section>
 
+      {project.gallery && project.gallery.length > 0 && (
+        <section className="portfolio-gallery">
+          <div className="container">
+            <Reveal>
+              <div className="portfolio-other-intro">
+                <div className="section-label">IN BILDERN</div>
+                <h2 className="portfolio-detail-h2">So sieht es aus</h2>
+              </div>
+            </Reveal>
+            <div className="portfolio-gallery-list">
+              {project.gallery.map((shot) => (
+                <Reveal key={shot.src}>
+                  <figure className="portfolio-gallery-item">
+                    <div className="portfolio-gallery-frame">
+                      <div className="portfolio-gallery-bar">
+                        <span aria-hidden="true" />
+                        <span aria-hidden="true" />
+                        <span aria-hidden="true" />
+                        <span className="portfolio-gallery-url">{shot.url}</span>
+                      </div>
+                      <Image
+                        src={shot.src}
+                        alt={shot.alt}
+                        width={1440}
+                        height={900}
+                        className="portfolio-gallery-image"
+                        sizes="(max-width: 1024px) 100vw, 1000px"
+                      />
+                    </div>
+                    <figcaption>
+                      <strong>{shot.title}</strong>
+                      <span>{shot.caption}</span>
+                    </figcaption>
+                  </figure>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="portfolio-other">
         <div className="container">
           <Reveal>

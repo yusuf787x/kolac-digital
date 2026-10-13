@@ -3971,6 +3971,79 @@ textarea {
   border-left: 3px solid var(--color-blue);
 }
 
+.portfolio-gallery {
+  padding: 60px 0 80px;
+  background: #ffffff;
+}
+.portfolio-gallery-list {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+.portfolio-gallery-item {
+  margin: 0;
+}
+.portfolio-gallery-frame {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+}
+.portfolio-gallery-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  background: #f9fafb;
+}
+.portfolio-gallery-bar > span[aria-hidden] {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f87171;
+}
+.portfolio-gallery-bar > span[aria-hidden]:nth-child(2) {
+  background: #facc15;
+}
+.portfolio-gallery-bar > span[aria-hidden]:nth-child(3) {
+  background: #4ade80;
+}
+.portfolio-gallery-url {
+  margin-left: 12px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: #ffffff;
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.portfolio-gallery-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.portfolio-gallery-item figcaption {
+  max-width: 720px;
+  margin: 20px auto 0;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-gray);
+}
+.portfolio-gallery-item figcaption strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 17px;
+  color: var(--color-black);
+}
+
 .portfolio-other {
   padding: 60px 0 40px;
   background: var(--color-offwhite);

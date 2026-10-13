@@ -34,8 +34,26 @@ export interface VideoTestimonial {
   alt: string;
 }
 
+/** Weiterer Screenshot fuer die Galerie unter dem Haupt-Screenshot.
+ *  Wird auch von lib/portfolio.ts genutzt. */
+export interface ProjectScreenshot {
+  /** Pfad in /public, am besten im Format 16:10. */
+  src: string;
+  alt: string;
+  /** Kurze Ueberschrift ueber dem Bild. */
+  title: string;
+  /** Ein bis zwei Saetze, was man im Bild sieht. */
+  caption: string;
+  /** Adresszeile im Browser-Mockup. */
+  url: string;
+}
+
 export interface CaseStudy {
   slug: string;
+  /** Optionaler SEO-Titel. Ohne Angabe: "{company} · Case Study · Kolac Digital". */
+  metaTitle?: string;
+  /** Optionale Meta-Beschreibung. Ohne Angabe: resultTeaser. */
+  metaDescription?: string;
   /** Kurzname fuer Overview-Karte und Header. */
   company: string;
   /** Branche/Kategorie. */
@@ -59,6 +77,8 @@ export interface CaseStudy {
     headline: string;
     description: string;
   };
+  /** Optionale weitere Screenshots, erscheinen unter dem Haupt-Screenshot. */
+  gallery?: ProjectScreenshot[];
   hero: {
     headline: string;
     subline: string;
@@ -342,6 +362,174 @@ export const caseStudies: CaseStudy[] = [
       headline: 'Technisch dahinter',
       paragraph:
         'Next.js mit React, Docker als Container, Caddy als vorgelagerter Server mit verschlüsselter Verbindung. Gehostet auf dem eigenen Server des Kunden, ausdrücklich auf dessen Wunsch. PDFs werden im Browser erzeugt und selbst gerendert statt an den Betrachter des Browsers abgegeben, damit die Vorschau überall gleich aussieht. Die Belegerkennung und die Cloud-Anbindung laufen über eine eigene Server-Schicht, Zugangsdaten liegen verschlüsselt in einem eigenen Speicherbereich.',
+    },
+  },
+  {
+    slug: 'wagenpuls',
+    metaTitle:
+      'Branchensoftware entwickeln lassen: wagenpuls für Autohändler · Case Study',
+    metaDescription:
+      'Wie Kolac Digital mit wagenpuls eine Branchensoftware für Autohändler als SaaS entwickelt hat. Ankauf, Bestand, §25a, Verträge und mobile.de in einem System, in rund acht Wochen marktreif.',
+    company: 'wagenpuls',
+    category: 'Branchensoftware für Autohändler',
+    resultTeaser:
+      'Eine eigene Branchensoftware für Autohändler, als SaaS-Produkt in rund acht Wochen marktreif.',
+    overviewIconKey: 'chart',
+    screenshot: '/images/wagenpuls/ueberblick.webp',
+    screenshotAlt:
+      'Überblick von wagenpuls, der Software für Autohändler: Rohertrag des Monats, verkaufte Fahrzeuge, Standzeit, überfällige Zahlungen und gebundenes Kapital. Alle Daten sind erfundene Beispieldaten.',
+    dashboardUrl: 'wagenpuls.de',
+    screenshotSection: {
+      headline: 'So sieht der Händler seinen Betrieb',
+      description:
+        'Oben der Rohertrag des Monats, verkaufte Fahrzeuge und die durchschnittliche Standzeit. Darunter die überfälligen Zahlungen und das Kapital, das gerade auf dem Hof steht. Links die elf Bereiche vom Ankauf bis zu den Auswertungen. Alle Zahlen im Bild sind Beispieldaten.',
+    },
+    gallery: [
+      {
+        src: '/images/wagenpuls/ankaufsrechner.webp',
+        alt: 'Ankaufsanfrage in wagenpuls mit Ankaufsrechner, der aus Verkaufspreis, Aufbereitung, Transport und Zielmarge den maximalen Ankaufspreis nach §25a berechnet.',
+        title: 'Ankauf: der Rechner sagt, was du höchstens zahlen darfst',
+        caption:
+          'Die Anfrage kommt über das Formular rein. Rechts rechnet wagenpuls rückwärts vom erwarteten Verkaufspreis über Aufbereitung, Transport, Zielmarge und Umsatzsteuer auf die Differenz bis zum maximalen Ankaufspreis. Das Angebot geht aus derselben Ansicht raus.',
+        url: 'wagenpuls.de/ankauf',
+      },
+      {
+        src: '/images/wagenpuls/bestand.webp',
+        alt: 'Bestandsliste in wagenpuls mit Fahrzeugkarten, Standtagen, Einkaufs- und Verkaufspreis, erwarteter Marge und Börsen-Häkchen für mobile.de und AutoScout24.',
+        title: 'Bestand: Standtage und Marge auf jeder Karte',
+        caption:
+          'Jedes Fahrzeug zeigt Standtage, Einkauf, Kosten und erwartete Marge. Per Häkchen geht es zu mobile.de oder AutoScout24, darunter die Schnellaktionen von Reservierung bis Verkauf.',
+        url: 'wagenpuls.de/fahrzeuge',
+      },
+      {
+        src: '/images/wagenpuls/fahrzeugakte.webp',
+        alt: 'Fahrzeugakte in wagenpuls mit Vorgangsleiste von Ankauf über Aufbereitung und Inserat bis Abrechnung sowie dem erwarteten Deckungsbeitrag.',
+        title: 'Fahrzeugakte: der ganze Weg eines Autos an einer Stelle',
+        caption:
+          'Die Vorgangsleiste zeigt, wo das Fahrzeug gerade steht und was als Nächstes kommt. Kosten, Kalkulation, Fotos, Inserate und Dokumente hängen direkt am Fahrzeug, oben rechts steht immer der erwartete Deckungsbeitrag.',
+        url: 'wagenpuls.de/fahrzeuge/akte',
+      },
+      {
+        src: '/images/wagenpuls/kalkulation.webp',
+        alt: 'Kalkulation in wagenpuls mit automatisch erkanntem Steuerfall Differenzbesteuerung nach §25a, Marge, Umsatzsteuer aus der Marge, Rohertrag und Preisuntergrenze.',
+        title: 'Kalkulation: §25a ohne Kopfrechnen',
+        caption:
+          'Der Steuerfall wird aus dem Ankauf abgeleitet. Die Umsatzsteuer wird aus der Marge gerechnet, Kosten mindern die Bemessungsgrundlage nicht. Mit dem Regler spielt der Händler Verkaufspreise durch und sieht sofort, ab wann er draufzahlt.',
+        url: 'wagenpuls.de/fahrzeuge/kalkulation',
+      },
+    ],
+    hero: {
+      headline: 'Eine eigene Branchensoftware für Autohändler. In acht Wochen am Markt.',
+      subline:
+        'wagenpuls ist eine Software für freie Autohändler, vom Ankauf bis zur Abrechnung. Wir haben sie konzipiert, gestaltet und entwickelt. Mit Selbstregistrierung, Bezahlung und Schnittstellen zu mobile.de und DATEV, in rund acht Wochen von der ersten Zeile bis zum Produkt am Markt.',
+    },
+    founder: {
+      headline: 'Wer steht hinter wagenpuls?',
+      paragraph:
+        'Hinter wagenpuls steht die Flamira UG aus Göttingen. Flamira tritt als Anbieter auf und kümmert sich um Vertrieb und Marketing. Die Zielgruppe ist klar umrissen: freie Autohändler mit fünf bis hundertzwanzig Fahrzeugen, denen die etablierten Systeme zu groß, zu teuer und zu schwerfällig sind. Kolac Digital hat das Produkt gestaltet und umgesetzt, von der Fachlogik bis zur Landingpage.',
+    },
+    problem: {
+      headline: 'Kennst du das?',
+      paragraphs: [
+        'Du kennst deine Branche besser als jeder Softwarehersteller. Du siehst jeden Tag, wo die Betriebe Zeit und Geld verlieren. Und du siehst auch, dass die Software, die es dafür gibt, entweder veraltet, überladen oder viel zu teuer ist.',
+        'Die Idee für ein besseres Produkt ist da. Was fehlt, ist jemand, der sie baut. Große Softwarehäuser rechnen in Jahren und sechsstelligen Budgets. Freelancer bauen dir eine Oberfläche, aber nicht die Fachlogik dahinter. Und ein eigenes Entwicklerteam aufzubauen, bevor der erste Kunde zahlt, ist ein Risiko, das kaum jemand tragen will.',
+        'Genau an dieser Stelle bleiben die meisten Ideen für eine eigene Branchensoftware liegen.',
+      ],
+    },
+    situation: {
+      headline: 'Die Ausgangslage im freien Autohandel',
+      paragraphs: [
+        'Freie Autohändler rechnen oft im Kopf. Was ein Fahrzeug nach Aufbereitung, Reparatur und Steuer wirklich gebracht hat, weiß man erst beim Steuerberater. Anfragen liegen in WhatsApp, im Postfach und auf Zetteln. Kaufverträge entstehen in Word, werden ausgedruckt, unterschrieben und wieder eingescannt.',
+        'Dazu kommt das Steuerrecht. Wer von privat kauft, verkauft meist nach §25a UStG mit Differenzbesteuerung. Ein Fehler in der Marge kostet Umsatzsteuer, mit der niemand gerechnet hat. Die E-Rechnung muss längst empfangen werden, ausstellen wird ab 2027 Pflicht.',
+        'Die etablierten Händlersysteme lösen das, kosten aber ein Vielfaches, oft mit Einrichtungsgebühr, Schulung und Außendienst. Für einen Hof mit zwanzig Autos rechnet sich das nicht. Genau diese Lücke sollte wagenpuls schließen: dieselben Grundfunktionen, selbst einzurichten, zu einem Preis, der auch für kleine Betriebe passt.',
+      ],
+    },
+    values: {
+      headline: 'Was wir gebaut haben',
+      intro:
+        'Keine Demo, kein Klickdummy. Ein mandantenfähiges Produkt, das Händler selbst testen, buchen und im Alltag nutzen. Am Anfang stand die Fachlogik für den Alltag eines Händlers, daraus wurde Schritt für Schritt ein Produkt für viele.',
+      blocks: [
+        {
+          iconKey: 'chart',
+          title: 'Marge je Fahrzeug in Echtzeit',
+          description:
+            'Jede Ausgabe hängt am Fahrzeug, nicht in einem Ordner daneben. Der Deckungsbeitrag oben in der Akte ändert sich mit jedem Beleg. Standtage, gebundenes Kapital und Preisuntergrenze sind jederzeit sichtbar.',
+        },
+        {
+          iconKey: 'inbox',
+          title: 'Ankaufsrechner, der rückwärts rechnet',
+          description:
+            'Alle Ankaufsanfragen landen an einer Stelle. Der Rechner sagt in Sekunden, was der Händler höchstens zahlen darf, damit seine Zielmarge nach Aufbereitung und Steuer steht. Anfragen, die älter als einen Tag sind, rutschen nach oben.',
+        },
+        {
+          iconKey: 'shield',
+          title: 'Steuerlogik nach §25a, abgesichert durch Tests',
+          description:
+            'Differenzbesteuerung, Regelbesteuerung, innergemeinschaftliche Lieferung und Ausfuhr werden aus Ankauf und Käufer abgeleitet. Die Rechenregeln sind durch automatisierte Tests abgesichert, damit eine Änderung an anderer Stelle die Steuer nicht unbemerkt verschiebt.',
+        },
+        {
+          iconKey: 'document',
+          title: 'Verträge, Rechnungen und Preisschilder aus einem Datensatz',
+          description:
+            'Kaufvertrag, Ankaufsvertrag, Übergabeprotokoll, Rechnung und Preisschild nach Pkw-EnVKV entstehen aus denselben Daten. Unterschrieben wird digital auf dem Handy des Kunden, mit Protokollseite und Prüfsumme.',
+        },
+        {
+          iconKey: 'automation',
+          title: 'mobile.de direkt angebunden',
+          description:
+            'Inserate gehen mit Bildern, Text und Ausstattung zu mobile.de, Änderungen werden übertragen, und nach dem Verkauf geht das Inserat von selbst offline. Anfragen aus den Börsen werden abgeholt, dem Fahrzeug zugeordnet und als Interessent angelegt.',
+        },
+        {
+          iconKey: 'panel',
+          title: 'Ein Produkt für viele Betriebe',
+          description:
+            'Händler registrieren sich selbst, testen vierzehn Tage mit Beispieldaten und buchen dann ein Paket. Jeder Betrieb ist technisch vom anderen getrennt, mit eigenen Benutzern, Rollen und Standorten.',
+        },
+        {
+          iconKey: 'calendar',
+          title: 'E-Rechnung, GoBD und DATEV eingebaut',
+          description:
+            'E-Rechnungen werden gelesen und im Format XRechnung ausgestellt. Festgeschriebene Belege lassen sich nicht mehr ändern. Der Steuerberater bekommt einen DATEV-Buchungsstapel statt eines Kartons voller Belege.',
+        },
+        {
+          iconKey: 'dashboard',
+          title: 'Ein Überblick, der sagt, was liegen bleibt',
+          description:
+            'Die Startseite zeigt keine Willkommensgrüße, sondern überfällige Zahlungen, Fahrzeuge ohne Preis, unbeantwortete Anfragen und Langsteher. Darunter die Zahlen des Monats im Vergleich zum Vormonat.',
+        },
+        {
+          iconKey: 'search',
+          title: 'Landingpage, Rundgang und Handbuch für Google',
+          description:
+            'Neben der Software haben wir den kompletten Auftritt gebaut: Landingpage, einen Rundgang mit echten Bildschirmfotos und ein Handbuch mit über siebzig Artikeln zu Fragen wie Differenzbesteuerung, Kaufvertrag oder Gewährleistung. So wird das Produkt dort gefunden, wo Händler suchen.',
+        },
+      ],
+    },
+    results: {
+      headline: 'Was dabei herausgekommen ist',
+      points: [
+        'In rund acht Wochen von der ersten Zeile Code bis zum Produkt, das Händler selbst testen und buchen können.',
+        'Elf Bereiche vom Ankauf über Bestand, Kalkulation, Verkauf und Finanzen bis zu den Auswertungen, in einer Anwendung.',
+        'Die Steuerlogik und die übrigen Kernabläufe sind durch über tausend automatisierte Tests abgesichert.',
+        'Schnittstellen zu mobile.de, AutoScout24, DATEV, sevdesk und Lexware Office sind im Produkt enthalten, nicht als Aufpreis.',
+        'Selbstregistrierung, Testzugang mit Beispieldaten und Bezahlung laufen ohne Vertriebsgespräch.',
+        'Server in Deutschland, Betriebe technisch getrennt, Anmeldung ohne Passwort über Einmal-Links.',
+      ],
+      closing:
+        'Aus einer Idee mit viel Branchenwissen ist ein Produkt geworden, das am Markt steht und verkauft werden kann. Ohne eigenes Entwicklerteam und ohne jahrelange Entwicklungszeit.',
+    },
+    bridge: {
+      headline: 'Wann es sich lohnt, eine Branchensoftware entwickeln zu lassen',
+      paragraphs: [
+        'Nicht jede Idee braucht eine eigene Software. Wenn es für deine Branche schon ein gutes, bezahlbares Produkt gibt, ist es meistens klüger, das zu nutzen. Das sagen wir dir auch im Erstgespräch.',
+        'Interessant wird es, wenn du drei Dinge mitbringst: echtes Wissen über die Abläufe einer Branche, eine Lücke, die die vorhandenen Anbieter nicht schließen, und einen Weg zu den ersten Kunden. Dann ist eine eigene Branchensoftware als SaaS kein Hexenwerk mehr, sondern ein Projekt mit klarem Umfang.',
+        'Wir übernehmen dabei das, was dir fehlt: Fachlogik in Software übersetzen, Gestaltung, Entwicklung, Schnittstellen, Bezahlung und den Auftritt, über den das Produkt gefunden wird. Du bringst die Branche mit, wir bauen das Produkt.',
+      ],
+    },
+    technical: {
+      headline: 'Für alle die es genau wissen wollen',
+      paragraph:
+        'Next.js 15 mit App Router und TypeScript im strikten Modus, Server Components als Standard, Eingaben über Server Actions mit zod geprüft. PostgreSQL mit Prisma als Datenbank, Geldbeträge als Cent-Ganzzahlen, damit keine Rundungsfehler entstehen. Mandantentrennung auf Datenebene. PDFs für Verträge, Rechnungen und Preisschilder mit @react-pdf/renderer, digitale Unterschrift mit pdf-lib und SHA-256-Prüfsumme auf einer Protokollseite. E-Rechnung im Format XRechnung nach EN 16931, DATEV-Export im Format EXTF nach SKR 03 mit getrennten Erlöskonten für Differenz- und Regelumsätze. mobile.de über die Seller-API angebunden. Anmeldung über Einmal-Links statt Passwort. Steuerlogik und Kernabläufe mit vitest getestet. Ausgeliefert als Docker-Container hinter Caddy auf einem Server in Deutschland.',
     },
   },
   {

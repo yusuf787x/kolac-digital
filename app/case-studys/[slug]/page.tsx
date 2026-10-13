@@ -21,14 +21,15 @@ export async function generateMetadata({
 }: Params): Promise<Metadata> {
   const cs = findCaseStudy(params.slug);
   if (!cs) return {};
-  const title = `${cs.company} · Case Study · Kolac Digital`;
+  const title = cs.metaTitle ?? `${cs.company} · Case Study · Kolac Digital`;
+  const description = cs.metaDescription ?? cs.resultTeaser;
   return {
     title,
-    description: cs.resultTeaser,
+    description,
     alternates: { canonical: `${site.baseUrl}/case-studys/${cs.slug}` },
     openGraph: {
       title,
-      description: cs.resultTeaser,
+      description,
       url: `${site.baseUrl}/case-studys/${cs.slug}`,
       type: 'article',
       images: [{ url: cs.screenshot }],
@@ -194,6 +195,45 @@ export default function CaseStudyDetailPage({ params }: Params) {
               </div>
             </div>
           </Reveal>
+
+          {/* Weitere Ansichten (optional) */}
+          {cs.gallery && cs.gallery.length > 0 && (
+            <div className="mx-auto mt-20 max-w-5xl space-y-16 sm:mt-24 sm:space-y-20">
+              {cs.gallery.map((shot) => (
+                <Reveal key={shot.src}>
+                  <figure>
+                    <figcaption className="mx-auto max-w-2xl text-center">
+                      <h3 className="text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
+                        {shot.title}
+                      </h3>
+                      <p className="mt-3 text-base leading-relaxed text-gray-600">
+                        {shot.caption}
+                      </p>
+                    </figcaption>
+                    <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
+                      <div className="flex items-center gap-2 border-b border-gray-100 bg-gray-50 px-4 py-3">
+                        <span className="h-3 w-3 rounded-full bg-red-400" />
+                        <span className="h-3 w-3 rounded-full bg-yellow-400" />
+                        <span className="h-3 w-3 rounded-full bg-green-400" />
+                        <span className="ml-4 truncate rounded-md bg-white px-3 py-1 text-xs text-gray-500 shadow-sm">
+                          {shot.url}
+                        </span>
+                      </div>
+                      <div className="relative aspect-[16/10] w-full bg-gray-100">
+                        <Image
+                          src={shot.src}
+                          alt={shot.alt}
+                          fill
+                          className="object-cover object-left-top"
+                          sizes="(max-width: 1024px) 100vw, 1024px"
+                        />
+                      </div>
+                    </div>
+                  </figure>
+                </Reveal>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
