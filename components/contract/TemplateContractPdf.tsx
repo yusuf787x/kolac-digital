@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   partyLine: { fontSize: 10, marginBottom: 1 },
+  partyRole: { fontSize: 9, color: COLORS.gray, marginTop: 4 },
   paragraph: { marginBottom: 8, fontSize: 10 },
   bulletRow: {
     flexDirection: 'row',
@@ -385,6 +386,9 @@ export default function TemplateContractPdf({
             <Text style={styles.partyLine}>
               {COMPANY_INFO.zip} {COMPANY_INFO.city}
             </Text>
+            <Text style={styles.partyRole}>
+              (nachfolgend „Auftragnehmer“)
+            </Text>
           </View>
           <View style={styles.partyCol}>
             <Text style={styles.partyLabel}>UND</Text>
@@ -400,6 +404,9 @@ export default function TemplateContractPdf({
                 {customer.zip} {customer.city}
               </Text>
             )}
+            <Text style={styles.partyRole}>
+              (nachfolgend „Auftraggeber“)
+            </Text>
           </View>
         </View>
 
