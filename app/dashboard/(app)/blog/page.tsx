@@ -381,11 +381,11 @@ export default function BlogDashboardPage() {
                         <span className="text-xs text-gray-400">
                           #{t.priority}
                         </span>
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">
+                        <span className="text-xs px-1.5 py-0.5 rounded-sm bg-blue-50 text-blue-700">
                           {t.category}
                         </span>
                         {t.status !== 'open' && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
+                          <span className="text-xs px-1.5 py-0.5 rounded-sm bg-gray-100 text-gray-600">
                             {t.status === 'generated'
                               ? 'geschrieben'
                               : 'übersprungen'}

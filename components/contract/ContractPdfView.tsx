@@ -119,7 +119,7 @@ export default function ContractPdfView({
       />
 
       <div className="flex justify-center">
-        <div className="relative bg-white border border-gray-200 rounded shadow-sm inline-block">
+        <div className="relative bg-white border border-gray-200 rounded-sm shadow-xs inline-block">
           <Document
             file={pdfUrl}
             onLoadSuccess={onLoad}

@@ -576,7 +576,7 @@ function NeuerVertragInner() {
             </div>
             <div>
               <div className="flex items-baseline justify-between gap-2 mb-1.5">
-                <label className="label !mb-0">Vertragstyp</label>
+                <label className="label mb-0!">Vertragstyp</label>
                 <button
                   type="button"
                   onClick={() => setShowNewType((s) => !s)}

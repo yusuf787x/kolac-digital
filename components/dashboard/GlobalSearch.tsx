@@ -190,7 +190,7 @@ export default function GlobalSearch() {
         <span className="flex-1 text-left">
           Suchen – Kunden, Deals, Rechnungen…
         </span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[11px] font-medium text-gray-400">
+        <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded-sm border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[11px] font-medium text-gray-400">
           ⌘K
         </kbd>
       </button>
@@ -215,7 +215,7 @@ export default function GlobalSearch() {
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onListKeyDown}
                 placeholder="Suche nach allem…"
-                className="w-full py-3.5 text-sm outline-none placeholder-gray-400"
+                className="w-full py-3.5 text-sm outline-hidden placeholder-gray-400"
               />
               <button
                 onClick={() => setOpen(false)}

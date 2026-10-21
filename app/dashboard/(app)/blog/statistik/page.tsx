@@ -230,7 +230,7 @@ export default function BlogStatsPage() {
                 onClick={() => setRange(r)}
                 className={`px-3 py-1.5 text-sm rounded-md ${
                   range === r
-                    ? 'bg-white shadow-sm text-gray-900 font-medium'
+                    ? 'bg-white shadow-xs text-gray-900 font-medium'
                     : 'text-gray-600'
                 }`}
               >

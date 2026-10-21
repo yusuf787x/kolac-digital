@@ -349,12 +349,12 @@ export default function SalespilotPage() {
                       {current.company}
                     </h2>
                     {current.websiteAge === 'keine' && (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-sm bg-emerald-100 text-emerald-800">
                         🔥 keine Website
                       </span>
                     )}
                     {current.websiteAge === 'veraltet' && (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-sm bg-amber-100 text-amber-800">
                         veraltet
                       </span>
                     )}

@@ -185,7 +185,7 @@ function VertragDetailInner() {
             </p>
           </div>
           <span
-            className={`text-xs font-medium px-2 py-1 rounded ${CONTRACT_STATUS_BADGE_CLASSES[computed]}`}
+            className={`text-xs font-medium px-2 py-1 rounded-sm ${CONTRACT_STATUS_BADGE_CLASSES[computed]}`}
           >
             {CONTRACT_STATUS_LABELS[computed]}
           </span>

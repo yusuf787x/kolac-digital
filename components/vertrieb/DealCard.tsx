@@ -47,7 +47,7 @@ export default function DealCard({
       onClick={() => {
         if (!overlay) router.push(`/dashboard/vertrieb/${deal.id}`);
       }}
-      className={`group cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md ${
+      className={`group cursor-pointer rounded-lg border border-gray-200 bg-white p-3 shadow-xs transition-shadow hover:shadow-md ${
         isDragging ? 'opacity-40' : ''
       } ${overlay ? 'shadow-lg rotate-2' : ''}`}
     >
@@ -57,7 +57,7 @@ export default function DealCard({
         </p>
         {overdue && (
           <span
-            className="mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-red-500"
+            className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-red-500"
             title="Überfällige Aktivität"
           />
         )}

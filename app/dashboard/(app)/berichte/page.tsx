@@ -481,7 +481,7 @@ export default function BerichtePage() {
                   2025, die Kennzahl daneben ist über Jahre stabil.
                 </p>
                 {data.tripSum > 0 && (
-                  <p className="text-xs text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+                  <p className="text-xs text-amber-700 mt-2 bg-amber-50 border border-amber-200 rounded-sm px-2 py-1.5">
                     <strong>Nicht vergessen:</strong> Die{' '}
                     <SensitiveValue>{formatEUR(data.tripSum)}</SensitiveValue>{' '}
                     aus {data.tripCount} Fahrten ({data.tripKm} km) müssen
@@ -519,12 +519,12 @@ export default function BerichtePage() {
                   {data.elsterRows.map((r) => (
                     <tr key={r.line}>
                       <td className="py-2">
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[11px] font-semibold bg-blue-50 text-blue-700">
                           Z{r.line}
                         </span>
                       </td>
                       <td className="py-2">
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-gray-100 text-gray-600 tabular-nums">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[11px] font-semibold bg-gray-100 text-gray-600 tabular-nums">
                           {r.kennzahl}
                         </span>
                       </td>

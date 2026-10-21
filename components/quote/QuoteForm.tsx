@@ -450,7 +450,7 @@ export default function QuoteForm({ initial, mode }: Props) {
                     type="checkbox"
                     checked={item.optional}
                     onChange={() => toggleOptional(idx)}
-                    className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                    className="h-4 w-4 rounded-sm border-gray-300 text-amber-600 focus:ring-amber-500"
                   />
                   <span>
                     Optional

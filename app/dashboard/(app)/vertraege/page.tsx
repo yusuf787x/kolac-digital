@@ -156,7 +156,7 @@ export default function VertraegePage() {
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {contract.title}
                       {reminderDue && (
-                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-semibold bg-amber-100 text-amber-800">
                           überfällig
                         </span>
                       )}
@@ -171,7 +171,7 @@ export default function VertraegePage() {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-block text-xs font-medium px-2 py-0.5 rounded ${CONTRACT_STATUS_BADGE_CLASSES[computedStatus]}`}
+                        className={`inline-block text-xs font-medium px-2 py-0.5 rounded-sm ${CONTRACT_STATUS_BADGE_CLASSES[computedStatus]}`}
                       >
                         {CONTRACT_STATUS_LABELS[computedStatus]}
                       </span>

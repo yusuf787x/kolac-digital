@@ -268,7 +268,7 @@ function KundeDetailInner() {
                     <Link
                       key={d.id}
                       href={`/dashboard/vertrieb/${d.id}`}
-                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-sm"
                     >
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
@@ -280,7 +280,7 @@ function KundeDetailInner() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span
-                          className="text-xs font-medium px-2 py-0.5 rounded text-white"
+                          className="text-xs font-medium px-2 py-0.5 rounded-sm text-white"
                           style={{ backgroundColor: sd.color }}
                         >
                           {sd.label}
@@ -325,7 +325,7 @@ function KundeDetailInner() {
                     <Link
                       key={q.id}
                       href={`/dashboard/angebote/${q.id}`}
-                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-sm"
                     >
                       <div>
                         <p className="text-sm font-medium text-gray-900">
@@ -338,7 +338,7 @@ function KundeDetailInner() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span
-                          className={`text-xs font-medium px-2 py-0.5 rounded ${QUOTE_STATUS_BADGE_CLASSES[cs]}`}
+                          className={`text-xs font-medium px-2 py-0.5 rounded-sm ${QUOTE_STATUS_BADGE_CLASSES[cs]}`}
                         >
                           {QUOTE_STATUS_LABELS[cs]}
                         </span>
@@ -378,7 +378,7 @@ function KundeDetailInner() {
                     <Link
                       key={c.id}
                       href={`/dashboard/vertraege/${c.id}`}
-                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-sm"
                     >
                       <div>
                         <p className="text-sm font-medium text-gray-900">
@@ -394,7 +394,7 @@ function KundeDetailInner() {
                         </p>
                       </div>
                       <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded ${CONTRACT_STATUS_BADGE_CLASSES[cs]}`}
+                        className={`text-xs font-medium px-2 py-0.5 rounded-sm ${CONTRACT_STATUS_BADGE_CLASSES[cs]}`}
                       >
                         {CONTRACT_STATUS_LABELS[cs]}
                       </span>
@@ -428,7 +428,7 @@ function KundeDetailInner() {
                   <Link
                     key={inv.id}
                     href={`/dashboard/rechnungen/${inv.id}`}
-                    className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                    className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-sm"
                   >
                     <div>
                       <p className="text-sm font-medium text-gray-900">

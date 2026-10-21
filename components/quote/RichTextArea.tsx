@@ -222,7 +222,7 @@ export default function RichTextArea({
           onInput={emit}
           onBlur={emit}
           onPaste={handlePaste}
-          className="input wysiwyg block w-full whitespace-pre-wrap break-words"
+          className="input wysiwyg block w-full whitespace-pre-wrap wrap-break-word"
           style={{ minHeight }}
         />
       </div>

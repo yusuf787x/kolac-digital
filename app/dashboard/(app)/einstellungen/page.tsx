@@ -429,20 +429,20 @@ function EinstellungenInner() {
                 <p className="font-medium">Sheet-Diagnose:</p>
                 <p className="text-xs">
                   Verfügbare Tabs:{' '}
-                  <code className="bg-white px-1 rounded">
+                  <code className="bg-white px-1 rounded-sm">
                     {importResult.tabsAvailable.join(' · ') || '(keine)'}
                   </code>
                 </p>
                 <p className="text-xs">
                   Einnahmen-Tab:{' '}
-                  <code className="bg-white px-1 rounded">
+                  <code className="bg-white px-1 rounded-sm">
                     {importResult.einnahmenTab || '(nicht gefunden)'}
                   </code>{' '}
                   → {importResult.einnahmenRowCount} Zeilen
                 </p>
                 <p className="text-xs">
                   Ausgaben-Tab:{' '}
-                  <code className="bg-white px-1 rounded">
+                  <code className="bg-white px-1 rounded-sm">
                     {importResult.ausgabenTab || '(nicht gefunden)'}
                   </code>{' '}
                   → {importResult.ausgabenRowCount} Zeilen
@@ -454,7 +454,7 @@ function EinstellungenInner() {
                   <summary className="cursor-pointer text-xs font-medium">
                     Einnahmen-Preview (erste {importResult.einnahmenPreview.length} Zeilen)
                   </summary>
-                  <pre className="mt-1 bg-white p-2 rounded overflow-x-auto text-[11px]">
+                  <pre className="mt-1 bg-white p-2 rounded-sm overflow-x-auto text-[11px]">
                     {JSON.stringify(importResult.einnahmenPreview, null, 2)}
                   </pre>
                 </details>
@@ -465,7 +465,7 @@ function EinstellungenInner() {
                   <summary className="cursor-pointer text-xs font-medium">
                     Ausgaben-Preview (erste {importResult.ausgabenPreview.length} Zeilen)
                   </summary>
-                  <pre className="mt-1 bg-white p-2 rounded overflow-x-auto text-[11px]">
+                  <pre className="mt-1 bg-white p-2 rounded-sm overflow-x-auto text-[11px]">
                     {JSON.stringify(importResult.ausgabenPreview, null, 2)}
                   </pre>
                 </details>

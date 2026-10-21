@@ -25,7 +25,7 @@ export default function CaseStudysOverviewPage() {
   return (
     <>
       {/* Hero */}
-      <section className="border-b border-gray-100 bg-gradient-to-b from-white to-gray-50">
+      <section className="border-b border-gray-100 bg-linear-to-b from-white to-gray-50">
         <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:py-24">
           <Reveal>
             <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
@@ -56,7 +56,7 @@ export default function CaseStudysOverviewPage() {
                   {/* Statt Screenshot ein grosses 3D-Icon in einer
                       dezenten Blau-Gradient-Flaeche. Sofort erkennbar,
                       passt zum Kern-Nutzen des Projekts. */}
-                  <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-50 via-white to-white flex items-center justify-center overflow-hidden">
+                  <div className="relative aspect-4/3 bg-linear-to-br from-blue-50 via-white to-white flex items-center justify-center overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_60%,rgba(37,99,235,0.10),transparent_60%)]" />
                     <div className="relative scale-[1.6] transition-transform duration-300 group-hover:scale-[1.75]">
                       <ValueIcon icon={cs.overviewIconKey} />
@@ -90,7 +90,7 @@ export default function CaseStudysOverviewPage() {
       </section>
 
       {/* CTA */}
-      <section className="bg-gradient-to-br from-brand-blue to-blue-700 py-16 text-white sm:py-20">
+      <section className="bg-linear-to-br from-brand-blue to-blue-700 py-16 text-white sm:py-20">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Sollen wir über dein System reden?

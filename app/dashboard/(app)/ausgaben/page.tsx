@@ -349,7 +349,7 @@ export default function AusgabenPage() {
                     {e.description}
                     {e.excluded && (
                       <span
-                        className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-200 text-gray-700 no-underline"
+                        className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-semibold bg-gray-200 text-gray-700 no-underline"
                         title="Mit der Kilometerpauschale abgegolten. Zählt nicht in EÜR und Umsatzsteuer, bleibt als Nachweis erhalten."
                       >
                         ausgebucht
@@ -357,7 +357,7 @@ export default function AusgabenPage() {
                     )}
                     {e.reverseCharge && (
                       <span
-                        className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800"
+                        className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-semibold bg-amber-100 text-amber-800"
                         title="Reverse Charge (§ 13b UStG). EU-Ausland ohne MwSt."
                       >
                         RC § 13b
@@ -426,7 +426,7 @@ export default function AusgabenPage() {
                   <td className="px-4 py-3 text-gray-900 font-medium">
                     {label}
                     <span
-                      className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800"
+                      className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-semibold bg-blue-100 text-blue-800"
                       title="Kilometerpauschale. Wird unter Fahrten gepflegt, nicht hier."
                     >
                       Fahrt
@@ -439,7 +439,7 @@ export default function AusgabenPage() {
                     <div className="flex items-center gap-1.5">
                       <span>Fahrtkosten</span>
                       <span
-                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700"
+                        className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-semibold bg-blue-50 text-blue-700"
                         title={`EÜR ${TRAVEL_EXPENSE_META.elsterLabel}`}
                       >
                         Z{TRAVEL_EXPENSE_META.elsterLine}

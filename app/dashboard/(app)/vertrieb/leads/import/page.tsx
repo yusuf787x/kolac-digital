@@ -439,7 +439,7 @@ export default function LeadsImportPage() {
               type="checkbox"
               checked={skipDuplicates}
               onChange={(e) => setSkipDuplicates(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded-sm border-gray-300"
             />
             Duplikate überspringen (gleiche Telefonnummer oder gleiche
             Firma+Ort)

@@ -137,7 +137,7 @@ export default function RichTextEditor({
         data-placeholder={placeholder}
         onInput={handleInput}
         onPaste={handlePaste}
-        className={`${minHeightClass} max-h-[400px] overflow-y-auto px-3 py-2.5 text-sm leading-relaxed outline-none focus:bg-white bg-white rte-editor`}
+        className={`${minHeightClass} max-h-[400px] overflow-y-auto px-3 py-2.5 text-sm leading-relaxed outline-hidden focus:bg-white bg-white rte-editor`}
         style={{ wordBreak: 'break-word' }}
       />
       <style jsx>{`
@@ -183,7 +183,7 @@ function ToolbarButton({
       onMouseDown={(e) => e.preventDefault()} // Selection nicht verlieren
       onClick={onClick}
       title={title}
-      className="px-2 py-1 rounded text-xs text-gray-700 hover:bg-white hover:shadow-sm transition-colors"
+      className="px-2 py-1 rounded-sm text-xs text-gray-700 hover:bg-white hover:shadow-xs transition-colors"
     >
       {children}
     </button>

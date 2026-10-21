@@ -67,7 +67,7 @@ export default function AttachmentsEditor({ attachments, onChange }: Props) {
           className="rounded-lg border border-gray-200 bg-gray-50/60 p-3 space-y-2"
         >
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded-sm">
               Anlage {idx + 1}
             </span>
             <input

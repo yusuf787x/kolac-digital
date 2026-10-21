@@ -479,7 +479,7 @@ export default function RekonstruktionPage() {
                               return n;
                             })
                           }
-                          className="rounded border-gray-300"
+                          className="rounded-sm border-gray-300"
                         />
                       </td>
                       <td className="py-2 text-gray-600 whitespace-nowrap">
@@ -589,7 +589,7 @@ export default function RekonstruktionPage() {
                         onChange={(ev) =>
                           patch(e.key, { roundTrip: ev.target.checked })
                         }
-                        className="rounded border-gray-300"
+                        className="rounded-sm border-gray-300"
                       />
                       hin und zurück
                     </label>

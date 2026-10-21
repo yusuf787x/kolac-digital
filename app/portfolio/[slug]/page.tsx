@@ -10,15 +10,16 @@ import { site } from '@/lib/site-config';
 import Reveal from '@/components/marketing/Reveal';
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export function generateStaticParams() {
   return portfolioProjects.map((p) => ({ slug: p.slug }));
 }
 
-export function generateMetadata({ params }: Props): Metadata {
-  const p = findPortfolioProject(params.slug);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const p = findPortfolioProject(slug);
   if (!p) return {};
   return {
     title: p.metaTitle,
@@ -41,8 +42,9 @@ export function generateMetadata({ params }: Props): Metadata {
   };
 }
 
-export default function PortfolioProjectPage({ params }: Props) {
-  const project = findPortfolioProject(params.slug);
+export default async function PortfolioProjectPage({ params }: Props) {
+  const { slug } = await params;
+  const project = findPortfolioProject(slug);
   if (!project) notFound();
 
   const idx = portfolioProjects.findIndex((p) => p.slug === project.slug);

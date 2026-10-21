@@ -134,7 +134,7 @@ export default function VorlagenPage() {
                     {t.body}
                   </p>
                 </div>
-                <div className="flex flex-shrink-0 gap-2">
+                <div className="flex shrink-0 gap-2">
                   <button
                     onClick={() => openEdit(t)}
                     className="text-sm text-brand-blue hover:underline"

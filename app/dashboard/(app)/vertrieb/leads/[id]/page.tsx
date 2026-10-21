@@ -311,7 +311,7 @@ function ContactBlock({
 }) {
   return (
     <div className="space-y-2 border-t border-gray-100 pt-3">
-      <p className="label !mb-0">Kontakt</p>
+      <p className="label mb-0!">Kontakt</p>
       <input
         className="input"
         value={lead.contactName ?? ''}

@@ -544,7 +544,7 @@ export default function UStVAPage() {
                   <SensitiveValue>{formatEUR(periodData.zahllast)}</SensitiveValue>
                 </p>
               </div>
-              <span className="text-[10px] font-mono px-2 py-1 rounded bg-brand-blue/10 text-brand-blue">
+              <span className="text-[10px] font-mono px-2 py-1 rounded-sm bg-brand-blue/10 text-brand-blue">
                 ELSTER KZ 83 · Zeile 66
               </span>
             </div>
@@ -562,7 +562,7 @@ export default function UStVAPage() {
                 Einnahmen ({periodData.monthInvoices.length} Rechnung
                 {periodData.monthInvoices.length === 1 ? '' : 'en'})
               </h2>
-              <span className="text-[10px] font-mono px-2 py-1 rounded bg-brand-blue/10 text-brand-blue">
+              <span className="text-[10px] font-mono px-2 py-1 rounded-sm bg-brand-blue/10 text-brand-blue">
                 ELSTER Sektion 3 · KZ 81/86/87
               </span>
             </div>
@@ -631,7 +631,7 @@ export default function UStVAPage() {
                             </Link>
                             {row.mehrfachZahlung && (
                               <span
-                                className="ml-1.5 inline-flex items-center px-1 py-0.5 rounded text-[9px] font-semibold bg-gray-100 text-gray-600"
+                                className="ml-1.5 inline-flex items-center px-1 py-0.5 rounded-sm text-[9px] font-semibold bg-gray-100 text-gray-600"
                                 title="Mehrere Zahlungseingänge auf dieselbe Rechnung. Hier zusammengefasst, die Umsatzsteuer wird nur einmal berechnet."
                               >
                                 {row.paymentCount}x
@@ -726,7 +726,7 @@ export default function UStVAPage() {
                 Ausgaben, reguläre Vorsteuer ({periodData.regularExpenses.length}{' '}
                 Beleg{periodData.regularExpenses.length === 1 ? '' : 'e'})
               </h2>
-              <span className="text-[10px] font-mono px-2 py-1 rounded bg-brand-blue/10 text-brand-blue">
+              <span className="text-[10px] font-mono px-2 py-1 rounded-sm bg-brand-blue/10 text-brand-blue">
                 ELSTER Sektion 7 · KZ 66 (Zeile 38)
               </span>
             </div>
@@ -806,7 +806,7 @@ export default function UStVAPage() {
                     UND als Vorsteuer deklariert, Netto-Effekt null.
                   </p>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-1 rounded bg-amber-100 text-amber-800">
+                <span className="text-[10px] font-mono px-2 py-1 rounded-sm bg-amber-100 text-amber-800">
                   ELSTER KZ 46 / 47 / 67
                 </span>
               </div>
@@ -1118,7 +1118,7 @@ function RcMetric({
   return (
     <div className="rounded-lg bg-white border border-amber-200 p-3">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-sm bg-amber-100 text-amber-800">
           KZ {kz}
         </span>
         <span className="text-sm font-semibold text-gray-900">

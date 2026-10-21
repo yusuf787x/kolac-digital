@@ -544,7 +544,7 @@ function InfoRow({
   return (
     <div>
       <p className="text-xs uppercase tracking-wider text-gray-500">{label}</p>
-      <p className="mt-0.5 text-gray-900 whitespace-pre-line break-words">
+      <p className="mt-0.5 text-gray-900 whitespace-pre-line wrap-break-word">
         {sensitive ? <SensitiveValue>{value}</SensitiveValue> : value}
       </p>
     </div>
@@ -577,11 +577,11 @@ function TimelineItem({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="text-sm font-medium text-gray-900">{def.label}</p>
-            <p className="text-sm text-gray-700 whitespace-pre-line break-words">
+            <p className="text-sm text-gray-700 whitespace-pre-line wrap-break-word">
               {activity.description}
             </p>
           </div>
-          <div className="flex flex-shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {!activity.completed && (
               <button
                 onClick={onComplete}
@@ -612,11 +612,11 @@ function TimelineItem({
             {expanded && activity.emailBody && (
               isHtmlBody(activity.emailBody) ? (
                 <div
-                  className="mt-2 rounded bg-white border border-gray-200 p-3 text-sm text-gray-700 email-body-preview"
+                  className="mt-2 rounded-sm bg-white border border-gray-200 p-3 text-sm text-gray-700 email-body-preview"
                   dangerouslySetInnerHTML={{ __html: activity.emailBody }}
                 />
               ) : (
-                <pre className="mt-2 whitespace-pre-wrap rounded bg-white border border-gray-200 p-2 font-sans text-gray-700">
+                <pre className="mt-2 whitespace-pre-wrap rounded-sm bg-white border border-gray-200 p-2 font-sans text-gray-700">
                   {activity.emailBody}
                 </pre>
               )

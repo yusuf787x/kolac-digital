@@ -458,12 +458,12 @@ export default function AngebotDetailPage() {
             <h1 className="text-3xl font-semibold text-gray-900 flex items-center gap-3 flex-wrap">
               {quote.quoteNumber}
               {isOrderConfirmation && (
-                <span className="text-sm font-medium px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                <span className="text-sm font-medium px-2 py-0.5 rounded-sm bg-emerald-100 text-emerald-800">
                   Auftragsbestätigung
                 </span>
               )}
               <span
-                className={`text-sm font-medium px-2 py-0.5 rounded ${QUOTE_STATUS_BADGE_CLASSES[computedStatus]}`}
+                className={`text-sm font-medium px-2 py-0.5 rounded-sm ${QUOTE_STATUS_BADGE_CLASSES[computedStatus]}`}
               >
                 {QUOTE_STATUS_LABELS[computedStatus]}
               </span>
@@ -726,7 +726,7 @@ export default function AngebotDetailPage() {
                   <td className="py-3 text-gray-900">
                     <div className="font-medium flex items-center gap-2">
                       {isOptional && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-sm">
                           Optional
                         </span>
                       )}

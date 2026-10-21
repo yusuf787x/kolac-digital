@@ -182,7 +182,7 @@ export default function RechnungenPage() {
                     {invoice.invoiceNumber ?? (
                       <span className="inline-flex items-center gap-1 text-amber-700 font-normal">
                         Entwurf
-                        <span className="text-[10px] uppercase tracking-wider bg-amber-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] uppercase tracking-wider bg-amber-100 px-1.5 py-0.5 rounded-sm">
                           ohne Nr.
                         </span>
                       </span>

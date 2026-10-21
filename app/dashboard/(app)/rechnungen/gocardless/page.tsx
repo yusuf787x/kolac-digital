@@ -167,7 +167,7 @@ function EventCard({ event }: { event: GocardlessEventDoc }) {
               {action}
             </span>
             <span
-              className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded ${STATUS_BADGE[status]}`}
+              className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-sm ${STATUS_BADGE[status]}`}
             >
               {STATUS_LABEL[status] ?? 'Noch nicht ausgewertet'}
             </span>

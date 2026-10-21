@@ -63,7 +63,7 @@ export default function LoginPage() {
           <Logo width={200} height={50} priority />
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xs">
           <h1 className="text-2xl font-semibold text-gray-900 mb-1">Anmelden</h1>
           <p className="text-sm text-gray-500 mb-6">
             Login zum internen Dashboard.

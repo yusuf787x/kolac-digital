@@ -361,7 +361,7 @@ function Tabelle({
                           type="checkbox"
                           checked={selected?.has(f.expense.id) ?? false}
                           onChange={() => onToggle(f.expense.id)}
-                          className="rounded border-gray-300"
+                          className="rounded-sm border-gray-300"
                         />
                       )}
                     </td>
@@ -380,7 +380,7 @@ function Tabelle({
                     {ausgebucht && (
                       <>
                         {' '}
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-gray-200 text-gray-700">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[11px] font-semibold bg-gray-200 text-gray-700">
                           ausgebucht
                         </span>
                         {onUndo && (
@@ -398,7 +398,7 @@ function Tabelle({
                   <td className="py-2 text-gray-600">{f.expense.category}</td>
                   <td className="py-2">
                     <span
-                      className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold ${badge}`}
+                      className={`inline-flex items-center px-1.5 py-0.5 rounded-sm text-[11px] font-semibold ${badge}`}
                       title={`Erkannt an: ${f.matched}`}
                     >
                       {VERDICT_LABEL[f.verdict]}

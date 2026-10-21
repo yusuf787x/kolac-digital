@@ -119,7 +119,7 @@ export default function CallScriptPage() {
                           V{s.version}
                         </span>
                         {isActive && (
-                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-sm bg-emerald-100 text-emerald-800">
                             aktiv
                           </span>
                         )}

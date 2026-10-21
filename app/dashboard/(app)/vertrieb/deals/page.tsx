@@ -92,7 +92,7 @@ export default function DealListePage() {
           className="input max-w-xs"
         />
         <select
-          className="input max-w-[12rem]"
+          className="input max-w-48"
           value={stageFilter}
           onChange={(e) =>
             setStageFilter(e.target.value as DealStage | 'alle')
@@ -156,7 +156,7 @@ export default function DealListePage() {
                     <td className="px-4 py-3 text-gray-700">{d.title}</td>
                     <td className="px-4 py-3">
                       <span
-                        className="text-xs font-medium px-2 py-0.5 rounded text-white"
+                        className="text-xs font-medium px-2 py-0.5 rounded-sm text-white"
                         style={{ backgroundColor: sd.color }}
                       >
                         {sd.label}

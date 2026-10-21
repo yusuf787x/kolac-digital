@@ -199,7 +199,7 @@ export default function ZahlungenZusammenfassenPage() {
                     type="checkbox"
                     checked={r.apply}
                     onChange={() => toggle(r.invoice.id)}
-                    className="mt-1 rounded border-gray-300"
+                    className="mt-1 rounded-sm border-gray-300"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">

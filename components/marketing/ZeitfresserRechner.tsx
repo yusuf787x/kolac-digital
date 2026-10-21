@@ -208,7 +208,7 @@ export default function ZeitfresserRechner() {
                       }))
                     }
                     aria-label={cfg.label}
-                    className="mt-1 h-[3px] w-full cursor-pointer appearance-none rounded-full [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-brand-blue [&::-webkit-slider-thumb]:shadow-sm"
+                    className="mt-1 h-[3px] w-full cursor-pointer appearance-none rounded-full [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-brand-blue [&::-webkit-slider-thumb]:shadow-xs"
                     style={{
                       background: `linear-gradient(to right, #0071e3 0%, #0071e3 ${pct}%, #e5e7eb ${pct}%, #e5e7eb 100%)`,
                     }}
@@ -285,7 +285,7 @@ export default function ZeitfresserRechner() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Dein Name"
                   autoComplete="name"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-hidden transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -304,7 +304,7 @@ export default function ZeitfresserRechner() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="0176 …"
                   autoComplete="tel"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-hidden transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                 />
               </div>
               <div className="flex flex-col gap-1">
@@ -323,7 +323,7 @@ export default function ZeitfresserRechner() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="deine@mail.de"
                   autoComplete="email"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-none transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 outline-hidden transition hover:border-gray-400 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                 />
               </div>
               <input
@@ -334,7 +334,7 @@ export default function ZeitfresserRechner() {
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
                 aria-hidden
-                className="absolute -left-[9999px] opacity-0"
+                className="absolute left-[-9999px] opacity-0"
               />
               <button
                 type="submit"

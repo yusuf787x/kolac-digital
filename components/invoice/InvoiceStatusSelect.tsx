@@ -100,7 +100,7 @@ export default function InvoiceStatusSelect({
         onChange={(e) => handleChange(e.target.value)}
         onClick={stop}
         disabled={updating}
-        className={`text-xs font-medium px-2 py-1 rounded border cursor-pointer outline-none focus:ring-2 focus:ring-brand-blue/30 disabled:opacity-50 ${STATUS_SELECT_CLASSES[computedStatus]}`}
+        className={`text-xs font-medium px-2 py-1 rounded-sm border cursor-pointer outline-hidden focus:ring-2 focus:ring-brand-blue/30 disabled:opacity-50 ${STATUS_SELECT_CLASSES[computedStatus]}`}
       >
         {SETTABLE_STATUSES.map((o) => (
           <option key={o.value} value={o.value}>

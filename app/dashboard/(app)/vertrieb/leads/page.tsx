@@ -277,7 +277,7 @@ export default function LeadListePage() {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded ${STATUS_BADGES[l.status]}`}
+                        className={`text-xs font-medium px-2 py-0.5 rounded-sm ${STATUS_BADGES[l.status]}`}
                       >
                         {LEAD_STATUS_LABELS[l.status]}
                       </span>

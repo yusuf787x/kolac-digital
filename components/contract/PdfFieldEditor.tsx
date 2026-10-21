@@ -249,7 +249,7 @@ export default function PdfFieldEditor({
 
   return (
     <div className="space-y-4">
-      <div className="card p-4 sticky top-[68px] z-10 bg-white shadow-sm">
+      <div className="card p-4 sticky top-[68px] z-10 bg-white shadow-xs">
         <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
           Feld platzieren
         </p>
@@ -354,7 +354,7 @@ function PageWrapper({
   return (
     <div className="flex justify-center">
       <div
-        className="relative inline-block bg-white shadow-sm border border-gray-200 rounded overflow-hidden"
+        className="relative inline-block bg-white shadow-xs border border-gray-200 rounded-sm overflow-hidden"
         data-pdf-page={pageNumber}
         onClick={onClick}
         style={{ cursor: placing ? 'crosshair' : 'default' }}
@@ -392,7 +392,7 @@ function PageWrapper({
                 />
               )}
               <span
-                className="absolute -top-5 left-0 px-1.5 py-0.5 rounded text-[10px] font-semibold text-white"
+                className="absolute -top-5 left-0 px-1.5 py-0.5 rounded-sm text-[10px] font-semibold text-white"
                 style={{ background: def.color }}
               >
                 {def.shortLabel}

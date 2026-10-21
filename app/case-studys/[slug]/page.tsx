@@ -9,7 +9,7 @@ import ValueIcon from '@/components/case-studies/ValueIcon';
 import VideoTestimonial from '@/components/case-studies/VideoTestimonial';
 
 interface Params {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
@@ -19,7 +19,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: Params): Promise<Metadata> {
-  const cs = findCaseStudy(params.slug);
+  const { slug } = await params;
+  const cs = findCaseStudy(slug);
   if (!cs) return {};
   const title = cs.metaTitle ?? `${cs.company} · Case Study · Kolac Digital`;
   const description = cs.metaDescription ?? cs.resultTeaser;
@@ -37,14 +38,15 @@ export async function generateMetadata({
   };
 }
 
-export default function CaseStudyDetailPage({ params }: Params) {
-  const cs = findCaseStudy(params.slug);
+export default async function CaseStudyDetailPage({ params }: Params) {
+  const { slug } = await params;
+  const cs = findCaseStudy(slug);
   if (!cs) notFound();
 
   return (
     <article>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-gray-100 bg-gradient-to-b from-white to-gray-50">
+      <section className="relative overflow-hidden border-b border-gray-100 bg-linear-to-b from-white to-gray-50">
         <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:py-24">
           <Reveal>
             <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
@@ -137,7 +139,7 @@ export default function CaseStudyDetailPage({ params }: Params) {
           <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {cs.values.blocks.map((block, idx) => (
               <Reveal key={idx} delay={idx * 100}>
-                <div className="flex flex-col rounded-2xl border border-gray-100 bg-gradient-to-b from-white to-gray-50 p-6 shadow-sm transition-shadow hover:shadow-md">
+                <div className="flex flex-col rounded-2xl border border-gray-100 bg-linear-to-b from-white to-gray-50 p-6 shadow-xs transition-shadow hover:shadow-md">
                   <div className="mb-4">
                     <ValueIcon icon={block.iconKey} />
                   </div>
@@ -179,11 +181,11 @@ export default function CaseStudyDetailPage({ params }: Params) {
                   <span className="h-3 w-3 rounded-full bg-red-400" />
                   <span className="h-3 w-3 rounded-full bg-yellow-400" />
                   <span className="h-3 w-3 rounded-full bg-green-400" />
-                  <span className="ml-4 truncate rounded-md bg-white px-3 py-1 text-xs text-gray-500 shadow-sm">
+                  <span className="ml-4 truncate rounded-md bg-white px-3 py-1 text-xs text-gray-500 shadow-xs">
                     {cs.dashboardUrl}
                   </span>
                 </div>
-                <div className="relative aspect-[16/10] w-full bg-gray-100">
+                <div className="relative aspect-16/10 w-full bg-gray-100">
                   <Image
                     src={cs.screenshot}
                     alt={cs.screenshotAlt}
@@ -215,16 +217,16 @@ export default function CaseStudyDetailPage({ params }: Params) {
                         <span className="h-3 w-3 rounded-full bg-red-400" />
                         <span className="h-3 w-3 rounded-full bg-yellow-400" />
                         <span className="h-3 w-3 rounded-full bg-green-400" />
-                        <span className="ml-4 truncate rounded-md bg-white px-3 py-1 text-xs text-gray-500 shadow-sm">
+                        <span className="ml-4 truncate rounded-md bg-white px-3 py-1 text-xs text-gray-500 shadow-xs">
                           {shot.url}
                         </span>
                       </div>
-                      <div className="relative aspect-[16/10] w-full bg-gray-100">
+                      <div className="relative aspect-16/10 w-full bg-gray-100">
                         <Image
                           src={shot.src}
                           alt={shot.alt}
                           fill
-                          className="object-cover object-left-top"
+                          className="object-cover object-top-left"
                           sizes="(max-width: 1024px) 100vw, 1024px"
                         />
                       </div>
@@ -255,7 +257,7 @@ export default function CaseStudyDetailPage({ params }: Params) {
                 <li className="flex items-start gap-3 rounded-xl bg-gray-50 p-5">
                   <span
                     aria-hidden
-                    className="mt-0.5 grid h-6 w-6 flex-shrink-0 place-items-center rounded-full bg-brand-blue text-xs font-bold text-white"
+                    className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-blue text-xs font-bold text-white"
                   >
                     ✓
                   </span>
@@ -334,7 +336,7 @@ export default function CaseStudyDetailPage({ params }: Params) {
       </section>
 
       {/* CTA */}
-      <section className="bg-gradient-to-br from-brand-blue to-blue-700 py-16 text-white sm:py-20">
+      <section className="bg-linear-to-br from-brand-blue to-blue-700 py-16 text-white sm:py-20">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
           <Reveal>
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">

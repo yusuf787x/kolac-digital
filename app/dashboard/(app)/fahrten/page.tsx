@@ -321,7 +321,7 @@ export default function FahrtenPage() {
                 type="checkbox"
                 checked={roundTrip}
                 onChange={(e) => setRoundTrip(e.target.checked)}
-                className="rounded border-gray-300"
+                className="rounded-sm border-gray-300"
               />
               Hin und zurück gefahren
             </label>

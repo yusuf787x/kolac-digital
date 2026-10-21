@@ -559,12 +559,12 @@ export default function RechnungDetailPage() {
             <h1 className="text-3xl font-semibold text-gray-900 flex items-center gap-3 flex-wrap">
               {invoice.invoiceNumber ?? 'Entwurf'}
               {isDraft ? (
-                <span className="text-sm font-medium px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                <span className="text-sm font-medium px-2 py-0.5 rounded-sm bg-amber-100 text-amber-800">
                   Entwurf · noch keine Nummer
                 </span>
               ) : (
                 <span
-                  className={`text-sm font-medium px-2 py-0.5 rounded ${STATUS_BADGE_CLASSES[computedStatus]}`}
+                  className={`text-sm font-medium px-2 py-0.5 rounded-sm ${STATUS_BADGE_CLASSES[computedStatus]}`}
                 >
                   {STATUS_LABELS[computedStatus]}
                   {computedStatus === 'overdue' && daysLate > 0 && (

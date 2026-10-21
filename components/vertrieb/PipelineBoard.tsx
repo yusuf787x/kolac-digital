@@ -161,7 +161,7 @@ function Column({
   const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
-    <div className="flex w-72 flex-shrink-0 flex-col">
+    <div className="flex w-72 shrink-0 flex-col">
       <div
         className="rounded-t-lg px-3 py-2 text-white"
         style={{ backgroundColor: color }}

@@ -200,7 +200,7 @@ export default function Sidebar() {
                   {item.label}
                 </span>
                 {badge > 0 && (
-                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-semibold">
+                  <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-xs font-semibold">
                     {badge}
                   </span>
                 )}
@@ -298,7 +298,7 @@ export default function Sidebar() {
                         <span className="truncate flex-1">{item.label}</span>
                         {badge > 0 && (
                           <span
-                            className={`shrink-0 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold ${
+                            className={`shrink-0 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold ${
                               active
                                 ? 'bg-white text-brand-blue'
                                 : 'bg-red-500 text-white'
@@ -357,7 +357,7 @@ export default function Sidebar() {
                   {item.shortLabel ?? item.label}
                 </span>
                 {badge > 0 && (
-                  <span className="absolute top-1 right-[22%] inline-flex items-center justify-center min-w-[1rem] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
+                  <span className="absolute top-1 right-[22%] inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
                     {badge}
                   </span>
                 )}
@@ -376,7 +376,7 @@ export default function Sidebar() {
             <span className="text-lg leading-none">☰</span>
             <span>Mehr</span>
             {hiddenBadgeTotal > 0 && (
-              <span className="absolute top-1 right-[22%] inline-flex items-center justify-center min-w-[1rem] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
+              <span className="absolute top-1 right-[22%] inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold">
                 {hiddenBadgeTotal}
               </span>
             )}

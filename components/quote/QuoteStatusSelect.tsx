@@ -65,7 +65,7 @@ export default function QuoteStatusSelect({
   if (quote.status === 'invoiced') {
     return (
       <span
-        className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded border ${QUOTE_STATUS_SELECT_CLASSES.invoiced}`}
+        className={`inline-flex items-center text-xs font-medium px-2 py-1 rounded-sm border ${QUOTE_STATUS_SELECT_CLASSES.invoiced}`}
       >
         Abgerechnet
       </span>
@@ -78,7 +78,7 @@ export default function QuoteStatusSelect({
       onChange={(e) => handleChange(e.target.value)}
       onClick={stop}
       disabled={updating}
-      className={`text-xs font-medium px-2 py-1 rounded border cursor-pointer outline-none focus:ring-2 focus:ring-brand-blue/30 disabled:opacity-50 ${QUOTE_STATUS_SELECT_CLASSES[computedStatus]}`}
+      className={`text-xs font-medium px-2 py-1 rounded-sm border cursor-pointer outline-hidden focus:ring-2 focus:ring-brand-blue/30 disabled:opacity-50 ${QUOTE_STATUS_SELECT_CLASSES[computedStatus]}`}
     >
       {SETTABLE_QUOTE_STATUSES.map((o) => (
         <option key={o.value} value={o.value}>

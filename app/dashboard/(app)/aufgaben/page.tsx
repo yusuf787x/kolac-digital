@@ -448,7 +448,7 @@ function Column({
                 }
               }}
               placeholder="+ Aufgabe (Enter)"
-              className="w-full px-2.5 py-1.5 text-sm rounded-lg bg-white/70 border border-transparent hover:border-gray-200 focus:border-gray-300 focus:bg-white focus:outline-none placeholder-gray-400"
+              className="w-full px-2.5 py-1.5 text-sm rounded-lg bg-white/70 border border-transparent hover:border-gray-200 focus:border-gray-300 focus:bg-white focus:outline-hidden placeholder-gray-400"
             />
           </div>
         </div>
@@ -478,12 +478,12 @@ function RenameRow({
           if (e.key === 'Enter') onSave(label, color);
           if (e.key === 'Escape') onCancel();
         }}
-        className="flex-1 min-w-0 px-2 py-1 text-sm rounded border border-gray-300 focus:outline-none focus:border-brand-blue"
+        className="flex-1 min-w-0 px-2 py-1 text-sm rounded-sm border border-gray-300 focus:outline-hidden focus:border-brand-blue"
       />
       <select
         value={color}
         onChange={(e) => setColor(e.target.value as TaskPriority)}
-        className="text-xs rounded border border-gray-300 px-1 py-1 focus:outline-none focus:border-brand-blue"
+        className="text-xs rounded-sm border border-gray-300 px-1 py-1 focus:outline-hidden focus:border-brand-blue"
       >
         {COLOR_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -493,7 +493,7 @@ function RenameRow({
       </select>
       <button
         onClick={() => onSave(label, color)}
-        className="text-xs px-2 py-1 rounded bg-brand-blue text-white"
+        className="text-xs px-2 py-1 rounded-sm bg-brand-blue text-white"
       >
         ✓
       </button>
@@ -602,7 +602,7 @@ function TaskCardView({
   const deadlineInfo = deadlineBadge(task.deadline);
   return (
     <div
-      className={`rounded-lg bg-white border border-gray-200 p-3 cursor-pointer hover:border-gray-300 ${dragging ? 'shadow-lg ring-2 ring-brand-blue' : 'shadow-sm'}`}
+      className={`rounded-lg bg-white border border-gray-200 p-3 cursor-pointer hover:border-gray-300 ${dragging ? 'shadow-lg ring-2 ring-brand-blue' : 'shadow-xs'}`}
     >
       <p className="text-sm font-medium text-gray-900 leading-snug">
         {task.title}
@@ -614,7 +614,7 @@ function TaskCardView({
       )}
       {deadlineInfo && (
         <div
-          className={`inline-flex items-center gap-1 mt-2 px-1.5 py-0.5 rounded text-[10px] font-medium ${deadlineInfo.classes}`}
+          className={`inline-flex items-center gap-1 mt-2 px-1.5 py-0.5 rounded-sm text-[10px] font-medium ${deadlineInfo.classes}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -726,7 +726,7 @@ function TaskEditor({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center px-3 py-4 sm:px-4"
+      className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex items-center justify-center px-3 py-4 sm:px-4"
       onClick={onClose}
     >
       <div

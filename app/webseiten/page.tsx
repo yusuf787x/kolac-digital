@@ -298,11 +298,11 @@ function ArrowIcon() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden border-b border-gray-100 bg-gradient-to-b from-white to-gray-50">
+    <section className="relative overflow-hidden border-b border-gray-100 bg-linear-to-b from-white to-gray-50">
       <div className="mx-auto max-w-6xl px-4 pb-16 pt-10 sm:px-6 sm:pt-16 lg:pb-24 lg:pt-24">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <Reveal>
-            <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
+            <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-xs">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
               Aktuell {site.freeSlots} freie Plätze für neue Projekte
             </span>
@@ -357,7 +357,7 @@ function Hero() {
 
           <Reveal delay={150}>
             <div className="relative">
-              <div className="absolute inset-0 -z-10 rounded-[2rem] bg-gradient-to-tr from-brand-blue/20 via-blue-100 to-white blur-2xl" />
+              <div className="absolute inset-0 -z-10 rounded-4xl bg-linear-to-tr from-brand-blue/20 via-blue-100 to-white blur-2xl" />
               <div className="relative rounded-2xl border border-gray-100 bg-white p-3 shadow-xl">
                 <Image
                   src="/images/bacara-website.webp"
@@ -446,7 +446,7 @@ function PainSolution() {
                 <li key={p} className="flex items-start gap-3">
                   <span
                     aria-hidden
-                    className="mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-gray-200 text-xs font-bold text-gray-600"
+                    className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-gray-200 text-xs font-bold text-gray-600"
                   >
                     ×
                   </span>
@@ -457,7 +457,7 @@ function PainSolution() {
           </div>
 
           {/* Mit System */}
-          <div className="rounded-2xl border-2 border-brand-blue/40 bg-gradient-to-br from-brand-blue/5 to-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-2xl border-2 border-brand-blue/40 bg-linear-to-br from-brand-blue/5 to-white p-6 shadow-xs sm:p-8">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center rounded-full bg-brand-blue px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
                 Mit System
@@ -474,7 +474,7 @@ function PainSolution() {
                 <li key={s} className="flex items-start gap-3">
                   <span
                     aria-hidden
-                    className="mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-brand-blue text-xs font-bold text-white"
+                    className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-blue text-xs font-bold text-white"
                   >
                     ✓
                   </span>
@@ -560,7 +560,7 @@ function Benefits() {
           {items.map((it) => (
             <div
               key={it.title}
-              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
             >
               <div className="text-3xl">{it.icon}</div>
               <h3 className="mt-3 text-lg font-semibold text-gray-900">
@@ -636,7 +636,7 @@ function Leistungen() {
               className="rounded-xl border border-gray-100 bg-white p-5"
             >
               <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue">
+                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue">
                   ✓
                 </span>
                 <div>
@@ -688,7 +688,7 @@ function Process() {
           {steps.map((s) => (
             <li
               key={s.n}
-              className="relative rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
+              className="relative rounded-2xl border border-gray-100 bg-white p-6 shadow-xs"
             >
               <span className="absolute -top-3 left-6 inline-flex items-center rounded-full bg-brand-blue px-3 py-1 text-xs font-semibold tracking-wider text-white">
                 Schritt {s.n}
@@ -748,7 +748,7 @@ function ReferenceCard({
   const showPhone = r.mockupType === 'both' && r.mockupImagePhone;
 
   return (
-    <article className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:p-7">
+    <article className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xs transition-shadow hover:shadow-md sm:p-7">
       <div className="relative">
         <a
           href={r.link ?? '#'}
@@ -762,7 +762,7 @@ function ReferenceCard({
             <span className="ml-1.5 inline-block h-2.5 w-2.5 rounded-full bg-yellow-400" />
             <span className="ml-1.5 inline-block h-2.5 w-2.5 rounded-full bg-green-400" />
           </div>
-          <div className="relative aspect-[16/10] w-full">
+          <div className="relative aspect-16/10 w-full">
             <Image
               src={r.mockupImage}
               alt={`Webseite von ${r.company}`}
@@ -778,7 +778,7 @@ function ReferenceCard({
             href={r.socialLink ?? r.link ?? '#'}
             target="_blank"
             rel="noopener noreferrer"
-            className="absolute -right-2 bottom-[-8px] aspect-[9/19] w-[26%] max-w-[120px] overflow-hidden rounded-[1.4rem] border-[3px] border-gray-900 bg-gray-900 shadow-xl"
+            className="absolute -right-2 bottom-[-8px] aspect-9/19 w-[26%] max-w-[120px] overflow-hidden rounded-[1.4rem] border-[3px] border-gray-900 bg-gray-900 shadow-xl"
             aria-label={`${r.company} Social Media ansehen`}
           >
             <Image
@@ -803,7 +803,7 @@ function ReferenceCard({
         <ul className="mt-4 space-y-2">
           {r.services.map((s) => (
             <li key={s} className="flex items-start gap-2 text-sm text-gray-700">
-              <span className="mt-1 flex-shrink-0 text-brand-blue">
+              <span className="mt-1 shrink-0 text-brand-blue">
                 <ArrowIcon />
               </span>
               <span>{s}</span>
@@ -859,7 +859,7 @@ function ReferenceCard({
                   rel="noopener noreferrer"
                   className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-white ${
                     r.socialIcon === 'instagram'
-                      ? 'bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600'
+                      ? 'bg-linear-to-tr from-yellow-500 via-pink-500 to-purple-600'
                       : 'bg-black'
                   }`}
                 >
@@ -936,7 +936,7 @@ function Reviews() {
           {reviewHighlights.map((r) => (
             <figure
               key={r.author}
-              className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-sm"
+              className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-xs"
             >
               <div className="flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-blue/10 text-base font-semibold text-brand-blue">
@@ -1003,7 +1003,7 @@ function Pricing() {
           {packages.map((p) => (
             <div
               key={p.id}
-              className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm ${
+              className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-xs ${
                 p.highlight
                   ? 'border-brand-blue ring-2 ring-brand-blue/20'
                   : 'border-gray-100'
@@ -1028,7 +1028,7 @@ function Pricing() {
               <ul className="mt-5 space-y-2 text-sm text-gray-700">
                 {p.bullets.map((b) => (
                   <li key={b} className="flex items-start gap-2">
-                    <span className="mt-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-[10px] font-bold text-brand-blue">
+                    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-[10px] font-bold text-brand-blue">
                       ✓
                     </span>
                     <span>{b}</span>
@@ -1066,7 +1066,7 @@ function Pricing() {
 
         {/* Add-On: Funktionsbausteine — visuell deutlich getrennt */}
         <Reveal delay={150}>
-        <div className="mt-10 overflow-hidden rounded-2xl border-2 border-dashed border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-white p-6 sm:p-8">
+        <div className="mt-10 overflow-hidden rounded-2xl border-2 border-dashed border-amber-300 bg-linear-to-br from-amber-50 via-orange-50 to-white p-6 sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div className="max-w-xl">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-200/70 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-900">
@@ -1139,10 +1139,10 @@ function Bonuses() {
           {includedBonuses.map((b) => (
             <div
               key={b.title}
-              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
             >
               <div className="flex items-start gap-4">
-                <div className="grid h-14 w-14 flex-shrink-0 place-items-center rounded-2xl bg-brand-blue/10 text-3xl">
+                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand-blue/10 text-3xl">
                   {icons[b.icon]}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -1177,7 +1177,7 @@ function About() {
         <Reveal>
         <div className="grid items-center gap-10 md:grid-cols-[auto_1fr]">
           <div className="mx-auto md:mx-0">
-            <div className="relative h-56 w-56 overflow-hidden rounded-full bg-gradient-to-br from-blue-100 to-white p-1.5 shadow-lg ring-4 ring-brand-blue/30 sm:h-72 sm:w-72">
+            <div className="relative h-56 w-56 overflow-hidden rounded-full bg-linear-to-br from-blue-100 to-white p-1.5 shadow-lg ring-4 ring-brand-blue/30 sm:h-72 sm:w-72">
               <div className="relative h-full w-full overflow-hidden rounded-full bg-white">
                 <Image
                   src="/email/yk.png"
@@ -1255,7 +1255,7 @@ function Faq() {
           {faqs.map((f) => (
             <details
               key={f.question}
-              className="group rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-sm open:shadow-md"
+              className="group rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-xs open:shadow-md"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-gray-900">
                 {f.question}
@@ -1281,7 +1281,7 @@ function Kontakt() {
   return (
     <section
       id="kontakt"
-      className="relative overflow-hidden bg-gradient-to-br from-brand-blue to-blue-700 py-16 text-white sm:py-20"
+      className="relative overflow-hidden bg-linear-to-br from-brand-blue to-blue-700 py-16 text-white sm:py-20"
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-2">
@@ -1302,7 +1302,7 @@ function Kontakt() {
               href={site.meetingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2.5 text-sm font-medium text-white ring-1 ring-white/25 backdrop-blur-sm hover:bg-white/25 transition-colors"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2.5 text-sm font-medium text-white ring-1 ring-white/25 backdrop-blur-xs hover:bg-white/25 transition-colors"
             >
               <span aria-hidden>📅</span>
               Termin direkt online buchen
@@ -1375,7 +1375,7 @@ function Industries() {
             {industries.map((b) => (
               <article
                 key={b.title}
-                className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xs transition-shadow hover:shadow-md"
               >
                 <div className="text-3xl" aria-hidden>
                   {b.icon}
@@ -1444,7 +1444,7 @@ function Regions() {
         <ul className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-2">
           {cities.map((c) => (
             <li key={c}>
-              <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 shadow-sm">
+              <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 shadow-xs">
                 <span aria-hidden className="mr-1.5 text-brand-blue">
                   📍
                 </span>
@@ -1453,7 +1453,7 @@ function Regions() {
             </li>
           ))}
           <li>
-            <span className="inline-flex items-center rounded-full border border-brand-blue/30 bg-brand-blue/5 px-4 py-1.5 text-sm font-medium text-brand-blue shadow-sm">
+            <span className="inline-flex items-center rounded-full border border-brand-blue/30 bg-brand-blue/5 px-4 py-1.5 text-sm font-medium text-brand-blue shadow-xs">
               <span aria-hidden className="mr-1.5">
                 🇩🇪
               </span>

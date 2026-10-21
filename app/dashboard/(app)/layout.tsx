@@ -42,7 +42,7 @@ export default function DashboardLayout({
             Home-Indicator-Zone, damit der letzte Button einer Seite nie
             darunter verschwindet. Auf Desktop faellt der Abstand weg. */}
         <main className="md:pl-64 dashboard-main">
-          <div className="sticky top-0 z-20 border-b border-gray-100 bg-gray-50/80 backdrop-blur px-4 sm:px-6 lg:px-8 py-3">
+          <div className="sticky top-0 z-20 border-b border-gray-100 bg-gray-50/80 backdrop-blur-sm px-4 sm:px-6 lg:px-8 py-3">
             <div className="max-w-7xl mx-auto flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <GlobalSearch />

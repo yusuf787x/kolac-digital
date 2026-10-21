@@ -20,7 +20,7 @@ export const revalidate = 600;
 export const dynamicParams = true;
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
@@ -33,7 +33,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await getPublishedPostBySlug(params.slug).catch(() => null);
+  const { slug } = await params;
+  const post = await getPublishedPostBySlug(slug).catch(() => null);
   if (!post || post.status !== 'published') return {};
   const url = `${site.baseUrl}/blog/${post.slug}`;
   return {
@@ -62,7 +63,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogArticlePage({ params }: Props) {
-  const post = await getPublishedPostBySlug(params.slug).catch(() => null);
+  const { slug } = await params;
+  const post = await getPublishedPostBySlug(slug).catch(() => null);
   if (!post || post.status !== 'published') notFound();
 
   let related: BlogPost[] = [];

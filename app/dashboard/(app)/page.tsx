@@ -289,7 +289,7 @@ export default function DashboardHomePage() {
                       href={
                         deal ? `/dashboard/vertrieb/${deal.id}` : '/dashboard/vertrieb'
                       }
-                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                      className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-sm"
                     >
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
@@ -301,7 +301,7 @@ export default function DashboardHomePage() {
                         </p>
                       </div>
                       <span
-                        className={`ml-3 flex-shrink-0 text-xs font-medium ${
+                        className={`ml-3 shrink-0 text-xs font-medium ${
                           overdue ? 'text-red-600' : 'text-gray-500'
                         }`}
                       >
@@ -346,7 +346,7 @@ export default function DashboardHomePage() {
                       <Link
                         key={inv.id}
                         href={`/dashboard/rechnungen/${inv.id}`}
-                        className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                        className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-sm"
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
@@ -359,7 +359,7 @@ export default function DashboardHomePage() {
                         </div>
                         <div className="flex items-center gap-3 ml-3">
                           <span
-                            className={`text-xs font-medium px-2 py-0.5 rounded ${STATUS_BADGE_CLASSES[computedStatus]}`}
+                            className={`text-xs font-medium px-2 py-0.5 rounded-sm ${STATUS_BADGE_CLASSES[computedStatus]}`}
                           >
                             {STATUS_LABELS[computedStatus]}
                           </span>
@@ -392,7 +392,7 @@ export default function DashboardHomePage() {
                       <Link
                         key={inv.id}
                         href={`/dashboard/rechnungen/${inv.id}`}
-                        className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded"
+                        className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-sm"
                       >
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">
