@@ -7,6 +7,7 @@ import path from 'path';
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import {
   saveContractToDrive,
+  saveConfirmationToDrive,
   buildContractFilename,
 } from '@/lib/google-drive';
 
@@ -95,6 +96,10 @@ export async function POST(req: Request) {
   }
 
   const fields = (data.fields ?? []) as ContractFieldDoc[];
+  // Aus einem Angebot erzeugter Link → nach der Unterschrift Angebot
+  // annehmen und PDF als Auftragsbestaetigung ablegen.
+  const quoteId: string | null = data.quoteId ?? null;
+  const docLabel = quoteId ? 'Angebot' : 'Vertrag';
 
   // PDF-Bytes von Storage laden.
   const originalBytes = await downloadStoragePath(data.originalPdfPath);
@@ -178,7 +183,8 @@ export async function POST(req: Request) {
   const ua = req.headers.get('user-agent') ?? '';
   const signedAt = new Date();
   await addAuditPage(pdfDoc, font, {
-    contractTitle: data.title ?? 'Vertrag',
+    docLabel,
+    contractTitle: data.title ?? docLabel,
     signedByName: body.signedByName,
     signedAt,
     ip: ip ?? '–',
@@ -203,7 +209,8 @@ export async function POST(req: Request) {
     note: `Signiert von ${body.signedByName}`,
   });
 
-  // Drive-Backup (best-effort) — Vertrag in Partnerverträge-Ordner ablegen.
+  // Drive-Backup (best-effort) — Vertrag in Partnerverträge-Ordner,
+  // signiertes Angebot in Aufträge (wie hochgeladene Bestätigungen).
   let driveUrl: string | null = null;
   try {
     const authSnap = await adminDb()
@@ -217,14 +224,23 @@ export async function POST(req: Request) {
       const filename = buildContractFilename({
         signedAt,
         customerCompany: data.customerSnapshot?.company ?? '',
-        typeLabel: data.typeLabel ?? 'Vertrag',
+        typeLabel: quoteId
+          ? `${data.title ?? 'Angebot'} signiert`
+          : (data.typeLabel ?? 'Vertrag'),
       });
       const pdfBase64 = Buffer.from(finalBytes).toString('base64');
-      const driveRes = await saveContractToDrive({
-        refreshToken,
-        pdfBase64,
-        filename,
-      });
+      const driveRes = quoteId
+        ? await saveConfirmationToDrive({
+            refreshToken,
+            fileBase64: pdfBase64,
+            filename,
+            mimeType: 'application/pdf',
+          })
+        : await saveContractToDrive({
+            refreshToken,
+            pdfBase64,
+            filename,
+          });
       driveUrl = driveRes.webViewLink;
     } else {
       console.info(
@@ -248,10 +264,20 @@ export async function POST(req: Request) {
     updatedAt: Timestamp.now(),
   });
 
+  if (quoteId) {
+    await acceptQuoteBestEffort({
+      quoteId,
+      signedPdfUrl: signedUrl,
+      driveUrl,
+      filename: `${data.title ?? 'Angebot'} - signiert.pdf`,
+    });
+  }
+
   // Mail-Notification an Yusuf (best-effort, blockiert die Antwort nicht
   // bei Fehlern).
   await notifyYusufBestEffort({
-    contractTitle: data.title ?? 'Vertrag',
+    isQuote: !!quoteId,
+    contractTitle: data.title ?? docLabel,
     customerCompany: data.customerSnapshot?.company ?? '',
     signedByName: body.signedByName,
     signedAt,
@@ -268,6 +294,37 @@ export async function POST(req: Request) {
 // ===================================================================
 // Helpers
 // ===================================================================
+
+/**
+ * Setzt das verknuepfte Angebot auf "angenommen" und haengt das
+ * signierte PDF als Auftragsbestaetigung an. Nur aus draft/sent —
+ * ein bereits abgerechnetes oder abgelehntes Angebot bleibt, wie es ist.
+ */
+async function acceptQuoteBestEffort(opts: {
+  quoteId: string;
+  signedPdfUrl: string;
+  driveUrl: string | null;
+  filename: string;
+}) {
+  try {
+    const ref = adminDb().collection('quotes').doc(opts.quoteId);
+    const snap = await ref.get();
+    if (!snap.exists) return;
+    const status = snap.data()?.status;
+    const now = Timestamp.now();
+    await ref.update({
+      ...(status === 'draft' || status === 'sent'
+        ? { status: 'accepted', acceptedAt: now }
+        : {}),
+      confirmationFileUrl: opts.signedPdfUrl,
+      confirmationFilename: opts.filename,
+      confirmationDriveUrl: opts.driveUrl,
+      updatedAt: now,
+    });
+  } catch (err) {
+    console.error('Angebot konnte nicht angenommen werden:', err);
+  }
+}
 
 function decodeDataUrl(dataUrl: string): Uint8Array {
   const m = dataUrl.match(/^data:[^;]+;base64,(.+)$/);
@@ -325,6 +382,7 @@ function formatDateDDMMYYYY(d: Date): string {
 }
 
 interface AuditPageOpts {
+  docLabel: string;
   contractTitle: string;
   signedByName: string;
   signedAt: Date;
@@ -368,7 +426,7 @@ async function addAuditPage(
   });
   y -= 8;
 
-  writeLine(`Vertrag: ${opts.contractTitle}`);
+  writeLine(`${opts.docLabel}: ${opts.contractTitle}`);
   writeLine(`Signiert von: ${opts.signedByName}`);
   writeLine(`Datum / Uhrzeit: ${formatDateTimeDE(opts.signedAt)}`);
   writeLine(`IP-Adresse: ${opts.ip}`);
@@ -418,6 +476,7 @@ function getClientIp(req: Request): string | null {
 }
 
 async function notifyYusufBestEffort(opts: {
+  isQuote: boolean;
   contractTitle: string;
   customerCompany: string;
   signedByName: string;
@@ -431,10 +490,16 @@ async function notifyYusufBestEffort(opts: {
     await resend.emails.send({
       from: 'Kolac Digital <yusuf@kolac-digital.de>',
       to: 'yusuf@kolac-digital.de',
-      subject: `✓ Vertrag signiert: ${opts.contractTitle}`,
+      subject: opts.isQuote
+        ? `✓ Angebot angenommen: ${opts.contractTitle}`
+        : `✓ Vertrag signiert: ${opts.contractTitle}`,
       html: `
         <div style="font-family:-apple-system,sans-serif;color:#0a0a0a;line-height:1.6;font-size:15px;">
-          <p>Der Vertrag <strong>${escapeHtml(opts.contractTitle)}</strong> wurde gerade vom Kunden signiert.</p>
+          <p>${
+            opts.isQuote
+              ? `Das <strong>${escapeHtml(opts.contractTitle)}</strong> wurde gerade vom Kunden unterschrieben und steht jetzt auf „Angenommen“.`
+              : `Der Vertrag <strong>${escapeHtml(opts.contractTitle)}</strong> wurde gerade vom Kunden signiert.`
+          }</p>
           <table cellpadding="6" cellspacing="0" border="0" style="border-collapse:collapse;margin:12px 0;">
             <tr><td style="color:#6b7280;">Kunde</td><td>${escapeHtml(opts.customerCompany)}</td></tr>
             <tr><td style="color:#6b7280;">Signiert von</td><td>${escapeHtml(opts.signedByName)}</td></tr>
@@ -447,13 +512,15 @@ async function notifyYusufBestEffort(opts: {
           </p>
           ${
             opts.driveUrl
-              ? `<p style="color:#6b7280;font-size:13px;">Liegt automatisch im Drive-Ordner Partnerverträge: <a href="${opts.driveUrl}" style="color:#2563eb;">öffnen</a></p>`
-              : `<p style="color:#6b7280;font-size:13px;">Liegt auch direkt im Dashboard unter Verträge.</p>`
+              ? `<p style="color:#6b7280;font-size:13px;">Liegt automatisch im Drive-Ordner ${opts.isQuote ? 'Aufträge' : 'Partnerverträge'}: <a href="${opts.driveUrl}" style="color:#2563eb;">öffnen</a></p>`
+              : `<p style="color:#6b7280;font-size:13px;">Liegt auch direkt im Dashboard unter ${opts.isQuote ? 'Angebote' : 'Verträge'}.</p>`
           }
         </div>
       `,
       text: [
-        `Vertrag ${opts.contractTitle} signiert.`,
+        opts.isQuote
+          ? `${opts.contractTitle} angenommen.`
+          : `Vertrag ${opts.contractTitle} signiert.`,
         `Kunde: ${opts.customerCompany}`,
         `Signiert von: ${opts.signedByName}`,
         `Zeitpunkt: ${formatDateTimeDE(opts.signedAt)}`,

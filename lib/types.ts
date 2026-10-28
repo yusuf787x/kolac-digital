@@ -411,6 +411,11 @@ export interface Quote {
   rejectedAt: Timestamp | null;
   invoicedAt: Timestamp | null;
   invoiceId: string | null;
+  /**
+   * Verknuepfter Signing-Vertrag (contracts/{id}), ueber den der Kunde
+   * das Angebot online unterschreibt. Null/fehlend = noch kein Link.
+   */
+  contractId?: string | null;
   items: InvoiceItem[];
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -781,6 +786,12 @@ export interface Contract {
   title: string; // freier Titel, z.B. "DSV CarHifi-Herford"
   /** Gesetzt, wenn per Programm-Vorlage erzeugt — dann bearbeitbar. */
   templateData?: ContractTemplateData;
+  /**
+   * Gesetzt, wenn der Signing-Link direkt aus einem Angebot erzeugt
+   * wurde. Nach der Unterschrift wird das Angebot automatisch auf
+   * „Angenommen" gesetzt.
+   */
+  quoteId?: string | null;
   status: ContractStatus;
   originalPdfPath: string; // Storage-Pfad
   originalPdfUrl: string; // Download-URL

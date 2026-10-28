@@ -11,8 +11,11 @@ const ContractPdfView = dynamic(
   { ssr: false, loading: () => <PdfLoading /> },
 );
 
+type DocKind = 'quote' | 'contract';
+
 interface LoadResponse {
   id: string;
+  kind?: DocKind;
   title: string;
   typeLabel: string;
   customerCompany: string;
@@ -33,7 +36,7 @@ export default function SignPage() {
     | { kind: 'loading' }
     | { kind: 'error'; message: string }
     | { kind: 'ready'; data: LoadResponse }
-    | { kind: 'signed'; signedPdfUrl: string }
+    | { kind: 'signed'; signedPdfUrl: string; docKind: DocKind }
   >({ kind: 'loading' });
 
   const [name, setName] = useState('');
@@ -52,7 +55,7 @@ export default function SignPage() {
         if (!res.ok) {
           setState({
             kind: 'error',
-            message: body.error ?? 'Vertrag konnte nicht geladen werden.',
+            message: body.error ?? 'Dokument konnte nicht geladen werden.',
           });
           return;
         }
@@ -60,6 +63,7 @@ export default function SignPage() {
           setState({
             kind: 'signed',
             signedPdfUrl: body.signedPdfUrl ?? '',
+            docKind: body.kind ?? 'contract',
           });
           return;
         }
@@ -142,6 +146,7 @@ export default function SignPage() {
       setState({
         kind: 'signed',
         signedPdfUrl: body.signedPdfUrl ?? '',
+        docKind: state.data.kind ?? 'contract',
       });
     } catch (err) {
       setSubmitError((err as Error).message);
@@ -177,7 +182,7 @@ export default function SignPage() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         {state.kind === 'loading' && (
           <div className="bg-white rounded-xl border border-gray-200 p-6 text-sm text-gray-500">
-            Lade Vertrag…
+            Lade Dokument…
           </div>
         )}
 
@@ -191,7 +196,9 @@ export default function SignPage() {
           <div className="bg-white rounded-xl border border-green-200 p-8 text-center">
             <div className="text-4xl mb-3">✓</div>
             <h1 className="text-2xl font-semibold text-gray-900">
-              Danke, der Vertrag ist unterschrieben.
+              {state.docKind === 'quote'
+                ? 'Danke, das Angebot ist angenommen.'
+                : 'Danke, der Vertrag ist unterschrieben.'}
             </h1>
             <p className="mt-2 text-sm text-gray-600">
               Du erhältst gleich auch eine Kopie per Mail. Hier ist das
@@ -222,12 +229,22 @@ export default function SignPage() {
                   ? ` · für ${state.data.customerCompany}`
                   : ''}
               </p>
-              <p className="mt-3 text-sm text-gray-700">
-                Bitte lies den Vertrag in Ruhe durch und unterschreibe unten
-                im Signatur-Feld. Mit dem Klick auf "Verbindlich
-                unterschreiben" wird der Vertrag rechtsgültig signiert und
-                ein finales PDF erstellt — du bekommst sofort eine Kopie.
-              </p>
+              {state.data.kind === 'quote' ? (
+                <p className="mt-3 text-sm text-gray-700">
+                  Bitte prüfe das Angebot in Ruhe und unterschreibe unten im
+                  Signatur-Feld. Mit dem Klick auf „Verbindlich
+                  unterschreiben“ nimmst du das Angebot verbindlich an und es
+                  wird ein finales PDF erstellt — du bekommst sofort eine
+                  Kopie.
+                </p>
+              ) : (
+                <p className="mt-3 text-sm text-gray-700">
+                  Bitte lies den Vertrag in Ruhe durch und unterschreibe unten
+                  im Signatur-Feld. Mit dem Klick auf „Verbindlich
+                  unterschreiben“ wird der Vertrag rechtsgültig signiert und
+                  ein finales PDF erstellt — du bekommst sofort eine Kopie.
+                </p>
+              )}
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 p-3 overflow-x-auto">
@@ -322,7 +339,7 @@ export default function SignPage() {
 function PdfLoading() {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 text-sm text-gray-500">
-      Lade Vertrag…
+      Lade Dokument…
     </div>
   );
 }

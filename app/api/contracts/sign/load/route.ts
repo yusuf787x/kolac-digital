@@ -34,6 +34,8 @@ export async function GET(req: Request) {
 
   const docSnap = snap.docs[0];
   const data = docSnap.data();
+  // Steuert nur die Texte der Signing-UI ("Angebot" statt "Vertrag").
+  const kind = data.quoteId ? 'quote' : 'contract';
 
   if (data.status === 'cancelled') {
     return NextResponse.json(
@@ -44,6 +46,7 @@ export async function GET(req: Request) {
   if (data.status === 'signed') {
     return NextResponse.json(
       {
+        kind,
         alreadySigned: true,
         signedPdfUrl: data.signedPdfUrl ?? null,
       },
@@ -79,6 +82,7 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     id: docSnap.id,
+    kind,
     title: data.title,
     typeLabel: data.typeLabel,
     customerCompany: data.customerSnapshot?.company ?? '',

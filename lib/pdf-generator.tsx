@@ -1,6 +1,6 @@
 'use client';
 
-import { pdf } from '@react-pdf/renderer';
+import { pdf, Font } from '@react-pdf/renderer';
 import InvoicePDF from '@/components/invoice/InvoicePDF';
 import QuotePDF from '@/components/quote/QuotePDF';
 import TemplateContractPdf, {
@@ -10,6 +10,12 @@ import SignaturePageOnlyPdf from '@/components/contract/SignaturePageOnlyPdf';
 import type { Invoice, Customer, Quote } from './types';
 import { buildInvoiceQrDataUrl } from './qr';
 import { computeInvoiceVat, computeVat, formatEUR } from './utils';
+
+// react-pdf trennt Woerter standardmaessig nach englischen Regeln
+// ("au-tomatisch", "Fahrzeug-positionen"). Fuer deutsche Texte sieht
+// das falsch aus — Woerter daher nie trennen, nur an Leerzeichen
+// umbrechen. Gilt global fuer alle PDFs (Rechnung, Angebot, Vertrag).
+Font.registerHyphenationCallback((word) => [word]);
 
 export async function generateInvoicePdfBlob(
   invoice: Invoice,
@@ -92,6 +98,7 @@ export async function generateQuoteWithSignatureBlob(opts: {
       quote={opts.quote}
       customer={opts.customer}
       logoSrc={logoSrc}
+      hideSignatureLines
     />,
   ).toBlob();
 

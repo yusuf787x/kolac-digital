@@ -8,6 +8,8 @@ import {
   updateQuote,
   listCustomers,
   getSettings,
+  getContract,
+  updateContract,
 } from '@/lib/firestore';
 import type { Customer, Quote, InvoiceItem } from '@/lib/types';
 import {
@@ -268,7 +270,29 @@ export default function QuoteForm({ initial, mode }: Props) {
           closingText,
           acceptanceText,
           items: cleanItems,
+          // Signing-Link zeigt das alte PDF — nach dem Bearbeiten
+          // ungueltig machen, auf der Detailseite neu erstellen.
+          ...(initial.contractId ? { contractId: null } : {}),
         });
+        if (initial.contractId) {
+          const contract = await getContract(initial.contractId);
+          if (
+            contract &&
+            (contract.status === 'draft' || contract.status === 'sent')
+          ) {
+            await updateContract(contract.id, {
+              status: 'cancelled',
+              audit: [
+                ...(contract.audit ?? []),
+                {
+                  at: Timestamp.now(),
+                  event: 'cancelled',
+                  note: 'Angebot wurde bearbeitet — Link ungültig.',
+                },
+              ],
+            });
+          }
+        }
         router.push(`/dashboard/angebote/${initial.id}`);
       }
     } catch (err) {

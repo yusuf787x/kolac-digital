@@ -171,16 +171,21 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: 'right',
   },
+  // Hinweis-Kasten (Voraussetzungen, Bestaetigungshinweis): dezente
+  // Flaeche mit blauem Akzent links statt Rahmen rundherum.
   acceptanceBox: {
     marginTop: 4,
-    marginBottom: 12,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: COLORS.blue,
-    borderStyle: 'solid',
-    borderRadius: 4,
+    marginBottom: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: '#EFF6FF',
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.blue,
   },
-  acceptanceText: { fontSize: 10, color: COLORS.black },
+  acceptanceParagraph: { fontSize: 10, marginBottom: 2 },
+  acceptanceBulletRow: { flexDirection: 'row', marginTop: 2 },
+  acceptanceBulletMarker: { width: 10, fontSize: 10, color: COLORS.blue },
+  acceptanceBulletBody: { flex: 1, fontSize: 10 },
   signatureRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -223,6 +228,11 @@ interface Props {
   quote: Quote;
   customer: Customer;
   logoSrc: string;
+  /**
+   * Leere Unterschriftslinien am Ende weglassen — wenn das Angebot
+   * online signiert wird, kommt stattdessen eine eigene Signaturseite.
+   */
+  hideSignatureLines?: boolean;
 }
 
 /**
@@ -294,7 +304,12 @@ const greeting = (c: Customer): string => {
   return `Sehr geehrte/r ${last},`;
 };
 
-export default function QuotePDF({ quote, customer, logoSrc }: Props) {
+export default function QuotePDF({
+  quote,
+  customer,
+  logoSrc,
+  hideSignatureLines = false,
+}: Props) {
   const isOrderConfirmation = quote.documentType === 'order_confirmation';
   const docTitle = isOrderConfirmation ? 'AUFTRAGSBESTÄTIGUNG' : 'ANGEBOT';
   const docNumberLabel = isOrderConfirmation ? 'AUFTRAGSNR.:' : 'ANGEBOTSNR.:';
@@ -493,7 +508,7 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
               .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
           return (
             <>
-              <View style={styles.totalBox}>
+              <View style={styles.totalBox} wrap={false}>
                 <Text style={styles.totalLabel}>EUR</Text>
                 <Text style={styles.totalValue}>{fmt(v.gross)}</Text>
               </View>
@@ -513,24 +528,41 @@ export default function QuotePDF({ quote, customer, logoSrc }: Props) {
         })()}
 
         {/* Acceptance text — nur bei Angeboten. Bei Auftragsbestaetigung
-            ist die Sache schon bestaetigt, kein "bitte bestaetigen"-Kasten. */}
-        {!isOrderConfirmation && quote.acceptanceText && (
-          <View style={styles.acceptanceBox}>
-            <Text style={styles.acceptanceText}>{quote.acceptanceText}</Text>
+            ist die Sache schon bestaetigt, kein "bitte bestaetigen"-Kasten.
+            wrap={false}: Kasten nie ueber zwei Seiten zerreissen, lieber
+            komplett auf die naechste Seite. */}
+        {!isOrderConfirmation && quote.acceptanceText?.trim() && (
+          <View style={styles.acceptanceBox} wrap={false}>
+            <PdfMarkdown
+              text={quote.acceptanceText}
+              paragraphStyle={styles.acceptanceParagraph}
+              bulletRowStyle={styles.acceptanceBulletRow}
+              bulletMarkerStyle={styles.acceptanceBulletMarker}
+              bulletBodyStyle={styles.acceptanceBulletBody}
+            />
           </View>
         )}
 
-        <Text style={styles.paragraph}>{quote.closingText}</Text>
+        {/* Grussformel + Unterschriftslinien bleiben zusammen. */}
+        <View wrap={false}>
+          <Text style={styles.paragraph}>{quote.closingText}</Text>
 
-        {/* Signaturzeilen: LINKS Kolac Digital, RECHTS Auftraggeber
-            (Konvention: Auftragnehmer/Ausstellender links). */}
-        <View style={styles.signatureRow}>
-          <View style={styles.signatureBox}>
-            <Text style={styles.signatureLabel}>Datum, Unterschrift Kolac Digital</Text>
-          </View>
-          <View style={styles.signatureBox}>
-            <Text style={styles.signatureLabel}>Datum, Unterschrift Auftraggeber</Text>
-          </View>
+          {/* Signaturzeilen: LINKS Kolac Digital, RECHTS Auftraggeber
+              (Konvention: Auftragnehmer/Ausstellender links). */}
+          {!hideSignatureLines && (
+            <View style={styles.signatureRow}>
+              <View style={styles.signatureBox}>
+                <Text style={styles.signatureLabel}>
+                  Datum, Unterschrift Kolac Digital
+                </Text>
+              </View>
+              <View style={styles.signatureBox}>
+                <Text style={styles.signatureLabel}>
+                  Datum, Unterschrift Auftraggeber
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Footer */}

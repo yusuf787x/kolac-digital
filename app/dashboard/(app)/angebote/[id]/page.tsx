@@ -16,9 +16,17 @@ import {
   createOrderConfirmationFromQuote,
   getSettings,
   getGoogleAuth,
+  getContract,
+  updateContract,
 } from '@/lib/firestore';
-import type { Quote, Customer, InvoiceItem } from '@/lib/types';
-import { formatEUR, formatDateDE, computeInvoiceVat } from '@/lib/utils';
+import type { Quote, Customer, InvoiceItem, Contract } from '@/lib/types';
+import {
+  formatEUR,
+  formatDateDE,
+  formatTsDE,
+  computeInvoiceVat,
+} from '@/lib/utils';
+import { computeContractStatus } from '@/lib/contract-status';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 import {
   computeQuoteStatus,
@@ -88,13 +96,20 @@ export default function AngebotDetailPage() {
   const [confirmationSyncMessage, setConfirmationSyncMessage] = useState<
     string | null
   >(null);
+  const [contract, setContract] = useState<Contract | null>(null);
+  const [creatingLink, setCreatingLink] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const refresh = async () => {
     const q = await getQuote(id);
     setQuote(q);
     if (q) {
-      const c = await getCustomer(q.customerId);
+      const [c, k] = await Promise.all([
+        getCustomer(q.customerId),
+        q.contractId ? getContract(q.contractId) : Promise.resolve(null),
+      ]);
       setCustomer(c);
+      setContract(k);
     }
   };
 
@@ -129,6 +144,33 @@ export default function AngebotDetailPage() {
     setUpdatingStatus(true);
     try {
       await updateQuote(quote.id, { status, ...extra });
+      // Signing-Link mitziehen: erst ab "versendet" laufen die
+      // Erinnerungen des Vertrags-Crons.
+      if (status === 'sent' && contract?.status === 'draft') {
+        await updateContract(contract.id, {
+          status: 'sent',
+          sentAt: Timestamp.now(),
+          audit: [...(contract.audit ?? []), { at: Timestamp.now(), event: 'sent' }],
+        });
+      }
+      // Abgelehnt → offener Link darf nicht mehr unterschrieben werden.
+      if (
+        status === 'rejected' &&
+        contract &&
+        (contract.status === 'draft' || contract.status === 'sent')
+      ) {
+        await updateContract(contract.id, {
+          status: 'cancelled',
+          audit: [
+            ...(contract.audit ?? []),
+            {
+              at: Timestamp.now(),
+              event: 'cancelled',
+              note: 'Angebot wurde als abgelehnt markiert.',
+            },
+          ],
+        });
+      }
       await refresh();
     } catch (err) {
       console.error(err);
@@ -158,6 +200,52 @@ export default function AngebotDetailPage() {
     } finally {
       setGeneratingPdf(false);
     }
+  };
+
+  const signingLink =
+    contract && typeof window !== 'undefined'
+      ? `${window.location.origin}/sign/${contract.signingToken}`
+      : '';
+
+  const handleCreateSigningLink = async () => {
+    if (!customer) {
+      alert('Kunde nicht geladen — Link kann nicht erstellt werden.');
+      return;
+    }
+    setCreatingLink(true);
+    try {
+      // Alten, noch offenen Link entwerten, damit nur einer gilt.
+      if (contract && contract.status !== 'signed' && contract.status !== 'cancelled') {
+        await updateContract(contract.id, {
+          status: 'cancelled',
+          audit: [
+            ...(contract.audit ?? []),
+            {
+              at: Timestamp.now(),
+              event: 'cancelled',
+              note: 'Durch neuen Signing-Link ersetzt.',
+            },
+          ],
+        });
+      }
+      const { createQuoteSigningContract } = await import(
+        '@/lib/quote-signing'
+      );
+      await createQuoteSigningContract(quote, customer);
+      await refresh();
+    } catch (err) {
+      console.error(err);
+      alert(`Link erstellen fehlgeschlagen: ${(err as Error).message}`);
+    } finally {
+      setCreatingLink(false);
+    }
+  };
+
+  const copySigningLink = async () => {
+    if (!signingLink) return;
+    await navigator.clipboard.writeText(signingLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   };
 
   const handleUploadConfirmation = async (file: File) => {
@@ -443,6 +531,11 @@ export default function AngebotDetailPage() {
   // AB kann nur aus einem angenommenen Angebot abgeleitet werden.
   const canDeriveConfirmation =
     !isOrderConfirmation && quote.status === 'accepted';
+  const contractStatus = contract ? computeContractStatus(contract) : null;
+  const linkActive = contractStatus === 'draft' || contractStatus === 'sent';
+  const canCreateLink =
+    (quote.status === 'draft' || quote.status === 'sent') &&
+    computedStatus !== 'expired';
 
   return (
     <div>
@@ -613,6 +706,125 @@ export default function AngebotDetailPage() {
           )}
         </div>
       </section>
+
+      {/* Online-Unterschrift — gleicher Flow wie bei Vertraegen. Nur fuer
+          Angebote; eine AB bestaetigen wir selbst, da unterschreibt
+          der Kunde nichts. */}
+      {!isOrderConfirmation && (
+        <section className="card mb-6">
+          <h2 className="text-base font-semibold text-gray-900 mb-3">
+            Online unterschreiben
+          </h2>
+          {contract && contractStatus === 'signed' ? (
+            <div className="space-y-2">
+              <p className="text-sm text-green-700">
+                ✓ Vom Kunden unterschrieben am {formatTsDE(contract.signedAt)}
+                {contract.signedByName ? ` von ${contract.signedByName}` : ''}.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {contract.signedPdfUrl && (
+                  <a
+                    href={contract.signedPdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary text-sm"
+                  >
+                    Signiertes PDF öffnen
+                  </a>
+                )}
+                <Link
+                  href={`/dashboard/vertraege/${contract.id}`}
+                  className="btn-secondary text-sm"
+                >
+                  Audit-Log
+                </Link>
+              </div>
+            </div>
+          ) : contract && linkActive ? (
+            <>
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={signingLink}
+                  className="input font-mono text-xs"
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <button
+                  onClick={copySigningLink}
+                  className="btn-secondary text-sm"
+                >
+                  {copied ? '✓ Kopiert' : 'Kopieren'}
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-gray-500">
+                Gültig bis {formatTsDE(contract.signingExpiresAt)}. Schick
+                den Link per WhatsApp oder Mail an den Kunden. Sobald
+                unterschrieben wird, steht das Angebot automatisch auf
+                „Angenommen“ und das signierte PDF liegt als
+                Auftragsbestätigung bereit. Wenn du das Angebot noch
+                bearbeitest, wird der Link ungültig.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <a
+                  href={signingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary text-sm"
+                >
+                  Kundenansicht öffnen
+                </a>
+                <Link
+                  href={`/dashboard/vertraege/${contract.id}`}
+                  className="btn-secondary text-sm"
+                >
+                  Audit-Log
+                </Link>
+                {canCreateLink && (
+                  <button
+                    onClick={handleCreateSigningLink}
+                    disabled={creatingLink}
+                    className="btn-secondary text-sm"
+                    title="Erstellt das PDF neu und entwertet den bisherigen Link."
+                  >
+                    {creatingLink ? 'Erstelle Link…' : 'Neuen Link erstellen'}
+                  </button>
+                )}
+              </div>
+            </>
+          ) : (
+            <div>
+              {contract && (
+                <p className="text-sm text-amber-700 mb-2">
+                  {contractStatus === 'expired'
+                    ? 'Der bisherige Link ist abgelaufen.'
+                    : 'Der bisherige Link ist ungültig.'}
+                </p>
+              )}
+              {canCreateLink ? (
+                <>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Erzeugt einen Link, über den der Kunde das Angebot online
+                    unterschreibt — gleiche Ansicht wie bei Verträgen. Danach
+                    wird das Angebot automatisch angenommen.
+                  </p>
+                  <button
+                    onClick={handleCreateSigningLink}
+                    disabled={creatingLink || !customer}
+                    className="btn-primary text-sm"
+                  >
+                    {creatingLink ? 'Erstelle Link…' : 'Signing-Link erstellen'}
+                  </button>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  Nur für Angebote im Entwurf oder versendet, die noch gültig
+                  sind.
+                </p>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section className="card lg:col-span-1 space-y-4">
@@ -849,5 +1061,9 @@ export default function AngebotDetailPage() {
 function decodeStoragePath(url: string): string | null {
   const m = url.match(/\/o\/([^?]+)/);
   if (!m) return null;
-  return decodeURIComponent(m[1]);
+  const path = decodeURIComponent(m[1]);
+  // Online signierte Angebote verweisen auf das PDF des Vertrags —
+  // das gehoert dem Vertrag (Audit) und wird hier nie geloescht.
+  if (path.startsWith('contracts/')) return null;
+  return path;
 }
