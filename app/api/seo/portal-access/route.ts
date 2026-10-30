@@ -3,7 +3,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { adminDb } from '@/lib/firebase-admin';
 import { ACCESS_COL, isValidEmail, normalizeEmail } from '@/lib/portal/access';
 import { revokeAccess, sendLoginLink } from '@/lib/portal/login';
-import { badRequest, errorResponse, loadClientOr404, requireAdmin } from '@/lib/seo/server/admin-route';
+import { badRequest, errorResponse, loadClientOr404, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
  *   resend  neuen Login-Link schicken
  *   revoke  Zugang entziehen, laufende Sessions werden sofort ungueltig
  */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
   const body = await req.json().catch(() => ({}));
@@ -65,3 +65,5 @@ export async function POST(req: Request) {
     return errorResponse(err);
   }
 }
+
+export const POST = safe(handlePOST);

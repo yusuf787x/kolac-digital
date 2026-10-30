@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { loadClientOr404, parseMonth, requireAdmin, errorResponse } from '@/lib/seo/server/admin-route';
+import { loadClientOr404, parseMonth, requireAdmin, errorResponse, safe } from '@/lib/seo/server/admin-route';
 import { loadPortalData } from '@/lib/seo/server/store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /** Admin: Portal-Ansicht inklusive nicht freigegebener Monate. GET ?customerId=...&month=... */
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
   const url = new URL(req.url);
@@ -19,3 +19,5 @@ export async function GET(req: Request) {
     return errorResponse(err);
   }
 }
+
+export const GET = safe(handleGET);

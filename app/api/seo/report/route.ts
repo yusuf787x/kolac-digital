@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { suggestAssessment } from '@/lib/seo/assessment';
-import { badRequest, errorResponse, loadClientOr404, parseMonth, requireAdmin } from '@/lib/seo/server/admin-route';
-import { generateReport, releaseReport } from '@/lib/seo/server/report';
+import { badRequest, errorResponse, loadClientOr404, parseMonth, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 import { loadPortalData } from '@/lib/seo/server/store';
 
 export const runtime = 'nodejs';
@@ -15,7 +14,7 @@ export const maxDuration = 120;
  *   generate  Entwurf anlegen bzw. PDF neu erzeugen
  *   release   freigeben und Kunden per Mail benachrichtigen
  */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
   const body = await req.json().catch(() => ({}));
@@ -31,10 +30,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true, assessment: suggestAssessment(data) });
       }
       case 'generate': {
+        const { generateReport } = await import('@/lib/seo/server/report');
         const r = await generateReport(client, month, { resetAssessment: body.resetAssessment === true });
         return NextResponse.json({ ok: true, ...r });
       }
       case 'release': {
+        const { releaseReport } = await import('@/lib/seo/server/report');
         const r = await releaseReport(client, month);
         return NextResponse.json({ ok: true, ...r });
       }
@@ -45,3 +46,5 @@ export async function POST(req: Request) {
     return errorResponse(err);
   }
 }
+
+export const POST = safe(handlePOST);

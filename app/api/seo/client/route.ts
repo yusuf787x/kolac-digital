@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { badRequest, errorResponse, loadClientOr404, requireAdmin } from '@/lib/seo/server/admin-route';
+import { badRequest, errorResponse, loadClientOr404, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 import { deleteSeoClientData } from '@/lib/seo/server/demo';
 
 export const runtime = 'nodejs';
@@ -11,7 +11,7 @@ export const maxDuration = 120;
  * Massnahmen und Portal-Zugaenge. Der Kunde selbst (Rechnungen usw.)
  * bleibt erhalten. Body: { action: 'delete', customerId }
  */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
   const body = await req.json().catch(() => ({}));
@@ -25,3 +25,5 @@ export async function POST(req: Request) {
     return errorResponse(err);
   }
 }
+
+export const POST = safe(handlePOST);

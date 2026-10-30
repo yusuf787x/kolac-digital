@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
+import { safe } from '@/lib/seo/server/admin-route';
 import { formatMonthDE, lastCompleteMonth } from '@/lib/seo/months';
 import { portalBaseUrl } from '@/lib/seo/server/config';
 import { sendReportsReadyEmail } from '@/lib/seo/server/emails';
 import { fetchMonth, measureMonth } from '@/lib/seo/server/fetch';
-import { generateReport } from '@/lib/seo/server/report';
 import { getReport, listSeoClients } from '@/lib/seo/server/store';
 
 export const runtime = 'nodejs';
@@ -21,7 +21,7 @@ export const maxDuration = 300;
  *
  * Schutz: CRON_SECRET als Bearer-Header, wie /api/contracts/cron.
  */
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const expected = process.env.CRON_SECRET;
   if (expected) {
     if ((req.headers.get('authorization') ?? '') !== `Bearer ${expected}`) {
@@ -31,6 +31,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'CRON_SECRET nicht gesetzt.' }, { status: 500 });
   }
 
+  const { generateReport } = await import('@/lib/seo/server/report');
   const month = lastCompleteMonth();
   const clients = (await listSeoClients()).filter((c) => c.enabled && !c.demo);
   const items: Array<{ displayName: string; monthLabel: string; adminLink: string }> = [];
@@ -61,3 +62,5 @@ export async function GET(req: Request) {
   }
   return NextResponse.json({ ok: true, month, processed: items.length, errors });
 }
+
+export const GET = safe(handleGET);

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { badRequest, errorResponse, loadClientOr404, parseMonth, requireAdmin } from '@/lib/seo/server/admin-route';
+import { badRequest, errorResponse, loadClientOr404, parseMonth, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 import { fetchMonth, measureMonth } from '@/lib/seo/server/fetch';
 import { gscServiceAccountEmail } from '@/lib/seo/server/gsc';
 
@@ -12,7 +12,7 @@ export const maxDuration = 300;
  * 16-Monats-Backfills, den der Browser Monat fuer Monat aufruft).
  * Body: { customerId, month: "YYYY-MM", pagespeed?: boolean }
  */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
   const body = await req.json().catch(() => ({}));
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 }
 
 /** Admin: Status der Zugangsdaten, damit die Oberflaeche sagen kann, was fehlt. */
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
   return NextResponse.json({
@@ -39,3 +39,7 @@ export async function GET(req: Request) {
     pagespeedKey: !!process.env.PAGESPEED_API_KEY,
   });
 }
+
+export const POST = safe(handlePOST);
+
+export const GET = safe(handleGET);

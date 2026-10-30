@@ -54,6 +54,11 @@ export default function SeoOverviewPage() {
     setDemoBusy(action);
     setError(null);
     setDemoStep(null);
+    let step = 'Start';
+    const at = (label: string) => {
+      step = label;
+      setDemoStep(label);
+    };
     try {
       if (action === 'delete') {
         await postJson('/api/seo/demo', { action: 'delete' });
@@ -66,23 +71,23 @@ export default function SeoOverviewPage() {
       });
       const id = start.customerId;
       for (let i = 0; i < start.months.length; i++) {
-        setDemoStep(`Zahlen ${i + 1} von ${start.months.length}`);
+        at(`Zahlen ${i + 1} von ${start.months.length}`);
         await postJson('/api/seo/fetch', { customerId: id, month: start.months[i] });
       }
-      setDemoStep('Berichte');
+      at('Berichte freigeben');
       await postJson('/api/seo/demo', { action: 'release-old', customerId: id });
       for (const m of start.reportMonths) {
-        setDemoStep(`Bericht ${formatMonthDE(m)}`);
+        at(`Bericht ${formatMonthDE(m)}`);
         await postJson('/api/seo/report', { action: 'generate', customerId: id, month: m });
       }
       const email = inviteEmail.trim();
       if (email) {
-        setDemoStep(`Einladung an ${email}`);
+        at(`Einladung an ${email}`);
         await postJson('/api/seo/portal-access', { action: 'invite', customerId: id, email });
       }
       router.push(`/dashboard/seo/${id}${email ? '?tab=zugang' : ''}`);
     } catch (err) {
-      setError(`Testkunde: ${(err as Error).message}. Einfach nochmal klicken, schon Angelegtes wird vervollständigt.`);
+      setError(`Testkunde, Schritt „${step}“: ${(err as Error).message}`);
       await load();
     } finally {
       setDemoBusy(null);

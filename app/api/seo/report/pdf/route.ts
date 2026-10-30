@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { adminStorage } from '@/lib/firebase-admin';
-import { badRequest, loadClientOr404, parseMonth, requireAdmin } from '@/lib/seo/server/admin-route';
+import { badRequest, loadClientOr404, parseMonth, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 import { getReport } from '@/lib/seo/server/store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /** Admin: Bericht-PDF ansehen (auch Entwuerfe). GET ?customerId=...&month=YYYY-MM */
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
   const url = new URL(req.url);
@@ -27,3 +27,5 @@ export async function GET(req: Request) {
     },
   });
 }
+
+export const GET = safe(handleGET);

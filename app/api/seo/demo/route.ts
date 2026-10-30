@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { badRequest, errorResponse, requireAdmin } from '@/lib/seo/server/admin-route';
+import { badRequest, errorResponse, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 import { deleteSeoClientData, markDemoReleased, startDemoClient } from '@/lib/seo/server/demo';
 
 export const runtime = 'nodejs';
@@ -12,7 +12,7 @@ export const maxDuration = 60;
  * Ablauf und Gruende siehe lib/seo/server/demo.ts. Die Monate und Berichte
  * erzeugt der Browser einzeln ueber /api/seo/fetch und /api/seo/report.
  */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
   const body = await req.json().catch(() => ({}));
@@ -35,3 +35,5 @@ export async function POST(req: Request) {
     return errorResponse(err);
   }
 }
+
+export const POST = safe(handlePOST);

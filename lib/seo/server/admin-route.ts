@@ -29,5 +29,21 @@ export function parseMonth(m: unknown): SeoMonth | null {
 
 export function errorResponse(err: unknown): NextResponse {
   console.error(err);
-  return NextResponse.json({ error: (err as Error).message ?? 'Unbekannter Fehler' }, { status: 500 });
+  const msg = err instanceof Error ? err.message : String(err);
+  return NextResponse.json({ error: msg || 'Unbekannter Fehler' }, { status: 500 });
+}
+
+/**
+ * Faengt jeden Fehler einer Route ab und liefert ihn als JSON. Ohne das
+ * kommt bei einem Absturz ausserhalb von try/catch nur ein leeres 500,
+ * und die Oberflaeche kann nicht sagen, was schiefging.
+ */
+export function safe<A extends unknown[]>(fn: (...args: A) => Promise<Response>) {
+  return async (...args: A): Promise<Response> => {
+    try {
+      return await fn(...args);
+    } catch (err) {
+      return errorResponse(err);
+    }
+  };
 }
