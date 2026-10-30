@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import Modal from '@/components/ui/Modal';
-import { authedFetch } from '@/lib/api-client';
+import { postJson } from '@/components/seo/admin/api';
 import { db } from '@/lib/firebase';
 import { listCustomers } from '@/lib/firestore';
 import { createSeoClient, listSeoClients } from '@/lib/seo/client';
@@ -23,6 +23,8 @@ export default function SeoOverviewPage() {
   const [adding, setAdding] = useState(false);
   const [demoBusy, setDemoBusy] = useState<'create' | 'delete' | null>(null);
   const [confirmDemoDelete, setConfirmDemoDelete] = useState(false);
+  const [demoStep, setDemoStep] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -51,20 +53,40 @@ export default function SeoOverviewPage() {
   const runDemo = async (action: 'create' | 'delete') => {
     setDemoBusy(action);
     setError(null);
+    setDemoStep(null);
     try {
-      const res = await authedFetch('/api/seo/demo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
+      if (action === 'delete') {
+        await postJson('/api/seo/demo', { action: 'delete' });
+        await load();
+        return;
+      }
+      // In kleinen Schritten, damit kein Serveraufruf zu lange dauert
+      const start = await postJson<{ customerId: string; months: string[]; reportMonths: string[] }>('/api/seo/demo', {
+        action: 'start',
       });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? 'Fehler');
-      if (action === 'create') router.push(`/dashboard/seo/${body.customerId}`);
-      else await load();
+      const id = start.customerId;
+      for (let i = 0; i < start.months.length; i++) {
+        setDemoStep(`Zahlen ${i + 1} von ${start.months.length}`);
+        await postJson('/api/seo/fetch', { customerId: id, month: start.months[i] });
+      }
+      setDemoStep('Berichte');
+      await postJson('/api/seo/demo', { action: 'release-old', customerId: id });
+      for (const m of start.reportMonths) {
+        setDemoStep(`Bericht ${formatMonthDE(m)}`);
+        await postJson('/api/seo/report', { action: 'generate', customerId: id, month: m });
+      }
+      const email = inviteEmail.trim();
+      if (email) {
+        setDemoStep(`Einladung an ${email}`);
+        await postJson('/api/seo/portal-access', { action: 'invite', customerId: id, email });
+      }
+      router.push(`/dashboard/seo/${id}${email ? '?tab=zugang' : ''}`);
     } catch (err) {
-      setError((err as Error).message);
+      setError(`Testkunde: ${(err as Error).message}. Einfach nochmal klicken, schon Angelegtes wird vervollständigt.`);
+      await load();
     } finally {
       setDemoBusy(null);
+      setDemoStep(null);
       setConfirmDemoDelete(false);
     }
   };
@@ -151,14 +173,39 @@ export default function SeoOverviewPage() {
             <Link className="btn-secondary" href={`/dashboard/seo/${demo.customerId}`}>
               Testkunde öffnen
             </Link>
+            <button className="btn-secondary" disabled={!!demoBusy} onClick={() => runDemo('create')}>
+              {demoBusy === 'create' ? `Erzeugt: ${demoStep ?? 'Start'}…` : 'Zahlen und Berichte neu erzeugen'}
+            </button>
             <button className="btn-secondary text-red-700" disabled={!!demoBusy} onClick={() => setConfirmDemoDelete(true)}>
               Testkunde löschen
             </button>
           </div>
         ) : (
-          <button className="btn-secondary" disabled={!!demoBusy} onClick={() => runDemo('create')}>
-            {demoBusy === 'create' ? 'Wird angelegt, dauert etwa 30 Sekunden…' : 'Testkunde anlegen'}
-          </button>
+          <form
+            className="flex flex-col gap-2 sm:flex-row sm:items-end"
+            onSubmit={(e) => {
+              e.preventDefault();
+              runDemo('create');
+            }}
+          >
+            <div className="sm:w-80">
+              <label className="label" htmlFor="demo-invite">
+                Direkt einladen <span className="font-normal text-gray-400">(optional)</span>
+              </label>
+              <input
+                id="demo-invite"
+                type="email"
+                className="input text-base sm:text-sm"
+                placeholder="deine-testadresse@beispiel.de"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                disabled={!!demoBusy}
+              />
+            </div>
+            <button type="submit" className="btn-secondary whitespace-nowrap" disabled={!!demoBusy}>
+              {demoBusy === 'create' ? `Wird angelegt: ${demoStep ?? 'Start'}…` : 'Testkunde anlegen'}
+            </button>
+          </form>
         )}
       </section>
 

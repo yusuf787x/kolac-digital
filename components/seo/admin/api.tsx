@@ -10,14 +10,21 @@ export async function postJson<T = Record<string, unknown>>(url: string, body: u
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? `Fehler ${res.status}`);
+  if (!res.ok) throw new Error(data.error ?? statusMessage(res.status));
   return data as T;
+}
+
+/** Fehlertext, wenn der Server keine JSON-Antwort geschickt hat (z. B. Abbruch durch Vercel). */
+function statusMessage(status: number): string {
+  if (status === 504) return 'Der Server hat zu lange gebraucht und wurde abgebrochen (504)';
+  if (status === 413) return 'Die Anfrage ist zu groß (413)';
+  return `Serverfehler ${status}`;
 }
 
 export async function getJson<T>(url: string): Promise<T> {
   const res = await authedFetch(url);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? `Fehler ${res.status}`);
+  if (!res.ok) throw new Error(data.error ?? statusMessage(res.status));
   return data as T;
 }
 

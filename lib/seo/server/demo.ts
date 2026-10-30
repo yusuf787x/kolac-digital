@@ -3,21 +3,31 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { revokeAccess } from '@/lib/portal/login';
 import { entryKey } from '../changelog-markdown';
-import { DEMO_ACTIVITIES, DEMO_CONFIG, demoMonths, generateDemoMonth, generateDemoPagespeed } from '../demo-data';
+import { DEMO_ACTIVITIES, DEMO_CONFIG, demoMonths, generateDemoPagespeed } from '../demo-data';
 import { addMonths, lastCompleteMonth } from '../months';
 import type { SeoClient } from '../types';
-import { generateReport } from './report';
-import { COL, getSeoClient, saveMonth, savePagespeed, upsertReport } from './store';
+import { COL, getSeoClient, savePagespeed, upsertReport } from './store';
 
 /**
- * Testkunde mit erzeugten Zahlen. Legt einen Kunden in "customers" an
- * (Firma endet auf "(Demo)"), dazu 16 Monate Daten, PageSpeed vorher und
- * nachher, Massnahmen, zwei freigegebene Berichte und einen Entwurf.
+ * Testkunde mit erzeugten Zahlen, in kleinen Schritten angelegt, damit
+ * kein einzelner Serveraufruf zu lange dauert (Vercel bricht sonst ab):
+ *
+ *   1. startDemoClient: Kunde, SEO-Konfiguration, Massnahmen, PageSpeed
+ *   2. Browser ruft /api/seo/fetch fuer jeden der 16 Monate auf
+ *   3. markDemoReleased: zwei aeltere Berichte gelten als freigegeben
+ *   4. Browser ruft /api/seo/report (generate) fuer die drei letzten Monate
+ *
+ * Jeder Schritt ist wiederholbar. Existiert schon ein (halber) Testkunde,
+ * wird er vervollstaendigt statt doppelt angelegt.
  */
-export async function createDemoClient(): Promise<string> {
+export async function startDemoClient(): Promise<{ customerId: string; months: string[]; reportMonths: string[] }> {
   const db = adminDb();
+  const last = lastCompleteMonth();
+  const reportMonths = [addMonths(last, -2), addMonths(last, -1), last];
   const existing = await db.collection(COL.clients).where('demo', '==', true).limit(1).get();
-  if (!existing.empty) return existing.docs[0].id;
+  if (!existing.empty) {
+    return { customerId: existing.docs[0].id, months: demoMonths(), reportMonths };
+  }
 
   const now = Timestamp.now();
   const customerRef = await db.collection('customers').add({
@@ -51,11 +61,6 @@ export async function createDemoClient(): Promise<string> {
   };
   await db.collection(COL.clients).doc(customerId).set(client);
 
-  const months = demoMonths();
-  for (const m of months) {
-    await saveMonth(customerId, m, generateDemoMonth(m), 'demo');
-  }
-  const last = lastCompleteMonth();
   await savePagespeed(customerId, addMonths(last, -3), generateDemoPagespeed(false));
   await savePagespeed(customerId, last, generateDemoPagespeed(true));
 
@@ -81,16 +86,18 @@ export async function createDemoClient(): Promise<string> {
   }
   await batch.commit();
 
-  const full = (await getSeoClient(customerId))!;
-  // Zwei aeltere Berichte gelten als freigegeben, der neueste wartet auf Pruefung
+  return { customerId, months: demoMonths(), reportMonths };
+}
+
+/** Die beiden aelteren Demo-Berichte gelten als freigegeben (ohne Mail). */
+export async function markDemoReleased(customerId: string): Promise<void> {
+  const client = await getSeoClient(customerId);
+  if (!client?.demo) throw new Error('Nur für den Testkunden.');
+  const last = lastCompleteMonth();
   for (const offset of [-2, -1]) {
     const m = addMonths(last, offset);
     await upsertReport(customerId, m, { status: 'released', releasedAt: Timestamp.now(), sentTo: [] });
-    await generateReport(full, m);
   }
-  await generateReport(full, last);
-
-  return customerId;
 }
 
 /** Loescht alle SEO- und Portaldaten eines Kunden. Fuer den Demo-Kunden auch den Kunden selbst. */
