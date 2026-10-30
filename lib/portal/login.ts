@@ -1,27 +1,32 @@
 import 'server-only';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { portalBaseUrl } from '@/lib/seo/server/config';
 import { sendLoginLinkEmail } from '@/lib/seo/server/emails';
 import { getSeoClient } from '@/lib/seo/server/store';
-import { ACCESS_COL, getActiveAccess, sha256, truncateIp } from './access';
+import { ACCESS_COL, getActiveAccess, randomToken, sha256, truncateIp } from './access';
 
 /**
- * Magic-Link-Ablauf des Kundenportals.
+ * Magic-Link-Ablauf des Kundenportals, komplett serverseitig und ohne
+ * Firebase Authentication (Kunden bekommen kein Firebase-Konto).
  *
- * 1. requestLogin: Firebase Admin erzeugt mit generateSignInWithEmailLink
- *    einen Link. Wir nehmen nur den oobCode und bauen daraus einen Link
- *    auf die eigene Domain (/portal/anmelden?code=...). Dazu ein Datensatz
- *    portalLoginLinks/{sha256(code)} mit eigener Gueltigkeit (1 Stunde),
- *    Einmal-Nutzung und dem Hash einer Geraete-Nonce.
+ * 1. sendLoginLink: zufaelliger Code (256 Bit) per Mail ueber Resend,
+ *    Link auf die eigene Domain (/portal/anmelden?code=...). In Firestore
+ *    liegt nur der SHA-256 des Codes (portalLoginLinks) mit Gueltigkeit
+ *    1 Stunde, Einmal-Nutzung und dem Hash einer Geraete-Nonce.
  * 2. completeLogin: Code pruefen, bei fremdem Geraet die E-Mail abfragen,
- *    den oobCode ueber die Identity-Toolkit-REST-API einloesen (das ist
- *    dasselbe wie signInWithEmailLink im Browser) und aus dem ID-Token
- *    ein httpOnly-Session-Cookie machen. Im Browser des Kunden laeuft
- *    dadurch kein Firebase-JavaScript.
+ *    Link als benutzt markieren und eine Sitzung anlegen: zufaelliges
+ *    Token im httpOnly-Cookie, in portalSessions nur dessen SHA-256.
+ *    Entziehen = Sitzungen loeschen, wirkt sofort.
+ *
+ * Frueher lief das ueber generateSignInWithEmailLink + Session-Cookies von
+ * Firebase Auth. Das scheiterte auf Vercel zweimal (jose als ES-Modul,
+ * danach "internal error" von Identity Toolkit) und brachte fuer ein
+ * reines Lese-Portal keinen Sicherheitsgewinn.
  */
 
 const LINK_COL = 'portalLoginLinks';
+const SESSION_COL = 'portalSessions';
 const EVENTS_COL = 'portalLoginEvents';
 export const LINK_TTL_MS = 60 * 60 * 1000;
 export const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -38,6 +43,13 @@ interface LinkRecord {
   createdAt: Timestamp;
 }
 
+export interface SessionRecord {
+  email: string;
+  customerId: string;
+  createdAt: Timestamp;
+  expiresAt: Timestamp;
+}
+
 /**
  * Erzeugt und verschickt einen Login-Link, wenn die Adresse freigeschaltet
  * ist. Gibt nichts preis: der Aufrufer antwortet immer gleich.
@@ -51,14 +63,7 @@ export async function sendLoginLink(opts: {
   if (!access) return false;
   const client = await getSeoClient(access.customerId);
 
-  const base = portalBaseUrl();
-  const firebaseLink = await (await adminAuth()).generateSignInWithEmailLink(opts.email, {
-    url: `${base}/portal/anmelden`,
-    handleCodeInApp: true,
-  });
-  const code = new URL(firebaseLink).searchParams.get('oobCode');
-  if (!code) throw new Error('Firebase hat keinen oobCode geliefert.');
-
+  const code = randomToken(32);
   const record: LinkRecord = {
     email: opts.email,
     customerId: access.customerId,
@@ -72,7 +77,7 @@ export async function sendLoginLink(opts: {
 
   await sendLoginLinkEmail({
     to: opts.email,
-    link: `${base}/portal/anmelden?code=${encodeURIComponent(code)}`,
+    link: `${portalBaseUrl()}/portal/anmelden?code=${encodeURIComponent(code)}`,
     displayName: client?.displayName ?? 'Ihr Unternehmen',
     invite: opts.invite === true,
   });
@@ -85,7 +90,7 @@ export type LinkState =
 
 /** Nur lesen, fuer die Anzeige der Anmelde-Seite. Verbraucht den Link nicht. */
 export async function inspectLink(code: string, nonceHash: string | null): Promise<LinkState> {
-  if (!code || code.length > 2048) return { ok: false, reason: 'invalid' };
+  if (!code || code.length > 200) return { ok: false, reason: 'invalid' };
   const snap = await adminDb().collection(LINK_COL).doc(sha256(code)).get();
   if (!snap.exists) return { ok: false, reason: 'invalid' };
   const rec = snap.data() as LinkRecord;
@@ -96,7 +101,7 @@ export async function inspectLink(code: string, nonceHash: string | null): Promi
 }
 
 export type CompleteResult =
-  | { ok: true; sessionCookie: string; email: string; customerId: string }
+  | { ok: true; sessionToken: string; email: string; customerId: string }
   | { ok: false; reason: 'invalid' | 'expired' | 'used' | 'email-required' | 'email-mismatch' | 'no-access' | 'error' };
 
 export async function completeLogin(opts: {
@@ -107,6 +112,7 @@ export async function completeLogin(opts: {
   userAgent: string;
 }): Promise<CompleteResult> {
   const db = adminDb();
+  if (!opts.code || opts.code.length > 200) return { ok: false, reason: 'invalid' };
   const ref = db.collection(LINK_COL).doc(sha256(opts.code));
 
   // Pruefen und als benutzt markieren in einer Transaktion: ein Link
@@ -138,59 +144,60 @@ export async function completeLogin(opts: {
   if (!access || access.customerId !== rec.customerId) return { ok: false, reason: 'no-access' };
 
   try {
-    const res = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithEmailLink?key=${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: rec.email, oobCode: opts.code }),
-        cache: 'no-store',
-      },
-    );
-    const body = (await res.json()) as { idToken?: string; localId?: string; error?: { message?: string } };
-    if (!res.ok || !body.idToken) {
-      console.error('Portal-Login: signInWithEmailLink fehlgeschlagen', body.error?.message);
-      const msg = body.error?.message ?? '';
-      return { ok: false, reason: /EXPIRED/.test(msg) ? 'expired' : /INVALID_OOB_CODE/.test(msg) ? 'used' : 'error' };
-    }
-
-    const sessionCookie = await (await adminAuth()).createSessionCookie(body.idToken, {
-      expiresIn: SESSION_TTL_MS,
-    });
-
+    const sessionToken = randomToken(32);
+    const now = Timestamp.now();
+    const session: SessionRecord & { userAgent: string } = {
+      email: rec.email,
+      customerId: rec.customerId,
+      createdAt: now,
+      expiresAt: Timestamp.fromMillis(Date.now() + SESSION_TTL_MS),
+      userAgent: opts.userAgent.slice(0, 200),
+    };
     await Promise.all([
+      db.collection(SESSION_COL).doc(sha256(sessionToken)).set(session),
       db.collection(ACCESS_COL).doc(rec.email).update({
-        uid: body.localId ?? null,
-        lastLoginAt: Timestamp.now(),
+        lastLoginAt: now,
         loginCount: FieldValue.increment(1),
       }),
       db.collection(EVENTS_COL).add({
         email: rec.email,
         customerId: rec.customerId,
-        at: Timestamp.now(),
+        at: now,
         ip: truncateIp(opts.ip),
         userAgent: opts.userAgent.slice(0, 200),
         expiresAt: Timestamp.fromMillis(Date.now() + EVENT_RETENTION_MS),
       }),
     ]);
-
-    return { ok: true, sessionCookie, email: rec.email, customerId: rec.customerId };
+    return { ok: true, sessionToken, email: rec.email, customerId: rec.customerId };
   } catch (err) {
     console.error('Portal-Login fehlgeschlagen', err);
     return { ok: false, reason: 'error' };
   }
 }
 
-/** Zugang entziehen: Datensatz deaktivieren und alle Sessions ungueltig machen. */
+/** Sitzung zum Cookie-Wert, null wenn unbekannt oder abgelaufen. */
+export async function findSession(token: string | undefined): Promise<SessionRecord | null> {
+  if (!token || token.length > 200) return null;
+  const snap = await adminDb().collection(SESSION_COL).doc(sha256(token)).get();
+  if (!snap.exists) return null;
+  const s = snap.data() as SessionRecord;
+  return s.expiresAt.toMillis() > Date.now() ? s : null;
+}
+
+export async function endSession(token: string | undefined): Promise<void> {
+  if (!token || token.length > 200) return;
+  await adminDb().collection(SESSION_COL).doc(sha256(token)).delete();
+}
+
+/** Zugang entziehen: Datensatz deaktivieren und alle Sitzungen loeschen. */
 export async function revokeAccess(email: string): Promise<void> {
-  const ref = adminDb().collection(ACCESS_COL).doc(email);
+  const db = adminDb();
+  const ref = db.collection(ACCESS_COL).doc(email);
   const snap = await ref.get();
   if (!snap.exists) return;
   await ref.update({ active: false, revokedAt: Timestamp.now() });
-  try {
-    const user = await (await adminAuth()).getUserByEmail(email);
-    await (await adminAuth()).revokeRefreshTokens(user.uid);
-  } catch {
-    // Noch nie eingeloggt: kein Firebase-Konto, nichts zu widerrufen
-  }
+  const sessions = await db.collection(SESSION_COL).where('email', '==', email).get();
+  const batch = db.batch();
+  sessions.docs.forEach((d) => batch.delete(d.ref));
+  if (!sessions.empty) await batch.commit();
 }

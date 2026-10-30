@@ -8,7 +8,6 @@ import {
 } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getStorage, Storage } from 'firebase-admin/storage';
-import type { Auth } from 'firebase-admin/auth';
 
 /**
  * Server-side Firebase Admin Instanz. Wird genau einmal beim ersten
@@ -99,20 +98,6 @@ export function adminDb(): Firestore {
 
 export function adminStorage(): Storage {
   return getStorage(init());
-}
-
-/**
- * Admin-Auth, genutzt vom Kundenportal (Magic Link, Session-Cookies).
- *
- * Bewusst erst bei Bedarf geladen: firebase-admin/auth zieht jwks-rsa und
- * damit jose (nur noch als ES-Modul) nach. Auf einer Node-Version ohne
- * require(esm) scheitert schon das Laden. Als statischer Import hat das
- * jede Route mit lib/firebase-admin.ts zum Absturz gebracht (Vertraege,
- * Crons, Webhook), auch wenn sie Auth gar nicht nutzt.
- */
-export async function adminAuth(): Promise<Auth> {
-  const { getAuth } = await import('firebase-admin/auth');
-  return getAuth(init());
 }
 
 /** True, wenn explizite Admin-Zugangsdaten in der Umgebung stehen. */

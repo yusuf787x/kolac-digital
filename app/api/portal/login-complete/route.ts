@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   }
 
   const res = NextResponse.redirect(new URL('/portal', req.url), 303);
-  res.cookies.set(SESSION_COOKIE, result.sessionCookie, { ...cookieBase, maxAge: SESSION_TTL_MS / 1000 });
+  res.cookies.set(SESSION_COOKIE, result.sessionToken, { ...cookieBase, maxAge: SESSION_TTL_MS / 1000 });
   res.cookies.delete(NONCE_COOKIE);
   return res;
 }

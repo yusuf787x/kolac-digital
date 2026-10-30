@@ -1,10 +1,10 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { adminAuth } from '@/lib/firebase-admin';
 import { getSeoClient } from '@/lib/seo/server/store';
 import type { SeoClient } from '@/lib/seo/types';
-import { getActiveAccess, normalizeEmail } from './access';
+import { getActiveAccess } from './access';
+import { findSession } from './login';
 
 export const SESSION_COOKIE = 'kd_portal_session';
 /** Merkt sich, auf welchem Geraet der Link angefordert wurde. */
@@ -17,7 +17,7 @@ export interface PortalSession {
 }
 
 /**
- * Prueft bei JEDEM Aufruf: Session-Cookie gueltig und nicht widerrufen,
+ * Prueft bei JEDEM Aufruf: Sitzung existiert und ist nicht abgelaufen,
  * Adresse weiterhin freigeschaltet, Kunde existiert. Die customerId kommt
  * ausschliesslich aus portalAccess, nie aus der Anfrage. Ein Kunde kann
  * dadurch nur seine eigenen Daten sehen.
@@ -25,10 +25,11 @@ export interface PortalSession {
 export async function readPortalSession(cookieValue: string | undefined): Promise<PortalSession | null> {
   if (!cookieValue) return null;
   try {
-    const decoded = await (await adminAuth()).verifySessionCookie(cookieValue, true);
-    const email = normalizeEmail(decoded.email);
+    const session = await findSession(cookieValue);
+    if (!session) return null;
+    const email = session.email;
     const access = await getActiveAccess(email);
-    if (!access) return null;
+    if (!access || access.customerId !== session.customerId) return null;
     const client = await getSeoClient(access.customerId);
     if (!client) return null;
     return { email, customerId: access.customerId, client };
