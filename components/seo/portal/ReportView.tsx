@@ -18,36 +18,22 @@ import {
   type PortalData,
   type Rating,
 } from '@/lib/seo/view';
-import type { PageSpeedResult, SeoMetrics } from '@/lib/seo/types';
+import type { PageSpeedResult } from '@/lib/seo/types';
 import CheckCard from './CheckCard';
-import KeywordTable from './KeywordTable';
+import KeywordsBlock from './KeywordsBlock';
 import MetricHistory from './MetricHistory';
 import MoversPanel from './MoversPanel';
-import { ActivityList, Delta, PlannedList, Section } from './parts';
+import { ActivityList, Delta, Section } from './parts';
 
 /**
  * Der Monatsbericht im Portal. Wird vom Portal (Server) und von der
  * Admin-Vorschau (Client) mit demselben PortalData gerendert.
  */
 
-const NAV: Array<[string, string]> = [
-  ['einschaetzung', 'Einschätzung'],
-  ['zahlen', 'Zahlen'],
-  ['massnahmen', 'Was wir getan haben'],
-  ['pruefungen', 'Prüfungen'],
-  ['suchbegriffe', 'Suchbegriffe'],
-  ['gewinner', 'Gewinner und Verlierer'],
-  ['chancen', 'Chancen'],
-  ['platzierung', 'Platzierungen'],
-  ['themen', 'Themen'],
-  ['seiten', 'Seiten'],
-  ['ladezeit', 'Ladezeit'],
-];
 
 function Kpi({
   label,
   value,
-  explain,
   cur,
   prev,
   yoy,
@@ -55,21 +41,19 @@ function Kpi({
 }: {
   label: string;
   value: string;
-  explain: string;
   cur: number;
   prev: number | null | undefined;
   yoy: number | null | undefined;
   lowerIsBetter?: boolean;
 }) {
   return (
-    <div className="flex flex-col rounded-xl border border-gray-200 bg-white p-4">
-      <div className="text-sm font-medium text-gray-600">{label}</div>
+    <div className="flex flex-col rounded-xl border border-gray-200 bg-white p-3 sm:p-4">
+      <div className="text-xs font-medium text-gray-600 sm:text-sm">{label}</div>
       <div className="mt-1 text-2xl font-semibold tabular-nums whitespace-nowrap sm:text-3xl">{value}</div>
-      <div className="mt-2 flex flex-col gap-0.5">
+      <div className="mt-1.5 flex flex-col gap-0.5">
         <Delta label="Vormonat" current={cur} previous={prev} lowerIsBetter={lowerIsBetter} />
         <Delta label="Vorjahr" current={cur} previous={yoy} lowerIsBetter={lowerIsBetter} />
       </div>
-      <p className="mt-3 text-xs leading-snug text-gray-500">{explain}</p>
     </div>
   );
 }
@@ -162,8 +146,6 @@ export default function ReportView({
   });
   const speedByUrl = new Map<string, PageSpeedResult[]>();
   for (const r of data.pagespeed?.results ?? []) speedByUrl.set(r.url, [...(speedByUrl.get(r.url) ?? []), r]);
-  const knownClicks = k.brand.clicks + k.nonBrand.clicks;
-  const brandShare = (s: SeoMetrics) => (knownClicks > 0 ? s.clicks / knownClicks : 0);
 
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -203,19 +185,63 @@ export default function ReportView({
             Vorschau: Dieser Monat ist noch nicht freigegeben. Der Kunde sieht ihn erst nach der Freigabe.
           </p>
         )}
-        <nav aria-label="Abschnitte" className="hidden flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 md:flex">
-          {NAV.map(([id, l]) => (
-            <a key={id} href={`#${id}`} className="hover:text-gray-900 hover:underline">
-              {l}
-            </a>
-          ))}
-        </nav>
       </header>
 
+      <section aria-label="Zahlen des Monats" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Kpi label="Besucher über Google" value={fmtInt(k.current.clicks)} cur={k.current.clicks} prev={k.prevMonth?.clicks} yoy={k.prevYear?.clicks} />
+        <Kpi label="Bei Google angezeigt" value={fmtInt(k.current.impressions)} cur={k.current.impressions} prev={k.prevMonth?.impressions} yoy={k.prevYear?.impressions} />
+        <Kpi label="Klickrate" value={fmtPct(k.current.ctr)} cur={k.current.ctr} prev={k.prevMonth?.ctr} yoy={k.prevYear?.ctr} />
+        <Kpi label="Ø Platz bei Google" value={fmtPos(k.current.position)} cur={k.current.position} prev={k.prevMonth?.position} yoy={k.prevYear?.position} lowerIsBetter />
+      </section>
+
+      <Section id="verlauf" title="Verlauf">
+        <MetricHistory history={data.history} current={m} />
+      </Section>
+
+      <Section id="massnahmen" title={`Was wir im ${monthNameDE(m)} gemacht haben`}>
+        {data.activitiesThisMonth.length ? (
+          <ActivityList items={data.activitiesThisMonth} />
+        ) : (
+          <p className="text-sm text-gray-600">Für diesen Monat sind noch keine Maßnahmen eingetragen.</p>
+        )}
+        <Link href="/portal/massnahmen" className="mt-4 inline-block text-sm text-brand-blue hover:underline">
+          Alle Maßnahmen{data.planned.length ? ' und was als Nächstes kommt' : ''}
+        </Link>
+      </Section>
+
+      <Section id="suchbegriffe" title="Ihre wichtigsten Suchbegriffe">
+        <KeywordsBlock keywords={data.keywords} total={data.keywordTotal} groups={data.client.groups} />
+      </Section>
+
+      {data.latestChecks.length > 0 && (
+        <Section id="pruefungen" title="Vorher und nachher">
+          <div className="space-y-4">
+            {data.latestChecks.slice(0, 2).map((c) => (
+              <CheckCard key={c.id} check={c} />
+            ))}
+          </div>
+          <Link href="/portal/pruefungen" className="mt-4 inline-block text-sm text-brand-blue hover:underline">
+            Alle Prüfungen
+          </Link>
+        </Section>
+      )}
+
+      <details className="group">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white p-4 hover:border-gray-300 sm:p-6 [&::-webkit-details-marker]:hidden">
+          <span>
+            <span className="block text-lg font-semibold">Mehr Details</span>
+            <span className="block text-sm text-gray-500">
+              Einschätzung, Gewinner und Verlierer, Chancen, Platzierungen, Themen, Seiten, Ladezeit
+            </span>
+          </span>
+          <span aria-hidden className="text-xl text-gray-400 transition-transform group-open:rotate-180">
+            ⌄
+          </span>
+        </summary>
+        <div className="mt-5 space-y-5 sm:mt-6 sm:space-y-6">
       {data.report?.assessment && (
-        <section id="einschaetzung" className="scroll-mt-20 rounded-2xl border border-blue-100 bg-blue-50/60 p-4 sm:p-6">
-          <h2 className="text-lg font-semibold sm:text-xl">Unsere Einschätzung</h2>
-          <div className="mt-3 max-w-prose space-y-3 leading-relaxed text-gray-800">
+        <Section id="einschaetzung" title="Unsere Einschätzung">
+          <div className="max-w-prose space-y-3 leading-relaxed text-gray-800">
             {data.report.assessment
               .split(/\n\s*\n/)
               .filter((p) => p.trim())
@@ -226,74 +252,8 @@ export default function ReportView({
               ))}
           </div>
           <p className="mt-4 text-sm text-gray-600">Yusuf Kolac, Kolac Digital</p>
-        </section>
-      )}
-
-      <section id="zahlen" className="scroll-mt-20 space-y-4">
-        <h2 className="sr-only">Zahlen des Monats</h2>
-        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
-          <Kpi label="Klicks" value={fmtInt(k.current.clicks)} explain="So oft wurde in der Google-Suche auf Ihre Website geklickt." cur={k.current.clicks} prev={k.prevMonth?.clicks} yoy={k.prevYear?.clicks} />
-          <Kpi label="Impressionen" value={fmtInt(k.current.impressions)} explain="So oft wurde Ihre Website in den Suchergebnissen angezeigt." cur={k.current.impressions} prev={k.prevMonth?.impressions} yoy={k.prevYear?.impressions} />
-          <Kpi label="Klickrate" value={fmtPct(k.current.ctr)} explain="Anteil der Anzeigen, bei denen jemand geklickt hat." cur={k.current.ctr} prev={k.prevMonth?.ctr} yoy={k.prevYear?.ctr} />
-          <Kpi label="Durchschnittliche Position" value={fmtPos(k.current.position)} explain="Ihr Platz in den Suchergebnissen im Schnitt. Kleiner ist besser." cur={k.current.position} prev={k.prevMonth?.position} yoy={k.prevYear?.position} lowerIsBetter />
-        </div>
-        <Section id="verlauf" title={`Entwicklung der letzten ${data.history.length} Monate`}>
-          <MetricHistory history={data.history} current={m} />
-        </Section>
-      </section>
-
-      <Section
-        id="massnahmen"
-        title={`Was wir im ${monthNameDE(m)} für Sie getan haben`}
-        intro="Jede Änderung an Ihrer Website, mit dem Nutzen für Sie. Den vollständigen Verlauf finden Sie unter „Maßnahmen“."
-      >
-        {data.activitiesThisMonth.length ? (
-          <ActivityList items={data.activitiesThisMonth} />
-        ) : (
-          <p className="text-sm text-gray-600">Für diesen Monat sind noch keine Maßnahmen eingetragen.</p>
-        )}
-        {data.planned.length > 0 && (
-          <div className="mt-6 rounded-xl bg-gray-50 p-4">
-            <h3 className="mb-3 font-medium">Als Nächstes geplant</h3>
-            <PlannedList items={data.planned} />
-          </div>
-        )}
-      </Section>
-
-      {data.latestChecks.length > 0 && (
-        <Section
-          id="pruefungen"
-          title="Aktueller Stand Ihrer Website"
-          intro="Die neuesten Prüfungen, die wir an Ihrer Website gemacht haben. Jede Zahl ist mit der Prüfung davor verglichen, die Links führen direkt zum Nachprüfen."
-        >
-          <div className="space-y-4">
-            {data.latestChecks.slice(0, 3).map((c) => (
-              <CheckCard key={c.id} check={c} />
-            ))}
-          </div>
-          <Link href="/portal/pruefungen" className="mt-4 inline-block text-sm text-brand-blue hover:underline">
-            Alle Prüfungen ansehen
-          </Link>
         </Section>
       )}
-
-      <Section
-        id="suchbegriffe"
-        title="Ihre wertvollsten Suchbegriffe"
-        intro={
-          <>
-            Mit diesen Suchbegriffen wurde Ihre Website bei Google gefunden. Neue Kunden kommen vor allem über Suchen{' '}
-            <strong>ohne Ihren Firmennamen</strong>. Diesen Monat waren das {fmtInt(k.nonBrand.clicks)} Klicks (
-            {fmtPct(brandShare(k.nonBrand), 0)} der Klicks mit bekanntem Suchbegriff).
-          </>
-        }
-      >
-        <KeywordTable keywords={data.keywords} total={data.keywordTotal} groups={data.client.groups} />
-        <p className="mt-4 text-xs leading-relaxed text-gray-500">
-          Google zeigt aus Datenschutzgründen nicht jeden Suchbegriff. Die Summe der Tabelle ist deshalb etwas kleiner als die
-          Gesamtzahl oben.
-        </p>
-      </Section>
 
       <Section id="gewinner" title="Gewinner und Verlierer" intro="Die Suchbegriffe mit der größten Veränderung zum Vormonat.">
         <MoversPanel movers={data.movers} />
@@ -403,6 +363,9 @@ export default function ReportView({
           </div>
         </Section>
       )}
+
+        </div>
+      </details>
 
       <p className="px-1 text-xs leading-relaxed text-gray-500">
         Quelle der Zahlen: Google Search Console{data.pagespeed ? ' und Google PageSpeed Insights' : ''}. Alle Werte beziehen
