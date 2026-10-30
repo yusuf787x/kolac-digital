@@ -3,7 +3,7 @@
 Zentrale Referenz aller Features des Business-Dashboards. Verweis-Ziel für andere Projekte (via User-Skill `kolac-digital`).
 
 Repository-Root: `/Users/yusufkolac/Documents/Code/internal/kolac-digital-web`
-Stack: Next.js 14 App Router, Firebase (Firestore + Storage + Admin), Tailwind, `@react-pdf/renderer`, `pdf-lib`.
+Stack: Next.js 16 App Router (React 19), Firebase (Firestore + Storage + Auth + Admin), Tailwind 4, `@react-pdf/renderer`, `pdf-lib`, Resend, Vercel Cron.
 
 ## Datenmodell (`lib/types.ts`)
 
@@ -99,6 +99,8 @@ Drei Modi im „Neuer Vertrag"-Flow:
 ## Datenbank + Auth
 
 - Firestore-Rules: E-Mail-Whitelist auf `yusuf@kolac-digital.de` mit `email_verified=true`.
+- **Admin-Routen** (`lib/server-auth.ts` `authenticate`) verlangen ebenfalls die verifizierte Owner-E-Mail (`lib/owner.ts`), nicht nur die UID. Seit es Portal-Konten gibt, sind auch fremde Firebase-ID-Tokens gültig; die kommen hier nicht durch. Das Dashboard-Layout meldet fremde Konten ab.
+- `AuthProvider` (Firebase-Auth im Browser) sitzt nur noch in `app/dashboard/layout.tsx`. Marketing-Seiten und Portal laden kein Auth-SDK.
 - Storage-Rules identisch.
 - Admin SDK via `FIREBASE_SERVICE_ACCOUNT_JSON` env var (`lib/firebase-admin.ts`).
 
@@ -160,3 +162,43 @@ Artikel-Produktion ohne API-Kosten: der Text wird in einem Claude-Chat erzeugt u
 **CTA**: `components/marketing/BlogCta.tsx`. Ziel steht in `PRIMARY_HREF`. Sobald die VSL-Landingpage steht, wird dort getauscht und alle Artikel zeigen dorthin.
 
 **Auffindbarkeit**: Vier Wege führen Crawler und KI-Systeme zu neuen Artikeln, alle ohne Deploy. `/sitemap-blog.xml` und `/blog/feed.xml` (RSS 2.0, im HTML als `rel="alternate"` verlinkt, in der Search Console als Sitemap einreichbar). `/llms.txt` ist eine Route (`app/llms.txt/route.ts`), die den festen Text aus `lib/llms-content.ts` um alle veröffentlichten Artikel samt Kurzantwort ergänzt; der Platzhalter `{{BLOG}}` markiert die Stelle. Die statische Startseite zeigt die drei neuesten Artikel über `/blog/latest.json` (bewusst nicht unter `/api`, weil das in der robots.txt gesperrt ist), gerendert von `renderRatgeber()` in `public/js/main.js`. Freigeben im Dashboard erneuert alle vier Routen über `/api/blog/revalidate`. Ratgeber und Portfolio stehen in der Hauptnavigation aller drei Header-Varianten (index.html, `SiteHeader.tsx`, `marketing-chrome.js`); die Desktop-Nav greift ab 900px, darunter Hamburger.
+
+## SEO-Kundenportal (`app/portal/` + `app/dashboard/(app)/seo/`)
+
+Monatliche SEO-Berichte für Betreuungskunden aus der **Google Search Console API** und der **PageSpeed Insights API**, ohne kostenpflichtige SEO-Tools. Einrichtung und Ablauf für neue Kunden: `docs/seo-kunde-anlegen.md`.
+
+**Datenmodell** (`lib/seo/types.ts`, alle Typen ohne Firebase-Import):
+- `seoClients/{customerId}`: Konfiguration (Property, Marken-Begriffe, Themen-Gruppen als Regex, PageSpeed-URLs, Changelog-Schlüssel-Hash, `demo`)
+- `seoMonthly/{customerId}_{YYYY-MM}`: Summen ohne Dimension; Zeilen in `rows/{queries-n|pages-n}` als JSON-Tupel, 4.000 pro Dokument
+- `seoPagespeed/…`, `seoActivities/{auto}` (Maßnahmen mit `externalKey` gegen Dubletten), `seoReports/{customerId}_{YYYY-MM}` (Status draft/released, Einschätzung, PDF-Pfad, Empfänger)
+- `portalAccess/{email}`, `portalLoginEvents`, `portalLoginLinks/{sha256(code)}`, `portalRateLimits/{sha256(key)}`
+
+**Auswertung** (`lib/seo/analysis.ts`, rein, Test: `npx tsx lib/__tests__/seo-analysis.test.ts`): Marken-Erkennung mit Umlaut- und Leerzeichen-Angleichung, Regex-Gruppen, Positions-Buckets, Gewinner/Verlierer, Chancen über die kommentierte `CTR_CURVE`. Regeln werden **beim Lesen** angewendet, Konfigurationsänderungen gelten rückwirkend. `lib/seo/view.ts` `buildPortalData` baut daraus ein serialisierbares `PortalData`, das Portal, Admin-Vorschau und PDF gemeinsam nutzen.
+
+**Login per Magic Link** (`lib/portal/`): nur freigeschaltete Adressen, keine Selbstregistrierung.
+- `generateSignInWithEmailLink` (Admin SDK) erzeugt den Code, die gebrandete Mail geht über Resend und verlinkt auf die eigene Domain (`/portal/anmelden?code=`).
+- Eigener Datensatz mit 1 Stunde Gültigkeit, Einmal-Nutzung und Geräte-Nonce-Cookie. Auf fremdem Gerät wird die E-Mail abgefragt (5 Versuche).
+- Eingelöst wird per POST-Knopf, damit Mail-Scanner den Link nicht verbrauchen. Danach `accounts:signInWithEmailLink` (REST) und `createSessionCookie`, 7 Tage, httpOnly.
+- Antwort auf der Login-Seite ist immer gleich; die Arbeit läuft per `after()`, damit auch die Antwortzeit nichts verrät. Rate-Limit 10 pro IP und Stunde, 3 pro Adresse in 15 Minuten.
+- Jede Portal-Anfrage prüft `verifySessionCookie(…, checkRevoked)` plus aktiven `portalAccess`; die `customerId` kommt nur aus `portalAccess`. Entziehen = `revokeRefreshTokens`, sofort wirksam.
+- Im Browser des Kunden läuft kein Firebase-JS.
+
+**Portal** (Server-Komponenten): `/portal` Monatsbericht (Einschätzung, Kennzahlen mit Vormonat/Vorjahr, 16-Monats-Verlauf, Maßnahmen des Monats, Keyword-Tabelle sortier- und filterbar nach Marke/Thema, Gewinner/Verlierer, Chancen, Positions-Verteilung, Themen, Seiten, Ladezeit mit Ampel, Geplantes), `/portal/massnahmen` (kompletter Verlauf), `/portal/berichte` (Archiv, PDF-Download über `/api/portal/report/[month]`). **Der Kunde sieht Zahlen nur bis zum neuesten freigegebenen Monat**; ältere Backfill-Monate ohne eigenen Bericht sind mit sichtbar. Veröffentlichte Maßnahmen sind sofort sichtbar. Diagramme ohne Bibliothek (`components/seo/charts/`), Farben in `palette.ts` (ordinale Blau-Rampe, validiert).
+
+**Admin** (`/dashboard/seo`): Übersicht mit „Wartet auf Freigabe“; pro Kunde die Tabs Berichte, Maßnahmen, Portal-Zugang, Daten und Einstellungen. Die Konfiguration wird im Client über Firestore geschrieben (`lib/seo/client.ts`). Was Geheimnisse braucht, läuft über `/api/seo/*` mit `authenticate`.
+- **Berichte:** Einschätzung mit regelbasiertem Vorschlag (`lib/seo/assessment.ts`, Sie-Form, keine Gedankenstriche), PDF ansehen, Portal-Vorschau, „Bericht freigeben und senden“ mit Bestätigung und Empfängerliste.
+- **Maßnahmen:** Eintragen, Verbergen, Markdown-Import.
+- **Daten:** 16-Monats-Backfill Monat für Monat aus dem Browser (kein Timeout).
+- **Einstellungen:** Regex-Tester.
+- **Testkunde:** „Muster Motoren GmbH (Demo)“ mit erzeugten Zahlen (`lib/seo/demo-data.ts`), komplett löschbar.
+
+**PDF** (`components/seo/SeoReportPdf.tsx`, Stil wie InvoicePDF): Seite 1 Kennzahlen, Einschätzung und Klick-Verlauf, danach Maßnahmen, Marke/Nicht-Marke, Keywords, Gewinner, Chancen, Platzierungen, Themen, Seiten und Ladezeit. Ablage in Storage unter `seo-reports/{customerId}/{YYYY-MM}.pdf`, nie öffentlich. Entwürfe tragen einen Hinweis.
+
+**Cron** `/api/seo/cron` (vercel.json `0 6 4 * *`, `CRON_SECRET` Pflicht): Vormonat abrufen, PageSpeed messen, Entwurf mit Einschätzungs-Vorschlag erzeugen. Freigegebene Berichte bleiben unangetastet. Danach Sammel-Mail an yusuf@. Kunden bekommen erst nach der Freigabe eine Mail.
+
+**Changelog aus Claude Code:** `POST /api/seo/changelog` mit Kunden-Schlüssel (`kdp_…`, nur SHA-256 gespeichert, im Admin erzeugt). Body `{ markdown | entries, publish, dryRun }`.
+- Parser `lib/seo/changelog-markdown.ts` (Format der Kundenprojekte: `## Datum`, `### Bereich`, Tabelle Status/Änderung/Nutzen, „Offene Punkte“).
+- Idempotent: Ein Statuswechsel aktualisiert den Eintrag. Offene Punkte werden nie automatisch veröffentlicht und verschwinden, wenn sie aus der Datei entfernt werden.
+- Skript `scripts/portal-changelog.mjs`, User-Skill `kolac-portal-changelog` (Probelauf, dann nach OK senden).
+
+**Später, optional:** `lib/seo/server/rank-providers.ts` definiert `RankProvider` für einen Pay-per-Use-Anbieter (z. B. DataForSEO) für Ziel-Keywords ohne Impressionen. Standardmäßig aus (`SEO_RANK_PROVIDER` leer bzw. `none`), noch nirgends aufgerufen.

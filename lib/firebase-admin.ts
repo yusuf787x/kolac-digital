@@ -8,6 +8,7 @@ import {
 } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getStorage, Storage } from 'firebase-admin/storage';
+import { getAuth, type Auth } from 'firebase-admin/auth';
 
 /**
  * Server-side Firebase Admin Instanz. Wird genau einmal beim ersten
@@ -89,4 +90,9 @@ export function adminDb(): Firestore {
 
 export function adminStorage(): Storage {
   return getStorage(init());
+}
+
+/** Admin-Auth, genutzt vom Kundenportal (Magic Link, Session-Cookies). */
+export function adminAuth(): Auth {
+  return getAuth(init());
 }

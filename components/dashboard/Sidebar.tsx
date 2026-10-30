@@ -50,6 +50,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/fahrten', label: 'Fahrten', icon: '🚗', group: 'Buchhaltung' },
   { href: '/dashboard/berichte', label: 'Berichte', icon: '📈', group: 'Buchhaltung' },
   { href: '/dashboard/blog', label: 'Blog', icon: '✍️', group: 'Marketing' },
+  { href: '/dashboard/seo', label: 'SEO-Kunden', shortLabel: 'SEO', icon: '🔎', group: 'Marketing' },
   {
     href: '/dashboard/einstellungen',
     label: 'Einstellungen',
