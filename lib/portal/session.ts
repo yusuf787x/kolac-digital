@@ -25,7 +25,7 @@ export interface PortalSession {
 export async function readPortalSession(cookieValue: string | undefined): Promise<PortalSession | null> {
   if (!cookieValue) return null;
   try {
-    const decoded = await adminAuth().verifySessionCookie(cookieValue, true);
+    const decoded = await (await adminAuth()).verifySessionCookie(cookieValue, true);
     const email = normalizeEmail(decoded.email);
     const access = await getActiveAccess(email);
     if (!access) return null;

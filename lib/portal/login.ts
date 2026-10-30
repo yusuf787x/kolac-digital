@@ -52,7 +52,7 @@ export async function sendLoginLink(opts: {
   const client = await getSeoClient(access.customerId);
 
   const base = portalBaseUrl();
-  const firebaseLink = await adminAuth().generateSignInWithEmailLink(opts.email, {
+  const firebaseLink = await (await adminAuth()).generateSignInWithEmailLink(opts.email, {
     url: `${base}/portal/anmelden`,
     handleCodeInApp: true,
   });
@@ -154,7 +154,7 @@ export async function completeLogin(opts: {
       return { ok: false, reason: /EXPIRED/.test(msg) ? 'expired' : /INVALID_OOB_CODE/.test(msg) ? 'used' : 'error' };
     }
 
-    const sessionCookie = await adminAuth().createSessionCookie(body.idToken, {
+    const sessionCookie = await (await adminAuth()).createSessionCookie(body.idToken, {
       expiresIn: SESSION_TTL_MS,
     });
 
@@ -188,8 +188,8 @@ export async function revokeAccess(email: string): Promise<void> {
   if (!snap.exists) return;
   await ref.update({ active: false, revokedAt: Timestamp.now() });
   try {
-    const user = await adminAuth().getUserByEmail(email);
-    await adminAuth().revokeRefreshTokens(user.uid);
+    const user = await (await adminAuth()).getUserByEmail(email);
+    await (await adminAuth()).revokeRefreshTokens(user.uid);
   } catch {
     // Noch nie eingeloggt: kein Firebase-Konto, nichts zu widerrufen
   }
