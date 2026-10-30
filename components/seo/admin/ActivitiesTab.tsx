@@ -549,11 +549,11 @@ function ClaudeCodePanel({ client, onChange }: { client: SeoClient; onChange: ()
   return (
     <section className="card space-y-3">
       <div>
-        <h3 className="font-semibold">Veröffentlichen aus Claude Code</h3>
+        <h3 className="font-semibold">Claude Code</h3>
         <p className="mt-1 max-w-prose text-sm text-gray-600">
-          Im Kundenprojekt pflegt Claude Code die <code>CHANGELOG.md</code>. Mit dem Skill <code>kolac-portal-changelog</code>{' '}
-          („Changelog ins Portal“) wird sie hierher übertragen. Neue erledigte Einträge sind sofort sichtbar, offene Punkte nie
-          automatisch. Der Schlüssel gilt nur für diesen Kunden.
+          Im Kundenprojekt „Portal einrichten“ sagen (Skill <code>kolac-portal-changelog</code>). Mit diesem Schlüssel pflegt
+          Claude Code das Portal dieses Kunden: Maßnahmen, Prüfungen, Zahlen abrufen, Berichte erstellen und freigeben,
+          Einstellungen. Nicht möglich sind Portal-Zugänge und das Löschen des Kunden. Der Schlüssel gilt nur für diesen Kunden.
         </p>
       </div>
       {token ? (

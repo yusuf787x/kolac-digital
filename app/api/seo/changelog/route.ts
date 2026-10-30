@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import { safe } from '@/lib/seo/server/admin-route';
-import { adminDb } from '@/lib/firebase-admin';
-import { clientIp, sha256 } from '@/lib/portal/access';
-import { hitRateLimit } from '@/lib/portal/rate-limit';
 import { parseChangelogMarkdown } from '@/lib/seo/changelog-markdown';
 import { normalizeCheckInput, type CheckInput } from '@/lib/seo/checks';
 import { todayIso } from '@/lib/seo/months';
 import { normalizeJsonEntries, syncChangelog } from '@/lib/seo/server/changelog-sync';
+import { clientFromToken } from '@/lib/seo/server/token-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,21 +28,8 @@ const MAX_BYTES = 1024 * 1024;
  * }
  */
 async function handlePOST(req: Request) {
-  if (!(await hitRateLimit(`changelog-ip:${clientIp(req)}`, 60, 3600))) {
-    return NextResponse.json({ error: 'Zu viele Anfragen.' }, { status: 429 });
-  }
-  const auth = req.headers.get('authorization') ?? '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
-  if (!token.startsWith('kdp_') || token.length < 30) {
-    return NextResponse.json({ error: 'Changelog-Schlüssel fehlt.' }, { status: 401 });
-  }
-  const snap = await adminDb()
-    .collection('seoClients')
-    .where('changelogTokenHash', '==', sha256(token))
-    .limit(1)
-    .get();
-  if (snap.empty) return NextResponse.json({ error: 'Changelog-Schlüssel ungültig.' }, { status: 401 });
-  const client = snap.docs[0];
+  const client = await clientFromToken(req, 'changelog', 60);
+  if (client instanceof NextResponse) return client;
 
   const raw = await req.text();
   if (raw.length > MAX_BYTES) return NextResponse.json({ error: 'Anfrage zu groß.' }, { status: 413 });
@@ -77,7 +62,7 @@ async function handlePOST(req: Request) {
 
   try {
     const summary = await syncChangelog({
-      customerId: client.id,
+      customerId: client.customerId,
       entries,
       checks,
       publish: body.publish === true,
@@ -86,7 +71,7 @@ async function handlePOST(req: Request) {
     });
     return NextResponse.json({
       ok: true,
-      customer: client.data().displayName,
+      customer: client.displayName,
       dryRun: body.dryRun === true,
       ...summary,
       warnings,

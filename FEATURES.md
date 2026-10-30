@@ -201,6 +201,13 @@ Monatliche SEO-Berichte für Betreuungskunden aus der **Google Search Console AP
 
 **Interna-Filter** (`looksSensitive`): neue Einträge aus Claude Code mit Passwort, Zugang, SFTP, Schlüssel oder IP werden nicht automatisch veröffentlicht, sondern als „Zurückgehalten“ gemeldet.
 
+**Vollzugriff für Claude Code** (`/api/seo/agent`, CLI `scripts/portal.mjs`, gleicher Kunden-Schlüssel):
+- Aktionen: `status`, `data`, `fetch`, `report` (Einschätzung setzen oder vorschlagen, PDF), `release` (nur mit `confirm: true`), `settings`, `items`, `visibility`, `delete`.
+- Strikt auf den Kunden des Schlüssels begrenzt.
+- Bewusst ohne Portal-Zugänge, Schlüsselverwaltung und Kunden-Löschung: Ein geleakter Schlüssel verschafft niemandem Zugang zu den Daten.
+
+**Portal-Layout** (`ReportView`): oben Kennzahlen, Verlauf, „Was wir gemacht haben“, die 10 wichtigsten Suchbegriffe (volle Tabelle auf Klick) und „Vorher und nachher“ (Prüfungen). Einschätzung, Gewinner/Verlierer, Chancen, Platzierungen, Themen, Seiten und Ladezeit liegen eingeklappt unter „Mehr Details“. Der Vorschlag für die Einschätzung hat höchstens drei Sätze.
+
 **Changelog aus Claude Code:** `POST /api/seo/changelog` mit Kunden-Schlüssel (`kdp_…`, nur SHA-256 gespeichert, im Admin erzeugt). Body `{ markdown | entries, checks, publish, dryRun }`.
 - Parser `lib/seo/changelog-markdown.ts` (Format der Kundenprojekte: `## Datum`, `### Bereich`, Tabelle Status/Änderung/Nutzen, „Offene Punkte“).
 - Idempotent: Ein Statuswechsel aktualisiert den Eintrag. Offene Punkte werden nie automatisch veröffentlicht und verschwinden, wenn sie aus der Datei entfernt werden.
