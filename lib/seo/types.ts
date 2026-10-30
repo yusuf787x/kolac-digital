@@ -9,6 +9,7 @@
  *   seoMonthly/{...}/rows/{queries-n|pages-n}  Zeilen in Bloecken
  *   seoPagespeed/{customerId}_{YYYY-MM}     PageSpeed-Messung
  *   seoActivities/{auto}                    Massnahmen / Changelog
+ *   seoChecks/{auto}                        Pruefungen (Scans, aktuelle Kennzahlen)
  *   seoReports/{customerId}_{YYYY-MM}       Bericht: Einschaetzung, PDF, Freigabe
  *   portalAccess/{email}                    freigeschaltete Portal-Adressen
  *   portalLoginEvents/{auto}                Login-Protokoll (TTL 90 Tage)
@@ -117,6 +118,12 @@ export interface SeoPagespeedDoc {
  */
 export type SeoActivityStatus = 'done' | 'prepared' | 'checked' | 'planned';
 
+/** Link zum Nachverfolgen, z. B. die geaenderte Seite oder ein Testbericht. */
+export interface ActivityLink {
+  label: string;
+  url: string;
+}
+
 export interface SeoActivity {
   id: string;
   customerId: string;
@@ -130,6 +137,8 @@ export interface SeoActivity {
   /** Wo / Umfang, z. B. "alle 34 Seiten". */
   scope?: string;
   status: SeoActivityStatus;
+  /** Links zum Nachverfolgen (geaenderte Seite, Testbericht, Vorher/Nachher). */
+  links?: ActivityLink[];
   /** Nur veroeffentlichte Eintraege sieht der Kunde. */
   published: boolean;
   source: 'manual' | 'import' | 'claude-code' | 'demo';
@@ -138,6 +147,62 @@ export interface SeoActivity {
   createdAt?: TsLike;
   updatedAt?: TsLike;
 }
+
+/** Art einer Pruefung. Kennzahlen werden mit der letzten Pruefung gleicher Art verglichen. */
+export type SeoCheckKind = 'ladezeit' | 'technik' | 'inhalte' | 'sichtbarkeit' | 'lokal' | 'sonstiges';
+
+export interface SeoCheckMetric {
+  /** Stabiler Schluessel, ueber den mit frueheren Pruefungen verglichen wird. */
+  key: string;
+  label: string;
+  value: number;
+  unit?: string;
+  /** Was ist besser? null = neutral, keine Wertung. */
+  better: 'higher' | 'lower' | null;
+  /** Ein Satz fuer Laien: was bedeutet die Zahl? */
+  explain?: string;
+}
+
+export type SeoFindingStatus = 'ok' | 'warn' | 'fail';
+
+export interface SeoCheckFinding {
+  status: SeoFindingStatus;
+  text: string;
+  url?: string;
+}
+
+/**
+ * Eine Pruefung der Website, z. B. aus einem Scan in Claude Code. Sofort
+ * im Portal sichtbar (wenn veroeffentlicht), unabhaengig vom Monatsbericht.
+ */
+export interface SeoCheck {
+  id: string;
+  customerId: string;
+  /** YYYY-MM-DD */
+  date: string;
+  month: SeoMonth;
+  kind: SeoCheckKind;
+  title: string;
+  /** Kurzfassung fuer Laien, 1 bis 3 Saetze. */
+  summary: string;
+  metrics: SeoCheckMetric[];
+  findings: SeoCheckFinding[];
+  links: ActivityLink[];
+  published: boolean;
+  source: 'manual' | 'claude-code' | 'demo';
+  externalKey?: string;
+  createdAt?: TsLike;
+  updatedAt?: TsLike;
+}
+
+export const CHECK_KIND_LABELS: Record<SeoCheckKind, string> = {
+  ladezeit: 'Ladezeit',
+  technik: 'Technik',
+  inhalte: 'Inhalte',
+  sichtbarkeit: 'Sichtbarkeit bei Google',
+  lokal: 'Lokale Suche',
+  sonstiges: 'Prüfung',
+};
 
 export type SeoReportStatus = 'draft' | 'released';
 

@@ -3,6 +3,7 @@ import { pctChange } from '@/lib/seo/analysis';
 import { formatIsoDateDE, formatMonthDE } from '@/lib/seo/months';
 import { ACTIVITY_STATUS_BADGES, ACTIVITY_STATUS_LABELS } from '@/lib/seo/types';
 import { fmtSignedPct, type PortalActivity } from '@/lib/seo/view';
+import { LinkList } from './CheckCard';
 
 /** Bausteine fuer Portal und Admin-Vorschau. Ohne Hooks, also auch serverseitig nutzbar. */
 
@@ -131,6 +132,7 @@ export function ActivityList({ items }: { items: PortalActivity[] }) {
               Umfang: <InlineMd text={a.scope} />
             </p>
           )}
+          {a.links && <LinkList links={a.links} />}
         </li>
       ))}
     </ol>

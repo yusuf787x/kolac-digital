@@ -19,6 +19,7 @@ import {
   type Rating,
 } from '@/lib/seo/view';
 import type { PageSpeedResult, SeoMetrics } from '@/lib/seo/types';
+import CheckCard from './CheckCard';
 import KeywordTable from './KeywordTable';
 import MetricHistory from './MetricHistory';
 import MoversPanel from './MoversPanel';
@@ -33,6 +34,7 @@ const NAV: Array<[string, string]> = [
   ['einschaetzung', 'Einschätzung'],
   ['zahlen', 'Zahlen'],
   ['massnahmen', 'Was wir getan haben'],
+  ['pruefungen', 'Prüfungen'],
   ['suchbegriffe', 'Suchbegriffe'],
   ['gewinner', 'Gewinner und Verlierer'],
   ['chancen', 'Chancen'],
@@ -133,9 +135,16 @@ export default function ReportView({
           Sobald die Zahlen aus der Google Search Console ausgewertet sind, finden Sie hier jeden Monat Ihren Bericht. Wir
           melden uns per E-Mail, wenn er fertig ist.
         </p>
-        <Link href="/portal/massnahmen" className="btn-secondary mt-5">
-          Bisherige Maßnahmen ansehen
-        </Link>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link href="/portal/massnahmen" className="btn-secondary">
+            Bisherige Maßnahmen ansehen
+          </Link>
+          {data.latestChecks.length > 0 && (
+            <Link href="/portal/pruefungen" className="btn-secondary">
+              Prüfungen ansehen
+            </Link>
+          )}
+        </div>
       </div>
     );
   }
@@ -250,6 +259,23 @@ export default function ReportView({
           </div>
         )}
       </Section>
+
+      {data.latestChecks.length > 0 && (
+        <Section
+          id="pruefungen"
+          title="Aktueller Stand Ihrer Website"
+          intro="Die neuesten Prüfungen, die wir an Ihrer Website gemacht haben. Jede Zahl ist mit der Prüfung davor verglichen, die Links führen direkt zum Nachprüfen."
+        >
+          <div className="space-y-4">
+            {data.latestChecks.slice(0, 3).map((c) => (
+              <CheckCard key={c.id} check={c} />
+            ))}
+          </div>
+          <Link href="/portal/pruefungen" className="mt-4 inline-block text-sm text-brand-blue hover:underline">
+            Alle Prüfungen ansehen
+          </Link>
+        </Section>
+      )}
 
       <Section
         id="suchbegriffe"

@@ -15,8 +15,13 @@ import {
 } from './analysis';
 import { addMonths, prevMonth, sameMonthLastYear } from './months';
 import type {
+  ActivityLink,
   PageSpeedResult,
   SeoActivity,
+  SeoCheck,
+  SeoCheckFinding,
+  SeoCheckKind,
+  SeoCheckMetric,
   SeoActivityStatus,
   SeoClient,
   SeoMetrics,
@@ -44,6 +49,25 @@ export interface PortalActivity {
   benefit?: string;
   scope?: string;
   status: SeoActivityStatus;
+  links?: ActivityLink[];
+}
+
+export interface PortalCheckMetric extends SeoCheckMetric {
+  /** Wert der letzten Pruefung gleicher Art, null bei der ersten. */
+  previous: number | null;
+}
+
+export interface PortalCheck {
+  id: string;
+  date: string;
+  kind: SeoCheckKind;
+  title: string;
+  summary: string;
+  metrics: PortalCheckMetric[];
+  /** Datum der Vergleichspruefung. */
+  previousDate: string | null;
+  findings: SeoCheckFinding[];
+  links: ActivityLink[];
 }
 
 export interface HistoryPoint extends SeoMetrics {
@@ -105,6 +129,10 @@ export interface PortalData {
   planned: PortalActivity[];
   /** Freigegebene Berichte, neuester zuerst. */
   reports: Array<{ month: SeoMonth; releasedAt: number | null; hasPdf: boolean }>;
+  /** Neueste veroeffentlichte Pruefung je Art, neueste zuerst. */
+  latestChecks: PortalCheck[];
+  /** Pruefungen im angezeigten Monat (fuer das PDF). */
+  checksThisMonth: PortalCheck[];
 }
 
 export interface MonthInput {
@@ -134,7 +162,43 @@ export interface BuildInput {
   includeUnreleased: boolean;
   reports: ReportInput[];
   pagespeed: Array<{ month: SeoMonth; results: PageSpeedResult[] }>;
-  activities: Array<Pick<SeoActivity, 'id' | 'date' | 'month' | 'area' | 'change' | 'benefit' | 'scope' | 'status' | 'published'>>;
+  activities: Array<Pick<SeoActivity, 'id' | 'date' | 'month' | 'area' | 'change' | 'benefit' | 'scope' | 'status' | 'published' | 'links'>>;
+  checks?: SeoCheck[];
+}
+
+/**
+ * Alle veroeffentlichten Pruefungen, neueste zuerst. Jede Kennzahl wird mit
+ * der vorherigen Pruefung gleicher Art und gleichem Kennzahl-Schluessel
+ * verglichen.
+ */
+export function buildCheckTimeline(checks: SeoCheck[]): PortalCheck[] {
+  const pub = checks
+    .filter((c) => c.published)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
+  const lastByKind = new Map<SeoCheckKind, SeoCheck>();
+  const out: PortalCheck[] = [];
+  for (const c of pub) {
+    const prev = lastByKind.get(c.kind) ?? null;
+    const prevValues = new Map((prev?.metrics ?? []).map((m) => [m.key, m.value]));
+    out.push({
+      id: c.id,
+      date: c.date,
+      kind: c.kind,
+      title: c.title,
+      summary: c.summary,
+      metrics: (c.metrics ?? []).map((m) => ({ ...m, previous: prevValues.get(m.key) ?? null })),
+      previousDate: prev?.date ?? null,
+      findings: c.findings ?? [],
+      links: c.links ?? [],
+    });
+    lastByKind.set(c.kind, c);
+  }
+  return out.reverse();
+}
+
+function latestPerKind(timeline: PortalCheck[]): PortalCheck[] {
+  const seen = new Set<SeoCheckKind>();
+  return timeline.filter((c) => (seen.has(c.kind) ? false : (seen.add(c.kind), true)));
 }
 
 export function toPortalActivity(a: BuildInput['activities'][number]): PortalActivity {
@@ -147,6 +211,7 @@ export function toPortalActivity(a: BuildInput['activities'][number]): PortalAct
     benefit: a.benefit || undefined,
     scope: a.scope || undefined,
     status: a.status,
+    ...(a.links?.length ? { links: a.links } : {}),
   };
 }
 
@@ -187,6 +252,8 @@ export function buildPortalData(input: BuildInput): PortalData {
     .map(toPortalActivity)
     .sort((a, b) => a.area.localeCompare(b.area, 'de'));
 
+  const checkTimeline = buildCheckTimeline(input.checks ?? []);
+
   const releasedReports = input.reports
     .filter((r) => r.status === 'released')
     .sort((a, b) => b.month.localeCompare(a.month))
@@ -216,6 +283,8 @@ export function buildPortalData(input: BuildInput): PortalData {
     activitiesThisMonth: [],
     planned,
     reports: releasedReports,
+    latestChecks: latestPerKind(checkTimeline),
+    checksThisMonth: [],
   };
 
   if (!month) return base;
@@ -306,6 +375,7 @@ export function buildPortalData(input: BuildInput): PortalData {
     ),
     pages,
     pagespeed: ps ? { month: ps.month, results: ps.results } : null,
+    checksThisMonth: checkTimeline.filter((c) => c.date.startsWith(month)),
     activitiesThisMonth: published
       .filter((a) => a.month === month && a.status !== 'planned')
       .map(toPortalActivity)

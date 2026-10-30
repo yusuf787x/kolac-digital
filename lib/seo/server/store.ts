@@ -5,6 +5,7 @@ import { addMonths, prevMonth } from '../months';
 import type {
   PageSpeedResult,
   SeoActivity,
+  SeoCheck,
   SeoClient,
   SeoMetrics,
   SeoMonth,
@@ -30,6 +31,7 @@ export const COL = {
   monthly: 'seoMonthly',
   pagespeed: 'seoPagespeed',
   activities: 'seoActivities',
+  checks: 'seoChecks',
   reports: 'seoReports',
   access: 'portalAccess',
   loginEvents: 'portalLoginEvents',
@@ -199,6 +201,16 @@ export async function listActivities(customerId: string): Promise<SeoActivity[]>
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
+export async function listChecks(customerId: string): Promise<SeoCheck[]> {
+  const snap = await adminDb()
+    .collection(COL.checks)
+    .where('customerId', '==', customerId)
+    .get();
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }) as SeoCheck)
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
 export async function listReports(customerId: string): Promise<SeoReport[]> {
   const snap = await adminDb()
     .collection(COL.reports)
@@ -249,11 +261,12 @@ export async function loadPortalData(
   includeUnreleased: boolean,
 ): Promise<PortalData> {
   const customerId = client.customerId;
-  const [monthDocs, reports, pagespeed, activities] = await Promise.all([
+  const [monthDocs, reports, pagespeed, activities, checks] = await Promise.all([
     listMonthDocs(customerId),
     listReports(customerId),
     listPagespeed(customerId),
     listActivities(customerId),
+    listChecks(customerId),
   ]);
   const reportInputs = reports.map(toReportInput);
 
@@ -290,6 +303,7 @@ export async function loadPortalData(
     reports: reportInputs,
     pagespeed,
     activities,
+    checks,
   });
 }
 

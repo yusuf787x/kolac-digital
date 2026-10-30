@@ -4,9 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import { InlineMd, StatusBadge } from '@/components/seo/portal/parts';
 import { parseChangelogMarkdown, type ParsedChangelogEntry } from '@/lib/seo/changelog-markdown';
+import { normalizeLinks } from '@/lib/seo/links';
 import {
   createActivity,
   deleteActivity,
+  deleteCheck,
+  listChecks,
+  setCheckPublished,
   importActivities,
   listActivities,
   revokeChangelogToken,
@@ -15,7 +19,7 @@ import {
   type ActivityInput,
 } from '@/lib/seo/client';
 import { formatIsoDateDE, formatMonthDE, todayIso } from '@/lib/seo/months';
-import { ACTIVITY_STATUS_LABELS, type SeoActivity, type SeoActivityStatus, type SeoClient } from '@/lib/seo/types';
+import { ACTIVITY_STATUS_LABELS, CHECK_KIND_LABELS, type SeoActivity, type SeoActivityStatus, type SeoCheck, type SeoClient } from '@/lib/seo/types';
 import { Banner } from './api';
 
 const STATUSES: SeoActivityStatus[] = ['done', 'prepared', 'checked', 'planned'];
@@ -37,10 +41,13 @@ export default function ActivitiesTab({ client, onClientChange }: { client: SeoC
   const [editing, setEditing] = useState<{ id: string | null; form: ActivityInput } | null>(null);
   const [deleting, setDeleting] = useState<SeoActivity | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [checks, setChecks] = useState<SeoCheck[]>([]);
 
   const load = useCallback(async () => {
     try {
-      setItems(await listActivities(client.customerId));
+      const [acts, chks] = await Promise.all([listActivities(client.customerId), listChecks(client.customerId)]);
+      setItems(acts);
+      setChecks(chks);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -118,6 +125,17 @@ export default function ActivitiesTab({ client, onClientChange }: { client: SeoC
                       </p>
                     )}
                     {a.scope && <p className="text-xs text-gray-500">Umfang: {a.scope}</p>}
+                    {!!a.links?.length && (
+                      <p className="text-xs text-gray-500">
+                        Links:{' '}
+                        {a.links.map((l, i) => (
+                          <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className="text-brand-blue hover:underline">
+                            {i > 0 ? ', ' : ''}
+                            {l.label}
+                          </a>
+                        ))}
+                      </p>
+                    )}
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-1.5">
                     <button className="btn-secondary px-2.5 py-1 text-xs" onClick={() => togglePublished(a)}>
@@ -136,6 +154,7 @@ export default function ActivitiesTab({ client, onClientChange }: { client: SeoC
                             scope: a.scope ?? '',
                             status: a.status,
                             published: a.published,
+                            links: a.links ?? [],
                           },
                         })
                       }
@@ -152,6 +171,57 @@ export default function ActivitiesTab({ client, onClientChange }: { client: SeoC
           </section>
         ))
       )}
+
+      <section className="card">
+        <h3 className="font-semibold">Prüfungen</h3>
+        <p className="mb-3 text-sm text-gray-600">
+          Scans und aktuelle Kennzahlen aus Claude Code. Veröffentlichte Prüfungen sieht der Kunde sofort unter „Prüfungen“ und im
+          Bericht. Was nach Interna aussah, ist automatisch verborgen.
+        </p>
+        {checks.length === 0 ? (
+          <p className="text-sm text-gray-500">Noch keine Prüfungen.</p>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {checks.map((c) => (
+              <li key={c.id} className={`flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:justify-between ${c.published ? '' : 'opacity-60'}`}>
+                <div className="min-w-0">
+                  <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                    <span className="tabular-nums">{formatIsoDateDE(c.date)}</span>
+                    <span className="font-medium text-gray-700">{CHECK_KIND_LABELS[c.kind]}</span>
+                    {!c.published && <span className="rounded bg-gray-100 px-1.5 py-0.5">nicht sichtbar</span>}
+                  </div>
+                  <p className="text-sm font-medium">{c.title}</p>
+                  <p className="text-sm text-gray-600">{c.summary}</p>
+                  <p className="text-xs text-gray-500">
+                    {c.metrics.length} Kennzahlen, {c.findings.length} Befunde, {c.links.length} Links
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1.5">
+                  <button
+                    className="btn-secondary px-2.5 py-1 text-xs"
+                    onClick={async () => {
+                      await setCheckPublished(c.id, !c.published);
+                      load();
+                    }}
+                  >
+                    {c.published ? 'Verbergen' : 'Veröffentlichen'}
+                  </button>
+                  <button
+                    className="btn-secondary px-2.5 py-1 text-xs text-red-700"
+                    onClick={async () => {
+                      if (!window.confirm(`Prüfung „${c.title}“ löschen?`)) return;
+                      await deleteCheck(c.id);
+                      load();
+                    }}
+                  >
+                    Löschen
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <ClaudeCodePanel client={client} onChange={onClientChange} />
 
@@ -216,6 +286,7 @@ function ActivityModal({
   onSave: (f: ActivityInput) => Promise<void>;
 }) {
   const [f, setF] = useState(initial);
+  const [linksText, setLinksText] = useState((initial.links ?? []).map((l) => `${l.label} | ${l.url}`).join('\n'));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const set = <K extends keyof ActivityInput>(k: K, v: ActivityInput[K]) => setF((x) => ({ ...x, [k]: v }));
@@ -282,6 +353,31 @@ function ActivityModal({
             Umfang <span className="font-normal text-gray-400">(optional, z. B. „alle 34 Seiten“)</span>
           </label>
           <input id="a-scope" className="input text-base sm:text-sm" value={f.scope} onChange={(e) => set('scope', e.target.value)} />
+        </div>
+        <div>
+          <label className="label" htmlFor="a-links">
+            Links zum Nachverfolgen <span className="font-normal text-gray-400">(eine pro Zeile: Bezeichnung | https://…)</span>
+          </label>
+          <textarea
+            id="a-links"
+            rows={2}
+            className="input font-mono text-base sm:text-xs"
+            placeholder="Seite ansehen | https://www.beispiel.de/leistung"
+            value={linksText}
+            onChange={(e) => {
+              setLinksText(e.target.value);
+              set(
+                'links',
+                normalizeLinks(
+                  e.target.value
+                    .split('\n')
+                    .map((l) => l.split('|').map((x) => x.trim()))
+                    .filter((p) => p.some(Boolean))
+                    .map((p) => (p.length > 1 ? { label: p[0], url: p[1] } : { label: 'Ansehen', url: p[0] })),
+                ),
+              );
+            }}
+          />
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={f.published} onChange={(e) => set('published', e.target.checked)} className="h-4 w-4" />

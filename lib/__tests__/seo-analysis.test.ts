@@ -14,6 +14,10 @@ import {
   UNGROUPED_ID,
 } from '../seo/analysis';
 import { parseChangelogMarkdown, entryKey } from '../seo/changelog-markdown';
+import { looksSensitive, normalizeCheckInput } from '../seo/checks';
+import { extractLinks, safeUrl } from '../seo/links';
+import { buildCheckTimeline } from '../seo/view';
+import type { SeoCheck } from '../seo/types';
 import { addMonths, monthRange, lastCompleteMonths } from '../seo/months';
 import type { SeoRow } from '../seo/types';
 import { readFileSync } from 'node:fs';
@@ -130,6 +134,41 @@ check(
   'Statuswechsel aendert Schluessel nicht',
   sitemap !== undefined && entryKey({ ...sitemap, status: 'done' }) === sitemap.key,
 );
+
+console.log('\n--- Links, Pruefungen, Interna ---');
+const withLinks = parseChangelogMarkdown(`## 30.10.2026
+
+### Inhalte
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Neue Seite N47 | Mehr Anfragen | [Seite ansehen](https://www.beispiel.de/n47) https://pagespeed.web.dev/x |
+`, { fallbackDate: '2026-10-30' });
+const l = withLinks.entries[0]?.links ?? [];
+check('Nachweis-Spalte liefert 2 Links', l.length === 2, JSON.stringify(l));
+check('Markdown-Link behaelt Bezeichnung', l[0]?.label === 'Seite ansehen');
+check('javascript: wird verworfen', safeUrl('javascript:alert(1)') === null);
+check('Link-Text ohne URL ergibt nichts', extractLinks('kein Link').length === 0);
+check('Passwort gilt als Interna', looksSensitive('STRATO-Passwort neu gesetzt'));
+check('SFTP gilt als Interna', looksSensitive('SFTP-Zugang gelöscht'));
+check('normale Massnahme ist unbedenklich', !looksSensitive('Meta-Beschreibungen für 12 Seiten neu geschrieben'));
+const ck = normalizeCheckInput({
+  date: '2026-10-30', kind: 'ladezeit', title: 'PageSpeed Startseite', summary: 'Die Startseite lädt schneller.',
+  metrics: [{ key: 'mobile', label: 'Handy', value: 74, better: 'higher' }, { label: 'kaputt', value: 'abc' }],
+  findings: [{ status: 'ok', text: 'Bilder komprimiert', url: 'javascript:x' }],
+  links: ['https://pagespeed.web.dev/a', { label: 'Seite', url: 'ftp://x' }],
+});
+check('Pruefung gueltig, ungueltige Kennzahl verworfen', !!ck && ck.metrics.length === 1);
+check('unsichere URLs in Befund und Links verworfen', !!ck && !ck.findings[0].url && ck.links.length === 1);
+check('Pruefung ohne summary abgelehnt', normalizeCheckInput({ date: '2026-10-30', title: 'x' }) === null);
+const mk = (id: string, date: string, v: number): SeoCheck => ({
+  id, customerId: 'c', date, month: date.slice(0, 7), kind: 'ladezeit', title: 't', summary: 's',
+  metrics: [{ key: 'mobile', label: 'Handy', value: v, better: 'higher' }], findings: [], links: [], published: true, source: 'claude-code',
+});
+const tl = buildCheckTimeline([mk('a', '2026-09-01', 41), mk('b', '2026-10-30', 74), { ...mk('c', '2026-10-31', 1), published: false }]);
+check('Zeitleiste ohne Verborgenes, neueste zuerst', tl.length === 2 && tl[0].id === 'b');
+check('Vergleich mit vorheriger Pruefung', tl[0].metrics[0].previous === 41 && tl[0].previousDate === '2026-09-01');
+check('erste Pruefung ohne Vergleich', tl[1].metrics[0].previous === null);
 
 if (process.env.CHANGELOG_FILE) {
   const real = parseChangelogMarkdown(readFileSync(process.env.CHANGELOG_FILE, 'utf8'), {

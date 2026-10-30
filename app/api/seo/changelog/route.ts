@@ -4,6 +4,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { clientIp, sha256 } from '@/lib/portal/access';
 import { hitRateLimit } from '@/lib/portal/rate-limit';
 import { parseChangelogMarkdown } from '@/lib/seo/changelog-markdown';
+import { normalizeCheckInput, type CheckInput } from '@/lib/seo/checks';
 import { todayIso } from '@/lib/seo/months';
 import { normalizeJsonEntries, syncChangelog } from '@/lib/seo/server/changelog-sync';
 
@@ -21,7 +22,9 @@ const MAX_BYTES = 1024 * 1024;
  * POST Authorization: Bearer kdp_...
  * Body: {
  *   markdown?: string     komplette CHANGELOG.md
- *   entries?: [{ date, area, change, benefit?, scope?, status? }]
+ *   entries?: [{ date, area, change, benefit?, scope?, status?, links? }]
+ *   checks?: [{ date, kind, title, summary, metrics[], findings[], links[] }]
+ *                         Pruefungen/Scans, Format siehe lib/seo/checks.ts
  *   publish?: boolean     neue Eintraege direkt fuer den Kunden sichtbar
  *   dryRun?: boolean      nur anzeigen, was passieren wuerde
  * }
@@ -45,7 +48,7 @@ async function handlePOST(req: Request) {
 
   const raw = await req.text();
   if (raw.length > MAX_BYTES) return NextResponse.json({ error: 'Anfrage zu groß.' }, { status: 413 });
-  let body: { markdown?: unknown; entries?: unknown; publish?: unknown; dryRun?: unknown };
+  let body: { markdown?: unknown; entries?: unknown; checks?: unknown; publish?: unknown; dryRun?: unknown };
   try {
     body = JSON.parse(raw);
   } catch {
@@ -60,7 +63,15 @@ async function handlePOST(req: Request) {
     entries.push(...parsed.entries);
     warnings.push(...parsed.warnings);
   }
-  if (entries.length === 0) {
+  const checks: CheckInput[] = [];
+  if (Array.isArray(body.checks)) {
+    body.checks.slice(0, 50).forEach((raw, i) => {
+      const c = normalizeCheckInput(raw);
+      if (c) checks.push(c);
+      else warnings.push(`Prüfung ${i + 1} übersprungen: date (YYYY-MM-DD), title und summary sind Pflicht.`);
+    });
+  }
+  if (entries.length === 0 && checks.length === 0) {
     return NextResponse.json({ error: 'Keine Einträge erkannt.', warnings }, { status: 422 });
   }
 
@@ -68,6 +79,7 @@ async function handlePOST(req: Request) {
     const summary = await syncChangelog({
       customerId: client.id,
       entries,
+      checks,
       publish: body.publish === true,
       fullFile,
       dryRun: body.dryRun === true,

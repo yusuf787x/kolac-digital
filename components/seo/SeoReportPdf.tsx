@@ -2,11 +2,11 @@
 // Bewusst KEIN 'use client': wird serverseitig von lib/seo/server/report.tsx
 // gerendert (Cron, Freigabe). Gleiche Konvention wie InvoicePDF.
 
-import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, View, Text, Image, Link, StyleSheet } from '@react-pdf/renderer';
 import { BUCKET_LABELS, pctChange, type KeywordRow } from '@/lib/seo/analysis';
 import { stripInlineMarkdown } from '@/lib/seo/changelog-markdown';
 import { formatIsoDateDE, formatMonthDE, formatMonthShortDE } from '@/lib/seo/months';
-import { ACTIVITY_STATUS_LABELS, type SeoMetrics } from '@/lib/seo/types';
+import { ACTIVITY_STATUS_LABELS, CHECK_KIND_LABELS, type SeoMetrics } from '@/lib/seo/types';
 import {
   fmtCls,
   fmtInt,
@@ -256,6 +256,11 @@ export default function SeoReportPdf({ data, logoSrc, draft }: SeoReportPdfProps
                 </Text>
                 {a.benefit ? <Text style={{ fontSize: 8.5, color: '#374151' }}>Ihr Nutzen: {stripInlineMarkdown(a.benefit)}</Text> : null}
                 {a.scope ? <Text style={{ fontSize: 8, color: C.gray }}>Umfang: {stripInlineMarkdown(a.scope)}</Text> : null}
+                {(a.links ?? []).map((l) => (
+                  <Link key={l.url} src={l.url} style={{ fontSize: 8, color: C.blue }}>
+                    {l.label}
+                  </Link>
+                ))}
               </View>
               <View style={{ width: 92, alignItems: 'flex-end', gap: 2 }}>
                 <Text style={s.pill}>{a.area}</Text>
@@ -263,6 +268,40 @@ export default function SeoReportPdf({ data, logoSrc, draft }: SeoReportPdfProps
               </View>
             </View>
           ))
+        )}
+
+        {data.checksThisMonth.length > 0 && (
+          <>
+            <Text style={s.h2}>Prüfungen im {monthLabel.split(' ')[0]}</Text>
+            {data.checksThisMonth.map((c) => (
+              <View key={c.id} style={s.activity} wrap={false}>
+                <Text style={{ width: 52, fontSize: 8, color: C.gray }}>{formatIsoDateDE(c.date)}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9 }}>
+                    {CHECK_KIND_LABELS[c.kind]}: {c.title}
+                  </Text>
+                  <Text style={{ fontSize: 8.5, color: '#374151' }}>{c.summary}</Text>
+                  {c.metrics.length > 0 && (
+                    <Text style={{ fontSize: 8, color: C.gray }}>
+                      {c.metrics
+                        .map(
+                          (m) =>
+                            `${m.label}: ${m.value.toLocaleString('de-DE')}${m.unit ? ` ${m.unit}` : ''}${
+                              m.previous !== null && m.previous !== m.value ? ` (vorher ${m.previous.toLocaleString('de-DE')})` : ''
+                            }`,
+                        )
+                        .join('  ·  ')}
+                    </Text>
+                  )}
+                  {c.links.map((l) => (
+                    <Link key={l.url} src={l.url} style={{ fontSize: 8, color: C.blue }}>
+                      {l.label}: {l.url}
+                    </Link>
+                  ))}
+                </View>
+              </View>
+            ))}
+          </>
         )}
 
         {data.planned.length > 0 && (

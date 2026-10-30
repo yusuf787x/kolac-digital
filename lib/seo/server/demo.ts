@@ -3,7 +3,8 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import { revokeAccess } from '@/lib/portal/login';
 import { entryKey } from '../changelog-markdown';
-import { DEMO_ACTIVITIES, DEMO_CONFIG, demoMonths, generateDemoPagespeed } from '../demo-data';
+import { DEMO_ACTIVITIES, DEMO_CONFIG, demoChecks, demoMonths, generateDemoPagespeed } from '../demo-data';
+import { checkKey } from '../checks';
 import { addMonths, lastCompleteMonth } from '../months';
 import type { SeoClient } from '../types';
 import { COL, getSeoClient, savePagespeed, upsertReport } from './store';
@@ -26,7 +27,11 @@ export async function startDemoClient(): Promise<{ customerId: string; months: s
   const reportMonths = [addMonths(last, -2), addMonths(last, -1), last];
   const existing = await db.collection(COL.clients).where('demo', '==', true).limit(1).get();
   if (!existing.empty) {
-    return { customerId: existing.docs[0].id, months: demoMonths(), reportMonths };
+    const id = existing.docs[0].id;
+    // Aeltere Testkunden bekommen die Beispiel-Pruefungen nachgeliefert
+    const hasChecks = await db.collection(COL.checks).where('customerId', '==', id).limit(1).get();
+    if (hasChecks.empty) await addDemoChecks(id, last);
+    return { customerId: id, months: demoMonths(), reportMonths };
   }
 
   const now = Timestamp.now();
@@ -85,8 +90,28 @@ export async function startDemoClient(): Promise<{ customerId: string; months: s
     });
   }
   await batch.commit();
+  await addDemoChecks(customerId, last);
 
   return { customerId, months: demoMonths(), reportMonths };
+}
+
+async function addDemoChecks(customerId: string, last: string): Promise<void> {
+  const db = adminDb();
+  const now = Timestamp.now();
+  const batch = db.batch();
+  for (const c of demoChecks(last)) {
+    batch.set(db.collection(COL.checks).doc(), {
+      customerId,
+      ...c,
+      month: c.date.slice(0, 7),
+      published: true,
+      source: 'demo',
+      externalKey: checkKey(c),
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+  await batch.commit();
 }
 
 /** Die beiden aelteren Demo-Berichte gelten als freigegeben (ohne Mail). */
@@ -115,7 +140,7 @@ export async function deleteSeoClientData(customerId: string, opts: { deleteCust
     await db.recursiveDelete(d.ref);
   }
 
-  for (const col of [COL.pagespeed, COL.activities, COL.reports, COL.loginEvents]) {
+  for (const col of [COL.pagespeed, COL.activities, COL.checks, COL.reports, COL.loginEvents]) {
     const snap = await db.collection(col).where('customerId', '==', customerId).get();
     for (let i = 0; i < snap.docs.length; i += 400) {
       const batch = db.batch();

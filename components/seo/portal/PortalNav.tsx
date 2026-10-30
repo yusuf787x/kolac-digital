@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 const ITEMS: Array<[string, string]> = [
   ['/portal', 'Bericht'],
   ['/portal/massnahmen', 'Maßnahmen'],
+  ['/portal/pruefungen', 'Prüfungen'],
   ['/portal/berichte', 'Alle Berichte'],
 ];
 

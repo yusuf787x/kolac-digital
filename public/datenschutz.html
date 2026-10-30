@@ -246,8 +246,8 @@
       <p>
         Kunden, die wir bei der Suchmaschinenoptimierung betreuen, erhalten einen Kundenbereich. Die Anmeldung
         erfolgt ohne Passwort über einen Link per E-Mail, nur für Adressen, die wir freigeschaltet haben. Dafür
-        verarbeiten wir Ihre E-Mail-Adresse und legen ein Anmeldekonto bei Google Firebase Authentication an
-        (siehe Abschnitt 9). Bei jeder Anmeldung speichern wir Zeitpunkt, eine gekürzte IP-Adresse (letzter Block
+        verarbeiten wir Ihre E-Mail-Adresse und speichern die Anmeldung als Sitzung in Google Firebase (siehe
+        Abschnitt 9), höchstens sieben Tage oder bis zur Abmeldung. Bei jeder Anmeldung speichern wir Zeitpunkt, eine gekürzte IP-Adresse (letzter Block
         entfernt) und die Browserkennung, um Missbrauch zu erkennen. Diese Einträge löschen wir nach 90 Tagen.
         Zum Schutz vor Missbrauch zählen wir Anmeldeversuche pro E-Mail-Adresse und IP-Adresse; die Zähler
         speichern wir nur als Prüfsumme und löschen sie nach kurzer Zeit.
@@ -279,8 +279,7 @@
 
       <h2>9. Datenspeicherung bei Google Firebase</h2>
       <p>
-        Kundendaten, Vertragsdokumente, SEO-Berichte, die Anmeldekonten des Kundenbereichs (Firebase
-        Authentication), Titelbilder des Ratgebers und die Summen der Reichweitenmessung speichern wir in Google
+        Kundendaten, Vertragsdokumente, SEO-Berichte, die Anmeldedaten des Kundenbereichs, Titelbilder des Ratgebers und die Summen der Reichweitenmessung speichern wir in Google
         Firebase (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland). Mit
         Google besteht ein Vertrag über die Auftragsverarbeitung. Eine Übermittlung an Google LLC in die USA
         ist möglich. Google LLC ist nach dem EU-US Data Privacy Framework zertifiziert. Rechtsgrundlage ist

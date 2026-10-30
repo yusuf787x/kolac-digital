@@ -259,3 +259,43 @@ export const DEMO_ACTIVITIES: DemoActivity[] = [
   { monthOffset: 0, day: 28, area: 'Inhalte', change: 'Seiten für weitere Motorcodes (EA189, N57)', status: 'planned' },
   { monthOffset: 0, day: 28, area: 'Bewertungen', change: 'Bewertungs-Karte für zufriedene Kunden einführen', status: 'planned' },
 ];
+
+/** Zwei Ladezeit-Pruefungen (vorher/nachher), damit der Vergleich sichtbar wird. */
+export function demoChecks(last: SeoMonth) {
+  const before = addMonths(last, -3);
+  const url = 'https://muster-motoren.de/';
+  const report = { label: 'Bericht bei Google ansehen', url: `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(url)}` };
+  return [
+    {
+      date: `${before}-03`,
+      kind: 'ladezeit' as const,
+      title: 'Ladezeit der Startseite',
+      summary: 'Die Startseite braucht auf dem Handy über 5 Sekunden, bis das Wichtigste zu sehen ist. Viele Besucher springen vorher ab.',
+      metrics: [
+        { key: 'start_mobil_score', label: 'Bewertung Handy', value: 41, unit: 'von 100', better: 'higher' as const, explain: 'Bewertung von Google für die Ladezeit. Ab 90 ist sie grün.' },
+        { key: 'start_mobil_lcp', label: 'Hauptinhalt sichtbar nach', value: 5.2, unit: 's', better: 'lower' as const, explain: 'Gut sind unter 2,5 Sekunden.' },
+      ],
+      findings: [
+        { status: 'fail' as const, text: 'Die Bilder sind sehr groß und nicht komprimiert.' },
+        { status: 'warn' as const, text: 'Schriften werden von einem fremden Server geladen.' },
+      ],
+      links: [report],
+    },
+    {
+      date: `${last}-20`,
+      kind: 'ladezeit' as const,
+      title: 'Ladezeit der Startseite',
+      summary: 'Nach dem Komprimieren der Bilder lädt die Startseite auf dem Handy fast doppelt so schnell. Das Ziel grün ist in Reichweite.',
+      metrics: [
+        { key: 'start_mobil_score', label: 'Bewertung Handy', value: 74, unit: 'von 100', better: 'higher' as const, explain: 'Bewertung von Google für die Ladezeit. Ab 90 ist sie grün.' },
+        { key: 'start_mobil_lcp', label: 'Hauptinhalt sichtbar nach', value: 2.9, unit: 's', better: 'lower' as const, explain: 'Gut sind unter 2,5 Sekunden.' },
+      ],
+      findings: [
+        { status: 'ok' as const, text: 'Bilder sind komprimiert und im modernen WebP-Format.', url },
+        { status: 'ok' as const, text: 'Schriften liegen jetzt auf dem eigenen Server.' },
+        { status: 'warn' as const, text: 'Das Kontaktformular lädt ein Skript von Google, das die Seite etwas bremst.' },
+      ],
+      links: [report, { label: 'Startseite ansehen', url }],
+    },
+  ];
+}

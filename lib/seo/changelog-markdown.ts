@@ -1,5 +1,6 @@
 import { normalizeText } from './analysis';
-import type { SeoActivityStatus } from './types';
+import { extractLinks } from './links';
+import type { ActivityLink, SeoActivityStatus } from './types';
 
 /**
  * Parser fuer Aenderungsprotokolle im Format, das in den Kundenprojekten
@@ -7,9 +8,9 @@ import type { SeoActivityStatus } from './types';
  *
  *   ## 28.10.2026                      Datum (auch 2026-10-28)
  *   ### Inhalte                        Bereich
- *   | Status | Änderung | Nutzen |     Tabelle, dritte Spalte darf auch
- *   |---|---|---|                      "Wo", "Ergebnis", "Umfang" heissen
- *   | ✅ | Text | Text |
+ *   | Status | Änderung | Nutzen | Nachweis |   Spalten "Wo"/"Umfang" und
+ *   |---|---|---|---|                        "Nachweis"/"Link" sind optional
+ *   | ✅ | Text | Text | [Seite ansehen](https://...) |
  *
  *   ## Offene Punkte                   wird zu Status "planned"
  *   - [ ] **Bereich:** Text
@@ -30,6 +31,7 @@ export interface ParsedChangelogEntry {
   benefit?: string;
   scope?: string;
   status: SeoActivityStatus;
+  links?: ActivityLink[];
 }
 
 export interface ParseResult {
@@ -89,11 +91,12 @@ function splitRow(line: string): string[] {
 
 const isSeparator = (line: string) => /^\|?\s*:?-{2,}/.test(line.trim());
 
-type ColumnRole = 'status' | 'change' | 'benefit' | 'scope' | 'ignore';
+type ColumnRole = 'status' | 'change' | 'benefit' | 'scope' | 'links' | 'ignore';
 
 function roleOf(header: string, index: number): ColumnRole {
   const h = normalizeText(header);
   if (/status/.test(h)) return 'status';
+  if (/nachweis|link|ansehen|beleg|quelle|pruefen/.test(h)) return 'links';
   if (/aenderung|massnahme|pruefung|was|aufgabe|change/.test(h)) return 'change';
   if (/nutzen|ergebnis|wirkung|warum|vorteil|benefit/.test(h)) return 'benefit';
   if (/^wo$|umfang|ort|seiten|wo /.test(h)) return 'scope';
@@ -161,6 +164,7 @@ export function parseChangelogMarkdown(
         return idx >= 0 ? (cells[idx] ?? '').trim() : '';
       };
       const statusCell = pick('status');
+      const links = extractLinks(pick('links'));
       push({
         date,
         area,
@@ -168,6 +172,7 @@ export function parseChangelogMarkdown(
         benefit: pick('benefit') || undefined,
         scope: pick('scope') || undefined,
         status: statusFrom(statusCell),
+        ...(links.length ? { links } : {}),
       });
       continue;
     }

@@ -20,21 +20,21 @@
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | ist schon gesetzt (Admin SDK). Lokal in `.env.local` eintragen, sonst funktionieren Portal und SEO-Admin auf `localhost` nicht. |
 | `PORTAL_BASE_URL` | optional, z. B. `https://www.kolac-digital.de`. Sonst gilt `APP_BASE_URL` bzw. die Vercel-Produktionsadresse. Davon hängen die Links in den Mails ab. |
 
-### 3. Firebase-Konsole
+### 3. Firebase / Google Cloud
 
-1. **Authentication, Anmeldemethoden:** „E-Mail/Passwort“ öffnen und **„E-Mail-Link (Anmeldung ohne Passwort)“ aktivieren**.
-2. **Authentication, Einstellungen, Autorisierte Domains:** `kolac-digital.de` und `www.kolac-digital.de` eintragen. `localhost` ist schon drin.
-3. **Firestore, TTL-Richtlinien** (räumt automatisch auf):
+1. Für das Portal ist in Firebase Authentication **nichts** einzustellen. Login-Links und Sitzungen sind eigene, serverseitige Datensätze, Kunden bekommen kein Firebase-Konto.
+2. **Firestore, TTL-Richtlinien** (optional, räumt automatisch auf; Google Cloud Console, Firestore, Gültigkeitsdauer):
    - Sammlung `portalLoginLinks`, Feld `expiresAt`
+   - Sammlung `portalSessions`, Feld `expiresAt`
    - Sammlung `portalRateLimits`, Feld `expiresAt`
    - Sammlung `portalLoginEvents`, Feld `expiresAt` (90 Tage)
-4. Firestore- und Storage-Rules bleiben unverändert. Das Portal liest nur serverseitig über das Admin SDK.
+3. Firestore- und Storage-Rules bleiben unverändert. Das Portal liest nur serverseitig über das Admin SDK.
 
 ### 4. Testen mit dem Testkunden
 
 1. Dashboard, **SEO-Kunden**, „Testkunde anlegen“ (dauert etwa 30 Sekunden).
 2. Tab **Berichte:** Der neueste Monat ist ein Entwurf. „Vorschlag aus den Zahlen“, Text ergänzen, „PDF ansehen“, „Portal-Vorschau“.
-3. Tab **Portal-Zugang:** eine eigene zweite Adresse einladen (nicht `yusuf@kolac-digital.de`, damit sich Admin- und Kundenkonto nicht vermischen).
+3. Tab **Portal-Zugang:** eine eigene zweite Adresse einladen.
 4. Mail öffnen, „Jetzt anmelden“. Den Link auch einmal auf dem Handy öffnen: Dann fragt die Seite nach der E-Mail.
 5. Zurück im Admin, den Entwurf **freigeben und senden**. Die Mail an den Kunden kommt an, und der Monat ist im Portal sichtbar.
 6. Zugang entziehen und prüfen, dass das Portal sofort zum Login zurückschickt.
@@ -70,14 +70,18 @@ Lokal ohne `RESEND_API_KEY` stehen die Mails samt Login-Link in der Konsole von 
 4. Tab **Daten**, „Historie laden (16 Monate)“. So weit hält Google die Daten vor. Ab dann speichern wir selbst und dauerhaft.
 5. Tab **Daten**, „Jetzt aktualisieren“: Vormonat plus Ladezeit, legt den ersten Bericht als Entwurf an.
 
-### 3. Maßnahmen
+### 3. Maßnahmen und Prüfungen
 
 - Tab **Maßnahmen**, „Markdown importieren“. Für Motorenfachmann die `CHANGELOG.md` aus `Code/clients/Motorenfachmann` wählen.
   **Vor dem Import durchsehen:** Einträge mit Interna (Zugangsnamen, Passwörter, Hinweise auf den alten Dienstleister) abhaken oder nach dem Import umformulieren. Offene Punkte sind standardmäßig nicht sichtbar.
 - Für Claude Code: „Schlüssel erzeugen“. Danach im Kundenprojekt:
   - `.kolac-portal.json` anlegen (Inhalt steht im Admin)
   - `KOLAC_PORTAL_TOKEN=…` in `.env` eintragen; `.env` muss in `.gitignore` stehen
-  - Ab dann reicht in Claude Code „Changelog ins Portal“ (Skill `kolac-portal-changelog`). Claude zeigt erst einen Probelauf und sendet erst nach deinem OK.
+  - Einfacher: Im Kundenprojekt in Claude Code „Portal einrichten“ sagen. Der Skill `kolac-portal-changelog` legt `.kolac-portal.json`, den Ordner `portal-pruefungen/` und einen Abschnitt in der `CLAUDE.md` an. Er fragt dich nur nach dem Schlüssel.
+  - Ab dann überträgt Claude nach jeder abgeschlossenen Arbeit selbst:
+    - die Maßnahmen aus `CHANGELOG.md`, mit Spalte „Nachweis“ für Links zum Nachprüfen
+    - die Prüfungen (Scans, Kennzahlen) aus `portal-pruefungen/*.json`, laienverständlich, mit Vergleich zur letzten Prüfung gleicher Art
+  - Sicherheitsnetz: Neue Einträge, die nach Interna aussehen (Passwort, Zugang, SFTP, Schlüssel, IP), bleiben automatisch verborgen. Im Admin prüfen und dann freigeben oder löschen. Offene Punkte werden nie automatisch veröffentlicht.
 
 ### 4. Portal-Zugang
 

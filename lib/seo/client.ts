@@ -20,6 +20,7 @@ import type {
   PortalAccess,
   PortalLoginEvent,
   SeoActivity,
+  SeoCheck,
   SeoClient,
   SeoMonthlyDoc,
   SeoReport,
@@ -79,6 +80,7 @@ export async function listActivities(customerId: string): Promise<SeoActivity[]>
 export type ActivityInput = Pick<SeoActivity, 'date' | 'area' | 'change' | 'status' | 'published'> & {
   benefit?: string;
   scope?: string;
+  links?: SeoActivity['links'];
 };
 
 const clean = (a: ActivityInput) => ({
@@ -90,6 +92,7 @@ const clean = (a: ActivityInput) => ({
   scope: a.scope?.trim() || null,
   status: a.status,
   published: a.published,
+  links: a.links ?? [],
 });
 
 export async function createActivity(customerId: string, a: ActivityInput): Promise<void> {
@@ -139,6 +142,7 @@ export async function importActivities(
           status: e.status,
           benefit: e.benefit ?? null,
           scope: e.scope ?? null,
+          links: e.links ?? [],
           published: e.published,
           updatedAt: serverTimestamp(),
         });
@@ -158,6 +162,20 @@ export async function importActivities(
     await batch.commit();
   }
   return { created, updated };
+}
+
+// --- Pruefungen ---
+
+export async function listChecks(customerId: string): Promise<SeoCheck[]> {
+  return (await byCustomer<SeoCheck>('seoChecks', customerId)).sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export async function setCheckPublished(id: string, published: boolean): Promise<void> {
+  await updateDoc(doc(db, 'seoChecks', id), { published, updatedAt: serverTimestamp() });
+}
+
+export async function deleteCheck(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'seoChecks', id));
 }
 
 // --- Berichte, Monate ---

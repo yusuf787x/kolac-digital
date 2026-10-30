@@ -8,6 +8,11 @@
  *   .kolac-portal.json   { "portalUrl": "https://www.kolac-digital.de", "customer": "Name" }
  *   .env                 KOLAC_PORTAL_TOKEN=kdp_...   (aus dem Admin, Tab Massnahmen)
  *
+ * Optional:
+ *   portal-pruefungen/*.json   Pruefungen (Scans, Kennzahlen), je Datei ein
+ *                              Objekt oder eine Liste. Format siehe Skill
+ *                              kolac-portal-changelog bzw. lib/seo/checks.ts
+ *
  * Aufruf im Kundenprojekt:
  *   node ~/Documents/Code/internal/kolac-digital-web/scripts/portal-changelog.mjs --dry-run
  *   node ~/Documents/Code/internal/kolac-digital-web/scripts/portal-changelog.mjs
@@ -19,8 +24,8 @@
  *
  * Ohne Abhaengigkeiten, Node 18+.
  */
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
@@ -48,13 +53,24 @@ if (!token && existsSync('.env')) {
   token = line?.split('=').slice(1).join('=').trim().replace(/^["']|["']$/g, '');
 }
 if (!token) fail('KOLAC_PORTAL_TOKEN fehlt (Umgebungsvariable oder .env im Projekt).');
-if (!existsSync(file)) fail(`${file} nicht gefunden.`);
+const markdown = existsSync(file) ? readFileSync(file, 'utf8') : undefined;
 
-const markdown = readFileSync(file, 'utf8');
+const checks = [];
+if (existsSync('portal-pruefungen')) {
+  for (const name of readdirSync('portal-pruefungen').filter((n) => n.endsWith('.json')).sort()) {
+    try {
+      const data = JSON.parse(readFileSync(join('portal-pruefungen', name), 'utf8'));
+      checks.push(...(Array.isArray(data) ? data : [data]));
+    } catch (err) {
+      fail(`portal-pruefungen/${name} ist kein gültiges JSON: ${err.message}`);
+    }
+  }
+}
+if (!markdown && !checks.length) fail(`Weder ${file} noch portal-pruefungen/*.json gefunden.`);
 const res = await fetch(`${portalUrl}/api/seo/changelog`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-  body: JSON.stringify({ markdown, publish, dryRun }),
+  body: JSON.stringify({ ...(markdown ? { markdown } : {}), checks, publish, dryRun }),
 });
 const body = await res.json().catch(() => ({}));
 if (!res.ok) fail(`${res.status} ${body.error ?? res.statusText}`);
@@ -73,5 +89,12 @@ if (body.updated.length) {
 if (body.removed.length) {
   console.log('\nEntfernt:');
   body.removed.forEach((e) => console.log(line(e)));
+}
+const ck = body.checks ?? { created: [], updated: 0, unchanged: 0 };
+console.log(`\nPrüfungen: neu ${ck.created.length}, aktualisiert ${ck.updated}, unverändert ${ck.unchanged}`);
+for (const c of ck.created) console.log(`  ${c.date} ${c.title}${c.published ? '' : '  [nicht sichtbar]'}`);
+if (body.held?.length) {
+  console.log('\nZurückgehalten (sieht nach Interna aus, im Admin prüfen und ggf. freigeben):');
+  for (const h of body.held) console.log(`  ${h}`);
 }
 for (const w of body.warnings ?? []) console.log(`\nHinweis: ${w}`);

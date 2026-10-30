@@ -171,17 +171,18 @@ Monatliche SEO-Berichte für Betreuungskunden aus der **Google Search Console AP
 - `seoClients/{customerId}`: Konfiguration (Property, Marken-Begriffe, Themen-Gruppen als Regex, PageSpeed-URLs, Changelog-Schlüssel-Hash, `demo`)
 - `seoMonthly/{customerId}_{YYYY-MM}`: Summen ohne Dimension; Zeilen in `rows/{queries-n|pages-n}` als JSON-Tupel, 4.000 pro Dokument
 - `seoPagespeed/…`, `seoActivities/{auto}` (Maßnahmen mit `externalKey` gegen Dubletten), `seoReports/{customerId}_{YYYY-MM}` (Status draft/released, Einschätzung, PDF-Pfad, Empfänger)
-- `portalAccess/{email}`, `portalLoginEvents`, `portalLoginLinks/{sha256(code)}`, `portalRateLimits/{sha256(key)}`
+- `seoChecks/{auto}`: Prüfungen (Scans) mit Kurzfassung, Kennzahlen (`key`, `better`), Befunden mit Ampel und Links
+- `portalAccess/{email}`, `portalSessions/{sha256(token)}`, `portalLoginEvents`, `portalLoginLinks/{sha256(code)}`, `portalRateLimits/{sha256(key)}`
 
 **Auswertung** (`lib/seo/analysis.ts`, rein, Test: `npx tsx lib/__tests__/seo-analysis.test.ts`): Marken-Erkennung mit Umlaut- und Leerzeichen-Angleichung, Regex-Gruppen, Positions-Buckets, Gewinner/Verlierer, Chancen über die kommentierte `CTR_CURVE`. Regeln werden **beim Lesen** angewendet, Konfigurationsänderungen gelten rückwirkend. `lib/seo/view.ts` `buildPortalData` baut daraus ein serialisierbares `PortalData`, das Portal, Admin-Vorschau und PDF gemeinsam nutzen.
 
-**Login per Magic Link** (`lib/portal/`): nur freigeschaltete Adressen, keine Selbstregistrierung.
-- `generateSignInWithEmailLink` (Admin SDK) erzeugt den Code, die gebrandete Mail geht über Resend und verlinkt auf die eigene Domain (`/portal/anmelden?code=`).
-- Eigener Datensatz mit 1 Stunde Gültigkeit, Einmal-Nutzung und Geräte-Nonce-Cookie. Auf fremdem Gerät wird die E-Mail abgefragt (5 Versuche).
-- Eingelöst wird per POST-Knopf, damit Mail-Scanner den Link nicht verbrauchen. Danach `accounts:signInWithEmailLink` (REST) und `createSessionCookie`, 7 Tage, httpOnly.
-- Antwort auf der Login-Seite ist immer gleich; die Arbeit läuft per `after()`, damit auch die Antwortzeit nichts verrät. Rate-Limit 10 pro IP und Stunde, 3 pro Adresse in 15 Minuten.
-- Jede Portal-Anfrage prüft `verifySessionCookie(…, checkRevoked)` plus aktiven `portalAccess`; die `customerId` kommt nur aus `portalAccess`. Entziehen = `revokeRefreshTokens`, sofort wirksam.
-- Im Browser des Kunden läuft kein Firebase-JS.
+**Login per Magic Link** (`lib/portal/`), nur freigeschaltete Adressen, ohne Firebase Authentication (Kunden haben kein Firebase-Konto):
+- Zufälliger Code (256 Bit) per gebrandeter Resend-Mail auf die eigene Domain (`/portal/anmelden?code=`). In Firestore liegt nur der SHA-256, mit 1 Stunde Gültigkeit, Einmal-Nutzung und Geräte-Nonce-Cookie.
+- Auf fremdem Gerät wird die E-Mail abgefragt (5 Versuche). Eingelöst wird per POST-Knopf, damit Mail-Scanner den Link nicht verbrauchen.
+- Danach eine eigene Sitzung: zufälliges Token im httpOnly-Cookie, `portalSessions/{sha256}`, 7 Tage.
+- Login-Seite antwortet immer gleich, die Arbeit läuft per `after()`. Rate-Limit 10 pro IP und Stunde, 3 pro Adresse in 15 Minuten.
+- Jede Portal-Anfrage prüft Sitzung plus aktiven `portalAccess` mit gleicher `customerId`. Entziehen löscht alle Sitzungen der Adresse, sofort wirksam.
+- Ursprünglich über `generateSignInWithEmailLink` und Firebase-Session-Cookies gebaut. Das scheiterte auf Vercel (jose als ES-Modul, danach „internal error“ von Identity Toolkit). Die `overrides` für `jose` 5 in `package.json` stammen daher und schaden nicht.
 
 **Portal** (Server-Komponenten): `/portal` Monatsbericht (Einschätzung, Kennzahlen mit Vormonat/Vorjahr, 16-Monats-Verlauf, Maßnahmen des Monats, Keyword-Tabelle sortier- und filterbar nach Marke/Thema, Gewinner/Verlierer, Chancen, Positions-Verteilung, Themen, Seiten, Ladezeit mit Ampel, Geplantes), `/portal/massnahmen` (kompletter Verlauf), `/portal/berichte` (Archiv, PDF-Download über `/api/portal/report/[month]`). **Der Kunde sieht Zahlen nur bis zum neuesten freigegebenen Monat**; ältere Backfill-Monate ohne eigenen Bericht sind mit sichtbar. Veröffentlichte Maßnahmen sind sofort sichtbar. Diagramme ohne Bibliothek (`components/seo/charts/`), Farben in `palette.ts` (ordinale Blau-Rampe, validiert).
 
@@ -196,9 +197,13 @@ Monatliche SEO-Berichte für Betreuungskunden aus der **Google Search Console AP
 
 **Cron** `/api/seo/cron` (vercel.json `0 6 4 * *`, `CRON_SECRET` Pflicht): Vormonat abrufen, PageSpeed messen, Entwurf mit Einschätzungs-Vorschlag erzeugen. Freigegebene Berichte bleiben unangetastet. Danach Sammel-Mail an yusuf@. Kunden bekommen erst nach der Freigabe eine Mail.
 
-**Changelog aus Claude Code:** `POST /api/seo/changelog` mit Kunden-Schlüssel (`kdp_…`, nur SHA-256 gespeichert, im Admin erzeugt). Body `{ markdown | entries, publish, dryRun }`.
+**Prüfungen** (`lib/seo/checks.ts`, Portal `/portal/pruefungen`, Abschnitt „Aktueller Stand Ihrer Website“ im Bericht, im PDF unter dem Monat): Scans aus Claude Code mit Laien-Kurzfassung, Kennzahlen im Vergleich zur letzten Prüfung gleicher Art (über `metric.key`), Befunden (ok/warn/fail) und Links. Sofort sichtbar, unabhängig von der Berichtsfreigabe. Maßnahmen haben zusätzlich `links[]` (Spalte „Nachweis“ im CHANGELOG).
+
+**Interna-Filter** (`looksSensitive`): neue Einträge aus Claude Code mit Passwort, Zugang, SFTP, Schlüssel oder IP werden nicht automatisch veröffentlicht, sondern als „Zurückgehalten“ gemeldet.
+
+**Changelog aus Claude Code:** `POST /api/seo/changelog` mit Kunden-Schlüssel (`kdp_…`, nur SHA-256 gespeichert, im Admin erzeugt). Body `{ markdown | entries, checks, publish, dryRun }`.
 - Parser `lib/seo/changelog-markdown.ts` (Format der Kundenprojekte: `## Datum`, `### Bereich`, Tabelle Status/Änderung/Nutzen, „Offene Punkte“).
 - Idempotent: Ein Statuswechsel aktualisiert den Eintrag. Offene Punkte werden nie automatisch veröffentlicht und verschwinden, wenn sie aus der Datei entfernt werden.
-- Skript `scripts/portal-changelog.mjs`, User-Skill `kolac-portal-changelog` (Probelauf, dann nach OK senden).
+- Skript `scripts/portal-changelog.mjs` (sendet `CHANGELOG.md` plus `portal-pruefungen/*.json`), User-Skill `kolac-portal-changelog` mit „Portal einrichten“ (legt Konfiguration und `CLAUDE.md`-Abschnitt im Kundenprojekt an, danach überträgt Claude automatisch).
 
 **Später, optional:** `lib/seo/server/rank-providers.ts` definiert `RankProvider` für einen Pay-per-Use-Anbieter (z. B. DataForSEO) für Ziel-Keywords ohne Impressionen. Standardmäßig aus (`SEO_RANK_PROVIDER` leer bzw. `none`), noch nirgends aufgerufen.
