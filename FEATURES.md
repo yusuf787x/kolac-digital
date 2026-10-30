@@ -99,7 +99,7 @@ Drei Modi im „Neuer Vertrag"-Flow:
 ## Datenbank + Auth
 
 - Firestore-Rules: E-Mail-Whitelist auf `yusuf@kolac-digital.de` mit `email_verified=true`.
-- **Admin-Routen** (`lib/server-auth.ts` `authenticate`) verlangen ebenfalls die verifizierte Owner-E-Mail (`lib/owner.ts`), nicht nur die UID. Seit es Portal-Konten gibt, sind auch fremde Firebase-ID-Tokens gültig; die kommen hier nicht durch. Das Dashboard-Layout meldet fremde Konten ab.
+- **Admin-Routen** (`lib/server-auth.ts` `authenticate`) verlangen zusätzlich zur UID die Owner-E-Mail (`lib/owner.ts`). Bewusst ohne `emailVerified`, weil das Passwort-Konto des Inhabers unbestätigt ist und Firebase jede Adresse nur einmal vergibt. Seit es Portal-Konten gibt, sind auch fremde Firebase-ID-Tokens gültig; die kommen hier nicht durch. Das Dashboard-Layout meldet fremde Konten ab.
 - `AuthProvider` (Firebase-Auth im Browser) sitzt nur noch in `app/dashboard/layout.tsx`. Marketing-Seiten und Portal laden kein Auth-SDK.
 - Storage-Rules identisch.
 - Admin SDK via `FIREBASE_SERVICE_ACCOUNT_JSON` env var (`lib/firebase-admin.ts`).

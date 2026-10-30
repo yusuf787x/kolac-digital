@@ -84,8 +84,10 @@ export async function authenticate(req: Request): Promise<AuthResult> {
       message: 'Nicht authentifiziert. Bitte erneut anmelden.',
     };
   }
-  const isOwnerEmail =
-    (user.email ?? '').toLowerCase() === OWNER_EMAIL && user.emailVerified;
+  // Keine Pflicht auf emailVerified: Firebase vergibt jede Adresse nur
+  // einmal, und das Inhaber-Konto ist ein Passwort-Konto, dessen Mail nie
+  // bestaetigt wurde. Ein Portal-Konto hat immer eine andere Adresse.
+  const isOwnerEmail = (user.email ?? '').toLowerCase() === OWNER_EMAIL;
   if (!isOwnerEmail || (ALLOWED_UID && user.uid !== ALLOWED_UID)) {
     return {
       ok: false,

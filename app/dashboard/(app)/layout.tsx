@@ -19,14 +19,14 @@ export default function DashboardLayout({
   // Portal-Kunden haben ebenfalls Firebase-Konten. Die Daten schuetzen
   // Rules und authenticate(), hier wird nur verhindert, dass ein
   // fremdes Konto ueberhaupt die Admin-Oberflaeche zu sehen bekommt.
-  const isOwner =
-    !!user && user.email?.toLowerCase() === OWNER_EMAIL && user.emailVerified;
+  const isOwner = !!user && user.email?.toLowerCase() === OWNER_EMAIL;
 
   useEffect(() => {
     if (loading) return;
     if (!user) {
       router.replace('/dashboard/login');
     } else if (!isOwner) {
+      sessionStorage.setItem('kd_login_hinweis', 'Dieses Konto hat keinen Zugriff auf das Dashboard.');
       signOut().finally(() => router.replace('/dashboard/login'));
     }
   }, [user, loading, isOwner, signOut, router]);

@@ -21,6 +21,15 @@ export default function LoginPage() {
     }
   }, [user, loading, router]);
 
+  // Hinweis, wenn das Dashboard-Layout ein fremdes Konto abgemeldet hat
+  useEffect(() => {
+    const hinweis = sessionStorage.getItem('kd_login_hinweis');
+    if (hinweis) {
+      sessionStorage.removeItem('kd_login_hinweis');
+      setError(hinweis);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);

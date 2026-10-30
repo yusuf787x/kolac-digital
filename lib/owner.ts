@@ -4,5 +4,6 @@
  * Firebase-Konten (Magic-Link-Logins). Deren ID-Tokens sind gueltig,
  * duerfen aber nie Admin-Rechte bekommen. Darum pruefen Server-Routen
  * und Dashboard-Layout zusaetzlich zur UID immer diese Adresse.
+ * (Nicht emailVerified: das Passwort-Konto des Inhabers ist unbestaetigt.)
  */
 export const OWNER_EMAIL = 'yusuf@kolac-digital.de';
