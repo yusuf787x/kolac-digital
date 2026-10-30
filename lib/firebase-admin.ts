@@ -74,6 +74,15 @@ function init(): App {
     return appInstance;
   }
 
+  // Auf Vercel gibt es keine Application Default Credentials. Ohne diesen
+  // Abbruch sucht das SDK trotzdem danach und der Prozess stuerzt spaeter
+  // asynchron ab (leeres 500 ohne Meldung). So kommt ein klarer Fehler.
+  if (process.env.VERCEL) {
+    throw new Error(
+      'Firebase-Admin-Zugangsdaten fehlen auf Vercel. Bitte FIREBASE_SERVICE_ACCOUNT_JSON setzen (Firebase-Konsole, Projekteinstellungen, Dienstkonten, Neuen privaten Schlüssel generieren) und neu deployen.',
+    );
+  }
+
   // Fallback — Application Default Credentials (für lokale Entwicklung
   // mit gcloud auth application-default login).
   appInstance = initializeApp({
@@ -95,4 +104,13 @@ export function adminStorage(): Storage {
 /** Admin-Auth, genutzt vom Kundenportal (Magic Link, Session-Cookies). */
 export function adminAuth(): Auth {
   return getAuth(init());
+}
+
+/** True, wenn explizite Admin-Zugangsdaten in der Umgebung stehen. */
+export function hasAdminCredentials(): boolean {
+  return !!(
+    process.env.FIREBASE_SERVICE_ACCOUNT_JSON ||
+    (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) ||
+    process.env.GOOGLE_APPLICATION_CREDENTIALS
+  );
 }

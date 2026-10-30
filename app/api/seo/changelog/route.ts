@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { safe } from '@/lib/seo/server/admin-route';
 import { adminDb } from '@/lib/firebase-admin';
 import { clientIp, sha256 } from '@/lib/portal/access';
 import { hitRateLimit } from '@/lib/portal/rate-limit';
@@ -25,7 +26,7 @@ const MAX_BYTES = 1024 * 1024;
  *   dryRun?: boolean      nur anzeigen, was passieren wuerde
  * }
  */
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   if (!(await hitRateLimit(`changelog-ip:${clientIp(req)}`, 60, 3600))) {
     return NextResponse.json({ error: 'Zu viele Anfragen.' }, { status: 429 });
   }
@@ -83,3 +84,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
 }
+
+export const POST = safe(handlePOST);

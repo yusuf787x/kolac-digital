@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import Modal from '@/components/ui/Modal';
-import { postJson } from '@/components/seo/admin/api';
+import { getJson, postJson } from '@/components/seo/admin/api';
 import { db } from '@/lib/firebase';
 import { listCustomers } from '@/lib/firestore';
 import { createSeoClient, listSeoClients } from '@/lib/seo/client';
@@ -25,6 +25,24 @@ export default function SeoOverviewPage() {
   const [confirmDemoDelete, setConfirmDemoDelete] = useState(false);
   const [demoStep, setDemoStep] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [setup, setSetup] = useState<{
+    firebaseAdmin: boolean;
+    resend: boolean;
+    serviceAccount: string | null;
+    pagespeedKey: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    getJson<NonNullable<typeof setup>>('/api/seo/fetch').then(setSetup).catch(() => null);
+  }, []);
+  const missing = setup
+    ? [
+        !setup.firebaseAdmin && 'FIREBASE_SERVICE_ACCOUNT_JSON (ohne das läuft nichts: Portal, Testkunde, Berichte)',
+        !setup.resend && 'RESEND_API_KEY (Mails)',
+        !setup.serviceAccount && 'GSC_SERVICE_ACCOUNT_JSON (Search Console, für echte Kunden)',
+        !setup.pagespeedKey && 'PAGESPEED_API_KEY (Ladezeit)',
+      ].filter(Boolean)
+    : [];
 
   const load = useCallback(async () => {
     try {
@@ -107,6 +125,18 @@ export default function SeoOverviewPage() {
           SEO-Kunde hinzufügen
         </button>
       </div>
+
+      {missing.length > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <div className="font-semibold">Auf dem Server fehlen Umgebungsvariablen:</div>
+          <ul className="mt-1 list-disc pl-5">
+            {missing.map((m) => (
+              <li key={m as string}>{m}</li>
+            ))}
+          </ul>
+          <div className="mt-1">In Vercel unter Settings, Environment Variables eintragen und neu deployen.</div>
+        </div>
+      )}
 
       {error && <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 

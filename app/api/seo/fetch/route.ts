@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { badRequest, errorResponse, loadClientOr404, parseMonth, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 import { fetchMonth, measureMonth } from '@/lib/seo/server/fetch';
 import { gscServiceAccountEmail } from '@/lib/seo/server/gsc';
+import { hasAdminCredentials } from '@/lib/firebase-admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,6 +36,8 @@ async function handleGET(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
   return NextResponse.json({
+    firebaseAdmin: hasAdminCredentials(),
+    resend: !!process.env.RESEND_API_KEY,
     serviceAccount: gscServiceAccountEmail(),
     pagespeedKey: !!process.env.PAGESPEED_API_KEY,
   });
