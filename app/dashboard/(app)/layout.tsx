@@ -7,20 +7,29 @@ import Sidebar from '@/components/dashboard/Sidebar';
 import GlobalSearch from '@/components/dashboard/GlobalSearch';
 import PrivacyToggle from '@/components/dashboard/PrivacyToggle';
 import { PrivacyProvider } from '@/lib/privacy-context';
+import { OWNER_EMAIL } from '@/lib/owner';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
+  // Portal-Kunden haben ebenfalls Firebase-Konten. Die Daten schuetzen
+  // Rules und authenticate(), hier wird nur verhindert, dass ein
+  // fremdes Konto ueberhaupt die Admin-Oberflaeche zu sehen bekommt.
+  const isOwner =
+    !!user && user.email?.toLowerCase() === OWNER_EMAIL && user.emailVerified;
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) return;
+    if (!user) {
       router.replace('/dashboard/login');
+    } else if (!isOwner) {
+      signOut().finally(() => router.replace('/dashboard/login'));
     }
-  }, [user, loading, router]);
+  }, [user, loading, isOwner, signOut, router]);
 
   if (loading) {
     return (
@@ -30,7 +39,7 @@ export default function DashboardLayout({
     );
   }
 
-  if (!user) {
+  if (!user || !isOwner) {
     return null;
   }
 

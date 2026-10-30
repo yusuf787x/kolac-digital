@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { OWNER_EMAIL } from './owner';
 
 export interface AuthedUser {
   uid: string;
   email?: string;
+  emailVerified?: boolean;
 }
 
 export type AuthResult =
@@ -11,6 +13,8 @@ export type AuthResult =
 
 const ALLOWED_UID = process.env.ALLOWED_USER_UID ?? '';
 const FIREBASE_API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? '';
+
+export { OWNER_EMAIL };
 
 /**
  * Verify a Firebase ID token via the Auth REST API.
@@ -46,12 +50,16 @@ async function verifyAuthToken(req: Request): Promise<AuthedUser | null> {
     if (!res.ok) return null;
 
     const body = (await res.json()) as {
-      users?: { localId: string; email?: string }[];
+      users?: { localId: string; email?: string; emailVerified?: boolean }[];
     };
     const user = body.users?.[0];
     if (!user?.localId) return null;
 
-    return { uid: user.localId, email: user.email };
+    return {
+      uid: user.localId,
+      email: user.email,
+      emailVerified: user.emailVerified === true,
+    };
   } catch (err) {
     console.error('Firebase token verification error:', err);
     return null;
@@ -76,7 +84,9 @@ export async function authenticate(req: Request): Promise<AuthResult> {
       message: 'Nicht authentifiziert. Bitte erneut anmelden.',
     };
   }
-  if (ALLOWED_UID && user.uid !== ALLOWED_UID) {
+  const isOwnerEmail =
+    (user.email ?? '').toLowerCase() === OWNER_EMAIL && user.emailVerified;
+  if (!isOwnerEmail || (ALLOWED_UID && user.uid !== ALLOWED_UID)) {
     return {
       ok: false,
       status: 403,
