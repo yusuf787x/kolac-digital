@@ -28,6 +28,7 @@ import {
 } from '@/lib/utils';
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import SensitiveValue from '@/components/ui/SensitiveValue';
+import DunningPanel from '@/components/invoice/DunningPanel';
 import { authedFetch } from '@/lib/api-client';
 import { parseRichText, type MdInlineSegment } from '@/lib/simple-markdown';
 
@@ -496,49 +497,6 @@ export default function RechnungDetailPage() {
     }
   };
 
-  const handleSendReminder = async () => {
-    if (!customer || !customer.email) {
-      alert('Kein E-Mail-Empfänger im Kundenprofil hinterlegt.');
-      return;
-    }
-    if (!confirm(`Zahlungserinnerung an ${customer.email} senden?`)) return;
-    setSendingEmail(true);
-    try {
-      const dueDateString = formatDateDE(invoice.dueDate.toDate());
-      const days = daysOverdue(invoice.dueDate.toDate());
-      const remaining =
-        invoice.status === 'partially_paid'
-          ? invoice.totalAmount - invoice.paidAmount
-          : invoice.totalAmount;
-
-      const res = await authedFetch('/api/email/reminder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: customer.email,
-          customerName: [customer.firstName, customer.lastName]
-            .filter(Boolean)
-            .join(' ') || customer.company,
-          invoiceNumber: invoice.invoiceNumber,
-          dueDate: dueDateString,
-          daysOverdue: days,
-          remainingAmount: remaining,
-        }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error || 'Versand fehlgeschlagen');
-      }
-      alert('Erinnerung versendet.');
-    } catch (err) {
-      console.error(err);
-      alert(`Versand fehlgeschlagen: ${(err as Error).message}`);
-    } finally {
-      setSendingEmail(false);
-    }
-  };
-
   // Draft = noch keine Rechnungsnummer vergeben. Bewusst NICHT ueber
   // status='draft' pruefen — Status wandert nach Finalisieren auf
   // 'sent', aber solange keine Nummer da ist, ist es ein Entwurf.
@@ -692,18 +650,6 @@ export default function RechnungDetailPage() {
                   ? 'Weiteren Zahlungseingang erfassen…'
                   : 'Als bezahlt markieren…'}
               </button>
-              <button
-                onClick={handleSendReminder}
-                disabled={sendingEmail || !customer?.email}
-                className="btn-secondary"
-                title={
-                  !customer?.email
-                    ? 'Keine E-Mail im Kundenprofil hinterlegt'
-                    : ''
-                }
-              >
-                {sendingEmail ? 'Sende…' : 'Erinnerung senden'}
-              </button>
             </>
           )}
           {invoice.status === 'paid' && (
@@ -738,6 +684,8 @@ export default function RechnungDetailPage() {
           </p>
         )}
       </section>
+
+      <DunningPanel invoice={invoice} customer={customer} onChanged={refresh} />
 
       {/* Zahlungseingaenge */}
       {paymentsList.length > 0 && (

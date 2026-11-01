@@ -11,6 +11,10 @@
     {
       "path": "/api/seo/cron",
       "schedule": "0 6 4 * *"
+    },
+    {
+      "path": "/api/invoices/dunning/cron",
+      "schedule": "0 7 * * *"
     }
   ]
 }

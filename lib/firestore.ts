@@ -16,6 +16,7 @@ import {
   Timestamp,
   runTransaction,
   writeBatch,
+  arrayUnion,
   type DocumentData,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
@@ -371,6 +372,69 @@ export async function removeInvoicePayment(
       updatedAt: serverTimestamp(),
     });
   });
+}
+
+// ===================================================================
+// ZAHLUNGSERINNERUNGEN (Mahnwesen, Logik in lib/dunning.ts)
+// ===================================================================
+
+/**
+ * Erinnerungen fuer eine Rechnung anhalten. `until` = letzter Tag der
+ * Pause, danach laeuft es von allein weiter. null = bis „Fortsetzen“.
+ */
+export async function pauseDunning(
+  invoiceId: string,
+  reason: string,
+  until: Date | null,
+): Promise<void> {
+  await updateDoc(doc(db, 'invoices', invoiceId), {
+    'dunning.paused': true,
+    'dunning.pausedReason': reason,
+    'dunning.pausedUntil': until ? Timestamp.fromDate(until) : null,
+    'dunning.events': arrayUnion({
+      at: Timestamp.now(),
+      type: 'paused',
+      note: until
+        ? `${reason} (bis ${until.toLocaleDateString('de-DE')})`
+        : reason,
+    }),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function resumeDunning(invoiceId: string): Promise<void> {
+  await updateDoc(doc(db, 'invoices', invoiceId), {
+    'dunning.paused': false,
+    'dunning.pausedUntil': null,
+    'dunning.resumedAt': Timestamp.now(),
+    'dunning.events': arrayUnion({ at: Timestamp.now(), type: 'resumed' }),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/** Vor Start der Automatik gestellte Rechnung in die Automatik nehmen. */
+export async function startDunning(invoiceId: string): Promise<void> {
+  await updateDoc(doc(db, 'invoices', invoiceId), {
+    'dunning.startedAt': Timestamp.now(),
+    'dunning.events': arrayUnion({ at: Timestamp.now(), type: 'started' }),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Hauptschalter. Beim ersten Einschalten wird der Starttag gesetzt:
+ * nur Rechnungen, die ab heute gestellt werden, laufen automatisch mit.
+ */
+export async function setDunningEnabled(enabled: boolean): Promise<Settings> {
+  const current = await getSettings();
+  const patch: Partial<Settings> = { dunningEnabled: enabled };
+  if (enabled && !current.dunningStartDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    patch.dunningStartDate = Timestamp.fromDate(today);
+  }
+  await updateSettings(patch);
+  return { ...current, ...patch };
 }
 
 // ===================================================================

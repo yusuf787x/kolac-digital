@@ -120,8 +120,59 @@ export interface Invoice {
   gocardlessPaymentId?: string;
   /** Optional: GoCardless-Charge-Datum (Lastschrift gezogen am). */
   gocardlessChargedAt?: Timestamp;
+  /** Zahlungserinnerungen (Mahnwesen), Logik in `lib/dunning.ts`. */
+  dunning?: InvoiceDunning;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+}
+
+/** 1 = Zahlungserinnerung, 2 = Mahnung, 3 = Letzte Mahnung. */
+export type DunningStage = 1 | 2 | 3;
+
+export type DunningEventType =
+  | 'sent'
+  | 'failed'
+  | 'paused'
+  | 'resumed'
+  | 'started'
+  | 'deadline_expired';
+
+export interface DunningEvent {
+  at: Timestamp;
+  type: DunningEventType;
+  stage?: DunningStage;
+  /** 'auto' = Cron, 'manual' = Knopf im Dashboard. */
+  trigger?: 'auto' | 'manual';
+  to?: string;
+  subject?: string;
+  /** Offener Betrag (brutto) zum Zeitpunkt der Mail. */
+  openAmount?: number;
+  /** In der Mail genannte Zahlungsfrist. */
+  deadline?: Timestamp;
+  resendId?: string;
+  /** Pausier-Grund oder Fehlermeldung. */
+  note?: string;
+}
+
+export interface InvoiceDunning {
+  /** Höchste bisher verschickte Stufe. */
+  lastStage?: DunningStage;
+  lastSentAt?: Timestamp;
+  /** Frist aus der letzten Mahnung (Stufe 3). */
+  finalDeadline?: Timestamp;
+  paused?: boolean;
+  pausedReason?: string;
+  /** Pause endet automatisch nach diesem Tag. null = unbefristet. */
+  pausedUntil?: Timestamp | null;
+  /** Zuletzt fortgesetzt: frühestens dann geht die nächste Stufe raus. */
+  resumedAt?: Timestamp;
+  /** Vor dem Start gestellte Rechnung von Hand in die Automatik genommen. Stufe 1 ab diesem Tag. */
+  startedAt?: Timestamp;
+  /** Versand läuft gerade (Schutz gegen Doppelversand). */
+  sendingSince?: Timestamp | null;
+  /** Inhaber wurde über die abgelaufene Frist informiert. */
+  deadlineNotifiedAt?: Timestamp;
+  events?: DunningEvent[];
 }
 
 export type ExpenseCategory =
@@ -362,6 +413,14 @@ export interface Settings {
   defaultQuoteAcceptanceText: string;
   /** Zaehler fuer Auftragsbestaetigungen (Nummernkreis AB-YYYY-NNN). */
   nextOrderConfirmationNumber?: number;
+  /** Zahlungserinnerungen automatisch verschicken (Hauptschalter). */
+  dunningEnabled?: boolean;
+  /**
+   * Erster Tag der Automatik. Rechnungen, die vorher gestellt wurden,
+   * laufen nur nach „Erinnerungen starten“ mit, sonst bekämen bereits
+   * offene Rechnungen beim Einschalten ungefragt Mahnungen.
+   */
+  dunningStartDate?: Timestamp;
 }
 
 export type QuoteStatus =

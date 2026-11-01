@@ -1,11 +1,6 @@
 import QRCode from 'qrcode';
 import { buildEpcQrPayload } from './utils';
-
-const COMPANY_DEFAULTS = {
-  recipientName: 'Yusuf Kolac',
-  iban: 'DE98 2022 0800 0040 2027 72',
-  bic: 'SXPYDEHHXXX',
-};
+import { BANK_DETAILS as COMPANY_DEFAULTS } from './company';
 
 /**
  * Build an EPC069-12 QR code (GiroCode) as a PNG data URL for embedding

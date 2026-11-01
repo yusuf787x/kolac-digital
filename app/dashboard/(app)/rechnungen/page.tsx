@@ -96,6 +96,13 @@ export default function RechnungenPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
+            href="/dashboard/rechnungen/mahnwesen"
+            className="btn-secondary"
+            title="Automatische Zahlungserinnerungen beobachten, pausieren, starten"
+          >
+            Zahlungserinnerungen
+          </Link>
+          <Link
             href="/dashboard/rechnungen/reparatur"
             className="btn-secondary text-xs"
             title="Zahlungsbeträge und Zahlungshistorie auf Konsistenz prüfen."
