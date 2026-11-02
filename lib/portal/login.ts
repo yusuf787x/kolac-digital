@@ -48,6 +48,31 @@ export interface SessionRecord {
   customerId: string;
   createdAt: Timestamp;
   expiresAt: Timestamp;
+  /** Admin sieht das Portal als dieser Kunde, siehe startAdminSession. */
+  admin?: boolean;
+}
+
+/** Admin-Ansicht laeuft kuerzer als eine Kunden-Sitzung. */
+export const ADMIN_SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+
+/**
+ * Sitzung, mit der der Admin das Portal eines Kunden genau so sieht wie
+ * der Kunde selbst. Nur aus einer Admin-Route aufrufen. Kein Eintrag in
+ * portalAccess und keine Login-Statistik, damit die Zahlen des Kunden
+ * sauber bleiben.
+ */
+export async function startAdminSession(opts: { email: string; customerId: string; userAgent: string }): Promise<string> {
+  const sessionToken = randomToken(32);
+  const session: SessionRecord & { userAgent: string } = {
+    email: opts.email,
+    customerId: opts.customerId,
+    createdAt: Timestamp.now(),
+    expiresAt: Timestamp.fromMillis(Date.now() + ADMIN_SESSION_TTL_MS),
+    admin: true,
+    userAgent: opts.userAgent.slice(0, 200),
+  };
+  await adminDb().collection(SESSION_COL).doc(sha256(sessionToken)).set(session);
+  return sessionToken;
 }
 
 /**

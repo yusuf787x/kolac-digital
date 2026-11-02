@@ -224,6 +224,10 @@ export async function getReport(customerId: string, month: SeoMonth): Promise<Se
   return snap.exists ? ({ id: snap.id, ...snap.data() } as SeoReport) : null;
 }
 
+export async function deleteReportDoc(customerId: string, month: SeoMonth): Promise<void> {
+  await adminDb().collection(COL.reports).doc(monthDocId(customerId, month)).delete();
+}
+
 export async function upsertReport(
   customerId: string,
   month: SeoMonth,

@@ -8,8 +8,9 @@ import { formatMonthDE } from '@/lib/seo/months';
 import type { PortalAccess, SeoClient, SeoMonthlyDoc, SeoReport } from '@/lib/seo/types';
 import { fmtInt } from '@/lib/seo/view';
 import { Banner, openPdf, postJson } from './api';
+import PortalViewButton from './PortalViewButton';
 
-type Busy = 'save' | 'suggest' | 'generate' | 'release' | 'pdf' | null;
+type Busy = 'save' | 'suggest' | 'generate' | 'release' | 'pdf' | 'delete' | null;
 
 export default function ReportsTab({ client, initialMonth }: { client: SeoClient; initialMonth: string | null }) {
   const [months, setMonths] = useState<SeoMonthlyDoc[]>([]);
@@ -21,6 +22,7 @@ export default function ReportsTab({ client, initialMonth }: { client: SeoClient
   const [busy, setBusy] = useState<Busy>(null);
   const [msg, setMsg] = useState<{ tone: 'error' | 'success'; text: string } | null>(null);
   const [confirmRelease, setConfirmRelease] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -108,6 +110,14 @@ export default function ReportsTab({ client, initialMonth }: { client: SeoClient
         : 'Freigegeben. Es ist noch niemand für das Portal eingeladen, deshalb ging keine Mail raus.';
     });
 
+  const remove = () =>
+    run('delete', async () => {
+      await postJson('/api/seo/report', { action: 'delete', customerId: client.customerId, month });
+      setConfirmDelete(false);
+      await load();
+      return `Bericht ${formatMonthDE(month!)} gelöscht. Die Zahlen sind noch da, du kannst ihn jederzeit neu anlegen.`;
+    });
+
   if (loading) return <div className="card text-sm text-gray-500">Lädt…</div>;
   if (!months.length) {
     return (
@@ -164,9 +174,7 @@ export default function ReportsTab({ client, initialMonth }: { client: SeoClient
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Link className="btn-secondary" href={`/dashboard/seo/${client.customerId}/vorschau?monat=${month}`} target="_blank">
-                  Portal-Vorschau
-                </Link>
+                <PortalViewButton customerId={client.customerId} month={month} />
                 {report?.storagePath && (
                   <button
                     className="btn-secondary"
@@ -183,6 +191,15 @@ export default function ReportsTab({ client, initialMonth }: { client: SeoClient
                 <button className="btn-secondary" disabled={!!busy} onClick={generate}>
                   {busy === 'generate' ? 'Erzeugt…' : report ? 'PDF aktualisieren' : 'Bericht anlegen'}
                 </button>
+                {report && (
+                  <button
+                    className="btn-secondary text-red-700"
+                    disabled={!!busy}
+                    onClick={() => setConfirmDelete(true)}
+                  >
+                    Bericht löschen
+                  </button>
+                )}
               </div>
             </div>
             {msg && <Banner tone={msg.tone}>{msg.text}</Banner>}
@@ -230,6 +247,30 @@ export default function ReportsTab({ client, initialMonth }: { client: SeoClient
           </div>
         </div>
       )}
+
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title={`Bericht ${month ? formatMonthDE(month) : ''} löschen?`}>
+        <div className="space-y-3 text-sm text-gray-700">
+          <p>Gelöscht werden das PDF und deine Einschätzung. Die Zahlen des Monats bleiben, der Bericht lässt sich jederzeit neu anlegen.</p>
+          {report?.status === 'released' && (
+            <Banner tone="error">
+              Dieser Bericht ist freigegeben. {client.displayName} sieht ihn danach nicht mehr im Portal, auch nicht unter „Alle
+              Berichte“. Die bereits verschickte Mail lässt sich nicht zurückholen.
+            </Banner>
+          )}
+        </div>
+        <div className="mt-5 flex justify-end gap-2">
+          <button className="btn-secondary" onClick={() => setConfirmDelete(false)}>
+            Abbrechen
+          </button>
+          <button
+            className="btn-primary bg-red-600 hover:bg-red-700"
+            disabled={busy === 'delete'}
+            onClick={remove}
+          >
+            {busy === 'delete' ? 'Wird gelöscht…' : 'Endgültig löschen'}
+          </button>
+        </div>
+      </Modal>
 
       <Modal open={confirmRelease} onClose={() => setConfirmRelease(false)} title={`Bericht ${month ? formatMonthDE(month) : ''} freigeben?`}>
         <div className="space-y-3 text-sm text-gray-700">

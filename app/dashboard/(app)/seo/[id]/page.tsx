@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import AccessTab from '@/components/seo/admin/AccessTab';
 import ActivitiesTab from '@/components/seo/admin/ActivitiesTab';
 import DataTab from '@/components/seo/admin/DataTab';
+import PortalViewButton from '@/components/seo/admin/PortalViewButton';
 import ReportsTab from '@/components/seo/admin/ReportsTab';
 import SettingsTab from '@/components/seo/admin/SettingsTab';
 import { getSeoClient } from '@/lib/seo/client';
@@ -74,9 +75,7 @@ function SeoClientInner() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link className="btn-secondary" href={`/dashboard/seo/${client.customerId}/vorschau`} target="_blank">
-              Portal-Vorschau
-            </Link>
+            <PortalViewButton customerId={client.customerId} />
             <Link className="btn-secondary" href={`/dashboard/kunden/${client.customerId}`}>
               Kundenakte
             </Link>

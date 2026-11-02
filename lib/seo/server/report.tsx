@@ -12,7 +12,7 @@ import type { SeoClient, SeoMonth } from '../types';
 import type { PortalData } from '../view';
 import { portalBaseUrl } from './config';
 import { sendReportReleasedEmail } from './emails';
-import { getReport, loadPortalData, upsertReport } from './store';
+import { deleteReportDoc, getReport, loadPortalData, upsertReport } from './store';
 
 /**
  * Monatsbericht: Entwurf erzeugen, als PDF ablegen, freigeben.
@@ -113,4 +113,18 @@ export async function releaseReport(
   }
   await upsertReport(client.customerId, month, { sentTo: recipients });
   return { sentTo: recipients };
+}
+
+/**
+ * Bericht entfernen: PDF und Eintrag. Die Zahlen des Monats bleiben, der
+ * Bericht kann jederzeit neu angelegt werden. War er freigegeben, sieht
+ * der Kunde den Monat danach nicht mehr (ausser es gibt einen neueren
+ * freigegebenen Bericht).
+ */
+export async function deleteReport(client: SeoClient, month: SeoMonth): Promise<void> {
+  const existing = await getReport(client.customerId, month);
+  if (!existing) throw new Error('Bericht nicht gefunden.');
+  const file = existing.storagePath ?? reportStoragePath(client.customerId, month);
+  await adminStorage().bucket().file(file).delete({ ignoreNotFound: true });
+  await deleteReportDoc(client.customerId, month);
 }

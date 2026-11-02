@@ -26,8 +26,8 @@ import MoversPanel from './MoversPanel';
 import { ActivityList, Delta, Section } from './parts';
 
 /**
- * Der Monatsbericht im Portal. Wird vom Portal (Server) und von der
- * Admin-Vorschau (Client) mit demselben PortalData gerendert.
+ * Der Monatsbericht im Portal. preview markiert einen noch nicht
+ * freigegebenen Monat, den nur der Admin in seiner Kundenansicht sieht.
  */
 
 
@@ -182,7 +182,7 @@ export default function ReportView({
         )}
         {preview && data.report?.status !== 'released' && (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
-            Vorschau: Dieser Monat ist noch nicht freigegeben. Der Kunde sieht ihn erst nach der Freigabe.
+            Entwurf: Dieser Monat ist noch nicht freigegeben. Der Kunde sieht ihn erst nach der Freigabe.
           </p>
         )}
       </header>

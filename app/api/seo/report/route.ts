@@ -9,10 +9,11 @@ export const maxDuration = 120;
 
 /**
  * Admin: Bericht verwalten.
- * Body: { action: 'suggest' | 'generate' | 'release', customerId, month, resetAssessment? }
+ * Body: { action: 'suggest' | 'generate' | 'release' | 'delete', customerId, month, resetAssessment? }
  *   suggest   Vorschlag fuer die Einschaetzung, ohne zu speichern
  *   generate  Entwurf anlegen bzw. PDF neu erzeugen
  *   release   freigeben und Kunden per Mail benachrichtigen
+ *   delete    Bericht samt PDF loeschen, die Zahlen bleiben
  */
 async function handlePOST(req: Request) {
   const denied = await requireAdmin(req);
@@ -38,6 +39,11 @@ async function handlePOST(req: Request) {
         const { releaseReport } = await import('@/lib/seo/server/report');
         const r = await releaseReport(client, month);
         return NextResponse.json({ ok: true, ...r });
+      }
+      case 'delete': {
+        const { deleteReport } = await import('@/lib/seo/server/report');
+        await deleteReport(client, month);
+        return NextResponse.json({ ok: true });
       }
       default:
         return badRequest('Unbekannte Aktion.');

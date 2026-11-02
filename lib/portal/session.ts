@@ -14,6 +14,8 @@ export interface PortalSession {
   email: string;
   customerId: string;
   client: SeoClient;
+  /** Admin sieht das Portal als dieser Kunde. */
+  admin: boolean;
 }
 
 /**
@@ -28,11 +30,16 @@ export async function readPortalSession(cookieValue: string | undefined): Promis
     const session = await findSession(cookieValue);
     if (!session) return null;
     const email = session.email;
+    if (session.admin) {
+      // Nur von /api/seo/portal-view angelegt, dort ist der Admin geprueft
+      const client = await getSeoClient(session.customerId);
+      return client ? { email, customerId: session.customerId, client, admin: true } : null;
+    }
     const access = await getActiveAccess(email);
     if (!access || access.customerId !== session.customerId) return null;
     const client = await getSeoClient(access.customerId);
     if (!client) return null;
-    return { email, customerId: access.customerId, client };
+    return { email, customerId: access.customerId, client, admin: false };
   } catch {
     return null;
   }

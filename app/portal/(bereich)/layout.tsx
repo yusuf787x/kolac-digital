@@ -8,6 +8,23 @@ export default async function PortalBereichLayout({ children }: { children: Reac
   const session = await requirePortalSession();
   return (
     <>
+      {session.admin && (
+        <div className="bg-gray-900 text-sm text-white">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2 sm:px-6">
+            <span>Du siehst das Portal genau so wie {session.client.displayName}.</span>
+            <span className="flex gap-4">
+              <a className="underline" href={`/dashboard/seo/${session.customerId}`}>
+                Zum Dashboard
+              </a>
+              <form action="/api/portal/logout" method="post">
+                <button type="submit" className="underline">
+                  Ansicht beenden
+                </button>
+              </form>
+            </span>
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="flex items-center justify-between gap-3 pt-3">

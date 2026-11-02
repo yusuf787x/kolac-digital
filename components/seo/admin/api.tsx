@@ -42,6 +42,24 @@ export async function openPdf(url: string): Promise<void> {
   else window.location.href = blobUrl;
 }
 
+/**
+ * Oeffnet das echte Kundenportal in einem neuen Tab, angemeldet als dieser
+ * Kunde. Das Fenster wird vor dem Request geoeffnet, sonst blockt der
+ * Browser es als Pop-up.
+ */
+export async function openPortalAsClient(customerId: string, month?: string | null): Promise<void> {
+  const win = window.open('', '_blank');
+  try {
+    await postJson('/api/seo/portal-view', { customerId });
+  } catch (err) {
+    win?.close();
+    throw err;
+  }
+  const url = month ? `/portal?monat=${month}` : '/portal';
+  if (win) win.location.href = url;
+  else window.location.href = url;
+}
+
 export function Banner({ tone, children }: { tone: 'error' | 'success' | 'info'; children: React.ReactNode }) {
   const cls =
     tone === 'error'
