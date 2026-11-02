@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import {
   portfolioProjects,
   findPortfolioProject,
+  type BeforeAfter,
 } from '@/lib/portfolio';
 import { site } from '@/lib/site-config';
 import Reveal from '@/components/marketing/Reveal';
@@ -253,6 +254,12 @@ export default async function PortfolioProjectPage({ params }: Props) {
               </div>
             </Reveal>
 
+            {project.beforeAfter && (
+              <Reveal>
+                <BeforeAfterBlock data={project.beforeAfter} />
+              </Reveal>
+            )}
+
             <Reveal>
               <div className="portfolio-detail-block">
                 <div className="section-label">LEISTUNGEN IM ÜBERBLICK</div>
@@ -373,5 +380,74 @@ export default async function PortfolioProjectPage({ params }: Props) {
         </div>
       </section>
     </>
+  );
+}
+
+function BeforeAfterBlock({ data }: { data: BeforeAfter }) {
+  const sides = [
+    { key: 'before', label: 'Vorher', side: data.before },
+    { key: 'after', label: 'Nachher', side: data.after },
+  ] as const;
+  return (
+    <div className="portfolio-detail-block">
+      <div className="section-label">VORHER UND NACHHER</div>
+      <h2 className="portfolio-detail-h2">{data.headline}</h2>
+      <p>{data.measure}</p>
+
+      <div className="portfolio-ba-scores">
+        {sides.map(({ key, label, side }) => (
+          <div key={key} className={`portfolio-ba-score portfolio-ba-score-${key}`}>
+            <span className="portfolio-ba-score-label">{label}</span>
+            <span className="portfolio-ba-score-value">{side.score} %</span>
+            <span className="portfolio-ba-score-note">{side.note}</span>
+          </div>
+        ))}
+      </div>
+
+      <dl className="portfolio-ba-metrics">
+        {data.metrics.map((m) => (
+          <div key={m.label} className="portfolio-ba-metric">
+            <dt>{m.label}</dt>
+            <dd>
+              <span className="portfolio-ba-values">
+                {m.before} % → <strong>{m.after} %</strong>
+              </span>
+              <span className="portfolio-ba-track" aria-hidden="true">
+                <span
+                  className="portfolio-ba-bar-after"
+                  style={{ width: `${m.after}%` }}
+                />
+                <span
+                  className="portfolio-ba-bar-before"
+                  style={{ width: `${m.before}%` }}
+                />
+              </span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p className="portfolio-ba-legend">
+        <span className="portfolio-ba-legend-before" aria-hidden="true" /> vorher
+        <span className="portfolio-ba-legend-after" aria-hidden="true" /> nachher
+      </p>
+
+      <div className="portfolio-ba-proof">
+        {sides.map(({ key, label, side }) => (
+          <figure key={key}>
+            <Image
+              src={side.image}
+              alt={side.imageAlt}
+              width={1216}
+              height={320}
+              className="portfolio-ba-proof-image"
+              sizes="(max-width: 860px) 100vw, 820px"
+            />
+            <figcaption>
+              <strong>{label}:</strong> Original-Bericht, {side.note}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
   );
 }

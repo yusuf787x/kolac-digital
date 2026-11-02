@@ -12,6 +12,27 @@
 
 import type { ProjectScreenshot } from '@/lib/case-studies';
 
+export interface BeforeAfterSide {
+  /** Gesamtwert in Prozent. */
+  score: number;
+  /** Datum oder kurzer Zusatz, z.B. "28.10.2026, 4 kritische Probleme". */
+  note: string;
+  /** Screenshot des Original-Berichts als Beleg. Pfad ab /public. */
+  image: string;
+  imageAlt: string;
+}
+
+export interface BeforeAfter {
+  /** Ueberschrift, z.B. "Onpage-Score von 60 auf 95 Prozent". */
+  headline: string;
+  /** Was gemessen wurde und womit. */
+  measure: string;
+  before: BeforeAfterSide;
+  after: BeforeAfterSide;
+  /** Teilbereiche, die sich veraendert haben (Prozentwerte). */
+  metrics: { label: string; before: number; after: number }[];
+}
+
 export interface PortfolioProject {
   slug: string;
   /** Kurzname (Overview-Card + Header). */
@@ -49,6 +70,8 @@ export interface PortfolioProject {
   outcome: string;
   /** Optional: weitere Screenshots, erscheinen nach "Was wir gebaut haben". */
   gallery?: ProjectScreenshot[];
+  /** Optional: messbarer Vorher-Nachher-Vergleich, erscheint nach dem Ergebnis. */
+  beforeAfter?: BeforeAfter;
 
   /** SEO-Meta pro Detail-Seite. */
   metaTitle: string;
@@ -93,6 +116,68 @@ export const portfolioProjects: PortfolioProject[] = [
       'PaderPuls Krankenfahrdienst Paderborn · Rebranding und Relaunch · Kolac Digital',
     metaDescription:
       'Wie Kolac Digital für PaderPuls aus Paderborn die veraltete Webseite durch ein modernes Rebranding mit SEO und GEO ersetzt hat. Mehr Sichtbarkeit, mehr Anfragen, mehr Anrufe.',
+  },
+  {
+    slug: 'motorenfachmann',
+    company: 'Motorenfachmann',
+    category: 'Motorinstandsetzung und Austauschmotoren',
+    location: 'Lage',
+    tag: 'SEO-Optimierung',
+    overviewImage: '/images/portfolio/motorenfachmann.webp',
+    imageAlt:
+      'Startseite von Motorenfachmann aus Lage: Kfz-Meisterbetrieb für Motorinstandsetzung mit Telefonnummer, WhatsApp und Festpreis-Angebot',
+    services: [
+      'Technischer SEO-Check und Aufräumen der ganzen Website',
+      'Eigener Titel, eigene Beschreibung und klare Überschrift für alle 34 Seiten',
+      'Firmendaten, Bilder und Sitemap sauber für Google aufbereitet',
+      'Neue Seiten für gesuchte Motoren und Städte',
+    ],
+    keyWin:
+      'Onpage-Score der Startseite von 60 auf 95 Prozent. Google versteht jetzt auf jeder Seite, worum es geht.',
+    link: 'https://motorenfachmann.de/',
+    linkText: 'Website ansehen',
+    intro:
+      'Motorenfachmann ist ein Kfz-Meisterbetrieb aus Lage, der Motoren instand setzt und Austauschmotoren liefert, mit kostenloser Abholung in ganz Deutschland. Wir haben die bestehende Website übernommen und technisch wie inhaltlich so aufgeräumt, dass Google sie besser versteht. Der Onpage-Score der Startseite stieg dabei von 60 auf 95 Prozent.',
+    situation:
+      'Die Website hatte viele gute Inhalte, aber technisch einige Baustellen. Sie war unter mehreren Adressen erreichbar, Titel und Beschreibungen für Google waren nicht auf jede Seite abgestimmt, Überschriften waren durcheinander und manche Angaben veraltet, etwa Gewährleistung und Abholradius. Seobility bewertete die Startseite mit 60 Prozent und vier kritischen Problemen.',
+    approach: [
+      'Website übernommen, komplett gesichert und das Hosting abgesichert.',
+      'Nur noch eine Adresse: Aufrufe mit www, mit „.html“ oder über alte Adressen führen jetzt in einem Schritt auf die richtige Seite.',
+      'Alle 34 Seiten mit eigenem Titel, eigener Beschreibung und genau einer passenden Hauptüberschrift. Dazu Firmendaten für Google, Bildbeschreibungen und eine Sitemap, die direkt bei Google eingereicht ist.',
+      'Inhalte aktualisiert: 24 Monate Gewährleistung, bundesweite Abholung, einheitliche Telefonnummer und ein WhatsApp-Knopf auf jeder Seite.',
+      'Neue Seiten für gezielt gesuchte Motoren, angefangen mit der VW-T5-Motorinstandsetzung, und Städteseiten mit echter Entfernung und Fahrzeit nach Lage.',
+    ],
+    outcome:
+      'Die Startseite steht im Onpage-Check jetzt bei 95 statt 60 Prozent, ohne kritische Probleme. Seitenstruktur und Server, vorher die größten Schwachstellen, liegen bei 81 und 91 Prozent. Google bekommt auf jeder Seite klare Signale, worum es geht. Das ist die Grundlage für bessere Rankings bei Suchen wie „Motorinstandsetzung“ oder „Austauschmotor“, und die Website wird laufend weiter ausgebaut.',
+    beforeAfter: {
+      headline: 'Onpage-Score von 60 auf 95 Prozent',
+      measure: 'Onpage-Check der Startseite mit Seobility, vor und nach unserer Optimierung.',
+      before: {
+        score: 60,
+        note: '28.10.2026 · 4 kritische Probleme',
+        image: '/images/portfolio/motorenfachmann-seobility-vorher.webp',
+        imageAlt:
+          'Seobility-Check der Startseite von motorenfachmann.de vor der Optimierung: Onpage-Score 60 Prozent, Seitenstruktur 7 Prozent, Server 0 Prozent, 4 kritische Probleme',
+      },
+      after: {
+        score: 95,
+        note: '30.10.2026 · keine kritischen Probleme',
+        image: '/images/portfolio/motorenfachmann-seobility-nachher.webp',
+        imageAlt:
+          'Seobility-Check der Startseite von motorenfachmann.de nach der Optimierung: Onpage-Score 95 Prozent, Seitenstruktur 81 Prozent, Server 91 Prozent, keine Probleme',
+      },
+      metrics: [
+        { label: 'Seitenstruktur', before: 7, after: 81 },
+        { label: 'Server', before: 0, after: 91 },
+        { label: 'Seitenqualität', before: 73, after: 94 },
+        { label: 'Meta-Angaben', before: 80, after: 100 },
+        { label: 'Links', before: 88, after: 97 },
+      ],
+    },
+    metaTitle:
+      'Motorenfachmann Lage · SEO-Optimierung · Projekt von Kolac Digital',
+    metaDescription:
+      'Wie Kolac Digital die Website von Motorenfachmann aus Lage für Google aufgeräumt hat: Onpage-Score von 60 auf 95 Prozent, saubere Technik, neue Motorseiten.',
   },
   {
     slug: 'fahrschule-kreuzer',
