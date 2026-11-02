@@ -1,5 +1,6 @@
 import { adminDb } from './firebase-admin';
 import { emailDomain, type GcCustomer } from './gocardless';
+import { parseEmailList } from './invoice-recipients';
 
 export interface CustomerDoc {
   id: string;
@@ -67,8 +68,8 @@ export async function matchCustomer(
   for (const d of allSnap.docs) {
     const data = d.data() as Omit<CustomerDoc, 'id'>;
     const mainDomain = emailDomain(data.email ?? '');
-    const altDomain = emailDomain(data.retainerInvoiceEmail ?? '');
-    if (mainDomain === targetDomain || altDomain === targetDomain) {
+    const altDomains = parseEmailList(data.retainerInvoiceEmail).map(emailDomain);
+    if (mainDomain === targetDomain || altDomains.includes(targetDomain)) {
       candidates.push({ id: d.id, ...data });
     }
   }

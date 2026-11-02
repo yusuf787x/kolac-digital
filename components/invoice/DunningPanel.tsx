@@ -12,6 +12,7 @@ import {
   todayBerlin,
 } from '@/lib/dunning';
 import type { Customer, DunningStage, Invoice, Settings } from '@/lib/types';
+import { invoiceRecipients } from '@/lib/invoice-recipients';
 import {
   confirmAndSendNow,
   dayLabel,
@@ -41,8 +42,9 @@ export default function DunningPanel({
   }, []);
 
   const today = todayBerlin();
+  const recipients = invoiceRecipients(customer).join(', ');
   const state = computeDunningState(invoice, {
-    customerEmail: customer?.email,
+    customerEmail: recipients,
     startDate: settings?.dunningStartDate ?? null,
     today,
   });
@@ -172,7 +174,7 @@ export default function DunningPanel({
               Erinnerungen starten
             </button>
           )}
-          {manualStage && customer?.email && (
+          {manualStage && recipients && (
             <button
               className="btn-secondary"
               disabled={busy}
@@ -182,7 +184,7 @@ export default function DunningPanel({
                     invoiceId: invoice.id,
                     invoiceNumber,
                     stage: manualStage,
-                    email: customer.email,
+                    email: recipients,
                   }),
                 )
               }

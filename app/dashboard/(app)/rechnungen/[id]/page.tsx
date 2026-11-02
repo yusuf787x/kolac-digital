@@ -30,6 +30,7 @@ import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 import DunningPanel from '@/components/invoice/DunningPanel';
 import { authedFetch } from '@/lib/api-client';
+import { invoiceRecipients } from '@/lib/invoice-recipients';
 import { parseRichText, type MdInlineSegment } from '@/lib/simple-markdown';
 
 // Rich-Text-Renderer fuer Positions-Beschreibungen (fett + Bullets),
@@ -417,14 +418,16 @@ export default function RechnungDetailPage() {
     }
   };
 
+  const recipients = invoiceRecipients(customer);
+
   const handleSendEmail = async () => {
-    if (!customer || !customer.email) {
+    if (!customer || !recipients.length) {
       alert('Kein E-Mail-Empfänger im Kundenprofil hinterlegt.');
       return;
     }
     if (
       !confirm(
-        `Rechnung ${invoice.invoiceNumber} an ${customer.email} per E-Mail senden?`,
+        `Rechnung ${invoice.invoiceNumber} an ${recipients.join(', ')} per E-Mail senden?`,
       )
     )
       return;
@@ -441,7 +444,7 @@ export default function RechnungDetailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: customer.email,
+          to: recipients,
           customerName: [customer.firstName, customer.lastName]
             .filter(Boolean)
             .join(' ') || customer.company,
@@ -567,10 +570,10 @@ export default function RechnungDetailPage() {
               <>
                 <button
                   onClick={handleSendEmail}
-                  disabled={sendingEmail || !customer?.email}
+                  disabled={sendingEmail || !recipients.length}
                   className="btn-secondary"
                   title={
-                    !customer?.email
+                    !recipients.length
                       ? 'Keine E-Mail im Kundenprofil hinterlegt'
                       : ''
                   }

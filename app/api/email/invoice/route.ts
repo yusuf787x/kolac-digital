@@ -6,7 +6,7 @@ import { authenticate, authErrorResponse } from '@/lib/server-auth';
 export const runtime = 'nodejs';
 
 interface Body {
-  to: string;
+  to: string | string[];
   customerName: string;
   invoiceNumber: string;
   totalAmount: number;
@@ -34,7 +34,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Ungültiger Request-Body.' }, { status: 400 });
   }
 
-  if (!body.to || !body.invoiceNumber || !body.pdfBase64) {
+  const to = (Array.isArray(body.to) ? body.to : [body.to]).filter(Boolean);
+  if (!to.length || !body.invoiceNumber || !body.pdfBase64) {
     return NextResponse.json(
       { error: 'Pflichtfelder fehlen.' },
       { status: 400 },
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
   try {
     const result = await resend.emails.send({
       from: tpl.from,
-      to: body.to,
+      to,
       replyTo: tpl.replyTo,
       subject: tpl.subject,
       html: tpl.html,

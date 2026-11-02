@@ -220,14 +220,16 @@ export default function CustomerForm({ initial, mode }: Props) {
           <label className="label">Rechnungs-Mail (optional)</label>
           <input
             type="email"
+            multiple
             className="input"
             value={data.retainerInvoiceEmail ?? ''}
             onChange={(e) => update('retainerInvoiceEmail', e.target.value)}
-            placeholder="z.B. rechnungen@carhifi-herford.de"
+            placeholder="z.B. rechnungen@carhifi-herford.de, chef@carhifi-herford.de"
           />
           <p className="mt-1 text-xs text-gray-500">
-            Falls Rechnungen an eine andere Adresse als die Haupt-Mail sollen.
-            Domain-Match prüft beide Adressen.
+            Wenn gesetzt, gehen Rechnungen und Zahlungserinnerungen nur an
+            diese Adresse(n), nicht an die Haupt-Mail. Mehrere mit Komma
+            trennen. Domain-Match prüft alle Adressen.
           </p>
         </div>
 

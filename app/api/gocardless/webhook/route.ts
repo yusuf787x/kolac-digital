@@ -13,6 +13,7 @@ import {
 } from '@/lib/gocardless';
 import { matchCustomer, type MatchResult } from '@/lib/server-customer-matching';
 import { generateInvoicePdfBuffer } from '@/lib/server-pdf';
+import { invoiceRecipients } from '@/lib/invoice-recipients';
 import { saveInvoiceToDrive } from '@/lib/google-drive';
 import {
   buildInvoiceNumber,
@@ -180,13 +181,10 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<HandlerResult> {
   });
 
   // Empfaenger-Reihenfolge:
-  //   1. retainerInvoiceEmail (manueller Override im Dashboard)
+  //   1. retainerInvoiceEmail (manueller Override im Dashboard, ggf. mehrere)
   //   2. Mail aus dem GoCardless-Kundeneintrag
   //   3. Dashboard-Stammdaten-Mail (Fallback)
-  const recipient =
-    customer.retainerInvoiceEmail?.trim() ||
-    gcCustomer.email?.trim() ||
-    customer.email;
+  const recipients = invoiceRecipients(customer, gcCustomer.email);
   // Persoenliche Ansprache: Vorname > GC-Vorname > Nachname > Firma.
   const greetingName =
     customer.firstName?.trim() ||
@@ -202,7 +200,7 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<HandlerResult> {
   // garantiert vorhanden.
   const invNumber = invoice.invoiceNumber ?? 'ENTWURF';
   await sendInvoiceMail({
-    to: recipient,
+    to: recipients,
     customerName: greetingName,
     invoiceNumber: invNumber,
     totalAmount: grossAmount,
@@ -220,6 +218,7 @@ async function handlePaymentConfirmed(event: GcEvent): Promise<HandlerResult> {
         <li>Rechnungsnummer: <strong>${invoice.invoiceNumber}</strong></li>
         <li>Brutto eingezogen: <strong>${formatEur(grossAmount)}</strong>${invoice.vatRate ? ` (Netto ${formatEur(invoice.totalAmount)} + ${Math.round((invoice.vatRate ?? 0) * 100)} % USt)` : ''}</li>
         <li>Charge-Datum: ${formatDateDE(new Date(payment.charge_date))}</li>
+        <li>Rechnung an: ${escapeHtml(recipients.join(', '))}</li>
         <li>Match-Modus: ${match.mode}</li>
       </ul>
       ${driveUrl ? `<p>Drive-Backup: <a href="${driveUrl}">öffnen</a></p>` : ''}
@@ -445,7 +444,7 @@ async function syncToDrive(
 }
 
 async function sendInvoiceMail(opts: {
-  to: string;
+  to: string[];
   customerName: string;
   invoiceNumber: string;
   totalAmount: number;

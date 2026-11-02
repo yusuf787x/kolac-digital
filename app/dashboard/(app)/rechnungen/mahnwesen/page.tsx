@@ -21,6 +21,7 @@ import {
 } from '@/lib/dunning';
 import type { Customer, DunningEvent, Invoice, Settings } from '@/lib/types';
 import { formatEUR } from '@/lib/utils';
+import { invoiceRecipients } from '@/lib/invoice-recipients';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 import {
   confirmAndSendNow,
@@ -77,7 +78,7 @@ export default function MahnwesenPage() {
         invoice,
         customer,
         state: computeDunningState(invoice, {
-          customerEmail: customer?.email,
+          customerEmail: invoiceRecipients(customer).join(', '),
           startDate: settings.dunningStartDate ?? null,
           today,
         }),
@@ -225,7 +226,7 @@ export default function MahnwesenPage() {
                     >
                       Pausieren…
                     </button>
-                    {s.kind === 'scheduled' && entry.customer?.email && (
+                    {s.kind === 'scheduled' && invoiceRecipients(entry.customer).length > 0 && (
                       <button
                         className="btn-secondary text-xs"
                         disabled={busy}
@@ -235,7 +236,7 @@ export default function MahnwesenPage() {
                               invoiceId: entry.invoice.id,
                               invoiceNumber: entry.invoice.invoiceNumber ?? '',
                               stage: s.stage,
-                              email: entry.customer!.email,
+                              email: invoiceRecipients(entry.customer).join(', '),
                             }),
                           )
                         }
@@ -317,7 +318,7 @@ export default function MahnwesenPage() {
                     onClick={() => {
                       if (
                         confirm(
-                          `Erinnerungen für ${entry.invoice.invoiceNumber} starten? Die Zahlungserinnerung geht beim nächsten täglichen Lauf an ${entry.customer?.email || '(keine E-Mail hinterlegt)'}.`,
+                          `Erinnerungen für ${entry.invoice.invoiceNumber} starten? Die Zahlungserinnerung geht beim nächsten täglichen Lauf an ${invoiceRecipients(entry.customer).join(', ') || '(keine E-Mail hinterlegt)'}.`,
                         )
                       )
                         act(entry.invoice.id, () => startDunning(entry.invoice.id));

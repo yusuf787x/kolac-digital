@@ -23,6 +23,7 @@ import type {
   Settings,
 } from './types';
 import { invoiceGrossTotal } from './utils';
+import { invoiceRecipients } from './invoice-recipients';
 
 /** Ein laufender Versand blockiert weitere für diese Dauer. */
 const SENDING_LOCK_MS = 10 * 60 * 1000;
@@ -45,7 +46,7 @@ export function stateFor(
   today = todayBerlin(),
 ): DunningState {
   return computeDunningState(invoice, {
-    customerEmail: customer?.email,
+    customerEmail: invoiceRecipients(customer).join(', '),
     startDate: settings.dunningStartDate ?? null,
     today,
   });
@@ -92,7 +93,7 @@ export async function sendDunningStage(
     if (state.kind === 'none') {
       throw new Error(`Keine Erinnerung nötig (${state.reason}).`);
     }
-    if (!customer?.email) {
+    if (!customer || !invoiceRecipients(customer).length) {
       throw new Error('Beim Kunden ist keine E-Mail-Adresse hinterlegt.');
     }
 
@@ -121,6 +122,7 @@ export async function sendDunningStage(
     return { invoice, customer, stage };
   });
 
+  const recipients = invoiceRecipients(customer);
   try {
     const deadlineDay = deadlineForStage(stage, today);
     let attachment: { filename: string; content: Buffer } | null = null;
@@ -151,7 +153,7 @@ export async function sendDunningStage(
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { data, error } = await resend.emails.send({
       from: mail.from,
-      to: customer.email,
+      to: recipients,
       replyTo: mail.replyTo,
       subject: mail.subject,
       html: mail.html,
@@ -167,7 +169,7 @@ export async function sendDunningStage(
       type: 'sent' satisfies DunningEvent['type'],
       stage,
       trigger: opts.trigger,
-      to: customer.email,
+      to: recipients.join(', '),
       subject: mail.subject,
       openAmount: invoiceOpenAmount(invoice),
       ...(deadlineDay
@@ -187,7 +189,7 @@ export async function sendDunningStage(
 
     return {
       stage,
-      to: customer.email,
+      to: recipients.join(', '),
       subject: mail.subject,
       invoiceNumber: invoice.invoiceNumber!,
       company: customer.company,
