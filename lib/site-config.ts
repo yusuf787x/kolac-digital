@@ -322,7 +322,7 @@ export const faqs: FaqItem[] = [
   {
     question: 'Arbeitet ihr nur in OWL oder auch deutschlandweit?',
     answer:
-      'Ich arbeite deutschlandweit. Über die Hälfte meiner Kunden sehe ich nie persönlich. Wir treffen uns online über Video Call und alles läuft trotzdem reibungslos. Wenn du persönlich Hand schütteln möchtest und in OWL sitzt, komme ich gerne vorbei.',
+      'Ich arbeite deutschlandweit. Mein Büro ist in Bielefeld, aber über die Hälfte meiner Kunden sehe ich nie persönlich. Wir treffen uns online über Video Call und alles läuft trotzdem reibungslos. Wenn du persönlich Hand schütteln möchtest und in OWL sitzt, komme ich gerne vorbei.',
   },
   {
     question: 'Bekomme ich wirklich kostenlose professionelle Fotos dazu?',

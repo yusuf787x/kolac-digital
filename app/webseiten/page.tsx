@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
+import { branchenSeiten } from '@/lib/branchen-seiten';
 import {
   bausteinAddOn,
   faqs,
@@ -11,15 +13,22 @@ import {
   serviceAreas,
   site,
 } from '@/lib/site-config';
-import ContactForm from './ContactForm';
 import Reveal from '@/components/marketing/Reveal';
+import {
+  About,
+  Kontakt,
+  Leistungen,
+  Process,
+  Reviews,
+  Stars,
+} from './sections';
 import ZeitfresserRechner from '@/components/marketing/ZeitfresserRechner';
 
 export const metadata: Metadata = {
   title:
-    'Webagentur Bielefeld · Webseiten mit System | Kolac Digital',
+    'Webdesign Bielefeld · Webagentur für Webseiten mit System | Kolac Digital',
   description:
-    'Webagentur aus Bielefeld baut deine Webseite mit System. Vorne SEO-stark bei Google. Hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten. Für KMU in OWL, NRW und ganz Deutschland.',
+    'Webdesign aus Bielefeld: Wir bauen deine Website mit System. Vorne SEO-stark bei Google. Hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten. Für KMU in OWL, NRW und ganz Deutschland.',
   alternates: {
     canonical: `${site.baseUrl}/webseiten`,
   },
@@ -28,7 +37,7 @@ export const metadata: Metadata = {
     locale: 'de_DE',
     url: `${site.baseUrl}/webseiten`,
     title:
-      'Webagentur Bielefeld · Webseiten mit System | Kolac Digital',
+      'Webdesign Bielefeld · Webagentur für Webseiten mit System | Kolac Digital',
     description:
       'Webseite mit System aus Bielefeld. Vorne SEO-stark, hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten.',
     siteName: 'Kolac Digital',
@@ -44,7 +53,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title:
-      'Webagentur Bielefeld · Webseiten mit System | Kolac Digital',
+      'Webdesign Bielefeld · Webagentur für Webseiten mit System | Kolac Digital',
     description:
       'Individuelle Webseite mit Backend. Anfragen, Termine, Angebote, Berichte. Aus Bielefeld für KMU in OWL, NRW und ganz Deutschland.',
     images: ['/images/bacara-website.webp'],
@@ -261,19 +270,6 @@ function StructuredData() {
 // Hilfs-Komponenten
 // =====================================================================
 
-function Stars({ count = 5 }: { count?: number }) {
-  return (
-    <span className="inline-flex text-yellow-500">
-      {Array.from({ length: count }).map((_, i) => (
-        <span key={i} aria-hidden>
-          ★
-        </span>
-      ))}
-      <span className="sr-only">{count} von 5 Sternen</span>
-    </span>
-  );
-}
-
 function ArrowIcon() {
   return (
     <svg
@@ -307,7 +303,8 @@ function Hero() {
               Aktuell {site.freeSlots} freie Plätze für neue Projekte
             </span>
             <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              Webseite mit System aus {site.city}, die für dein Geschäft arbeitet.
+              Webdesign aus {site.city}. Webseiten mit System, die für dein
+              Geschäft arbeiten.
             </h1>
             <p className="mt-5 max-w-xl text-base text-gray-600 sm:text-lg">
               Du bekommst keine Vorlage von der Stange. Du bekommst eine
@@ -552,7 +549,7 @@ function Benefits() {
             Was bringt dir das?
           </p>
           <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            Eine Webseite die wirklich arbeitet.
+            Eine Website, die wirklich arbeitet.
           </h2>
         </header>
 
@@ -572,136 +569,6 @@ function Benefits() {
             </div>
           ))}
         </div>
-      </div>
-    </section>
-  );
-}
-
-function Leistungen() {
-  const items = [
-    {
-      title: 'Komplett individuell gebaut',
-      text: 'Keine Vorlage, kein Baukasten. Wir bauen genau das was du brauchst.',
-    },
-    {
-      title: 'Hosting und Wartung dabei',
-      text: 'Du musst dich um nichts kümmern. Wir halten die Seite am Laufen.',
-    },
-    {
-      title: 'Sieht auf Handy top aus',
-      text: 'Über die Hälfte deiner Kunden öffnen die Seite am Handy. Das denken wir von Anfang an mit.',
-    },
-    {
-      title: 'Anbindung an deine Tools',
-      text: 'Buchhaltung, Kalender, Shop, Lager. Wir verbinden was du schon nutzt.',
-    },
-    {
-      title: 'Daten aus alten Systemen',
-      text: 'Wir übernehmen deine Kunden und Inhalte aus dem alten System. Du startest nicht bei Null.',
-    },
-    {
-      title: 'Findbar bei Google',
-      text: 'Wir bauen die Seite so, dass Google sie versteht und für deine Suchbegriffe vorne zeigt.',
-    },
-    {
-      title: 'Findbar bei KI Suchen',
-      text: 'Auch ChatGPT, Claude und Google AI sollen dich kennen. Wir bereiten die Seite darauf vor.',
-    },
-    {
-      title: 'Persönlicher Ansprechpartner',
-      text: 'Du rufst an und sprichst direkt mit Yusuf. Kein Callcenter, kein Verkäufer.',
-    },
-  ];
-
-  return (
-    <section id="leistungen" className="bg-gray-50 py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <header className="max-w-2xl">
-          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
-            Was du bekommst
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            Alles drin. Kein Schnickschnack.
-          </h2>
-          <p className="mt-3 text-base text-gray-600">
-            Wir bauen Webseiten die wirklich was können. Nicht nur ein
-            digitaler Flyer.
-          </p>
-        </header>
-
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {items.map((it) => (
-            <div
-              key={it.title}
-              className="rounded-xl border border-gray-100 bg-white p-5"
-            >
-              <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-blue/10 text-brand-blue">
-                  ✓
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {it.title}
-                  </p>
-                  <p className="mt-1 text-sm text-gray-600">{it.text}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Process() {
-  const steps = [
-    {
-      n: '01',
-      title: 'Wir reden kurz',
-      text: 'Du erzählst mir was du brauchst. Ich sage dir was geht. Das Gespräch ist kostenlos und du musst nichts kaufen.',
-    },
-    {
-      n: '02',
-      title: 'Ich baue dir einen Entwurf',
-      text: 'Nach ein paar Tagen siehst du wie deine neue Webseite aussehen wird. Du sagst mir was bleiben soll und was anders muss.',
-    },
-    {
-      n: '03',
-      title: 'Wir gehen live',
-      text: 'Sobald alles passt, geht deine Seite online. In der Regel eine Woche nach dem ersten Kontaktpunkt. Je nach Auslastung kann es auch mal zwei Wochen dauern, das klären wir vorher offen. Danach laufen Hosting, Wartung und kleine Änderungen weiter über mich.',
-    },
-  ];
-  return (
-    <section className="bg-white py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <header className="max-w-2xl">
-          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
-            So bauen wir das
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            Drei Schritte. Kein Stress.
-          </h2>
-        </header>
-
-        <ol className="mt-10 grid gap-6 md:grid-cols-3">
-          {steps.map((s) => (
-            <li
-              key={s.n}
-              className="relative rounded-2xl border border-gray-100 bg-white p-6 shadow-xs"
-            >
-              <span className="absolute -top-3 left-6 inline-flex items-center rounded-full bg-brand-blue px-3 py-1 text-xs font-semibold tracking-wider text-white">
-                Schritt {s.n}
-              </span>
-              <h3 className="mt-4 text-lg font-semibold text-gray-900">
-                {s.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                {s.text}
-              </p>
-            </li>
-          ))}
-        </ol>
       </div>
     </section>
   );
@@ -895,70 +762,6 @@ function References() {
         <div className="mt-10 grid gap-8 lg:grid-cols-2">
           {references.map((r) => (
             <ReferenceCard key={r.company} r={r} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Reviews() {
-  return (
-    <section className="bg-gray-50 py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <header className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
-          <div className="max-w-xl">
-            <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
-              Bewertungen
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-              Was unsere Kunden sagen.
-            </h2>
-            <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
-              <Stars />
-              <strong className="text-gray-900">
-                {site.rating.value.toFixed(1)} von 5
-              </strong>{' '}
-              · {site.rating.count} Bewertungen auf Google
-            </div>
-          </div>
-          <a
-            href={site.googleReviewsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-secondary"
-          >
-            Alle Bewertungen ansehen
-          </a>
-        </header>
-
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
-          {reviewHighlights.map((r) => (
-            <figure
-              key={r.author}
-              className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-xs"
-            >
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-brand-blue/10 text-base font-semibold text-brand-blue">
-                  {r.author.charAt(0)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-gray-900">
-                    {r.author}
-                  </p>
-                  <p className="text-xs text-gray-500">{r.date}</p>
-                </div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                  Google
-                </span>
-              </div>
-              <div className="mt-3">
-                <Stars count={r.rating} />
-              </div>
-              <blockquote className="mt-3 text-sm leading-relaxed text-gray-700">
-                „{r.text}"
-              </blockquote>
-            </figure>
           ))}
         </div>
       </div>
@@ -1170,74 +973,6 @@ function Bonuses() {
   );
 }
 
-function About() {
-  return (
-    <section className="bg-white py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <Reveal>
-        <div className="grid items-center gap-10 md:grid-cols-[auto_1fr]">
-          <div className="mx-auto md:mx-0">
-            <div className="relative h-56 w-56 overflow-hidden rounded-full bg-linear-to-br from-blue-100 to-white p-1.5 shadow-lg ring-4 ring-brand-blue/30 sm:h-72 sm:w-72">
-              <div className="relative h-full w-full overflow-hidden rounded-full bg-white">
-                <Image
-                  src="/email/yk.png"
-                  alt="Yusuf Kolac, Geschäftsführer von Kolac Digital aus Bielefeld"
-                  fill
-                  sizes="(min-width: 640px) 288px, 224px"
-                  className="object-cover object-center"
-                  style={{ objectPosition: '50% 30%' }}
-                />
-              </div>
-            </div>
-          </div>
-          <div>
-            <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
-              Wer baut deine Webseite?
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-              Moin, ich bin Yusuf.
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-gray-700">
-              Ich komme aus Bielefeld und baue seit Jahren Webseiten für
-              kleine und mittelgroße Firmen. Mein Schwerpunkt liegt in OWL
-              und Nordrhein-Westfalen. Ich arbeite aber genauso für Kunden in
-              ganz Deutschland.
-            </p>
-            <p className="mt-3 text-base leading-relaxed text-gray-700">
-              Bei mir bekommst du keinen Vertrieb, keinen Account Manager
-              und keinen Zwischenhändler. Du sprichst direkt mit der Person
-              die deine Webseite kennt und gebaut hat. Das spart Zeit, Nerven
-              und am Ende auch Geld.
-            </p>
-            <p className="mt-3 text-base leading-relaxed text-gray-700">
-              Mein Anspruch ist einfach. Du sollst nach dem Live-Gang mehr
-              Anfragen haben, weniger im Alltag erklären müssen und mit
-              ruhigem Gefühl auf deine eigene Webseite schauen können.
-            </p>
-
-            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-gray-600">
-              <a
-                href={`tel:${site.phoneE164}`}
-                className="font-medium text-brand-blue hover:underline"
-              >
-                ☎ {site.phone}
-              </a>
-              <span>·</span>
-              <a
-                href={`mailto:${site.email}`}
-                className="font-medium text-brand-blue hover:underline break-all"
-              >
-                ✉ {site.email}
-              </a>
-            </div>
-          </div>
-        </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
 function Faq() {
   return (
     <section id="faq" className="bg-gray-50 py-16 sm:py-20">
@@ -1271,82 +1006,6 @@ function Faq() {
               </p>
             </details>
           ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Kontakt() {
-  return (
-    <section
-      id="kontakt"
-      className="relative overflow-hidden bg-linear-to-br from-brand-blue to-blue-700 py-16 text-white sm:py-20"
-    >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="grid gap-12 lg:grid-cols-2">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-wider text-blue-200">
-              Lass uns reden
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Sag mir kurz was du brauchst.
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-blue-100">
-              Trag deinen Namen und deine Nummer ein. Ich rufe dich
-              innerhalb von 24 Stunden zurück. Wir reden in Ruhe über dein
-              Projekt. Du musst nichts entscheiden und nichts kaufen.
-            </p>
-
-            <a
-              href={site.meetingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2.5 text-sm font-medium text-white ring-1 ring-white/25 backdrop-blur-xs hover:bg-white/25 transition-colors"
-            >
-              <span aria-hidden>📅</span>
-              Termin direkt online buchen
-              <span aria-hidden>↗</span>
-            </a>
-
-            <div className="mt-8 space-y-3 text-sm">
-              <div className="flex items-center gap-3">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15">
-                  📞
-                </span>
-                <a
-                  href={`tel:${site.phoneE164}`}
-                  className="font-medium hover:underline"
-                >
-                  {site.phone}
-                </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15">
-                  ✉️
-                </span>
-                <a
-                  href={`mailto:${site.email}`}
-                  className="font-medium hover:underline break-all"
-                >
-                  {site.email}
-                </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15">
-                  ⏱️
-                </span>
-                <span>
-                  Aktuell {site.freeSlots} freie Plätze · Antwort innerhalb
-                  von 24 Stunden
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-white p-6 text-gray-900 shadow-2xl sm:p-8">
-            <ContactForm />
-          </div>
         </div>
       </div>
     </section>
@@ -1401,70 +1060,44 @@ function Industries() {
             Jetzt Erstgespräch sichern →
           </a>
         </p>
+
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Ausführlich für deine Branche:
+          {branchenSeiten.map((b) => (
+            <Link
+              key={b.slug}
+              href={`/webseiten/${b.slug}`}
+              className="ml-3 font-semibold text-brand-blue hover:underline"
+            >
+              {b.eyebrow}
+            </Link>
+          ))}
+        </p>
       </div>
     </section>
   );
 }
 
 function Regions() {
-  const cities = [
-    'Bielefeld',
-    'Herford',
-    'Bünde',
-    'Gütersloh',
-    'Paderborn',
-    'Detmold',
-    'Minden',
-    'Lemgo',
-    'Lippstadt',
-    'Münster',
-    'Osnabrück',
-    'Dortmund',
-    'Hannover',
-    'Hamm',
-  ];
-
   return (
     <section className="bg-gray-50 py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <header className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
-            Regionen
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            Webagentur für OWL, NRW und ganz Deutschland.
-          </h2>
-          <p className="mt-3 text-base text-gray-600">
-            Unser Schwerpunkt liegt in Ostwestfalen-Lippe und Nordrhein-Westfalen.
-            Über die Hälfte unserer Kunden treffen wir aber nie persönlich.
-            Wir bauen Webseiten mit System für Firmen in ganz Deutschland.
-          </p>
-        </header>
-
-        <ul className="mx-auto mt-8 flex max-w-4xl flex-wrap justify-center gap-2">
-          {cities.map((c) => (
-            <li key={c}>
-              <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 shadow-xs">
-                <span aria-hidden className="mr-1.5 text-brand-blue">
-                  📍
-                </span>
-                Webagentur {c}
-              </span>
-            </li>
-          ))}
-          <li>
-            <span className="inline-flex items-center rounded-full border border-brand-blue/30 bg-brand-blue/5 px-4 py-1.5 text-sm font-medium text-brand-blue shadow-xs">
-              <span aria-hidden className="mr-1.5">
-                🇩🇪
-              </span>
-              Webagentur deutschlandweit
-            </span>
-          </li>
-        </ul>
-
-        <p className="mt-8 text-center text-sm text-gray-500">
-          Du kommst von woanders her? Kein Problem. Wir arbeiten remote über
-          Video Call mit Kunden in ganz Deutschland.
+      <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+        <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
+          Regionen
+        </p>
+        <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+          Webagentur in Bielefeld, Webseiten für ganz Deutschland.
+        </h2>
+        <p className="mt-4 text-base leading-relaxed text-gray-600">
+          Unser Büro ist in {site.city}. Viele Kunden kommen aus
+          Ostwestfalen-Lippe, zum Beispiel aus Herford, Bünde, Lage oder
+          Paderborn. Dort kommen wir gern vorbei, etwa für das Fotoshooting.
+        </p>
+        <p className="mt-3 text-base leading-relaxed text-gray-600">
+          Über die Hälfte unserer Kunden treffen wir aber nie persönlich.
+          Erstgespräch, Entwurf und Abstimmung laufen per Telefon oder Video
+          Call. Ob dein Betrieb in Nordrhein-Westfalen sitzt oder in Hamburg,
+          München oder Leipzig, spielt dafür keine Rolle.
         </p>
       </div>
     </section>

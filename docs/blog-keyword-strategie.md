@@ -84,6 +84,37 @@ auf den die Artikel verlinken.
    „suchmaschinenoptimierung owl“ und Long-Tails zielen, nicht auf „seo
    agentur bielefeld“.
 
+## Branchenseiten (Stand 3. November 2026)
+
+Für Kunden aus ganz Deutschland gibt es Branchenseiten unter
+`/webseiten/{branche}`. Die Inhalte stehen in `lib/branchen-seiten.ts`.
+Grundlage war ein TermLabs-Abgleich der Google-Treffer (de-de):
+
+| Seite | Zielbegriff | Wer vorne steht | Referenz |
+|---|---|---|---|
+| /webseiten/fahrschule | webseite fahrschule erstellen lassen | wenige Agenturen, ab Platz 6 Baukästen, Instagram, Fahrschulen selbst | Fahrschule Kreuzer |
+| /webseiten/gebaeudereinigung | webseite gebäudereinigung erstellen lassen | dünne Agenturseiten, Baukästen, YouTube, Reddit | AF-Gebäudeservice |
+| /webseiten/kosmetikstudio | webseite kosmetikstudio erstellen lassen | kleine Agenturen und Blogs | Bacara Ästhetik |
+
+**Bewusst ohne Seite:**
+
+- **Autohaus:** Vorne stehen Anbieter von Autohaus-Software (autrado,
+  autaxo, alzura, audaris). Die Suchenden wollen ein Software-Abo, und
+  es gibt noch keine Webseiten-Referenz.
+- **Handwerker und Arztpraxis:** Jeweils über 15 spezialisierte
+  Agenturen. Erst angehen, wenn die anderen Seiten ranken.
+- **Breite Begriffe:** „webseite erstellen lassen“ (Kleinanzeigen,
+  Ionos, Wix) und „webseite mit online terminbuchung“ (Calendly,
+  eTermin) bleiben unerreichbar.
+
+**Regeln für neue Branchenseiten:**
+
+- Nur mit echtem Projekt als Referenz.
+- Probleme, Funktionen und Fragen je Branche eigens schreiben.
+- Vor dem Livegang den Text mit TermLabs (`analyze_tfidf` mit
+  `ref_text`) gegen die Konkurrenz prüfen.
+- Ratgeber-Artikel zur Branche verlinken auf die Branchenseite.
+
 ## Messen und nachsteuern
 
 - **Ratgeber-Statistik** im Dashboard (Blog > Statistik): Aufrufe,

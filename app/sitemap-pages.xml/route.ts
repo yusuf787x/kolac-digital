@@ -1,5 +1,6 @@
-import { portfolioProjects } from '@/lib/portfolio';
+import { portfolioProjects, findPortfolioProject } from '@/lib/portfolio';
 import { caseStudies } from '@/lib/case-studies';
+import { branchenSeiten } from '@/lib/branchen-seiten';
 import { renderUrlset, xmlResponse, type SitemapEntry } from '@/lib/sitemap-xml';
 
 /**
@@ -23,6 +24,8 @@ const CASE_STUDY_LASTMOD: Record<string, string> = {
 };
 const CASE_STUDY_LASTMOD_DEFAULT = '2026-08-14';
 
+const BRANCHEN_LASTMOD_DEFAULT = '2026-11-03';
+
 export function GET() {
   const entries: SitemapEntry[] = [
     {
@@ -34,11 +37,22 @@ export function GET() {
     },
     {
       path: '/webseiten',
-      lastmod: '2026-08-14',
+      lastmod: '2026-11-03',
       changefreq: 'weekly',
       priority: 0.9,
       images: ['/images/bacara-website.webp'],
     },
+    ...branchenSeiten.map(
+      (b): SitemapEntry => ({
+        path: `/webseiten/${b.slug}`,
+        lastmod: BRANCHEN_LASTMOD_DEFAULT,
+        changefreq: 'monthly',
+        priority: 0.8,
+        images: [findPortfolioProject(b.portfolioSlug)?.overviewImage].filter(
+          (i): i is string => Boolean(i),
+        ),
+      }),
+    ),
     {
       path: '/ki-beratung',
       lastmod: '2026-10-01',
