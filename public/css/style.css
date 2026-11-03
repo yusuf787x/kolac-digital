@@ -5028,6 +5028,10 @@
   line-height: 1.6;
   color: var(--color-black);
 }
+.blog-cta-inline .btn {
+  max-width: 100%;
+  white-space: normal;
+}
 @media (max-width: 640px) {
   .blog-cta {
     padding: 24px 20px;
