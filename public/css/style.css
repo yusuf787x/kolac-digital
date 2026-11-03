@@ -492,6 +492,19 @@
   animation: blink-cursor 0.75s ease-in-out infinite;
 }
 
+/* Feste H1 über der Schreibmaschinen-Zeile. Trägt die Suchbegriffe,
+   die getippte Zeile darunter ist nur Gestaltung. */
+.hero-kicker {
+  font-family: var(--font-main);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-blue);
+  margin: 0 0 18px;
+}
+
 .hero-subline {
   font-size: 15px;
   color: var(--color-gray);
@@ -1895,6 +1908,54 @@
 /* ==========================================================================
    5.5 KUNDENSTIMMEN SECTION
    ========================================================================== */
+/* ---------- Branchen und Regionen (Startseite) ---------- */
+.wege {
+  padding: 60px 0;
+  background: var(--color-white);
+}
+.wege-header {
+  max-width: 640px;
+  margin-bottom: 32px;
+}
+.wege-grid {
+  display: grid;
+  gap: 24px;
+}
+.wege-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius);
+  background: var(--color-offwhite);
+}
+.wege-col h3 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-gray);
+  margin-bottom: 4px;
+}
+.wege-col a {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-black);
+}
+.wege-col a::after {
+  content: ' →';
+  color: var(--color-blue);
+}
+.wege-col a:hover {
+  color: var(--color-blue);
+}
+@media (min-width: 768px) {
+  .wege-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .kundenstimmen {
   padding: 60px 0;
   background: var(--color-offwhite);

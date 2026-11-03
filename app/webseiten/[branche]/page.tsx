@@ -16,6 +16,8 @@ import {
   Leistungen,
   Process,
   Reviews,
+  FaqListe,
+  ProjektKarten,
   Stars,
 } from '../sections';
 
@@ -279,6 +281,9 @@ function Referenz({
   seite: BranchenSeite;
   project: PortfolioProject;
 }) {
+  const weitere = (seite.weitereReferenzen ?? [])
+    .map(findPortfolioProject)
+    .filter((p): p is PortfolioProject => Boolean(p));
   return (
     <section id="referenz" className="scroll-mt-24 bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -369,6 +374,17 @@ function Referenz({
             </div>
           </div>
         </div>
+
+        {weitere.length > 0 && (
+          <div className="mt-14">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Weitere Projekte aus der Branche
+            </h3>
+            <div className="mt-5">
+              <ProjektKarten projects={weitere} />
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -376,39 +392,8 @@ function Referenz({
 
 function BranchenFaq({ seite }: { seite: BranchenSeite }) {
   return (
-    <section id="faq" className="bg-gray-50 py-16 sm:py-20">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6">
-        <header>
-          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
-            Häufige Fragen
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            Das fragen uns {seite.zielgruppe} oft.
-          </h2>
-        </header>
-
-        <div className="mt-8 space-y-3">
-          {seite.faqs.map((f) => (
-            <details
-              key={f.question}
-              className="group rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-xs open:shadow-md"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-gray-900">
-                {f.question}
-                <span
-                  aria-hidden
-                  className="text-gray-400 transition-transform group-open:rotate-45"
-                >
-                  +
-                </span>
-              </summary>
-              <p className="mt-3 text-sm leading-relaxed text-gray-600">
-                {f.answer}
-              </p>
-            </details>
-          ))}
-        </div>
-
+    <FaqListe title={`Das fragen uns ${seite.zielgruppe} oft.`} faqs={seite.faqs}>
+      {seite.ratgeber && (
         <p className="mt-8 text-sm text-gray-600">
           Mehr dazu im Ratgeber:{' '}
           <Link
@@ -418,8 +403,8 @@ function BranchenFaq({ seite }: { seite: BranchenSeite }) {
             {seite.ratgeber.title}
           </Link>
         </p>
-      </div>
-    </section>
+      )}
+    </FaqListe>
   );
 }
 

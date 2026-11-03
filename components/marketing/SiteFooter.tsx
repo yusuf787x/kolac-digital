@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 /**
  * Footer-Komponente, die 1:1 die Homepage-Footer (public/index.html)
  * spiegelt. Nutzt die gleichen CSS-Klassen aus public/css/style.css.
@@ -20,12 +22,13 @@ export default function SiteFooter() {
             <div className="footer-columns">
               <div className="footer-col">
                 <span className="footer-col-title">Links</span>
-                <a href="/#leistungen">Leistungen</a>
+                <Link href="/webseiten">Webdesign</Link>
+                <Link href="/software">Software</Link>
+                <Link href="/ki-beratung">KI-Beratung</Link>
+                <Link href="/case-studys">Case Studys</Link>
+                <Link href="/portfolio">Portfolio</Link>
+                <Link href="/blog">Ratgeber</Link>
                 <a href="/#about">Über uns</a>
-                <a href="/case-studys">Case Studys</a>
-                <a href="/portfolio">Portfolio</a>
-                <a href="/blog">Ratgeber</a>
-                <a href="/#kundenstimmen">Kundenstimmen</a>
                 <a href="/#kontakt">Kontakt</a>
               </div>
               <div className="footer-col">

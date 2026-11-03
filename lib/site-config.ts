@@ -71,16 +71,16 @@ export const packages: PackageTier[] = [
   },
   {
     id: 'individual',
-    name: 'Individualprojekt',
+    name: 'Webseite mit System',
     priceMain: 'Individuelles Angebot',
     priceSub: 'Umfang bestimmt den Preis',
     description:
-      'Für alle die ein eigenes System brauchen. Mit Datenbank, eigener Logik und voller Verknüpfung.',
+      'Für alle, deren Website mehr können soll: mit eigenem Backend, Datenbank und Anbindung an deine Programme.',
     bullets: [
-      'Komplette eigene Software für dein Geschäft',
+      'Website plus eigenes Backend für deinen Betrieb',
+      'Terminbuchung, Anfragen-Dashboard, Angebote und Rechnungen',
       'Übernahme der Daten aus deinem alten System',
       'Verbindung zu deinen Tools und Programmen',
-      'Eigene Datenbank für deine Kunden und Aufträge',
       'Wir planen alles vorher gemeinsam',
     ],
   },

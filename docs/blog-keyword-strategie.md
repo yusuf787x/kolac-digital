@@ -95,9 +95,28 @@ Grundlage war ein TermLabs-Abgleich der Google-Treffer (de-de):
 | /webseiten/fahrschule | webseite fahrschule erstellen lassen | wenige Agenturen, ab Platz 6 Baukästen, Instagram, Fahrschulen selbst | Fahrschule Kreuzer |
 | /webseiten/gebaeudereinigung | webseite gebäudereinigung erstellen lassen | dünne Agenturseiten, Baukästen, YouTube, Reddit | AF-Gebäudeservice |
 | /webseiten/kosmetikstudio | webseite kosmetikstudio erstellen lassen | kleine Agenturen und Blogs | Bacara Ästhetik |
+| /webseiten/fahrdienst | webseite fahrdienst erstellen lassen | Software-Anbieter, Vorlagen, Pinterest, kaum Agenturen | PaderPuls |
+| /webseiten/kfz-werkstatt | webseite kfz werkstatt erstellen lassen | Website-Dienste, Baukästen, ADAC, Rechnungssoftware | Motorenfachmann, CarHiFi Herford |
+
+**Stadtseiten** unter `/webdesign/{stadt}`, Inhalte in `lib/staedte-seiten.ts`.
+Bielefeld selbst ist /webseiten.
+
+| Seite | Wer vorne steht | Referenz |
+|---|---|---|
+| /webdesign/herford | Stadtseiten auswärtiger Agenturen ohne Kunden vor Ort | CarHiFi Herford, Mironi, MK Automobile |
+| /webdesign/buende | Stadtseiten auswärtiger Agenturen, ab Platz 14 fachfremd | Bacara Ästhetik |
+| /webdesign/paderborn | viele echte Agenturen aus Paderborn, schwer | PaderPuls |
+
+**Seitenstruktur seit 3. November 2026:** Startseite = Überblick,
+/webseiten = Webdesign (Hauptgeschäft, „Webdesign/Webagentur Bielefeld“),
+/software = individuelle Software (Excel ablösen, Kleinbetriebe und
+Mittelstand statt Kopfbegriff „Software entwickeln lassen“, dort stehen
+Softwarehäuser vorne), /ki-beratung bleibt.
 
 **Bewusst ohne Seite:**
 
+- **Onlineshop:** „onlineshop erstellen lassen“ ist ein Kopfbegriff mit
+  Shop-Agenturen, n-tv, Flyeralarm und Kleinanzeigen vorne.
 - **Autohaus:** Vorne stehen Anbieter von Autohaus-Software (autrado,
   autaxo, alzura, audaris). Die Suchenden wollen ein Software-Abo, und
   es gibt noch keine Webseiten-Referenz.
@@ -114,6 +133,8 @@ Grundlage war ein TermLabs-Abgleich der Google-Treffer (de-de):
 - Vor dem Livegang den Text mit TermLabs (`analyze_tfidf` mit
   `ref_text`) gegen die Konkurrenz prüfen.
 - Ratgeber-Artikel zur Branche verlinken auf die Branchenseite.
+- Neue Branchen- und Stadtseiten auch in `public/index.html` im
+  Abschnitt „wege“ verlinken (statisches HTML).
 
 ## Messen und nachsteuern
 

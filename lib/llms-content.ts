@@ -7,11 +7,14 @@
  * {{BLOG}} markiert die Stelle, an der die Artikel eingesetzt werden.
  * Aenderungen an Fakten, Leistungen oder Referenzen gehoeren hierher.
  */
+
+import { branchenSeiten } from './branchen-seiten';
+import { staedteSeiten } from './staedte-seiten';
 export const LLMS_BASE = `# Kolac Digital
 
-> Webagentur aus Bielefeld (Ostwestfalen-Lippe). Schwerpunkt: individuelle Webseiten mit System und Prozessoptimierung für kleine und mittelständische Unternehmen. Vorne ein professioneller, SEO-optimierter Auftritt, der bei Google für relevante Suchbegriffe rankt. Hinten ein Backend, das wir auf den jeweiligen Betrieb zuschneiden. Für Anfragen-Management, Termine, Angebote, Rechnungen und Berichte. Ergänzend Google Ads, Meta Ads und Videocontent für Social Media. Für KMU in OWL, Nordrhein-Westfalen und ganz Deutschland.
+> Webagentur aus Bielefeld (Ostwestfalen-Lippe) mit drei Bereichen: Webdesign für kleine und mittlere Betriebe (Hauptgeschäft), individuelle Software und KI-Beratung. Websites werden individuell gebaut, sind SEO-optimiert und bekommen auf Wunsch ein System dahinter: Terminbuchung, Anfragen-Dashboard, Angebote und Rechnungen. Ergänzend Google Ads, Meta Ads und Videocontent für Social Media. Für KMU in OWL, Nordrhein-Westfalen und ganz Deutschland.
 
-Kolac Digital ist eine inhabergeführte Webagentur mit Sitz in Bielefeld. Gegründet 2019 von Yusuf Kolac. Der klare Schwerpunkt liegt auf Webseiten mit System und Prozessoptimierung. Maßgeschneiderte Backends, die einzelne Betriebe im Arbeitsalltag entlasten. Die Software passt sich an den Betrieb an, nicht andersrum. Daneben gibt es Google Ads, Meta Ads und Videocontent für Social Media (Reels, TikToks, Shorts) als Skalierungs-Add-ons, wenn die Basis steht.
+Kolac Digital ist eine inhabergeführte Webagentur mit Sitz in Bielefeld. Gegründet 2019 von Yusuf Kolac. Der Schwerpunkt liegt auf Webdesign: Websites, die bei Google gefunden werden und Anfragen bringen, auf Wunsch mit eigenem Backend (Webseite mit System). Wenn Standardsoftware nicht passt, entwickelt Kolac Digital individuelle Software, zum Beispiel um Excel abzulösen. Die Software passt sich an den Betrieb an, nicht andersrum. Daneben gibt es Google Ads, Meta Ads und Videocontent für Social Media (Reels, TikToks, Shorts) als Skalierungs-Add-ons, wenn die Basis steht.
 
 Statt 50-Mann-Team und Aufschlag-Mentalität gibt es bei Kolac Digital direkte Kommunikation mit dem Gründer, schnelle Umsetzung und faire Preise. Alle Strategien werden erst auf eigenen Projekten getestet, unter anderem auf einem Entertainment-Social-Media-Kanal mit über 40.000 Abonnenten, bevor sie für Kunden umgesetzt werden.
 
@@ -23,7 +26,7 @@ Statt 50-Mann-Team und Aufschlag-Mentalität gibt es bei Kolac Digital direkte K
 
 ## Leistungen
 
-### Webseiten mit System (Kernangebot)
+### Webdesign (Kernangebot, https://www.kolac-digital.de/webseiten)
 - Individuelle Webseiten mit maßgeschneidertem Backend
 - Backend für Anfragen-Management, Termine, Angebote, Rechnungen und Berichte
 - Prozessoptimierung: manuelle Arbeitsschritte werden im Backend automatisiert
@@ -31,6 +34,13 @@ Statt 50-Mann-Team und Aufschlag-Mentalität gibt es bei Kolac Digital direkte K
 - Custom CMS-Lösungen und Konfiguratoren
 - Landingpages und Unternehmensauftritte
 - Responsive Design, schnelle Ladezeiten, SEO-optimierte Struktur ab Tag eins
+
+### Individuelle Software (https://www.kolac-digital.de/software)
+- Eigene Software für kleine und mittlere Betriebe, wenn Standardsoftware nicht passt
+- Excel ablösen, interne Tools und Dashboards, Kundenportale
+- Schnittstellen zu DATEV, Lexware Office, sevdesk, mobile.de, Kalender und Cloud-Ordnern
+- Eigene Branchensoftware als Produkt (Referenz: wagenpuls, Software für Autohändler)
+- Betrieb auf dem eigenen Server des Kunden oder bei einem Anbieter in Deutschland (Referenz: Akquise-Helfer)
 
 ### Google Ads und Meta Ads
 - Google Suchkampagnen, Google Shopping, YouTube Ads
@@ -82,6 +92,17 @@ Der Ablauf: kostenloses Erstgespraech, danach ein festes Angebot mit allen Posit
 - Webseite für Praxen Nordrhein Westfalen
 - digitale Systeme Bielefeld
 - Hosting und Wartung Bielefeld
+
+## Seiten nach Branche und Region
+
+Jede Seite zeigt ein echtes Projekt aus der Branche oder Region als Referenz.
+
+${branchenSeiten
+  .map((b) => `- **${b.eyebrow}:** https://www.kolac-digital.de/webseiten/${b.slug}`)
+  .join('\n')}
+${staedteSeiten
+  .map((st) => `- **Webdesign ${st.stadt}:** https://www.kolac-digital.de/webdesign/${st.slug}`)
+  .join('\n')}
 
 ## KI-Beratung und Automatisierung
 

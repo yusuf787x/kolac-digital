@@ -90,12 +90,13 @@
               <div class="footer-columns">
                 <div class="footer-col">
                   <span class="footer-col-title">Links</span>
-                  <a href="${home}#leistungen">Leistungen</a>
-                  <a href="${home}#about">Über uns</a>
+                  <a href="/webseiten">Webdesign</a>
+                  <a href="/software">Software</a>
+                  <a href="/ki-beratung">KI-Beratung</a>
                   <a href="/case-studys">Case Studys</a>
                   <a href="/portfolio">Portfolio</a>
                   <a href="/blog">Ratgeber</a>
-                  <a href="${home}#kundenstimmen">Kundenstimmen</a>
+                  <a href="${home}#about">Über uns</a>
                   <a href="${home}#kontakt">Kontakt</a>
                 </div>
                 <div class="footer-col">

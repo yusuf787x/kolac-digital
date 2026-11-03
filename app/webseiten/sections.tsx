@@ -1,11 +1,14 @@
 import Image from 'next/image';
+import Link from 'next/link';
+import type { PortfolioProject } from '@/lib/portfolio';
 import { reviewHighlights, site } from '@/lib/site-config';
 import ContactForm from './ContactForm';
 import Reveal from '@/components/marketing/Reveal';
 
 /**
- * Abschnitte, die /webseiten und die Branchenseiten unter
- * /webseiten/[branche] gemeinsam nutzen.
+ * Abschnitte, die /webseiten, die Branchenseiten unter
+ * /webseiten/[branche] und die Stadtseiten unter /webdesign/[stadt]
+ * gemeinsam nutzen.
  */
 
 export function Stars({ count = 5 }: { count?: number }) {
@@ -229,7 +232,7 @@ export function Reviews() {
   );
 }
 
-export function About() {
+export function About({ thema = 'Webseite' }: { thema?: string }) {
   return (
     <section className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -251,27 +254,26 @@ export function About() {
           </div>
           <div>
             <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
-              Wer baut deine Webseite?
+              Wer baut deine {thema}?
             </p>
             <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
               Moin, ich bin Yusuf.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-gray-700">
-              Ich komme aus Bielefeld und baue seit Jahren Webseiten für
-              kleine und mittelgroße Firmen. Mein Schwerpunkt liegt in OWL
+              Ich komme aus Bielefeld und baue seit Jahren Webseiten und
+              Software für kleine und mittelgroße Firmen. Mein Schwerpunkt liegt in OWL
               und Nordrhein-Westfalen. Ich arbeite aber genauso für Kunden in
               ganz Deutschland.
             </p>
             <p className="mt-3 text-base leading-relaxed text-gray-700">
               Bei mir bekommst du keinen Vertrieb, keinen Account Manager
-              und keinen Zwischenhändler. Du sprichst direkt mit der Person
-              die deine Webseite kennt und gebaut hat. Das spart Zeit, Nerven
+              und keinen Zwischenhändler. Du sprichst direkt mit der Person, die deine {thema} kennt und gebaut hat. Das spart Zeit, Nerven
               und am Ende auch Geld.
             </p>
             <p className="mt-3 text-base leading-relaxed text-gray-700">
               Mein Anspruch ist einfach. Du sollst nach dem Live-Gang mehr
               Anfragen haben, weniger im Alltag erklären müssen und mit
-              ruhigem Gefühl auf deine eigene Webseite schauen können.
+              ruhigem Gefühl auf deine eigene {thema} schauen können.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-gray-600">
@@ -370,5 +372,105 @@ export function Kontakt({ source }: { source?: string }) {
         </div>
       </div>
     </section>
+  );
+}
+
+export function FaqListe({
+  title,
+  faqs,
+  children,
+}: {
+  title: string;
+  faqs: { question: string; answer: string }[];
+  children?: React.ReactNode;
+}) {
+  return (
+    <section id="faq" className="bg-gray-50 py-16 sm:py-20">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+        <header>
+          <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">
+            Häufige Fragen
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+            {title}
+          </h2>
+        </header>
+
+        <div className="mt-8 space-y-3">
+          {faqs.map((f) => (
+            <details
+              key={f.question}
+              className="group rounded-xl border border-gray-100 bg-white px-5 py-4 shadow-xs open:shadow-md"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-gray-900">
+                {f.question}
+                <span
+                  aria-hidden
+                  className="text-gray-400 transition-transform group-open:rotate-45"
+                >
+                  +
+                </span>
+              </summary>
+              <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                {f.answer}
+              </p>
+            </details>
+          ))}
+        </div>
+
+        {children}
+      </div>
+    </section>
+  );
+}
+
+export function ProjektKarten({ projects }: { projects: PortfolioProject[] }) {
+  const spalten =
+    projects.length === 1
+      ? 'max-w-md'
+      : projects.length === 2
+        ? 'max-w-4xl md:grid-cols-2'
+        : 'md:grid-cols-2 lg:grid-cols-3';
+  return (
+    <div className={`grid gap-6 ${spalten}`}>
+      {projects.map((p) => (
+        <Link
+          key={p.slug}
+          href={p.caseStudyUrl ?? `/portfolio/${p.slug}`}
+          className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xs transition-shadow hover:shadow-md"
+        >
+          <div className="relative aspect-16/10 w-full bg-gray-100">
+            <Image
+              src={p.overviewImage}
+              alt={p.imageAlt}
+              fill
+              sizes="(min-width: 1024px) 360px, (min-width: 768px) 50vw, 100vw"
+              className="object-cover object-top"
+            />
+          </div>
+          <div className="flex flex-1 flex-col p-5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-brand-blue">
+              {p.tag}
+            </span>
+            <h3 className="mt-2 text-lg font-semibold text-gray-900">
+              {p.company}
+            </h3>
+            <p className="mt-0.5 text-sm text-gray-500">
+              {p.category}
+              {p.location ? ` · ${p.location}` : ''}
+            </p>
+            <p className="mt-3 flex-1 text-sm leading-relaxed text-gray-700">
+              {p.keyWin}
+            </p>
+            <span className="mt-4 text-sm font-semibold text-brand-blue">
+              {p.caseStudyUrl ? 'Case Study lesen' : 'Projekt ansehen'}{' '}
+              <span aria-hidden className="inline-block transition-transform group-hover:translate-x-0.5">
+                →
+              </span>
+            </span>
+          </div>
+        </Link>
+      ))}
+    </div>
   );
 }

@@ -5,11 +5,11 @@
   },
   "hero": {
     "rotatingHeadlines": [
-      "Webseiten, die für dein Geschäft arbeiten.",
+      "Webseiten, die Anfragen bringen.",
       "Software, die sich dir anpasst. Nicht andersrum.",
       "Vorne Webseite. Hinten dein System."
     ],
-    "subline": "Wir bauen Webseiten mit System, die dir im Arbeitsalltag den Rücken freihalten. Vorne professionell und bei Google ganz oben. Hinten ein Backend, das wir individuell auf dein Geschäft zuschneiden. Kein Baukasten, kein „mach es so wie alle anderen“. Sondern ein Werkzeug, das deinem Takt folgt.",
+    "subline": "Wir bauen Websites für kleine und mittlere Betriebe, auf Wunsch mit System dahinter: Terminbuchung, Anfragen im Dashboard, Angebote und Rechnungen. Und wenn Standardsoftware nicht passt, entwickeln wir deine eigene Software. Ein Ansprechpartner, faire Preise, Kunden in OWL und ganz Deutschland.",
     "buttonPrimary": "📅 Erstgespräch buchen",
     "buttonPrimaryLink": "https://calendar.app.google/98kp1D3NhowkBDiD9",
     "buttonSecondary": "Unsere Arbeit"
@@ -17,64 +17,67 @@
   "leistungen": {
     "label": "LEISTUNGEN",
     "headline": "Was wir für dich tun",
-    "intro": "Eine Webseite ist heute mehr als ein digitales Schaufenster. Sie kann dein Werkzeug für den Alltag sein. Vorne stark, hinten individuell auf dein Geschäft zugeschnitten. Plus Google Ads und Videocontent, wenn deine Basis steht und du in die Breite skalieren willst.",
+    "intro": "Drei Bereiche, ein Ansprechpartner. Webdesign ist unser Hauptgeschäft. Individuelle Software und KI-Beratung kommen dazu, wenn dein Betrieb mehr braucht als eine Website.",
     "services": [
       {
-        "title": "Webseiten mit System",
+        "title": "Webdesign",
         "icon": "monitor",
         "featured": true,
-        "description": "Vorne ein Auftritt, der bei Google rankt. Hinten ein Backend, das wir für deinen Betrieb maßschneidern. Anfragen, Termine, Angebote, Berichte. Die Software passt sich an dich an, nicht umgekehrt.",
+        "description": "Websites für kleine und mittlere Betriebe, individuell gebaut statt Baukasten. Stark bei Google, schnell am Handy und auf Wunsch mit System dahinter.",
         "features": [
-          "Starkes Frontend mit SEO ab Tag eins",
-          "Verwaltung der Anfragen im Backend",
-          "Termine, Buchungen und Bestellungen automatisch",
-          "Angebote und Rechnungen aus dem System",
-          "Dashboard mit deinen wichtigsten Zahlen",
-          "Individuell auf deinen Betrieb zugeschnitten"
+          "Individuelles Webdesign, kein Baukasten",
+          "SEO und lokale Sichtbarkeit ab Tag eins",
+          "Auf Wunsch mit Terminbuchung und Backend",
+          "Hosting, Wartung und kleine Änderungen inklusive",
+          "In der Regel in einer Woche live"
         ],
         "link": "/webseiten",
-        "linkText": "Mehr zu Webseiten mit System"
+        "linkText": "Mehr zu Webdesign"
       },
       {
-        "title": "Google und Meta Ads",
-        "icon": "search",
-        "description": "Wenn deine Webseite steht und Anfragen reinholt, helfen wir dir auch bei der bezahlten Sichtbarkeit. Damit du nicht warten musst, bis organisch was passiert.",
+        "title": "Individuelle Software",
+        "icon": "code",
+        "description": "Wenn Excel, Zettel und fünf verschiedene Programme nicht mehr reichen, entwickeln wir dir eine eigene Software, die genau zu deinem Betrieb passt.",
         "features": [
-          "Google Suchkampagnen und Shopping",
-          "Meta Ads für Facebook und Instagram",
-          "Conversion Tracking sauber aufgesetzt",
-          "Laufende Optimierung"
-        ]
+          "Excel und Insellösungen ablösen",
+          "Interne Tools, Dashboards und Kundenportale",
+          "Schnittstellen zu DATEV, Lexware und Co.",
+          "Auf deinem Server oder in Deutschland gehostet"
+        ],
+        "link": "/software",
+        "linkText": "Mehr zu individueller Software"
       },
       {
-        "title": "Videocontent und Social Media",
-        "icon": "video",
-        "description": "Kurzvideos, die Aufmerksamkeit erzeugen. Vor allem dann, wenn deine Webseite und deine Prozesse schon laufen und du in die Breite skalieren willst.",
+        "title": "KI-Beratung und Automatisierung",
+        "icon": "spark",
+        "description": "Wir finden heraus, wo KI in deinem Betrieb wirklich Arbeit abnimmt, und bauen eine Testversion mit echten Daten. Ohne Hype, mit Blick auf Datenschutz.",
         "features": [
-          "Reels, TikToks und Shorts",
-          "Skripte und Konzeption",
-          "Dreh und Postproduktion"
-        ]
+          "KI-Konzept mit Handlungsempfehlungen",
+          "Testversion mit echten Daten",
+          "Datenschutz und KI-Verordnung von Anfang an"
+        ],
+        "link": "/ki-beratung",
+        "linkText": "Mehr zur KI-Beratung"
       }
     ],
-    "extra": "Und wenn du sonst noch was brauchst, etwa Logos, Flyer oder Produktfotografie, bekommst du das auch. Unser Schwerpunkt liegt aber klar auf Webseiten mit System."
+    "extra": "Dazu kommen Google Ads, Meta Ads und Videocontent für Social Media, wenn deine Basis steht. Und Logos, Flyer oder Produktfotos bekommst du auch."
   },
   "about": {
     "label": "ÜBER UNS",
-    "headline": "Warum Webseiten mit System?",
+    "headline": "Warum Kolac Digital?",
     "image": "images/yk.webp",
     "text": [
-      "Eine Beobachtung hat alles verändert. Die meisten Unternehmer sind richtig gut in ihrem Geschäft. Aber das Drumherum frisst sie auf. Anfragen verschwinden im Postfach, Termine geraten durcheinander, am Monatsende fehlt der Überblick. Statt zu helfen, wird die fertige Software zur Bremse.",
-      "Genau hier setzen wir an. Wir bauen Webseiten, die mehr sind als ein Schaufenster. Vorne ein professioneller Auftritt. Hinten ein Backend, das wir wie einen Maßanzug auf deinen Betrieb zuschneiden. Die Software passt sich dir an, nicht andersrum."
+      "Eine Beobachtung hat alles verändert. Die meisten Unternehmer sind richtig gut in ihrem Geschäft. Aber online sieht man davon wenig, und das Drumherum frisst sie auf. Anfragen verschwinden im Postfach, Termine geraten durcheinander, und die fertige Software wird zur Bremse statt zur Hilfe.",
+      "Genau hier setzen wir an. Wir bauen Websites, die Kunden bringen, und auf Wunsch das System dahinter, wie einen Maßanzug auf deinen Betrieb zugeschnitten. Die Software passt sich dir an, nicht andersrum."
     ],
     "tags": [
-      "Webseiten mit System",
-      "Individuell zugeschnitten",
+      "Webdesign aus Bielefeld",
+      "Individuelle Software",
       "Direkter Draht zum Inhaber",
       "Faire Preise"
     ],
     "cta": {
-      "text": "Mehr zu Webseiten mit System",
+      "text": "Mehr zu Webdesign",
       "link": "/webseiten"
     }
   },

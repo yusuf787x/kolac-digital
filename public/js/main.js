@@ -60,14 +60,17 @@
   function renderHero() {
     const d = siteData.hero;
 
-    // Single headline element for typewriter effect
+    // Zeile für den Schreibmaschinen-Effekt. Bewusst kein <h1>: Die H1
+    // steht fest im HTML (.hero-kicker), damit Suchmaschinen eine
+    // vollständige Überschrift sehen statt eines halb getippten Satzes.
     const wrapper = document.querySelector('.hero-headline-wrapper');
     if (wrapper) {
       wrapper.innerHTML = '';
-      const h1 = document.createElement('h1');
-      h1.className = 'hero-headline';
-      h1.dataset.headlines = JSON.stringify(d.rotatingHeadlines);
-      wrapper.appendChild(h1);
+      const line = document.createElement('p');
+      line.className = 'hero-headline';
+      line.setAttribute('aria-hidden', 'true');
+      line.dataset.headlines = JSON.stringify(d.rotatingHeadlines);
+      wrapper.appendChild(line);
     }
 
     // Subline
@@ -135,7 +138,9 @@
     const icons = {
       monitor: `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
       search: `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><circle cx="11" cy="11" r="3" stroke-dasharray="2 2"/></svg>`,
-      video: `<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`
+      video: `<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`,
+      code: `<svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>`,
+      spark: `<svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg>`
     };
     return icons[type] || icons.monitor;
   }

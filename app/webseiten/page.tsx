@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { branchenSeiten } from '@/lib/branchen-seiten';
+import { staedteSeiten } from '@/lib/staedte-seiten';
 import {
   bausteinAddOn,
   faqs,
@@ -22,7 +23,6 @@ import {
   Reviews,
   Stars,
 } from './sections';
-import ZeitfresserRechner from '@/components/marketing/ZeitfresserRechner';
 
 export const metadata: Metadata = {
   title:
@@ -160,7 +160,7 @@ function StructuredData() {
   const service = {
     '@context': 'https://schema.org',
     '@type': 'Service',
-    serviceType: 'Individuelle Webseiten und digitale Systeme',
+    serviceType: 'Webdesign',
     provider: { '@id': `${site.baseUrl}/#business` },
     areaServed: serviceAreas,
     description:
@@ -384,19 +384,19 @@ function Hero() {
 
 function PainSolution() {
   const painPoints = [
-    'Anfragen verschwinden im E-Mail Postfach',
-    'Termine werden doppelt gebucht oder vergessen',
-    'Angebote und Rechnungen schreiben kostet Stunden',
-    'Am Monatsende kein klarer Blick auf Einnahmen, Ausgaben und Gewinn',
-    'Fertige Software zwingt dich in fremde Prozesse',
+    'Bei Google findet dich kaum jemand, die Konkurrenz steht vorne',
+    'Die Website ist veraltet und sieht am Handy schlecht aus',
+    'Interessenten rufen an, statt online anzufragen, oder gar nicht',
+    'Die Seite aus dem Baukasten sieht aus wie bei allen anderen',
+    'Änderungen dauern ewig, weil sich niemand richtig kümmert',
   ];
 
   const solutionPoints = [
-    'Anfragen landen sortiert in deinem Dashboard',
-    'Kunden buchen Termine selbst, ohne Hin und Her',
-    'Angebote und Rechnungen erstellst du in zwei Klicks',
-    'Live Zahlen zu Umsatz, Gewinn und offenen Posten',
-    'Das System ist auf deinen Betrieb zugeschnitten',
+    'Bei Google für die Suchbegriffe gefunden, die Kunden wirklich nutzen',
+    'Modernes Webdesign, das am Handy genauso überzeugt wie am PC',
+    'Anfragen kommen sortiert online rein, auch nach Feierabend',
+    'Ein Auftritt, der zeigt, was deinen Betrieb besonders macht',
+    'Hosting, Wartung und Änderungen laufen über uns',
   ];
 
   return (
@@ -412,10 +412,9 @@ function PainSolution() {
           </h2>
           <p className="mt-4 text-base leading-relaxed text-gray-600 sm:text-lg">
             Dein Geschäft läuft gut. Du bist gut in dem, was du tust. Aber
-            das Drumherum frisst dich auf. Du verbringst mehr Zeit mit
-            Verwaltung als mit dem, was du eigentlich machen willst. Und die
-            Software, die das lösen soll, zwingt dich in Prozesse, die
-            einfach nicht zu deinem Betrieb passen.
+            online sieht man davon wenig. Die Website ist in die Jahre
+            gekommen, bei Google stehen andere vor dir, und wer dich findet,
+            ruft lieber woanders an.
           </p>
         </header>
         </Reveal>
@@ -428,10 +427,10 @@ function PainSolution() {
               <span className="inline-flex items-center rounded-full bg-gray-200 px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-700">
                 Vorher
               </span>
-              <span className="text-sm text-gray-500">Das Chaos</span>
+              <span className="text-sm text-gray-500">Die alte Website</span>
             </div>
             <h3 className="mt-4 text-xl font-semibold text-gray-900">
-              So sieht der Alltag in vielen Firmen aus.
+              So sieht es bei vielen Betrieben aus.
             </h3>
             <ul className="mt-5 space-y-3">
               {painPoints.map((p) => (
@@ -452,14 +451,14 @@ function PainSolution() {
           <div className="rounded-2xl border-2 border-brand-blue/40 bg-linear-to-br from-brand-blue/5 to-white p-6 shadow-xs sm:p-8">
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center rounded-full bg-brand-blue px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-                Mit System
+                Nachher
               </span>
               <span className="text-sm font-medium text-brand-blue">
-                Der Maßanzug
+                Webdesign von uns
               </span>
             </div>
             <h3 className="mt-4 text-xl font-semibold text-gray-900">
-              So sieht er aus, wenn deine Webseite ein System dahinter hat.
+              So sieht es aus, wenn deine Website für dich arbeitet.
             </h3>
             <ul className="mt-5 space-y-3">
               {solutionPoints.map((s) => (
@@ -483,12 +482,20 @@ function PainSolution() {
         <Reveal delay={200}>
           <div className="mx-auto mt-10 max-w-3xl text-center">
             <p className="text-base leading-relaxed text-gray-700">
-              Wir bauen Webseiten, die mehr sind als ein Schaufenster. Vorne
-              präsentiert sich dein Geschäft. Hinten arbeitet ein Backend,
-              das wir wie einen Maßanzug auf deinen Betrieb zuschneiden.{' '}
+              Und wenn du mehr willst als ein Schaufenster, bekommt deine
+              Website ein System dahinter: Terminbuchung, Anfragen im
+              Dashboard, Angebote und Rechnungen.{' '}
               <strong className="text-gray-900">
-                Die Software passt sich dir an, nicht andersrum.
-              </strong>
+                Webseite mit System, zugeschnitten auf deinen Betrieb.
+              </strong>{' '}
+              Brauchst du eine komplett eigene Software, findest du das unter{' '}
+              <Link
+                href="/software"
+                className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
+              >
+                individuelle Software
+              </Link>
+              .
             </p>
           </div>
         </Reveal>
@@ -901,6 +908,16 @@ function Pricing() {
         </div>
         </Reveal>
 
+        <p className="mt-8 text-center text-sm text-gray-600">
+          Du brauchst eine komplett eigene Software, etwa um Excel abzulösen?{' '}
+          <Link
+            href="/software"
+            className="font-semibold text-brand-blue hover:underline"
+          >
+            Mehr zu individueller Software →
+          </Link>
+        </p>
+
         <p className="mt-6 text-center text-xs text-gray-500">
           Alle Preise sind Nettopreise und verstehen sich zuzüglich der
           gesetzlichen Mehrwertsteuer.
@@ -1088,6 +1105,17 @@ function Regions() {
           Ostwestfalen-Lippe, zum Beispiel aus Herford, Bünde, Lage oder
           Paderborn. Dort kommen wir gern vorbei, etwa für das Fotoshooting.
         </p>
+        <p className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
+          {staedteSeiten.map((st) => (
+            <Link
+              key={st.slug}
+              href={`/webdesign/${st.slug}`}
+              className="font-semibold text-brand-blue hover:underline"
+            >
+              Webdesign {st.stadt}
+            </Link>
+          ))}
+        </p>
         <p className="mt-3 text-base leading-relaxed text-gray-600">
           Über die Hälfte unserer Kunden treffen wir aber nie persönlich.
           Erstgespräch, Entwurf und Abstimmung laufen per Telefon oder Video
@@ -1120,7 +1148,6 @@ export default function WebseitenPage() {
       <Bonuses />
       <About />
       <Regions />
-      <ZeitfresserRechner />
       <Faq />
       <Kontakt />
     </>

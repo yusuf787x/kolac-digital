@@ -8,6 +8,10 @@
  * gefunden. Fuer SEO/GEO: eigene Meta-Angaben pro Projekt, sitemap.xml
  * enthaelt alle Slugs, jede Detail-Seite hat FAQPage-fertige
  * Antwort-Bloecke.
+ *
+ * Neues Projekt? Pruefen, ob es eine Branchenseite (lib/branchen-seiten.ts)
+ * oder Stadtseite (lib/staedte-seiten.ts) stuetzt oder eine neue lohnt.
+ * Neue Seiten auch in public/index.html (Abschnitt "wege") verlinken.
  */
 
 import type { ProjectScreenshot } from '@/lib/case-studies';

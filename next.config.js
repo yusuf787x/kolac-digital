@@ -11,6 +11,14 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
+  async redirects() {
+    return [
+      // /webdesign hat nur Stadtseiten (/webdesign/herford usw.). Die
+      // Übersicht für Webdesign ist /webseiten.
+      { source: '/webdesign', destination: '/webseiten', permanent: true },
+    ];
+  },
+
   async rewrites() {
     return [
       // "/" servt die bestehende statische Homepage (public/index.html).

@@ -39,10 +39,16 @@ export interface BranchenSeite {
   features: BranchenFeature[];
   /** Projekt aus lib/portfolio.ts, das als Referenz gezeigt wird. */
   portfolioSlug: string;
+  /** Weitere Projekte aus lib/portfolio.ts, klein unter der Hauptreferenz. */
+  weitereReferenzen?: string[];
   /** Einordnung der Referenz, wenn sie nicht genau dieselbe Branche ist. */
   referenceNote?: string;
-  /** Passender Ratgeber-Artikel. */
-  ratgeber: { href: string; title: string };
+  /**
+   * Passender Ratgeber-Artikel. Der Artikel verlinkt dann automatisch
+   * zurück auf diese Seite, deshalb nur eintragen, wenn er wirklich zur
+   * Branche gehört.
+   */
+  ratgeber?: { href: string; title: string };
   faqs: BranchenFaq[];
   /** Quelle im Kontaktformular, steht in der Anfrage-Mail. */
   formSource: string;
@@ -324,6 +330,177 @@ export const branchenSeiten: BranchenSeite[] = [
       },
     ],
     formSource: 'Branchenseite Kosmetikstudio',
+  },
+  {
+    slug: 'fahrdienst',
+    name: 'Fahrdienste',
+    zielgruppe: 'Fahrdienste',
+    metaTitle:
+      'Webseite für Fahrdienste und Krankenfahrten erstellen lassen | Kolac Digital',
+    metaDescription:
+      'Webseite für deinen Fahrdienst: jede Fahrt mit eigener Seite, Hotline und WhatsApp mit einem Klick, gefunden in jedem Ort. Referenz: PaderPuls Krankenfahrdienst aus Paderborn.',
+    eyebrow: 'Webseite für Fahrdienste',
+    h1: 'Webseite für deinen Fahrdienst, über die Fahrten reinkommen.',
+    intro:
+      'Ob Krankenfahrten, Flughafentransfer oder Taxi: Wer einen Fahrdienst sucht, braucht schnell eine Antwort. Welche Fahrten bietest du an, übernimmt die Krankenkasse die Kosten, und wie erreiche ich dich sofort? Wir bauen dir eine Website, die genau das beantwortet und Anfragen auch dann annimmt, wenn du am Steuer sitzt. Für Fahrdienste in ganz Deutschland.',
+    problemsTitle: 'Kennst du das aus deinem Fahrdienst?',
+    problems: [
+      'Das Telefon klingelt, während du fährst. Wer nicht durchkommt, ruft den nächsten Fahrdienst an.',
+      'Patienten und Angehörige wissen nicht, ob die Krankenkasse die Fahrt bezahlt, und fragen jedes Mal nach.',
+      'Die alte Seite aus dem Baukasten erklärt alles auf einer Seite und wird bei Google kaum gefunden.',
+      'Du suchst Fahrerinnen und Fahrer, aber Bewerbungen kommen nur über Umwege.',
+    ],
+    featuresTitle: 'Was die Website deines Fahrdienstes kann.',
+    featuresIntro:
+      'Bei einem Fahrdienst zählt Vertrauen und Erreichbarkeit. Die Seite zeigt beides auf den ersten Blick.',
+    features: [
+      {
+        icon: '🚑',
+        title: 'Jede Fahrt eine eigene Seite',
+        text: 'Dialysefahrten, Chemo- und Strahlentherapie, Arztfahrten, Rollstuhltransport, Flughafentransfer: Jede Leistung bekommt eine Unterseite mit Ablauf, Kosten und Verordnung.',
+      },
+      {
+        icon: '📞',
+        title: 'Hotline und WhatsApp mit einem Klick',
+        text: 'Auf jeder Seite ist dein Fahrdienst sofort erreichbar. Dazu ein Rückruf-Formular für alle, die gerade niemanden erreichen.',
+      },
+      {
+        icon: '📍',
+        title: 'Gefunden in jedem Ort',
+        text: 'Eigene Seiten für die Orte und Stadtteile, in denen du fährst, mit echten Fahrzeiten und den Kliniken vor Ort. So findet Google dich auch im Umland.',
+      },
+      {
+        icon: '💶',
+        title: 'Kosten und Krankenkasse erklärt',
+        text: 'Die häufigsten Fragen zu Verordnung, Kosten und Abrechnung mit der Krankenkasse beantwortet die Seite, bevor jemand anruft.',
+      },
+      {
+        icon: '🧑‍✈️',
+        title: 'Fahrer finden über die Website',
+        text: 'Eine Karriereseite mit Bewerbungsformular, damit neue Fahrerinnen und Fahrer direkt bei dir landen.',
+      },
+      {
+        icon: '🗓️',
+        title: 'Fahrten online anfragen',
+        text: 'Planbare Fahrten wie Arzttermine oder Transfers lassen sich über ein Formular anfragen. Die Anfragen landen sortiert bei dir, nicht im Anrufbeantworter.',
+      },
+    ],
+    portfolioSlug: 'paderpuls',
+    faqs: [
+      {
+        question: 'Was gehört auf die Website eines Fahrdienstes?',
+        answer:
+          'Deine Fahrten einzeln erklärt, dein Einsatzgebiet, eine gut sichtbare Telefonnummer, Antworten zu Kosten und Krankenkasse und ein paar Worte über dein Team. Fahrgäste und Angehörige wollen wissen, wer sie fährt. Echte Fotos und Google-Bewertungen helfen dabei mehr als jede Grafik.',
+      },
+      {
+        question: 'Wie wird mein Krankenfahrdienst bei Google gefunden?',
+        answer:
+          'Mit einer Unterseite für jede Fahrt, eigenen Seiten für die Orte, in denen du fährst, und einem gepflegten Google-Unternehmensprofil. Bei PaderPuls aus Paderborn wurden so aus fünf dünnen Seiten über 40 Seiten, die für Krankenfahrten in der Region gefunden werden.',
+      },
+      {
+        question: 'Können Kunden Fahrten online buchen?',
+        answer:
+          'Für planbare Fahrten ja, über ein Anfrage- oder Buchungsformular. Dringende Fahrten laufen weiter übers Telefon, deshalb steht deine Nummer auf jeder Seite ganz oben.',
+      },
+      {
+        question: 'Was kostet es, eine Webseite für einen Fahrdienst erstellen zu lassen?',
+        answer: kostenAntwort(
+          'Eine Seite mit deinen Fahrten, dem Einsatzgebiet und Kontakt',
+          'eine Seite mit vielen Orts- und Leistungsseiten und Karrierebereich',
+        ),
+      },
+      {
+        question: 'Mein Fahrdienst ist nicht in OWL. Geht das trotzdem?',
+        answer: deutschlandweitAntwort,
+      },
+    ],
+    formSource: 'Branchenseite Fahrdienst',
+  },
+  {
+    slug: 'kfz-werkstatt',
+    name: 'Kfz-Werkstätten',
+    zielgruppe: 'Kfz-Werkstätten',
+    metaTitle:
+      'Webseite für Kfz-Werkstätten erstellen lassen · mehr Aufträge | Kolac Digital',
+    metaDescription:
+      'Webseite für deine Kfz-Werkstatt: jede Leistung mit eigener Seite, Anfrage mit Fahrzeugdaten, gefunden in deiner Stadt. Referenzen: Motorenfachmann und CarHiFi Herford.',
+    eyebrow: 'Webseite für Kfz-Werkstätten',
+    h1: 'Webseite für deine Kfz-Werkstatt, die Aufträge bringt.',
+    intro:
+      'Wer eine Werkstatt sucht, hat meistens ein Problem mit dem Auto und will schnell wissen: Macht ihr das, was kostet es ungefähr, und wann habt ihr Zeit? Wir erstellen dir eine Homepage, die das beantwortet, bei Google für deine Leistungen gefunden wird und Anfragen sortiert zu dir bringt. Für Kfz-Werkstätten, Autowerkstätten und Meisterbetriebe in ganz Deutschland.',
+    problemsTitle: 'Kennst du das aus deiner Werkstatt?',
+    problems: [
+      'Du liegst unter dem Auto, das Telefon klingelt. Der Kunde ruft die nächste Autowerkstatt an.',
+      'Deine Homepage aus dem Baukasten ist alt, zeigt nicht, was du kannst, und sieht am Handy schlecht aus.',
+      'Bei Google stehen Ketten und Portale vor dir, obwohl du in deiner Stadt der Spezialist bist.',
+      'Kunden fragen nach Leistungen, die du längst anbietest, weil sie nirgends stehen.',
+    ],
+    featuresTitle: 'Was die Website deiner Werkstatt kann.',
+    featuresIntro:
+      'Kunden suchen nach ihrem Problem, nicht nach deinem Namen. Deshalb baut die Seite auf deinen Leistungen auf.',
+    features: [
+      {
+        icon: '🔧',
+        title: 'Jede Leistung eine eigene Seite',
+        text: 'Inspektion, Motorinstandsetzung, Getriebe, Klimaservice oder Reifen: Jede Leistung bekommt eine Unterseite mit Ablauf und ungefähren Kosten. So findet Google dich für genau die Reparatur, die gesucht wird.',
+      },
+      {
+        icon: '📝',
+        title: 'Anfrage mit Fahrzeugdaten',
+        text: 'Marke, Modell, Baujahr, Problem und gern ein Foto: Das Anfrageformular fragt alles ab, was du für eine erste Einschätzung brauchst.',
+      },
+      {
+        icon: '💬',
+        title: 'WhatsApp und Rückruf',
+        text: 'Ein WhatsApp-Knopf auf jeder Seite und ein Rückruf-Formular. Kunden erreichen dich online, auch wenn du gerade nicht ans Telefon kannst.',
+      },
+      {
+        icon: '📍',
+        title: 'Gefunden in deiner Stadt',
+        text: 'Lokales SEO für „Kfz-Werkstatt“ plus Ort, dazu dein Google-Unternehmensprofil mit Bewertungen und Öffnungszeiten. Holst du Fahrzeuge bundesweit ab, bekommen auch deine Einsatzgebiete eigene Seiten.',
+      },
+      {
+        icon: '⚙️',
+        title: 'Technik, die Google versteht',
+        text: 'Eine Adresse, eigener Titel und eigene Beschreibung für jede Seite, Firmendaten für Google. Bei Motorenfachmann stieg der Onpage-Score so von 60 auf 95 Prozent.',
+      },
+      {
+        icon: '📸',
+        title: 'Fotos aus deiner Werkstatt',
+        text: 'Echte Bilder von dir, deinem Team und deinen Arbeitsplätzen statt Stockfotos. Das Fotoshooting vor Ort ist bei uns dabei.',
+      },
+    ],
+    portfolioSlug: 'motorenfachmann',
+    weitereReferenzen: ['carhifi-herford'],
+    faqs: [
+      {
+        question: 'Was gehört auf die Website einer Kfz-Werkstatt?',
+        answer:
+          'Deine Leistungen einzeln erklärt, Adresse mit Öffnungszeiten, eine gut sichtbare Telefonnummer, ein Anfrageformular und ein paar Worte über dich und dein Team. Dazu Google-Bewertungen und echte Fotos aus der Werkstatt. Kunden wollen sehen, wem sie ihr Auto anvertrauen.',
+      },
+      {
+        question: 'Ich habe schon eine Website. Muss die komplett neu?',
+        answer:
+          'Nicht unbedingt. Bei Motorenfachmann haben wir die bestehende Seite übernommen und technisch wie inhaltlich aufgeräumt, statt alles neu zu bauen. Ob ein Relaunch oder eine Überarbeitung mehr bringt, sagen wir dir im Erstgespräch ehrlich.',
+      },
+      {
+        question: 'Wie wird meine Werkstatt bei Google gefunden?',
+        answer:
+          'Mit einer Unterseite für jede Leistung, Texten, die deine Stadt und dein Einsatzgebiet klar nennen, sauberer Technik und einem gepflegten Google-Unternehmensprofil. Einen garantierten ersten Platz verspricht niemand seriös, aber Google versteht deine Seite dann eindeutig.',
+      },
+      {
+        question: 'Was kostet es, eine Webseite für eine Kfz-Werkstatt erstellen zu lassen?',
+        answer: kostenAntwort(
+          'Eine Seite mit Leistungen, Öffnungszeiten und Anfrageformular',
+          'eine Seite mit vielen Leistungs- und Ortsseiten oder eigenem Konfigurator',
+        ),
+      },
+      {
+        question: 'Meine Werkstatt ist nicht in OWL. Geht das trotzdem?',
+        answer: deutschlandweitAntwort,
+      },
+    ],
+    formSource: 'Branchenseite Kfz-Werkstatt',
   },
 ];
 

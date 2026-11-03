@@ -90,7 +90,7 @@ export default async function BlogArticlePage({ params }: Props) {
   const published = post.publishedAt?.toDate();
   const sources = post.sources ?? [];
   const branche = branchenSeiten.find(
-    (b) => b.ratgeber.href === `/blog/${post.slug}`,
+    (b) => b.ratgeber?.href === `/blog/${post.slug}`,
   );
   const brancheReferenz = branche && findPortfolioProject(branche.portfolioSlug);
 

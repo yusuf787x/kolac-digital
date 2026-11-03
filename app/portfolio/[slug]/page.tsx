@@ -8,6 +8,8 @@ import {
   type BeforeAfter,
 } from '@/lib/portfolio';
 import { site } from '@/lib/site-config';
+import { branchenSeiten } from '@/lib/branchen-seiten';
+import { staedteSeiten } from '@/lib/staedte-seiten';
 import Reveal from '@/components/marketing/Reveal';
 
 interface Props {
@@ -47,6 +49,23 @@ export default async function PortfolioProjectPage({ params }: Props) {
   const { slug } = await params;
   const project = findPortfolioProject(slug);
   if (!project) notFound();
+
+  // Branchen- und Stadtseiten, die dieses Projekt als Referenz zeigen.
+  const passendeSeiten = [
+    ...branchenSeiten
+      .filter(
+        (b) =>
+          b.portfolioSlug === project.slug ||
+          b.weitereReferenzen?.includes(project.slug),
+      )
+      .map((b) => ({ href: `/webseiten/${b.slug}`, label: b.eyebrow })),
+    ...staedteSeiten
+      .filter((st) => st.referenzen.includes(project.slug))
+      .map((st) => ({ href: `/webdesign/${st.slug}`, label: `Webdesign ${st.stadt}` })),
+    ...(['wagenpuls', 'akquise-helfer'].includes(project.slug)
+      ? [{ href: '/software', label: 'Individuelle Software für deinen Betrieb' }]
+      : []),
+  ];
 
   const idx = portfolioProjects.findIndex((p) => p.slug === project.slug);
   const other = portfolioProjects
@@ -271,6 +290,22 @@ export default async function PortfolioProjectPage({ params }: Props) {
                 </ul>
               </div>
             </Reveal>
+
+            {passendeSeiten.length > 0 && (
+              <Reveal>
+                <div className="portfolio-detail-block">
+                  <div className="section-label">ÄHNLICHER BETRIEB?</div>
+                  <h2 className="portfolio-detail-h2">So machen wir das auch für dich</h2>
+                  <ul className="portfolio-services-list">
+                    {passendeSeiten.map((l) => (
+                      <li key={l.href}>
+                        <Link href={l.href}>{l.label} →</Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Reveal>
+            )}
           </div>
         </div>
       </section>

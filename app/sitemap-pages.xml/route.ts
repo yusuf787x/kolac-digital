@@ -1,6 +1,7 @@
 import { portfolioProjects, findPortfolioProject } from '@/lib/portfolio';
 import { caseStudies } from '@/lib/case-studies';
 import { branchenSeiten } from '@/lib/branchen-seiten';
+import { staedteSeiten } from '@/lib/staedte-seiten';
 import { renderUrlset, xmlResponse, type SitemapEntry } from '@/lib/sitemap-xml';
 
 /**
@@ -25,12 +26,13 @@ const CASE_STUDY_LASTMOD: Record<string, string> = {
 const CASE_STUDY_LASTMOD_DEFAULT = '2026-08-14';
 
 const BRANCHEN_LASTMOD_DEFAULT = '2026-11-03';
+const STAEDTE_LASTMOD_DEFAULT = '2026-11-03';
 
 export function GET() {
   const entries: SitemapEntry[] = [
     {
       path: '/',
-      lastmod: '2026-09-18',
+      lastmod: '2026-11-03',
       changefreq: 'weekly',
       priority: 1.0,
       images: ['/images/Logo Lang Schwarz.png'],
@@ -53,6 +55,24 @@ export function GET() {
         ),
       }),
     ),
+    ...staedteSeiten.map(
+      (st): SitemapEntry => ({
+        path: `/webdesign/${st.slug}`,
+        lastmod: STAEDTE_LASTMOD_DEFAULT,
+        changefreq: 'monthly',
+        priority: 0.8,
+        images: [findPortfolioProject(st.referenzen[0])?.overviewImage].filter(
+          (i): i is string => Boolean(i),
+        ),
+      }),
+    ),
+    {
+      path: '/software',
+      lastmod: '2026-11-03',
+      changefreq: 'monthly',
+      priority: 0.9,
+      images: ['/images/wagenpuls/ueberblick.webp'],
+    },
     {
       path: '/ki-beratung',
       lastmod: '2026-10-01',
