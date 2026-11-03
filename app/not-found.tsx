@@ -33,7 +33,7 @@ export default function NotFound() {
 
       <SiteHeader ctaHref="/webseiten" ctaLabel="Webseite mit System" />
 
-      <main className="site-marketing-main">
+      <main>
         <section className="notfound-section">
           <div className="container">
             <div className="notfound-inner">

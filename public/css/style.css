@@ -41,56 +41,64 @@
   --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ---------- Reset & Base ---------- */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* ---------- Reset & Base ----------
+   Liegt im Layer "base". Die Next-Seiten laden diese Datei neben
+   Tailwind 4, das seine Utilities ebenfalls in Layern hält. Ohne Layer
+   würde dieser Reset (z. B. padding: 0) alle Utilities wie px-4 oder
+   mx-auto überschreiben, denn Styles ohne Layer gewinnen immer. Auf den
+   statischen Seiten ändert der Layer nichts: Klassen gewinnen dort
+   ohnehin gegen diese Element-Regeln. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-}
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
 
-body {
-  font-family: var(--font-main);
-  font-size: 17px;
-  line-height: 1.75;
-  color: var(--color-gray);
-  background-color: var(--color-offwhite);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-}
+  body {
+    font-family: var(--font-main);
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--color-gray);
+    background-color: var(--color-offwhite);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
 
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
 
-a {
-  text-decoration: none;
-  color: inherit;
-  transition: color var(--transition);
-}
+  a {
+    text-decoration: none;
+    color: inherit;
+    transition: color var(--transition);
+  }
 
-ul {
-  list-style: none;
-}
+  ul {
+    list-style: none;
+  }
 
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
-  font-size: inherit;
-  border: none;
-  outline: none;
-  background: none;
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+    font-size: inherit;
+    border: none;
+    outline: none;
+    background: none;
+  }
 }
 
 /* ---------- Utility ---------- */

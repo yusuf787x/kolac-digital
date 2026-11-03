@@ -36,7 +36,7 @@ export default function BlogLayout({
     >
       <link rel="stylesheet" href="/css/style.css" />
       <SiteHeader ctaHref="/webseiten" ctaLabel="Webseite mit System" />
-      <main className="site-marketing-main">{children}</main>
+      <main>{children}</main>
       <SiteFooter />
     </div>
   );

@@ -44,7 +44,7 @@ export default function PortfolioLayout({
 
       <SiteHeader ctaHref="/webseiten" ctaLabel="Webseite mit System" />
 
-      <main className="site-marketing-main">{children}</main>
+      <main>{children}</main>
 
       <SiteFooter />
     </div>
