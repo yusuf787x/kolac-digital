@@ -19,12 +19,17 @@ interface Props {
   headline?: string;
   text?: string;
   variant?: 'full' | 'inline';
+  /** Zweiter Button, z.B. die Branchenseite passend zum Artikel. */
+  secondaryHref?: string;
+  secondaryLabel?: string;
 }
 
 export default function BlogCta({
   headline = 'Klingt nach deinem Betrieb?',
   text = 'In 15 Minuten schauen wir uns deine Abläufe an und sagen dir ehrlich, ob sich ein System für dich lohnt. Kostenlos und ohne Verpflichtung.',
   variant = 'full',
+  secondaryHref = SECONDARY_HREF,
+  secondaryLabel = SECONDARY_LABEL,
 }: Props) {
   if (variant === 'inline') {
     return (
@@ -55,8 +60,8 @@ export default function BlogCta({
         >
           {PRIMARY_LABEL}
         </a>
-        <Link href={SECONDARY_HREF} className="btn btn-outline">
-          {SECONDARY_LABEL}
+        <Link href={secondaryHref} className="btn btn-outline">
+          {secondaryLabel}
         </Link>
       </div>
       <p className="blog-cta-meta">

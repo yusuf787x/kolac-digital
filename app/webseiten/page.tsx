@@ -212,11 +212,6 @@ function StructuredData() {
     description:
       'In drei Schritten von der ersten Anfrage zur fertigen Webseite mit individuellem Backend.',
     totalTime: 'P7D',
-    estimatedCost: {
-      '@type': 'MonetaryAmount',
-      currency: 'EUR',
-      value: 1500,
-    },
     step: [
       {
         '@type': 'HowToStep',

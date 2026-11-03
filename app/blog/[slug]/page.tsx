@@ -14,6 +14,8 @@ import ArticleSources from '@/components/marketing/ArticleSources';
 import ArticleTracker from '@/components/marketing/ArticleTracker';
 import ArticleFeedback from '@/components/marketing/ArticleFeedback';
 import type { BlogPost } from '@/lib/types';
+import { branchenSeiten } from '@/lib/branchen-seiten';
+import { findPortfolioProject } from '@/lib/portfolio';
 
 export const revalidate = 600;
 /** Unbekannte Slugs zur Laufzeit nachrendern statt 404 beim Build. */
@@ -87,6 +89,10 @@ export default async function BlogArticlePage({ params }: Props) {
   const headings = extractHeadings(post.body);
   const published = post.publishedAt?.toDate();
   const sources = post.sources ?? [];
+  const branche = branchenSeiten.find(
+    (b) => b.ratgeber.href === `/blog/${post.slug}`,
+  );
+  const brancheReferenz = branche && findPortfolioProject(branche.portfolioSlug);
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
@@ -252,6 +258,19 @@ export default async function BlogArticlePage({ params }: Props) {
 
           <ArticleBody markdown={post.body} />
 
+          {branche && (
+            <div className="blog-cta-inline">
+              <p>
+                Für {branche.zielgruppe} haben wir eine eigene Seite: was die
+                Website können sollte und wie das bei{' '}
+                {brancheReferenz?.company ?? 'einem echten Kunden'} aussieht.
+              </p>
+              <Link href={`/webseiten/${branche.slug}`} className="btn btn-primary">
+                {branche.eyebrow} ansehen
+              </Link>
+            </div>
+          )}
+
           {/* Markiert das Artikelende fuer die Zaehlung "gelesen". */}
           <div id="artikel-ende" aria-hidden="true" />
           <ArticleTracker postId={post.id} endId="artikel-ende" />
@@ -271,7 +290,14 @@ export default async function BlogArticlePage({ params }: Props) {
 
           <ArticleSources sources={sources} />
 
-          <BlogCta />
+          {branche ? (
+            <BlogCta
+              secondaryHref={`/webseiten/${branche.slug}`}
+              secondaryLabel={`${branche.eyebrow} ansehen`}
+            />
+          ) : (
+            <BlogCta />
+          )}
 
           {related.length > 0 && (
             <section className="article-related">
