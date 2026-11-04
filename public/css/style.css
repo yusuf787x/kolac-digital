@@ -1124,29 +1124,30 @@
 
 .about-image-wrapper {
   position: relative;
-  max-width: 400px;
+  width: 100%;
+  max-width: 260px;
   margin: 0 auto;
 }
 
+/* Blaue Kachel versetzt hinter dem runden Portrait */
 .about-image-wrapper::before {
   content: '';
   position: absolute;
-  top: -8px;
-  left: -8px;
-  right: 8px;
-  bottom: 8px;
-  border: 2px solid var(--color-gold);
-  border-radius: var(--radius);
+  inset: 0;
+  transform: translate(14px, 14px);
+  background: var(--color-blue);
+  border-radius: 50%;
   z-index: 0;
 }
 
 .about-image {
   position: relative;
   z-index: 1;
-  border-radius: var(--radius);
+  border-radius: 50%;
   overflow: hidden;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   background: #e5e5e5;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
 .about-image img {

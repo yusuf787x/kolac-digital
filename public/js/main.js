@@ -159,7 +159,7 @@
     if (imgContainer) {
       const img = document.createElement('img');
       img.src = d.image;
-      img.alt = 'Kolac Digital Team';
+      img.alt = 'Yusuf Kolac, Inhaber von Kolac Digital';
       img.onerror = function () {
         this.style.display = 'none';
         const ph = document.createElement('div');

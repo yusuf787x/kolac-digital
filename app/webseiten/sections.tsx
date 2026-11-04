@@ -242,12 +242,11 @@ export function About({ thema = 'Webseite' }: { thema?: string }) {
             <div className="relative h-56 w-56 overflow-hidden rounded-full bg-linear-to-br from-blue-100 to-white p-1.5 shadow-lg ring-4 ring-brand-blue/30 sm:h-72 sm:w-72">
               <div className="relative h-full w-full overflow-hidden rounded-full bg-white">
                 <Image
-                  src="/email/yk.png"
+                  src="/images/yk-portrait.webp"
                   alt="Yusuf Kolac, Geschäftsführer von Kolac Digital aus Bielefeld"
                   fill
                   sizes="(min-width: 640px) 288px, 224px"
                   className="object-cover object-center"
-                  style={{ objectPosition: '50% 30%' }}
                 />
               </div>
             </div>
