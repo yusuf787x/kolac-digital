@@ -23,7 +23,8 @@ import CheckCard from './CheckCard';
 import KeywordsBlock from './KeywordsBlock';
 import MetricHistory from './MetricHistory';
 import MoversPanel from './MoversPanel';
-import { ActivityList, Delta, Section } from './parts';
+import ActivityPreview from './ActivityPreview';
+import { Delta, Section } from './parts';
 
 /**
  * Der Monatsbericht im Portal. preview markiert einen noch nicht
@@ -200,7 +201,7 @@ export default function ReportView({
 
       <Section id="massnahmen" title={`Was wir im ${monthNameDE(m)} gemacht haben`}>
         {data.activitiesThisMonth.length ? (
-          <ActivityList items={data.activitiesThisMonth} />
+          <ActivityPreview items={data.activitiesThisMonth} />
         ) : (
           <p className="text-sm text-gray-600">Für diesen Monat sind noch keine Maßnahmen eingetragen.</p>
         )}
