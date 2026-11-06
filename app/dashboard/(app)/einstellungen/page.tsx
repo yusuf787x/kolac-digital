@@ -19,6 +19,7 @@ import {
 import { authedFetch } from '@/lib/api-client';
 import type { Settings, GoogleAuth } from '@/lib/types';
 import ContractTypesManager from '@/components/contract/ContractTypesManager';
+import Link from 'next/link';
 
 export default function EinstellungenPage() {
   return (
@@ -240,6 +241,19 @@ function EinstellungenInner() {
       </header>
 
       <div className="space-y-6">
+        <section className="card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">Mail-Vorlagen</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Alle Mails an Kunden ansehen (Rechnung, Lastschrift, Mahnstufen,
+              Portal) und dir als Test schicken.
+            </p>
+          </div>
+          <Link href="/dashboard/einstellungen/mails" className="btn-secondary shrink-0 text-center">
+            Mails ansehen
+          </Link>
+        </section>
+
         <form onSubmit={handleSaveSettings} className="card space-y-4">
           <h2 className="text-base font-semibold text-gray-900">
             Rechnungs-Defaults

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { Resend } from 'resend';
+import { emailLayout } from '@/lib/email-layout';
 import { adminDb } from '@/lib/firebase-admin';
 import {
   addDays,
@@ -184,7 +185,10 @@ async function sendDigest(d: {
   const rowLine = (r: Row) =>
     `${link(r)} · ${esc(r.company)} · ${esc(r.label)} · offen ${formatEUR(r.openAmount)}`;
 
-  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#0a0a0a;line-height:1.55;font-size:14px;">
+  const html = emailLayout({
+    sender: 'none',
+    title: 'Zahlungserinnerungen heute',
+    bodyHtml: `
     ${section(
       'Heute verschickt',
       d.sent.map(
@@ -210,9 +214,9 @@ async function sendDigest(d: {
     ${section(
       'Fehler beim Versand',
       d.errors.map((e) => `${esc(e.invoiceNumber)}: ${esc(e.message)}`),
-    )}
-    ${base ? `<p style="margin-top:22px;"><a href="${base}/dashboard/rechnungen/mahnwesen" style="display:inline-block;background:#2563eb;color:#fff;padding:9px 14px;border-radius:8px;text-decoration:none;font-weight:600;">Zahlungserinnerungen öffnen</a></p>` : ''}
-  </div>`;
+    )}`,
+    button: base ? { label: 'Zahlungserinnerungen öffnen', href: `${base}/dashboard/rechnungen/mahnwesen` } : undefined,
+  });
 
   const text = [
     d.sent.length ? `Heute verschickt: ${d.sent.length}` : '',

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Timestamp } from 'firebase-admin/firestore';
 import { Resend } from 'resend';
+import { emailLayout } from '@/lib/email-layout';
 import { adminDb } from '@/lib/firebase-admin';
 
 export const runtime = 'nodejs';
@@ -106,18 +107,14 @@ async function sendReminder(opts: {
     from: 'Kolac Digital <yusuf@kolac-digital.de>',
     to: 'yusuf@kolac-digital.de',
     subject: `⏰ Vertrag noch nicht signiert: ${opts.title}`,
-    html: `
-      <div style="font-family:-apple-system,sans-serif;color:#0a0a0a;line-height:1.6;font-size:15px;">
-        <p>Der Vertrag <strong>${escapeHtml(opts.title)}</strong> wurde vor ${opts.daysSinceSent} Tagen verschickt und ist noch nicht signiert.</p>
-        <p>Kunde: <strong>${escapeHtml(opts.customerCompany)}</strong></p>
-        ${
-          link
-            ? `<p><a href="${link}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;">Im Dashboard öffnen</a></p>`
-            : ''
-        }
-        <p style="color:#6b7280;font-size:13px;">Wenn der Vertrag inzwischen außerhalb des Systems signiert wurde, einfach im Dashboard "Als signiert markieren" anklicken — dann hörst du diese Erinnerung auf.</p>
-      </div>
-    `,
+    html: emailLayout({
+      sender: 'none',
+      title: 'Vertrag noch nicht signiert',
+      bodyHtml: `<p>Der Vertrag <strong>${escapeHtml(opts.title)}</strong> wurde vor ${opts.daysSinceSent} Tagen verschickt und ist noch nicht signiert.</p>
+        <p>Kunde: <strong>${escapeHtml(opts.customerCompany)}</strong></p>`,
+      button: link ? { label: 'Im Dashboard öffnen', href: link } : undefined,
+      footnote: 'Wenn der Vertrag inzwischen außerhalb des Systems signiert wurde, einfach im Dashboard „Als signiert markieren“ anklicken, dann hört diese Erinnerung auf.',
+    }),
     text: [
       `Vertrag ${opts.title} ist seit ${opts.daysSinceSent} Tagen unsigniert.`,
       `Kunde: ${opts.customerCompany}`,

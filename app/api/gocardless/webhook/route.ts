@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Timestamp } from 'firebase-admin/firestore';
 import { Resend } from 'resend';
+import { emailLayout } from '@/lib/email-layout';
+import { buildDirectDebitInvoiceEmail } from '@/lib/email-templates';
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
 import {
   verifyWebhookSignature,
@@ -456,39 +458,20 @@ async function sendInvoiceMail(opts: {
     throw new Error('RESEND_API_KEY ist nicht gesetzt.');
   }
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const html = `
-    <div style="font-family:-apple-system,sans-serif;color:#0a0a0a;line-height:1.6;font-size:15px;">
-      <p>Hallo ${escapeHtml(opts.customerName)},</p>
-      <p>danke für die laufende Zusammenarbeit. Im Anhang findest du die Rechnung
-      <strong>${opts.invoiceNumber}</strong> über <strong>${formatEur(opts.totalAmount)}</strong>.</p>
-      <p>Der Betrag wurde am <strong>${formatDateDE(opts.chargedAt)}</strong> per
-      SEPA-Lastschrift von deinem hinterlegten Konto eingezogen — du musst nichts
-      weiter tun.</p>
-      <p>Bei Rückfragen einfach kurz Bescheid geben.</p>
-      <p>Liebe Grüße<br/>Yusuf Kolac<br/>Kolac Digital</p>
-    </div>
-  `;
-  const text = [
-    `Hallo ${opts.customerName},`,
-    '',
-    `danke für die laufende Zusammenarbeit. Im Anhang findest du die Rechnung ${opts.invoiceNumber} über ${formatEur(opts.totalAmount)}.`,
-    '',
-    `Der Betrag wurde am ${formatDateDE(opts.chargedAt)} per SEPA-Lastschrift eingezogen — du musst nichts weiter tun.`,
-    '',
-    'Bei Rückfragen einfach kurz Bescheid geben.',
-    '',
-    'Liebe Grüße',
-    'Yusuf Kolac',
-    'Kolac Digital',
-  ].join('\n');
+  const tpl = buildDirectDebitInvoiceEmail({
+    customerName: opts.customerName,
+    invoiceNumber: opts.invoiceNumber,
+    totalAmount: opts.totalAmount,
+    chargedAt: formatDateDE(opts.chargedAt),
+  });
 
   const result = await resend.emails.send({
     from: FROM_EMAIL,
     to: opts.to,
-    replyTo: 'yusuf@kolac-digital.de',
-    subject: `Rechnung ${opts.invoiceNumber} – Lastschrift eingezogen`,
-    html,
-    text,
+    replyTo: tpl.replyTo,
+    subject: tpl.subject,
+    html: tpl.html,
+    text: tpl.text,
     attachments: [
       {
         filename: opts.pdfFilename,
@@ -515,7 +498,7 @@ async function notifyAdmin(opts: { subject: string; html: string }) {
       from: FROM_EMAIL,
       to: ADMIN_EMAIL,
       subject: opts.subject,
-      html: `<div style="font-family:-apple-system,sans-serif;color:#0a0a0a;line-height:1.6;font-size:15px;">${opts.html}</div>`,
+      html: emailLayout({ sender: 'none', bodyHtml: opts.html }),
     });
   } catch (err) {
     console.error('Admin-Notification fehlgeschlagen:', err);

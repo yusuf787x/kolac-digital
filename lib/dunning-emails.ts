@@ -2,6 +2,7 @@ import { BANK_DETAILS } from './company';
 import { DUNNING_FROM, DUNNING_REPLY_TO, formatDay } from './dunning';
 import type { DunningStage, Salutation } from './types';
 import { formatEUR } from './utils';
+import { emailBox, emailDataRows, emailLayout, emailSignatureText, esc } from './email-layout';
 
 /**
  * Texte der drei Zahlungserinnerungen. Absender ist die Buchhaltung
@@ -32,16 +33,6 @@ export interface DunningEmail {
   subject: string;
   html: string;
   text: string;
-}
-
-const baseStyles = `font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0a0a0a; line-height: 1.6; font-size: 15px;`;
-
-function esc(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 function greeting(input: DunningEmailInput): string {
@@ -137,43 +128,19 @@ function bankRows(input: DunningEmailInput): Array<[string, string]> {
   ];
 }
 
-const SIGNATURE_LINES = [
-  'Marci',
-  'Buchhaltung',
-  'Kolac Digital',
-  'Beckhausstraße 108, 33611 Bielefeld',
-  'buchhaltung@kolac-digital.de',
-  'www.kolac-digital.de',
-];
-
 export function buildDunningEmail(input: DunningEmailInput): DunningEmail {
   const subject = subjectFor(input.stage, input.invoiceNumber);
   const paras = paragraphs(input);
   const closing = input.stage === 3 ? 'Mit freundlichen Grüßen' : 'Freundliche Grüße';
 
-  const bankTable = bankRows(input)
-    .map(
-      ([k, v]) =>
-        `<tr><td style="color:#6b7280; padding:2px 16px 2px 0;">${k}</td><td style="font-weight:600;">${esc(v)}</td></tr>`,
-    )
-    .join('');
-
-  const html = `<div style="${baseStyles}">
-    <p>${esc(greeting(input))}</p>
-    ${paras.map((p) => `<p>${esc(p)}</p>`).join('\n    ')}
-    <table cellpadding="0" cellspacing="0" border="0" style="margin:18px 0; padding:12px 16px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; font-size:14px;">${bankTable}</table>
-    <p style="margin-top:24px;">${closing}</p>
-    <div style="font-size:14px; line-height:1.5;">
-      <div style="font-weight:600;">Marci</div>
-      <div>Buchhaltung</div>
-      <div style="margin-top:10px; color:#6b7280; font-size:13px;">
-        <div><strong style="color:#0a0a0a;">Kolac Digital</strong></div>
-        <div>Beckhausstraße 108, 33611 Bielefeld</div>
-        <div><a href="mailto:buchhaltung@kolac-digital.de" style="color:#2563eb; text-decoration:none;">buchhaltung@kolac-digital.de</a></div>
-        <div><a href="https://www.kolac-digital.de" style="color:#2563eb; text-decoration:none;">www.kolac-digital.de</a></div>
-      </div>
-    </div>
-  </div>`;
+  const html = emailLayout({
+    sender: 'buchhaltung',
+    preheader: `Rechnung ${input.invoiceNumber}, offen ${formatEUR(input.openAmount)}`,
+    bodyHtml: `<p>${esc(greeting(input))}</p>
+      ${paras.map((p) => `<p>${esc(p)}</p>`).join('\n      ')}
+      ${emailBox(emailDataRows(bankRows(input)))}`,
+    closing,
+  });
 
   const text = [
     greeting(input),
@@ -181,9 +148,7 @@ export function buildDunningEmail(input: DunningEmailInput): DunningEmail {
     ...paras.flatMap((p) => [p, '']),
     ...bankRows(input).map(([k, v]) => `${k}: ${v}`),
     '',
-    closing,
-    '',
-    ...SIGNATURE_LINES,
+    emailSignatureText('buchhaltung', closing),
   ].join('\n');
 
   return { from: DUNNING_FROM, replyTo: DUNNING_REPLY_TO, subject, html, text };

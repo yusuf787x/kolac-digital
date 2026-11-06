@@ -1,94 +1,8 @@
 import { formatEUR } from './utils';
+import { emailBox, emailDataRows, emailLayout, emailSignatureText, esc } from './email-layout';
 
 const FROM_EMAIL = 'Kolac Digital <yusuf@kolac-digital.de>';
 const REPLY_TO = 'yusuf@kolac-digital.de';
-
-// WICHTIG: Einfache Anführungszeichen für "Segoe UI" – doppelte würden das
-// style="..."-Attribut auf der Empfängerseite aufbrechen und den restlichen
-// CSS-Text als sichtbaren Inhalt rendern.
-const baseStyles = `font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #0a0a0a; line-height: 1.6; font-size: 15px;`;
-
-/**
- * Resolves die Basis-URL der gehosteten App, damit Bilder in der Signatur
- * vom Mailclient des Empfängers geladen werden können.
- *
- *  - APP_BASE_URL              manuelle Override (z.B. "https://app.kolac-digital.de")
- *  - NEXT_PUBLIC_APP_URL       gängiger Convention-Name
- *  - VERCEL_PROJECT_PRODUCTION_URL  kanonische Prod-URL auf Vercel
- *  - VERCEL_URL                aktuelle Deployment-URL auf Vercel
- */
-function appBaseUrl(): string {
-  if (process.env.APP_BASE_URL) return process.env.APP_BASE_URL;
-  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return '';
-}
-
-/**
- * HTML-Signaturblock – wird unter jede Vertriebs-E-Mail gehängt. Zeigt
- * Profilbild + Logo links, formatierte Kontaktdaten rechts.
- */
-function signatureHtml(): string {
-  const base = appBaseUrl();
-  const photoUrl = base ? `${base}/email/yk.png` : '';
-  const logoUrl = base ? `${base}/email/logo.png` : '';
-
-  const imageCell = base
-    ? `<td style="vertical-align: top; padding-right: 22px; width: 120px;">
-        <img src="${photoUrl}" alt="Yusuf Kolac" width="110" style="display:block; border:0; width:110px; height:auto; border-radius: 8px;" />
-        <img src="${logoUrl}" alt="Kolac Digital" width="110" style="display:block; border:0; width:110px; height:auto; margin-top: 14px;" />
-      </td>`
-    : '';
-
-  return `
-<table cellpadding="0" cellspacing="0" border="0" style="margin-top: 28px; padding-top: 18px; border-top: 1px solid #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 1.55; color: #0a0a0a;">
-  <tr>
-    ${imageCell}
-    <td style="vertical-align: top;">
-      <div>Beste Grüße</div>
-      <div style="font-weight: 600; font-size: 16px; margin-top: 2px;">Yusuf Kolac</div>
-
-      <div style="margin-top: 14px;">
-        <div style="font-weight: 600;">Kolac Digital</div>
-        <div>Mobil:&nbsp;<a href="tel:+4917695762018" style="color:#0a0a0a; text-decoration:none;">+49 176 95762018</a></div>
-        <div><a href="mailto:yusuf@kolac-digital.de" style="color:#2563eb; text-decoration:none;">yusuf@kolac-digital.de</a></div>
-        <div><a href="https://www.kolac-digital.de" style="color:#2563eb; text-decoration:none;">www.kolac-digital.de</a></div>
-      </div>
-
-      <div style="margin-top: 14px; color: #6b7280; font-size: 13px;">
-        <div><strong style="color:#0a0a0a;">Kolac Digital</strong></div>
-        <div>Geschäftsführer</div>
-        <div>Beckhausstraße 108</div>
-        <div>33611 Bielefeld</div>
-        <div>Yusuf Kolac</div>
-        <div style="margin-top: 4px;">Webseiten · Google- &amp; Meta Ads · Social Media · Digitalisierung</div>
-      </div>
-    </td>
-  </tr>
-</table>`;
-}
-
-/** Plaintext-Signatur (für den text/plain-Teil der E-Mail). */
-const SIGNATURE_TEXT = [
-  '--',
-  'Beste Grüße',
-  'Yusuf Kolac',
-  '',
-  'Kolac Digital',
-  'Mobil: +49 176 95762018',
-  'yusuf@kolac-digital.de',
-  'www.kolac-digital.de',
-  '',
-  'Kolac Digital',
-  'Geschäftsführer',
-  'Beckhausstraße 108',
-  '33611 Bielefeld',
-  'Yusuf Kolac',
-  'Webseiten · Google- & Meta Ads · Social Media · Digitalisierung',
-].join('\n');
 
 /** Best-effort HTML -> Text Konvertierung für den text/plain Teil. */
 function htmlToPlain(html: string): string {
@@ -131,20 +45,29 @@ export function buildInvoiceEmail(opts: {
   const { customerName, invoiceNumber, totalAmount, dueDate } = opts;
   const subject = `Rechnung ${invoiceNumber} – Kolac Digital`;
 
-  const html = `<div style="${baseStyles}">
-    <p>Hallo ${customerName || ''},</p>
-    <p>im Anhang finden Sie die Rechnung <strong>${invoiceNumber}</strong> über
-    <strong>${formatEUR(totalAmount)}</strong>.</p>
-    <p>Zahlungsziel: <strong>${dueDate}</strong></p>
-    <p>Bitte überweisen Sie den Betrag unter Angabe der Rechnungsnummer.
-    Den GiroCode auf der Rechnung können Sie mit Ihrer Banking-App scannen,
-    dann ist die Überweisung in Sekunden vorausgefüllt.</p>
-    <p>Bei Fragen melden Sie sich gerne.</p>
-    <p>Vielen Dank und liebe Grüße<br/>Yusuf Kolac<br/>Kolac Digital</p>
-  </div>`;
+  const greeting = `Hallo${customerName ? ` ${customerName}` : ''},`;
+  const closing = 'Vielen Dank und liebe Grüße';
+
+  const html = emailLayout({
+    preheader: `Rechnung ${invoiceNumber} über ${formatEUR(totalAmount)}, zahlbar bis ${dueDate}.`,
+    bodyHtml: `<p>${esc(greeting)}</p>
+      <p>im Anhang finden Sie die Rechnung <strong>${esc(invoiceNumber)}</strong>.</p>
+      ${emailBox(
+        emailDataRows([
+          ['Rechnung', invoiceNumber],
+          ['Betrag', formatEUR(totalAmount)],
+          ['Zahlungsziel', dueDate],
+        ]),
+      )}
+      <p>Bitte überweisen Sie den Betrag unter Angabe der Rechnungsnummer.
+      Den GiroCode auf der Rechnung können Sie mit Ihrer Banking-App scannen,
+      dann ist die Überweisung in Sekunden vorausgefüllt.</p>
+      <p>Bei Fragen melden Sie sich gerne.</p>`,
+    closing,
+  });
 
   const text = [
-    `Hallo ${customerName},`,
+    greeting,
     '',
     `im Anhang finden Sie die Rechnung ${invoiceNumber} über ${formatEUR(totalAmount)}.`,
     `Zahlungsziel: ${dueDate}`,
@@ -152,12 +75,63 @@ export function buildInvoiceEmail(opts: {
     'Bitte überweisen Sie den Betrag unter Angabe der Rechnungsnummer.',
     'Den GiroCode auf der Rechnung können Sie mit Ihrer Banking-App scannen.',
     '',
-    'Vielen Dank und liebe Grüße',
-    'Yusuf Kolac',
-    'Kolac Digital',
+    'Bei Fragen melden Sie sich gerne.',
+    '',
+    emailSignatureText('yusuf', closing),
   ].join('\n');
 
   return { from: FROM_EMAIL, replyTo: REPLY_TO, subject, html, text };
+}
+
+/**
+ * Rechnung nach SEPA-Lastschrift (GoCardless). Du-Form, der Betrag ist
+ * schon eingezogen, der Kunde muss nichts tun.
+ */
+export function buildDirectDebitInvoiceEmail(opts: {
+  customerName: string;
+  invoiceNumber: string;
+  /** Brutto, so wie eingezogen. */
+  totalAmount: number;
+  /** Bereits formatiert, z.B. "06.11.2026". */
+  chargedAt: string;
+}): { from: string; replyTo: string; subject: string; html: string; text: string } {
+  const { customerName, invoiceNumber, totalAmount, chargedAt } = opts;
+  const closing = 'Liebe Grüße';
+  const html = emailLayout({
+    preheader: `Rechnung ${invoiceNumber}, ${formatEUR(totalAmount)} per Lastschrift eingezogen. Du musst nichts tun.`,
+    bodyHtml: `<p>Hallo ${esc(customerName)},</p>
+      <p>danke für die laufende Zusammenarbeit. Im Anhang findest du die Rechnung
+      <strong>${esc(invoiceNumber)}</strong>.</p>
+      ${emailBox(
+        emailDataRows([
+          ['Rechnung', invoiceNumber],
+          ['Betrag', formatEUR(totalAmount)],
+          ['Eingezogen am', chargedAt],
+        ]),
+      )}
+      <p>Der Betrag wurde per SEPA-Lastschrift von deinem hinterlegten Konto
+      eingezogen, du musst also nichts weiter tun.</p>
+      <p>Bei Rückfragen einfach kurz Bescheid geben.</p>`,
+    closing,
+  });
+  const text = [
+    `Hallo ${customerName},`,
+    '',
+    `danke für die laufende Zusammenarbeit. Im Anhang findest du die Rechnung ${invoiceNumber} über ${formatEUR(totalAmount)}.`,
+    '',
+    `Der Betrag wurde am ${chargedAt} per SEPA-Lastschrift eingezogen, du musst nichts weiter tun.`,
+    '',
+    'Bei Rückfragen einfach kurz Bescheid geben.',
+    '',
+    emailSignatureText('yusuf', closing),
+  ].join('\n');
+  return {
+    from: FROM_EMAIL,
+    replyTo: REPLY_TO,
+    subject: `Rechnung ${invoiceNumber} – Lastschrift eingezogen`,
+    html,
+    text,
+  };
 }
 
 /**
@@ -172,11 +146,11 @@ export function buildDealEmail(opts: {
   const { subject, body } = opts;
 
   const htmlBody = ensureHtmlBody(body);
-  const html = `<div style="${baseStyles}">${htmlBody}${signatureHtml()}</div>`;
+  const html = emailLayout({ bodyHtml: htmlBody, closing: 'Beste Grüße' });
 
   // Plaintext-Variante – HTML wird best-effort runtergebrochen.
   const plainBody = /<\/?[a-z][^>]*>/i.test(body) ? htmlToPlain(body) : body;
-  const text = `${plainBody}\n\n${SIGNATURE_TEXT}`;
+  const text = `${plainBody}\n\n${emailSignatureText('yusuf', 'Beste Grüße')}`;
 
   return { from: FROM_EMAIL, replyTo: REPLY_TO, subject, html, text };
 }
@@ -195,26 +169,26 @@ export function buildContactNotificationEmail(opts: {
   source: string;
 }): { from: string; replyTo: string; subject: string; html: string; text: string } {
   const { name, phone, email, message, company, service, source } = opts;
-  const safe = (s: string) =>
-    s
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
   const subject = `Neue Anfrage von ${name || 'Unbekannt'} (${source})`;
 
-  const html = `<div style="${baseStyles}">
-    <p>Neue Anfrage über das Kontaktformular.</p>
-    <table cellpadding="6" cellspacing="0" border="0" style="border-collapse: collapse; margin: 12px 0;">
-      <tr><td style="color:#6b7280;">Name</td><td><strong>${safe(name)}</strong></td></tr>
-      <tr><td style="color:#6b7280;">Telefon</td><td><a href="tel:${safe(phone)}" style="color:#2563eb;">${safe(phone)}</a></td></tr>
-      <tr><td style="color:#6b7280;">E-Mail</td><td><a href="mailto:${safe(email)}" style="color:#2563eb;">${safe(email)}</a></td></tr>
-      ${company ? `<tr><td style="color:#6b7280;">Unternehmen</td><td>${safe(company)}</td></tr>` : ''}
-      ${service ? `<tr><td style="color:#6b7280;">Anliegen</td><td>${safe(service)}</td></tr>` : ''}
-      <tr><td style="color:#6b7280;">Quelle</td><td>${safe(source)}</td></tr>
-    </table>
-    ${message ? `<p style="color:#6b7280; margin-bottom:6px;">Nachricht</p><div style="background:#f9fafb; border-left:3px solid #2563eb; padding:10px 12px; border-radius:4px;">${safe(message).replace(/\n/g, '<br/>')}</div>` : ''}
-    <p style="margin-top:18px; color:#6b7280; font-size:13px;">Antworte direkt auf diese Mail oder rufe an.</p>
-  </div>`;
+  const rows: Array<[string, string]> = [
+    ['Name', name],
+    ['Telefon', phone],
+    ['E-Mail', email],
+    ...(company ? ([['Unternehmen', company]] as Array<[string, string]>) : []),
+    ...(service ? ([['Anliegen', service]] as Array<[string, string]>) : []),
+    ['Quelle', source],
+  ];
+
+  const html = emailLayout({
+    sender: 'none',
+    preheader: `${name || 'Unbekannt'}${company ? `, ${company}` : ''}: ${message.slice(0, 100)}`,
+    title: 'Neue Anfrage über das Kontaktformular',
+    bodyHtml: `${emailDataRows(rows)}
+      ${message ? emailBox(esc(message).replace(/\n/g, '<br/>')) : ''}`,
+    button: phone ? { label: `${name || 'Kontakt'} anrufen`, href: `tel:${phone.replace(/[^+\d]/g, '')}` } : undefined,
+    footnote: 'Antworte direkt auf diese Mail oder rufe an.',
+  });
 
   const text = [
     'Neue Anfrage über das Kontaktformular.',

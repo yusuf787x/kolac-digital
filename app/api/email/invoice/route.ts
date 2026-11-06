@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { buildInvoiceEmail } from '@/lib/email-templates';
+import { asTestMail, TEST_RECIPIENT } from '@/lib/email-test';
 import { authenticate, authErrorResponse } from '@/lib/server-auth';
 
 export const runtime = 'nodejs';
@@ -13,6 +14,8 @@ interface Body {
   dueDate: string;
   pdfBase64: string;
   filename: string;
+  /** Nur an Yusuf schicken, Betreff mit [Test]. Status bleibt unverändert. */
+  test?: boolean;
 }
 
 export async function POST(req: Request) {
@@ -43,17 +46,18 @@ export async function POST(req: Request) {
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const tpl = buildInvoiceEmail({
+  const built = buildInvoiceEmail({
     customerName: body.customerName,
     invoiceNumber: body.invoiceNumber,
     totalAmount: body.totalAmount,
     dueDate: body.dueDate,
   });
+  const tpl = body.test ? asTestMail(built) : built;
 
   try {
     const result = await resend.emails.send({
       from: tpl.from,
-      to,
+      to: body.test ? TEST_RECIPIENT : to,
       replyTo: tpl.replyTo,
       subject: tpl.subject,
       html: tpl.html,

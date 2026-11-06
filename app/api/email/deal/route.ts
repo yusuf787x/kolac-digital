@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { buildDealEmail } from '@/lib/email-templates';
+import { asTestMail, TEST_RECIPIENT } from '@/lib/email-test';
 import { authenticate, authErrorResponse } from '@/lib/server-auth';
 
 export const runtime = 'nodejs';
@@ -9,6 +10,8 @@ interface Body {
   to: string;
   subject: string;
   body: string;
+  /** Nur an Yusuf schicken, Betreff mit [Test]. */
+  test?: boolean;
 }
 
 export async function POST(req: Request) {
@@ -33,7 +36,7 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!body.to || !body.subject || !body.body) {
+  if ((!body.to && !body.test) || !body.subject || !body.body) {
     return NextResponse.json(
       { error: 'Empfänger, Betreff und Nachricht sind Pflichtfelder.' },
       { status: 400 },
@@ -41,12 +44,13 @@ export async function POST(req: Request) {
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const tpl = buildDealEmail({ subject: body.subject, body: body.body });
+  const built = buildDealEmail({ subject: body.subject, body: body.body });
+  const tpl = body.test ? asTestMail(built) : built;
 
   try {
     const result = await resend.emails.send({
       from: tpl.from,
-      to: body.to,
+      to: body.test ? TEST_RECIPIENT : body.to,
       replyTo: tpl.replyTo,
       subject: tpl.subject,
       html: tpl.html,

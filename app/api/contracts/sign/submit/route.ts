@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Timestamp } from 'firebase-admin/firestore';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { Resend } from 'resend';
+import { emailDataRows, emailLayout } from '@/lib/email-layout';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { adminDb, adminStorage } from '@/lib/firebase-admin';
@@ -493,30 +494,24 @@ async function notifyYusufBestEffort(opts: {
       subject: opts.isQuote
         ? `✓ Angebot angenommen: ${opts.contractTitle}`
         : `✓ Vertrag signiert: ${opts.contractTitle}`,
-      html: `
-        <div style="font-family:-apple-system,sans-serif;color:#0a0a0a;line-height:1.6;font-size:15px;">
-          <p>${
-            opts.isQuote
-              ? `Das <strong>${escapeHtml(opts.contractTitle)}</strong> wurde gerade vom Kunden unterschrieben und steht jetzt auf „Angenommen“.`
-              : `Der Vertrag <strong>${escapeHtml(opts.contractTitle)}</strong> wurde gerade vom Kunden signiert.`
-          }</p>
-          <table cellpadding="6" cellspacing="0" border="0" style="border-collapse:collapse;margin:12px 0;">
-            <tr><td style="color:#6b7280;">Kunde</td><td>${escapeHtml(opts.customerCompany)}</td></tr>
-            <tr><td style="color:#6b7280;">Signiert von</td><td>${escapeHtml(opts.signedByName)}</td></tr>
-            <tr><td style="color:#6b7280;">Zeitpunkt</td><td>${formatDateTimeDE(opts.signedAt)}</td></tr>
-          </table>
-          <p>
-            <a href="${opts.signedPdfUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;">
-              Signiertes PDF öffnen
-            </a>
-          </p>
-          ${
-            opts.driveUrl
-              ? `<p style="color:#6b7280;font-size:13px;">Liegt automatisch im Drive-Ordner ${opts.isQuote ? 'Aufträge' : 'Partnerverträge'}: <a href="${opts.driveUrl}" style="color:#2563eb;">öffnen</a></p>`
-              : `<p style="color:#6b7280;font-size:13px;">Liegt auch direkt im Dashboard unter ${opts.isQuote ? 'Angebote' : 'Verträge'}.</p>`
-          }
-        </div>
-      `,
+      html: emailLayout({
+        sender: 'none',
+        title: opts.isQuote ? 'Angebot angenommen' : 'Vertrag signiert',
+        bodyHtml: `<p>${
+          opts.isQuote
+            ? `Das <strong>${escapeHtml(opts.contractTitle)}</strong> wurde gerade vom Kunden unterschrieben und steht jetzt auf „Angenommen“.`
+            : `Der Vertrag <strong>${escapeHtml(opts.contractTitle)}</strong> wurde gerade vom Kunden signiert.`
+        }</p>
+          ${emailDataRows([
+            ['Kunde', opts.customerCompany],
+            ['Signiert von', opts.signedByName],
+            ['Zeitpunkt', formatDateTimeDE(opts.signedAt)],
+          ])}`,
+        button: { label: 'Signiertes PDF öffnen', href: opts.signedPdfUrl },
+        footnote: opts.driveUrl
+          ? `Liegt automatisch im Drive-Ordner ${opts.isQuote ? 'Aufträge' : 'Partnerverträge'}: <a href="${opts.driveUrl}" style="color:#2563eb;">öffnen</a>`
+          : `Liegt auch direkt im Dashboard unter ${opts.isQuote ? 'Angebote' : 'Verträge'}.`,
+      }),
       text: [
         opts.isQuote
           ? `${opts.contractTitle} angenommen.`

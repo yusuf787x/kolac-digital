@@ -2,6 +2,7 @@ import 'server-only';
 import { Resend } from 'resend';
 import { OWNER_EMAIL } from '@/lib/owner';
 import { isProduction, portalBaseUrl } from './config';
+import { emailLayout, emailSignatureText, esc, type EmailLayoutOptions } from '@/lib/email-layout';
 
 /**
  * Mails des Kundenportals. Eigenes, schlichtes Layout statt der
@@ -14,38 +15,17 @@ import { isProduction, portalBaseUrl } from './config';
 const FROM = 'Kolac Digital <yusuf@kolac-digital.de>';
 const REPLY_TO = OWNER_EMAIL;
 
-const esc = (s: string) =>
-  (s ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-
-function layout(opts: { preheader: string; title: string; bodyHtml: string; button?: { label: string; href: string }; footnote?: string }): string {
-  const base = portalBaseUrl();
-  const logo = `${base}/email/logo.png`;
-  const button = opts.button
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 8px;"><tr><td style="border-radius:10px;background:#2563eb;">
-        <a href="${esc(opts.button.href)}" style="display:inline-block;padding:14px 22px;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;">${esc(opts.button.label)}</a>
-      </td></tr></table>`
-    : '';
-  return `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(opts.title)}</title></head>
-<body style="margin:0;padding:0;background:#f3f4f6;">
-<span style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc(opts.preheader)}</span>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;padding:32px 12px;">
-<tr><td align="center">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#ffffff;border-radius:16px;border:1px solid #e5e7eb;">
-    <tr><td style="padding:28px 32px 0;"><img src="${logo}" alt="Kolac Digital" width="120" style="display:block;border:0;width:120px;height:auto;"></td></tr>
-    <tr><td style="padding:20px 32px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#0a0a0a;font-size:16px;line-height:1.6;">
-      <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;font-weight:700;">${esc(opts.title)}</h1>
-      ${opts.bodyHtml}
-      ${button}
-      ${opts.footnote ? `<p style="margin:24px 0 0;font-size:13px;color:#6b7280;">${opts.footnote}</p>` : ''}
-    </td></tr>
-  </table>
-  <p style="margin:16px 0 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:#9ca3af;">Kolac Digital · Beckhausstraße 108 · 33611 Bielefeld</p>
-</td></tr></table></body></html>`;
+/**
+ * Kunden-Mails bekommen Yusufs Signatur, Hinweise an Yusuf selbst nicht.
+ * Gemeinsames Design siehe lib/email-layout.ts.
+ */
+function layout(
+  opts: Omit<EmailLayoutOptions, 'sender' | 'closing'>,
+  audience: 'customer' | 'owner' = 'owner',
+): string {
+  return audience === 'customer'
+    ? emailLayout({ ...opts, sender: 'yusuf', closing: 'Viele Grüße' })
+    : emailLayout({ ...opts, sender: 'none' });
 }
 
 async function send(opts: { to: string | string[]; subject: string; html: string; text: string }): Promise<void> {
@@ -68,20 +48,34 @@ async function send(opts: { to: string | string[]; subject: string; html: string
   if (error) throw new Error(`Mailversand fehlgeschlagen: ${error.message}`);
 }
 
+export interface BuiltEmail {
+  from: string;
+  replyTo: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
 export async function sendLoginLinkEmail(opts: {
   to: string;
   link: string;
   displayName: string;
   invite: boolean;
 }): Promise<void> {
+  await send({ to: opts.to, ...buildLoginLinkEmail(opts) });
+}
+
+/** Einladung bzw. Anmelde-Link. Auch für die Mail-Vorschau im Dashboard. */
+export function buildLoginLinkEmail(opts: { link: string; displayName: string; invite: boolean }): BuiltEmail {
   const title = opts.invite ? 'Ihr Zugang zum Kundenbereich' : 'Ihr Anmelde-Link';
   const intro = opts.invite
     ? `<p style="margin:0 0 12px;">Guten Tag,</p><p style="margin:0 0 12px;">für <strong>${esc(opts.displayName)}</strong> gibt es ab sofort einen eigenen Kundenbereich bei Kolac Digital. Dort sehen Sie jeden Monat, wie Ihre Website bei Google gefunden wird, und was wir dafür getan haben.</p><p style="margin:0;">Ein Passwort brauchen Sie nicht. Klicken Sie einfach auf den Knopf:</p>`
     : `<p style="margin:0 0 12px;">Guten Tag,</p><p style="margin:0;">mit diesem Knopf melden Sie sich im Kundenbereich von <strong>${esc(opts.displayName)}</strong> an:</p>`;
   const footnote =
     'Der Link ist eine Stunde gültig und funktioniert nur einmal. Wenn Sie diese Anmeldung nicht angefordert haben, können Sie die Mail einfach ignorieren.';
-  await send({
-    to: opts.to,
+  return {
+    from: FROM,
+    replyTo: REPLY_TO,
     subject: opts.invite ? `Ihr Kundenbereich bei Kolac Digital` : 'Ihr Anmelde-Link für den Kundenbereich',
     html: layout({
       preheader: 'Ein Klick und Sie sind angemeldet.',
@@ -89,7 +83,7 @@ export async function sendLoginLinkEmail(opts: {
       bodyHtml: intro,
       button: { label: 'Jetzt anmelden', href: opts.link },
       footnote: esc(footnote),
-    }),
+    }, 'customer'),
     text: [
       'Guten Tag,',
       '',
@@ -100,8 +94,10 @@ export async function sendLoginLinkEmail(opts: {
       opts.link,
       '',
       footnote,
+      '',
+      emailSignatureText('yusuf', 'Viele Grüße'),
     ].join('\n'),
-  });
+  };
 }
 
 export async function sendReportReleasedEmail(opts: {
@@ -111,14 +107,25 @@ export async function sendReportReleasedEmail(opts: {
   portalLink: string;
   assessment: string;
 }): Promise<void> {
+  await send({ to: opts.to, ...buildReportReleasedEmail(opts) });
+}
+
+/** Monatsbericht freigegeben. Auch für die Mail-Vorschau im Dashboard. */
+export function buildReportReleasedEmail(opts: {
+  displayName: string;
+  monthLabel: string;
+  portalLink: string;
+  assessment: string;
+}): BuiltEmail {
   // Erster Absatz der Einschaetzung als Vorgeschmack
   const teaser = opts.assessment.split(/\n\s*\n/)[0]?.trim() ?? '';
   const bodyHtml = `<p style="margin:0 0 12px;">Guten Tag,</p>
 <p style="margin:0 0 12px;">Ihr SEO-Bericht für <strong>${esc(opts.monthLabel)}</strong> ist fertig.</p>
-${teaser ? `<p style="margin:0 0 12px;padding:14px 16px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb;">${esc(teaser)}</p>` : ''}
+${teaser ? `<p style="margin:0 0 12px;padding:14px 18px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;border-left:3px solid #2563eb;">${esc(teaser)}</p>` : ''}
 <p style="margin:0;">Im Kundenbereich finden Sie alle Zahlen, die Entwicklung der letzten Monate, alles was wir für Sie getan haben, und den Bericht als PDF.</p>`;
-  await send({
-    to: opts.to,
+  return {
+    from: FROM,
+    replyTo: REPLY_TO,
     subject: `Ihr SEO-Bericht ${opts.monthLabel} ist da`,
     html: layout({
       preheader: teaser.slice(0, 120) || `Ihr Bericht für ${opts.monthLabel}`,
@@ -126,7 +133,7 @@ ${teaser ? `<p style="margin:0 0 12px;padding:14px 16px;background:#f9fafb;borde
       bodyHtml,
       button: { label: 'Bericht ansehen', href: opts.portalLink },
       footnote: 'Fragen zum Bericht? Antworten Sie einfach auf diese Mail.',
-    }),
+    }, 'customer'),
     text: [
       'Guten Tag,',
       '',
@@ -137,8 +144,10 @@ ${teaser ? `<p style="margin:0 0 12px;padding:14px 16px;background:#f9fafb;borde
       `Bericht ansehen: ${opts.portalLink}`,
       '',
       'Fragen zum Bericht? Antworten Sie einfach auf diese Mail.',
+      '',
+      emailSignatureText('yusuf', 'Viele Grüße'),
     ].join('\n'),
-  });
+  };
 }
 
 export async function sendReportsReadyEmail(opts: {

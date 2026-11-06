@@ -31,6 +31,9 @@ import SensitiveValue from '@/components/ui/SensitiveValue';
 import DunningPanel from '@/components/invoice/DunningPanel';
 import { authedFetch } from '@/lib/api-client';
 import { invoiceRecipients } from '@/lib/invoice-recipients';
+import { buildInvoiceEmail } from '@/lib/email-templates';
+import Modal from '@/components/ui/Modal';
+import EmailPreviewFrame from '@/components/email/EmailPreviewFrame';
 import { parseRichText, type MdInlineSegment } from '@/lib/simple-markdown';
 
 // Rich-Text-Renderer fuer Positions-Beschreibungen (fett + Bullets),
@@ -91,6 +94,10 @@ export default function RechnungDetailPage() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  // Versand-Dialog mit Mail-Vorschau und Testmail an Yusuf
+  const [mailDialogOpen, setMailDialogOpen] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
+  const [mailNotice, setMailNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const [syncingDrive, setSyncingDrive] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
@@ -420,18 +427,33 @@ export default function RechnungDetailPage() {
 
   const recipients = invoiceRecipients(customer);
 
-  const handleSendEmail = async () => {
+  /** Daten der Rechnungsmail. Betrag immer brutto, so wie auf der Rechnung. */
+  const mailData = customer
+    ? {
+        customerName:
+          [customer.firstName, customer.lastName].filter(Boolean).join(' ') ||
+          customer.company,
+        invoiceNumber: invoice.invoiceNumber ?? '',
+        totalAmount: invoiceGrossTotal(invoice),
+        dueDate: formatDateDE(invoice.dueDate.toDate()),
+      }
+    : null;
+
+  const openMailDialog = () => {
     if (!customer || !recipients.length) {
       alert('Kein E-Mail-Empfänger im Kundenprofil hinterlegt.');
       return;
     }
-    if (
-      !confirm(
-        `Rechnung ${invoice.invoiceNumber} an ${recipients.join(', ')} per E-Mail senden?`,
-      )
-    )
-      return;
-    setSendingEmail(true);
+    setMailNotice(null);
+    setMailDialogOpen(true);
+  };
+
+  /** test=true: geht nur an yusuf@kolac-digital.de, Status bleibt. */
+  const sendInvoiceEmail = async (test: boolean) => {
+    if (!customer || !mailData || !recipients.length) return;
+    setMailNotice(null);
+    if (test) setSendingTest(true);
+    else setSendingEmail(true);
     try {
       const { generateInvoicePdfBlob, buildInvoiceFilename } =
         await import('@/lib/pdf-generator');
@@ -445,14 +467,10 @@ export default function RechnungDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: recipients,
-          customerName: [customer.firstName, customer.lastName]
-            .filter(Boolean)
-            .join(' ') || customer.company,
-          invoiceNumber: invoice.invoiceNumber,
-          totalAmount: invoice.totalAmount,
-          dueDate: formatDateDE(invoice.dueDate.toDate()),
+          ...mailData,
           pdfBase64: base64,
           filename,
+          test,
         }),
       });
 
@@ -461,16 +479,27 @@ export default function RechnungDetailPage() {
         throw new Error(body?.error || 'Versand fehlgeschlagen');
       }
 
+      if (test) {
+        setMailNotice({
+          kind: 'ok',
+          text: 'Testmail mit PDF ist an yusuf@kolac-digital.de raus. Der Kunde hat nichts bekommen.',
+        });
+        return;
+      }
+
       await updateInvoice(invoice.id, {
         status: invoice.status === 'draft' ? 'sent' : invoice.status,
         sentAt: invoice.sentAt ?? Timestamp.fromDate(new Date()),
       });
       await refresh();
-      alert('E-Mail erfolgreich versendet.');
+      setMailDialogOpen(false);
+      setFinalizeMsg(`Rechnung ${invoice.invoiceNumber} an ${recipients.join(', ')} gesendet.`);
+      setTimeout(() => setFinalizeMsg(null), 6000);
     } catch (err) {
       console.error(err);
-      alert(`Versand fehlgeschlagen: ${(err as Error).message}`);
+      setMailNotice({ kind: 'error', text: `Versand fehlgeschlagen: ${(err as Error).message}` });
     } finally {
+      setSendingTest(false);
       setSendingEmail(false);
     }
   };
@@ -569,7 +598,7 @@ export default function RechnungDetailPage() {
             {!isDraft && (
               <>
                 <button
-                  onClick={handleSendEmail}
+                  onClick={openMailDialog}
                   disabled={sendingEmail || !recipients.length}
                   className="btn-secondary"
                   title={
@@ -731,6 +760,76 @@ export default function RechnungDetailPage() {
       )}
 
       {/* Payment-Dialog */}
+      {mailData && (
+        <Modal
+          open={mailDialogOpen}
+          onClose={() => !sendingEmail && !sendingTest && setMailDialogOpen(false)}
+          title={`Rechnung ${invoice.invoiceNumber ?? ''} per E-Mail senden`}
+          maxWidth="max-w-3xl"
+        >
+          {(() => {
+            const mail = buildInvoiceEmail(mailData);
+            const busy = sendingEmail || sendingTest;
+            return (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  So kommt die Mail beim Kunden an. Die Rechnung hängt als PDF dran.
+                  Mit „Testmail an mich“ bekommst du genau diese Mail vorher selbst.
+                </p>
+                <EmailPreviewFrame
+                  html={mail.html}
+                  from={mail.from}
+                  to={recipients.join(', ')}
+                  subject={mail.subject}
+                  attachment={customer ? 'Rechnung als PDF' : undefined}
+                />
+                {mailNotice && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className={`rounded-lg border px-3 py-2 text-sm ${
+                      mailNotice.kind === 'ok'
+                        ? 'bg-green-50 border-green-200 text-green-800'
+                        : 'bg-red-50 border-red-200 text-red-700'
+                    }`}
+                  >
+                    {mailNotice.text}
+                  </div>
+                )}
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setMailDialogOpen(false)}
+                    disabled={busy}
+                  >
+                    Abbrechen
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => sendInvoiceEmail(true)}
+                    disabled={busy}
+                    aria-busy={sendingTest}
+                  >
+                    {sendingTest ? 'Sende Test…' : 'Testmail an mich'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => sendInvoiceEmail(false)}
+                    disabled={busy}
+                    aria-busy={sendingEmail}
+                  >
+                    {sendingEmail ? 'Sende…' : `An ${recipients.length === 1 ? 'Kunden' : `${recipients.length} Empfänger`} senden`}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+        </Modal>
+      )}
+
       {payDialogOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"

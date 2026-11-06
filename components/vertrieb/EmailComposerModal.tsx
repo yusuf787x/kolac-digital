@@ -8,6 +8,8 @@ import { authedFetch } from '@/lib/api-client';
 import { createActivity } from '@/lib/firestore';
 import { replacePlaceholders } from '@/lib/sales';
 import type { Customer, Deal, EmailTemplate } from '@/lib/types';
+import { buildDealEmail } from '@/lib/email-templates';
+import EmailPreviewFrame from '@/components/email/EmailPreviewFrame';
 
 /** Klartext mit Zeilenumbrüchen -> simples HTML für den Editor. */
 function plainToHtml(text: string): string {
@@ -41,6 +43,9 @@ export default function EmailComposerModal({
   const [templateId, setTemplateId] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   // Empfänger nachziehen, wenn der Kunde erst nach dem Mount geladen wurde.
   const [seededTo, setSeededTo] = useState(false);
@@ -64,9 +69,35 @@ export default function EmailComposerModal({
   const hasContent = (html: string) =>
     html.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0;
 
+  /** Gleiche Mail nur an yusuf@kolac-digital.de, ohne Aktivität im Deal. */
+  const handleTest = async () => {
+    setError(null);
+    setNotice(null);
+    if (!subject.trim() || !hasContent(message)) {
+      setError('Für die Testmail bitte Betreff und Nachricht ausfüllen.');
+      return;
+    }
+    setSendingTest(true);
+    try {
+      const res = await authedFetch('/api/email/deal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: subject.trim(), body: message, test: true }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) throw new Error(data.error ?? 'Testmail konnte nicht gesendet werden.');
+      setNotice('Testmail ist an yusuf@kolac-digital.de raus. Der Kunde hat nichts bekommen.');
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setNotice(null);
     if (!to.trim() || !subject.trim() || !hasContent(message)) {
       setError('Empfänger, Betreff und Nachricht sind Pflichtfelder.');
       return;
@@ -98,6 +129,7 @@ export default function EmailComposerModal({
       setSubject('');
       setMessage('');
       setTemplateId('');
+      setShowPreview(false);
       onSent();
       onClose();
     } catch (err) {
@@ -167,21 +199,59 @@ export default function EmailComposerModal({
           />
         </div>
 
-        <p className="text-xs text-gray-500">
-          Absender: yusuf@kolac-digital.de · Signatur (mit Logo &amp; Foto) wird
-          automatisch unten angehängt.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-gray-500">
+            Absender: yusuf@kolac-digital.de · Logo, Signatur mit Foto und
+            Rechtliches werden automatisch ergänzt.
+          </p>
+          <button
+            type="button"
+            className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+            onClick={() => setShowPreview((v) => !v)}
+            aria-expanded={showPreview}
+          >
+            {showPreview ? 'Vorschau ausblenden' : 'Vorschau anzeigen'}
+          </button>
+        </div>
 
-        <div className="flex justify-end gap-2 pt-2">
+        {showPreview && (
+          <EmailPreviewFrame
+            html={buildDealEmail({ subject, body: message || '<p></p>' }).html}
+            from="Kolac Digital <yusuf@kolac-digital.de>"
+            to={to}
+            subject={subject}
+          />
+        )}
+
+        {notice && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-800"
+          >
+            {notice}
+          </div>
+        )}
+
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
           <button
             type="button"
             onClick={onClose}
             className="btn-secondary"
-            disabled={sending}
+            disabled={sending || sendingTest}
           >
             Abbrechen
           </button>
-          <button type="submit" className="btn-primary" disabled={sending}>
+          <button
+            type="button"
+            onClick={handleTest}
+            className="btn-secondary"
+            disabled={sending || sendingTest}
+            aria-busy={sendingTest}
+          >
+            {sendingTest ? 'Sende Test…' : 'Testmail an mich'}
+          </button>
+          <button type="submit" className="btn-primary" disabled={sending || sendingTest} aria-busy={sending}>
             {sending ? 'Sendet…' : '✉️ Senden'}
           </button>
         </div>
