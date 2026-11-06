@@ -8,15 +8,24 @@ import Segmented from './Segmented';
 
 type Metric = 'clicks' | 'impressions';
 
-export default function MetricHistory({ history, current }: { history: HistoryPoint[]; current: string }) {
+export default function MetricHistory({
+  history,
+  current,
+  tableOnly = false,
+}: {
+  history: HistoryPoint[];
+  current: string;
+  /** Nur die Tabelle, ohne Umschalter (unter dem Tagesverlauf). */
+  tableOnly?: boolean;
+}) {
   const [metric, setMetric] = useState<Metric>('clicks');
-  const [table, setTable] = useState(false);
-  if (history.length < 2) {
+  const [table, setTable] = useState(tableOnly);
+  if (history.length < 2 && !tableOnly) {
     return <p className="text-sm text-gray-600">Der Verlauf erscheint, sobald Zahlen aus mindestens zwei Monaten vorliegen.</p>;
   }
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div className={`mb-4 flex flex-wrap items-center justify-between gap-3 ${tableOnly ? 'hidden' : ''}`}>
         <Segmented
           label="Kennzahl wählen"
           value={metric}

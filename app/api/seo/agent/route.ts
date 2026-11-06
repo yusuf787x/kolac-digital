@@ -3,6 +3,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { adminDb } from '@/lib/firebase-admin';
 import { listActiveAccessEmails } from '@/lib/portal/access';
 import { validatePattern } from '@/lib/seo/analysis';
+import { looksSensitive } from '@/lib/seo/checks';
 import { suggestAssessment } from '@/lib/seo/assessment';
 import { formatMonthDE, isMonthKey, lastCompleteMonths } from '@/lib/seo/months';
 import { badRequest, safe } from '@/lib/seo/server/admin-route';
@@ -44,6 +45,8 @@ export const maxDuration = 300;
  *   items                          Massnahmen und Pruefungen mit IDs
  *   visibility { type: 'activity'|'check', id, published }
  *   delete    { type: 'activity'|'check', id }
+ *   plan      { id?, area?, change?, goal?, dueDate?, published?, status? }
+ *                                  Plan-Punkt anlegen/aendern (Erinnerung an Yusuf)
  *
  * Massnahmen und Pruefungen anlegen: /api/seo/changelog.
  * Bewusst NICHT moeglich: Portal-Zugaenge einladen oder entziehen,
@@ -104,10 +107,22 @@ async function handlePOST(req: Request) {
     case 'items': {
       const [acts, checks] = await Promise.all([listActivities(id), listChecks(id)]);
       return NextResponse.json({
-        activities: acts.map((a) => ({ id: a.id, date: a.date, area: a.area, change: a.change, status: a.status, published: a.published, source: a.source })),
+        activities: acts.map((a) => ({
+          id: a.id,
+          date: a.date,
+          area: a.area,
+          change: a.change,
+          status: a.status,
+          published: a.published,
+          source: a.source,
+          ...(a.status === 'planned' ? { dueDate: a.dueDate ?? null, goal: a.goal ?? null } : {}),
+        })),
         checks: checks.map((c) => ({ id: c.id, date: c.date, kind: c.kind, title: c.title, published: c.published, source: c.source })),
       });
     }
+
+    case 'plan':
+      return planItem(id, body);
 
     case 'visibility':
     case 'delete': {
@@ -123,8 +138,73 @@ async function handlePOST(req: Request) {
     }
 
     default:
-      return badRequest('Unbekannte action. Erlaubt: status, data, fetch, report, release, settings, items, visibility, delete.');
+      return badRequest('Unbekannte action. Erlaubt: status, data, fetch, report, release, settings, items, plan, visibility, delete.');
   }
+}
+
+/**
+ * Geplanten Punkt anlegen oder aendern ("Der Plan" im Portal, Erinnerung
+ * per Mail an Yusuf). Mit id: aendern, z. B. Termin verschieben oder mit
+ * status "done" als erledigt markieren. Ohne id: neu anlegen.
+ */
+async function planItem(customerId: string, body: Record<string, unknown>) {
+  const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : undefined);
+  const isDate = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const update: Record<string, unknown> = {};
+  const area = str(body.area, 60);
+  const change = str(body.change, 400);
+  const goal = str(body.goal, 300);
+  if (area) update.area = area;
+  if (change) update.change = change;
+  if (goal !== undefined) update.goal = goal || null;
+  if (body.dueDate === null) update.dueDate = null;
+  else if (body.dueDate !== undefined) {
+    if (!isDate(body.dueDate)) return badRequest('dueDate im Format YYYY-MM-DD.');
+    update.dueDate = body.dueDate;
+  }
+  if (typeof body.published === 'boolean') update.published = body.published;
+  if (body.status !== undefined) {
+    if (!['done', 'prepared', 'checked', 'planned'].includes(body.status as string)) return badRequest('Ungültiger status.');
+    update.status = body.status;
+    // Erledigt: Datum auf heute, damit die Massnahme im richtigen Monat steht
+    if (body.status !== 'planned') {
+      const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+      update.date = isDate(body.date) ? body.date : today;
+      update.month = (update.date as string).slice(0, 7);
+      if (str(body.benefit, 400)) update.benefit = str(body.benefit, 400);
+    }
+  }
+  const sensitive = looksSensitive(area ?? '', change ?? '', goal ?? '');
+  const now = Timestamp.now();
+  const col = adminDb().collection(COL.activities);
+
+  if (typeof body.id === 'string') {
+    const ref = col.doc(body.id);
+    const snap = await ref.get();
+    if (!snap.exists || snap.data()?.customerId !== customerId) return badRequest('Eintrag nicht gefunden.', 404);
+    if (sensitive) update.published = false;
+    await ref.update({ ...update, updatedAt: now });
+    return NextResponse.json({ ok: true, id: body.id, updated: Object.keys(update), held: sensitive });
+  }
+
+  if (!change) return badRequest('change fehlt.');
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+  const ref = await col.add({
+    customerId,
+    date: today,
+    month: today.slice(0, 7),
+    area: area || 'Allgemein',
+    change,
+    goal: goal || null,
+    dueDate: (update.dueDate as string | undefined) ?? null,
+    status: 'planned',
+    published: body.published === true && !sensitive,
+    source: 'claude-code',
+    links: [],
+    createdAt: now,
+    updatedAt: now,
+  });
+  return NextResponse.json({ ok: true, id: ref.id, held: sensitive });
 }
 
 async function status(client: SeoClient) {
@@ -145,6 +225,8 @@ async function status(client: SeoClient) {
     },
     lastFetchError: client.lastFetchError ?? null,
     monthsWithData: [...have].sort().reverse(),
+    /** Monate ohne Tageswerte (vor Einfuehrung abgerufen). Erneut fetch aufrufen, solange Google sie noch liefert (16 Monate). */
+    monthsWithoutDaily: months.filter((m) => !m.daily?.length && m.totals.impressions > 0).map((m) => m.month),
     /** Die letzten 16 abgeschlossenen Monate, die noch fehlen (Backfill). */
     missingMonths: lastCompleteMonths(16).filter((m) => !have.has(m)),
     reports: reports

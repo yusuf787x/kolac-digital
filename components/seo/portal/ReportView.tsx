@@ -21,10 +21,10 @@ import {
 import type { PageSpeedResult } from '@/lib/seo/types';
 import CheckCard from './CheckCard';
 import KeywordsBlock from './KeywordsBlock';
-import MetricHistory from './MetricHistory';
 import MoversPanel from './MoversPanel';
+import TrendChart from './TrendChart';
 import ActivityPreview from './ActivityPreview';
-import { Delta, Section } from './parts';
+import { Delta, PlannedList, Section } from './parts';
 
 /**
  * Der Monatsbericht im Portal. preview markiert einen noch nicht
@@ -195,8 +195,12 @@ export default function ReportView({
         <Kpi label="Ø Platz bei Google" value={fmtPos(k.current.position)} cur={k.current.position} prev={k.prevMonth?.position} yoy={k.prevYear?.position} lowerIsBetter />
       </section>
 
-      <Section id="verlauf" title="Verlauf">
-        <MetricHistory history={data.history} current={m} />
+      <Section
+        id="verlauf"
+        title="Besucher über Google im Verlauf"
+        intro="Wie viele Menschen über die Google-Suche auf Ihre Website gekommen sind, Tag für Tag. Steigt die Linie, werden Sie häufiger gefunden."
+      >
+        <TrendChart daily={data.daily} history={data.history} current={m} milestones={data.milestones} />
       </Section>
 
       <Section id="massnahmen" title={`Was wir im ${monthNameDE(m)} gemacht haben`}>
@@ -206,11 +210,26 @@ export default function ReportView({
           <p className="text-sm text-gray-600">Für diesen Monat sind noch keine Maßnahmen eingetragen.</p>
         )}
         <Link href="/portal/massnahmen" className="mt-4 inline-block text-sm text-brand-blue hover:underline">
-          Alle Maßnahmen{data.planned.length ? ' und was als Nächstes kommt' : ''}
+          Alle Maßnahmen
         </Link>
       </Section>
 
-      <Section id="suchbegriffe" title="Ihre wichtigsten Suchbegriffe">
+      {data.planned.length > 0 && (
+        <Section id="plan" title="Der Plan: Was als Nächstes kommt" intro="Woran wir als Nächstes arbeiten und was Sie davon haben.">
+          <PlannedList items={data.planned.slice(0, 4)} />
+          {data.planned.length > 4 && (
+            <Link href="/portal/massnahmen" className="mt-4 inline-block text-sm text-brand-blue hover:underline">
+              Alle {data.planned.length} geplanten Punkte
+            </Link>
+          )}
+        </Section>
+      )}
+
+      <Section
+        id="suchbegriffe"
+        title="Ihre wichtigsten Suchbegriffe"
+        intro="Suchbegriffe sind die Wörter, die Menschen bei Google eintippen, bevor sie Ihre Website sehen. „Platz“ heißt: an welcher Stelle Sie in den Ergebnissen stehen. Platz 1 bis 3 bringt die meisten Besucher."
+      >
         <KeywordsBlock keywords={data.keywords} total={data.keywordTotal} groups={data.client.groups} />
       </Section>
 

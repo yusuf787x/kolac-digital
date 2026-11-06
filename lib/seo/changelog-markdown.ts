@@ -14,6 +14,7 @@ import type { ActivityLink, SeoActivityStatus } from './types';
  *
  *   ## Offene Punkte                   wird zu Status "planned"
  *   - [ ] **Bereich:** Text
+ *   - [ ] **Bereich:** Text | bis 30.11.2026 | Ziel: Text fuer den Kunden
  *
  * Wird im Browser (Import-Dialog) und auf dem Server (Claude-Code-
  * Schnittstelle /api/seo/changelog) gleich verwendet. Jeder Eintrag
@@ -32,6 +33,10 @@ export interface ParsedChangelogEntry {
   scope?: string;
   status: SeoActivityStatus;
   links?: ActivityLink[];
+  /** Offene Punkte: "| bis 30.11.2026" (YYYY-MM-DD). */
+  dueDate?: string;
+  /** Offene Punkte: "| Ziel: ..." */
+  goal?: string;
 }
 
 export interface ParseResult {
@@ -189,6 +194,19 @@ export function parseChangelogMarkdown(
         itemArea = prefix[1].replace(/:$/, '').trim();
         text = prefix[2].trim();
       }
+      // Zusatz bei offenen Punkten: "| bis 30.11.2026 | Ziel: ..." (gehoert nicht zum Schluessel)
+      let dueDate: string | undefined;
+      let goal: string | undefined;
+      if (openSection && text.includes('|')) {
+        const [head, ...extra] = text.split(/\s+\|\s+/);
+        text = head.trim();
+        for (const part of extra) {
+          const due = part.match(/^bis\s+(.+)$/i);
+          const g = part.match(/^ziel:?\s*(.+)$/i);
+          if (due) dueDate = parseDateHeading(due[1]) ?? undefined;
+          else if (g) goal = g[1].trim();
+        }
+      }
       const isTask = bullet[1] !== undefined;
       const status: SeoActivityStatus = openSection
         ? checked
@@ -202,6 +220,8 @@ export function parseChangelogMarkdown(
         area: itemArea,
         change: text.replace(/^(✅|🟡|🔍|⏳)\s*/u, ''),
         status,
+        ...(status === 'planned' && dueDate ? { dueDate } : {}),
+        ...(status === 'planned' && goal ? { goal } : {}),
       });
     }
   }

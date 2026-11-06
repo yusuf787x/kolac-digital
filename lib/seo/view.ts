@@ -13,7 +13,7 @@ import {
   type Opportunity,
   type PositionBuckets,
 } from './analysis';
-import { addMonths, prevMonth, sameMonthLastYear } from './months';
+import { addMonths, formatMonthDE, prevMonth, sameMonthLastYear, todayIso } from './months';
 import type {
   ActivityLink,
   PageSpeedResult,
@@ -24,6 +24,7 @@ import type {
   SeoCheckMetric,
   SeoActivityStatus,
   SeoClient,
+  SeoDailyPoint,
   SeoMetrics,
   SeoMonth,
   SeoReportStatus,
@@ -50,6 +51,10 @@ export interface PortalActivity {
   scope?: string;
   status: SeoActivityStatus;
   links?: ActivityLink[];
+  /** Geplante Punkte: bis wann (YYYY-MM-DD). */
+  dueDate?: string;
+  /** Geplante Punkte: worauf es einzahlt. */
+  goal?: string;
 }
 
 export interface PortalCheckMetric extends SeoCheckMetric {
@@ -73,6 +78,15 @@ export interface PortalCheck {
 export interface HistoryPoint extends SeoMetrics {
   month: SeoMonth;
   buckets: PositionBuckets | null;
+}
+
+/** Tag mit umgesetzten Massnahmen, als Markierung im Verlauf. */
+export interface Milestone {
+  date: string;
+  /** Erste Massnahme des Tages (ohne Markdown). */
+  text: string;
+  /** Weitere Massnahmen am selben Tag. */
+  more: number;
 }
 
 export interface GroupHistory {
@@ -118,6 +132,10 @@ export interface PortalData {
     nonBrandPrev: SeoMetrics | null;
   } | null;
   history: HistoryPoint[];
+  /** Tageswerte bis zum Ende des gewaehlten Monats (bis zu 16 Monate), aelteste zuerst. */
+  daily: SeoDailyPoint[];
+  /** Tage mit umgesetzten, veroeffentlichten Massnahmen, aelteste zuerst. */
+  milestones: Milestone[];
   keywords: KeywordRow[];
   keywordTotal: number;
   movers: Movers;
@@ -138,6 +156,7 @@ export interface PortalData {
 export interface MonthInput {
   month: SeoMonth;
   totals: SeoMetrics;
+  daily?: SeoDailyPoint[];
   /** Nur fuer Monate geladen, deren Zeilen gebraucht werden. */
   queries?: SeoRow[];
   pages?: SeoRow[];
@@ -162,7 +181,9 @@ export interface BuildInput {
   includeUnreleased: boolean;
   reports: ReportInput[];
   pagespeed: Array<{ month: SeoMonth; results: PageSpeedResult[] }>;
-  activities: Array<Pick<SeoActivity, 'id' | 'date' | 'month' | 'area' | 'change' | 'benefit' | 'scope' | 'status' | 'published' | 'links'>>;
+  activities: Array<
+    Pick<SeoActivity, 'id' | 'date' | 'month' | 'area' | 'change' | 'benefit' | 'scope' | 'status' | 'published' | 'links' | 'dueDate' | 'goal'>
+  >;
   checks?: SeoCheck[];
 }
 
@@ -212,7 +233,43 @@ export function toPortalActivity(a: BuildInput['activities'][number]): PortalAct
     scope: a.scope || undefined,
     status: a.status,
     ...(a.links?.length ? { links: a.links } : {}),
+    ...(a.status === 'planned' && a.dueDate ? { dueDate: a.dueDate } : {}),
+    ...(a.status === 'planned' && a.goal?.trim() ? { goal: a.goal.trim() } : {}),
   };
+}
+
+const plainText = (t: string) => t.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+
+export function buildMilestones(activities: Array<Pick<SeoActivity, 'date' | 'change' | 'status'>>): Milestone[] {
+  const byDate = new Map<string, string[]>();
+  for (const a of activities) {
+    if (a.status !== 'done') continue;
+    byDate.set(a.date, [...(byDate.get(a.date) ?? []), plainText(a.change)]);
+  }
+  return [...byDate.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, list]) => ({ date, text: list[0].length > 90 ? `${list[0].slice(0, 87)}…` : list[0], more: list.length - 1 }));
+}
+
+/**
+ * Zeitangabe fuer den Kunden: der Monat statt eines genauen Tages. Ist der
+ * Termin vorbei und der Punkt noch offen, steht dort "In Arbeit" (Yusuf
+ * bekommt dazu eine Erinnerung, der Kunde sieht keinen roten Verzug).
+ */
+export function planDueLabel(dueDate: string | undefined | null, today = todayIso()): string | null {
+  if (!dueDate) return null;
+  if (dueDate < today) return 'In Arbeit';
+  return `Geplant für ${formatMonthDE(dueDate.slice(0, 7))}`;
+}
+
+/** Geplante Punkte: mit Termin zuerst (fruehester oben), danach ohne Termin nach Bereich. */
+export function sortPlanned(items: PortalActivity[]): PortalActivity[] {
+  return [...items].sort((a, b) => {
+    if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+    if (a.dueDate) return -1;
+    if (b.dueDate) return 1;
+    return a.area.localeCompare(b.area, 'de');
+  });
 }
 
 /**
@@ -247,10 +304,7 @@ export function buildPortalData(input: BuildInput): PortalData {
 
   // Auch in der Admin-Vorschau nur Veroeffentlichtes: sie soll zeigen, was der Kunde sieht.
   const published = input.activities.filter((a) => a.published);
-  const planned = published
-    .filter((a) => a.status === 'planned')
-    .map(toPortalActivity)
-    .sort((a, b) => a.area.localeCompare(b.area, 'de'));
+  const planned = sortPlanned(published.filter((a) => a.status === 'planned').map(toPortalActivity));
 
   const checkTimeline = buildCheckTimeline(input.checks ?? []);
 
@@ -273,6 +327,8 @@ export function buildPortalData(input: BuildInput): PortalData {
     report: null,
     kpis: null,
     history: [],
+    daily: [],
+    milestones: buildMilestones(published),
     keywords: [],
     keywordTotal: 0,
     movers: { positionWinners: [], positionLosers: [], clickWinners: [], clickLosers: [] },
@@ -307,6 +363,7 @@ export function buildPortalData(input: BuildInput): PortalData {
 
   // Verlauf: bis zu 16 Monate bis einschliesslich des gewaehlten Monats
   const history: HistoryPoint[] = [];
+  const daily: SeoDailyPoint[] = [];
   const groupAcc = new Map<string, GroupHistory>();
   for (const g of base.client.groups) groupAcc.set(g.id, { id: g.id, name: g.name, months: [] });
   for (let i = HISTORY_MONTHS - 1; i >= 0; i--) {
@@ -318,6 +375,7 @@ export function buildPortalData(input: BuildInput): PortalData {
       ...d.totals,
       buckets: d.queries ? countBuckets(d.queries) : null,
     });
+    if (d.daily?.length) daily.push(...d.daily);
     if (d.queries) {
       const sums = sumGroups(d.queries, groups);
       for (const [id, s] of Object.entries(sums)) {
@@ -366,6 +424,7 @@ export function buildPortalData(input: BuildInput): PortalData {
       nonBrandPrev: prevNonBrandRows ? sumRows(prevNonBrandRows) : null,
     },
     history,
+    daily: daily.sort((a, b) => a.date.localeCompare(b.date)),
     keywords,
     keywordTotal: kwAll.length,
     movers: pickMovers(kwAll, prevQueries),

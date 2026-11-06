@@ -1,6 +1,6 @@
 import 'server-only';
 import { JWT } from 'google-auth-library';
-import type { SeoMetrics, SeoRow } from '../types';
+import type { SeoDailyPoint, SeoMetrics, SeoRow } from '../types';
 
 /**
  * Google Search Console (Search Analytics API) ueber einen Service
@@ -122,6 +122,7 @@ export interface GscMonth {
   totals: SeoMetrics;
   queries: SeoRow[];
   pages: SeoRow[];
+  daily: SeoDailyPoint[];
 }
 
 export async function fetchGscMonth(
@@ -131,10 +132,11 @@ export async function fetchGscMonth(
 ): Promise<GscMonth> {
   // Summen ohne Dimension enthalten auch anonymisierte Suchanfragen und
   // sind deshalb hoeher als die Summe der Keyword-Zeilen.
-  const [totalRows, queries, pages] = await Promise.all([
+  const [totalRows, queries, pages, dayRows] = await Promise.all([
     query(property, { startDate: start, endDate: end, type: 'web', dataState: 'final' }),
     queryAll(property, start, end, 'query'),
     queryAll(property, start, end, 'page'),
+    query(property, { startDate: start, endDate: end, dimensions: ['date'], type: 'web', dataState: 'final', rowLimit: 40 }),
   ]);
   const t = totalRows[0];
   return {
@@ -143,5 +145,9 @@ export async function fetchGscMonth(
       : { clicks: 0, impressions: 0, ctr: 0, position: 0 },
     queries,
     pages,
+    daily: dayRows
+      .map((r) => ({ date: r.keys?.[0] ?? '', clicks: r.clicks, impressions: r.impressions, ctr: r.ctr, position: r.position }))
+      .filter((d) => d.date)
+      .sort((a, b) => a.date.localeCompare(b.date)),
   };
 }

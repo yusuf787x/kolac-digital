@@ -13,6 +13,10 @@
       "schedule": "0 6 4 * *"
     },
     {
+      "path": "/api/seo/tasks/cron",
+      "schedule": "0 6 * * *"
+    },
+    {
       "path": "/api/invoices/dunning/cron",
       "schedule": "0 7 * * *"
     }

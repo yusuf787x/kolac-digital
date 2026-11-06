@@ -76,6 +76,12 @@ export interface SeoRow extends SeoMetrics {
 /** Kompakte Speicherform einer Zeile: [key, clicks, impressions, ctr, position]. */
 export type SeoRowTuple = [string, number, number, number, number];
 
+/** Werte eines einzelnen Tages, fuer den Verlauf wie in der Search Console. */
+export interface SeoDailyPoint extends SeoMetrics {
+  /** YYYY-MM-DD */
+  date: string;
+}
+
 export interface SeoMonthlyDoc {
   customerId: string;
   month: SeoMonth;
@@ -84,6 +90,8 @@ export interface SeoMonthlyDoc {
   queryCount: number;
   pageCount: number;
   chunks: { queries: number; pages: number };
+  /** Tageswerte des Monats. Fehlt bei Monaten, die vor Einfuehrung abgerufen wurden. */
+  daily?: SeoDailyPoint[];
   source: 'gsc' | 'demo';
   fetchedAt?: TsLike;
 }
@@ -139,6 +147,13 @@ export interface SeoActivity {
   status: SeoActivityStatus;
   /** Links zum Nachverfolgen (geaenderte Seite, Testbericht, Vorher/Nachher). */
   links?: ActivityLink[];
+  /**
+   * Nur bei geplanten Punkten: bis wann (YYYY-MM-DD). Der Kunde sieht den
+   * Monat, Yusuf bekommt vorher eine Erinnerung per Mail.
+   */
+  dueDate?: string | null;
+  /** Nur bei geplanten Punkten: worauf es einzahlt, in Kundensprache. */
+  goal?: string | null;
   /** Nur veroeffentlichte Eintraege sieht der Kunde. */
   published: boolean;
   source: 'manual' | 'import' | 'claude-code' | 'demo';

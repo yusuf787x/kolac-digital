@@ -175,3 +175,54 @@ export async function sendReportsReadyEmail(opts: {
     ].join('\n'),
   });
 }
+
+export interface TaskReminderItem {
+  displayName: string;
+  area: string;
+  change: string;
+  dueDate: string;
+  /** Tage bis zur Faelligkeit, negativ = ueberfaellig. */
+  daysLeft: number;
+  published: boolean;
+  adminLink: string;
+}
+
+/** Erinnerung an Yusuf: geplante Punkte, die bald faellig oder ueberfaellig sind. */
+export async function sendTaskReminderEmail(items: TaskReminderItem[]): Promise<void> {
+  const when = (d: number) =>
+    d < 0 ? `seit ${-d} ${d === -1 ? 'Tag' : 'Tagen'} überfällig` : d === 0 ? 'heute fällig' : d === 1 ? 'morgen fällig' : `in ${d} Tagen fällig`;
+  const date = (iso: string) => iso.split('-').reverse().join('.');
+  const groups: Array<[string, TaskReminderItem[]]> = [
+    ['Überfällig', items.filter((i) => i.daysLeft < 0)],
+    ['Heute und morgen', items.filter((i) => i.daysLeft >= 0 && i.daysLeft <= 1)],
+    ['In den nächsten 7 Tagen', items.filter((i) => i.daysLeft > 1)],
+  ];
+  const html = groups
+    .filter(([, list]) => list.length)
+    .map(
+      ([title, list]) =>
+        `<p style="margin:18px 0 6px;font-weight:700;${title === 'Überfällig' ? 'color:#b91c1c;' : ''}">${esc(title)}</p><ul style="margin:0;padding-left:20px;">${list
+          .map(
+            (i) =>
+              `<li style="margin:0 0 10px;"><a href="${esc(i.adminLink)}" style="color:#2563eb;font-weight:600;">${esc(i.displayName)}</a>: ${esc(i.change)}<br><span style="font-size:13px;color:#6b7280;">${esc(i.area)} · bis ${date(i.dueDate)}, ${when(i.daysLeft)}${i.published ? ' · Kunde sieht den Punkt im Plan' : ''}</span></li>`,
+          )
+          .join('')}</ul>`,
+    )
+    .join('');
+  const overdue = items.filter((i) => i.daysLeft < 0).length;
+  const subject = overdue
+    ? `${overdue} ${overdue === 1 ? 'Aufgabe ist' : 'Aufgaben sind'} überfällig`
+    : `${items.length} ${items.length === 1 ? 'Aufgabe wird' : 'Aufgaben werden'} bald fällig`;
+  await send({
+    to: OWNER_EMAIL,
+    subject: `Kundenportal: ${subject}`,
+    html: layout({
+      preheader: 'Was den Kunden versprochen ist, bitte umsetzen und als erledigt eintragen.',
+      title: 'Deine Aufgaben aus den Kunden-Plänen',
+      bodyHtml: `<p style="margin:0;">Diese Punkte stehen im Plan deiner Kunden. Wenn einer erledigt ist, im Admin auf „Umgesetzt“ stellen oder in der CHANGELOG.md abhaken, dann hören die Erinnerungen auf.</p>${html}`,
+      button: { label: 'Zur SEO-Übersicht', href: `${portalBaseUrl()}/dashboard/seo` },
+      footnote: 'Erinnerung 7 Tage vorher, am Vortag und am Tag selbst. Überfällige Punkte kommen jeden Montag wieder.',
+    }),
+    text: items.map((i) => `${i.displayName}: ${i.change} (bis ${date(i.dueDate)}, ${when(i.daysLeft)}) ${i.adminLink}`).join('\n'),
+  });
+}

@@ -81,6 +81,8 @@ export type ActivityInput = Pick<SeoActivity, 'date' | 'area' | 'change' | 'stat
   benefit?: string;
   scope?: string;
   links?: SeoActivity['links'];
+  dueDate?: string | null;
+  goal?: string;
 };
 
 const clean = (a: ActivityInput) => ({
@@ -93,6 +95,8 @@ const clean = (a: ActivityInput) => ({
   status: a.status,
   published: a.published,
   links: a.links ?? [],
+  dueDate: a.status === 'planned' && a.dueDate ? a.dueDate : null,
+  goal: a.status === 'planned' ? a.goal?.trim() || null : null,
 });
 
 export async function createActivity(customerId: string, a: ActivityInput): Promise<void> {
@@ -110,7 +114,7 @@ export async function updateActivity(id: string, a: Partial<ActivityInput>): Pro
   const data: Record<string, unknown> = Object.fromEntries(
     Object.entries(a)
       .filter(([, v]) => v !== undefined)
-      .map(([k, v]) => [k, (k === 'benefit' || k === 'scope') && !String(v).trim() ? null : v]),
+      .map(([k, v]) => [k, ['benefit', 'scope', 'goal', 'dueDate'].includes(k) && !String(v ?? '').trim() ? null : v]),
   );
   data.updatedAt = serverTimestamp();
   if (a.date) data.month = a.date.slice(0, 7);
@@ -143,6 +147,8 @@ export async function importActivities(
           benefit: e.benefit ?? null,
           scope: e.scope ?? null,
           links: e.links ?? [],
+          dueDate: e.dueDate ?? null,
+          goal: e.goal ?? null,
           published: e.published,
           updatedAt: serverTimestamp(),
         });

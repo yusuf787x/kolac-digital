@@ -1,10 +1,11 @@
 import { expectedCtr } from './analysis';
 import { stableHash } from './changelog-markdown';
-import { addMonths, lastCompleteMonth } from './months';
+import { addMonths, lastCompleteMonth, monthRange } from './months';
 import type {
   KeywordGroup,
   PageSpeedResult,
   SeoActivityStatus,
+  SeoDailyPoint,
   SeoMetrics,
   SeoMonth,
   SeoRow,
@@ -154,7 +155,7 @@ function progress(month: SeoMonth, last: SeoMonth): number {
 export function generateDemoMonth(
   month: SeoMonth,
   now = new Date(),
-): { totals: SeoMetrics; queries: SeoRow[]; pages: SeoRow[] } {
+): { totals: SeoMetrics; queries: SeoRow[]; pages: SeoRow[]; daily: SeoDailyPoint[] } {
   const last = lastCompleteMonth(now);
   const p = progress(month, last);
   const r = rng(`demo-${month}`);
@@ -193,16 +194,37 @@ export function generateDemoMonth(
   const posW = queries.reduce((s, q) => s + q.position * q.impressions, 0);
   const clicks = Math.round(qClicks * 1.18);
   const impressions = Math.round(qImpr * 1.25);
+  const position = qImpr ? (posW / qImpr) * 1.04 : 0;
   return {
     totals: {
       clicks,
       impressions,
       ctr: impressions ? clicks / impressions : 0,
-      position: qImpr ? (posW / qImpr) * 1.04 : 0,
+      position,
     },
     queries,
     pages,
+    daily: splitDaily(month, clicks, impressions, position, r),
   };
+}
+
+/** Verteilt die Monatssumme auf die Tage: werktags mehr, am Wochenende weniger. */
+function splitDaily(month: SeoMonth, clicks: number, impressions: number, position: number, r: () => number): SeoDailyPoint[] {
+  const { start, end } = monthRange(month);
+  const days: string[] = [];
+  for (let d = new Date(`${start}T12:00:00Z`); d.toISOString().slice(0, 10) <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+    days.push(d.toISOString().slice(0, 10));
+  }
+  const weights = days.map((d) => {
+    const wd = new Date(`${d}T12:00:00Z`).getUTCDay();
+    return (wd === 0 || wd === 6 ? 0.6 : 1.1) * (0.8 + r() * 0.4);
+  });
+  const sum = weights.reduce((a, b) => a + b, 0);
+  return days.map((date, i) => {
+    const c = Math.round((clicks * weights[i]) / sum);
+    const im = Math.round((impressions * weights[i]) / sum);
+    return { date, clicks: c, impressions: im, ctr: im ? c / im : 0, position: position * (0.95 + r() * 0.1) };
+  });
 }
 
 export function generateDemoPagespeed(after: boolean): PageSpeedResult[] {

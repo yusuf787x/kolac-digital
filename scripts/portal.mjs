@@ -12,6 +12,8 @@
  *   node …/scripts/portal.mjs release '{"month":"2026-09","confirm":true}'
  *   node …/scripts/portal.mjs settings '{"brandTerms":["motorenfachmann"]}'
  *   node …/scripts/portal.mjs items
+ *   node …/scripts/portal.mjs plan '{"area":"Inhalte","change":"…","goal":"…","dueDate":"2026-11-30","published":true}'
+ *   node …/scripts/portal.mjs plan '{"id":"…","status":"done"}'      (erledigt)
  *   node …/scripts/portal.mjs visibility '{"type":"activity","id":"…","published":true}'
  *
  * Gibt die JSON-Antwort aus. Ohne Abhaengigkeiten, Node 18+.

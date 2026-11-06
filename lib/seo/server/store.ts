@@ -7,6 +7,7 @@ import type {
   SeoActivity,
   SeoCheck,
   SeoClient,
+  SeoDailyPoint,
   SeoMetrics,
   SeoMonth,
   SeoMonthlyDoc,
@@ -91,7 +92,7 @@ const fromTuples = (t: SeoRowTuple[]): SeoRow[] =>
 export async function saveMonth(
   customerId: string,
   month: SeoMonth,
-  data: { totals: SeoMetrics; queries: SeoRow[]; pages: SeoRow[] },
+  data: { totals: SeoMetrics; queries: SeoRow[]; pages: SeoRow[]; daily?: SeoDailyPoint[] },
   source: 'gsc' | 'demo',
 ): Promise<void> {
   const db = adminDb();
@@ -132,6 +133,13 @@ export async function saveMonth(
       queries: Math.ceil(queries.length / CHUNK_SIZE),
       pages: Math.ceil(pages.length / CHUNK_SIZE),
     },
+    daily: (data.daily ?? []).map((d) => ({
+      date: d.date,
+      clicks: d.clicks,
+      impressions: d.impressions,
+      ctr: Math.round(d.ctr * 10000) / 10000,
+      position: Math.round(d.position * 100) / 100,
+    })),
     source,
     fetchedAt: Timestamp.now(),
   };
@@ -283,7 +291,7 @@ export async function loadPortalData(
   const selected =
     requestedMonth && visible.includes(requestedMonth) ? requestedMonth : (visible[0] ?? null);
 
-  const months: MonthInput[] = monthDocs.map((m) => ({ month: m.month, totals: m.totals }));
+  const months: MonthInput[] = monthDocs.map((m) => ({ month: m.month, totals: m.totals, daily: m.daily ?? [] }));
   if (selected) {
     const window = new Set(
       Array.from({ length: HISTORY_MONTHS }, (_, i) => addMonths(selected, -i)),

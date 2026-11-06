@@ -94,7 +94,9 @@ export async function syncChangelog(opts: {
         cur.status !== e.status ||
         (cur.benefit ?? '') !== (e.benefit ?? '') ||
         (cur.scope ?? '') !== (e.scope ?? '') ||
-        !linksEqual(cur.links, e.links);
+        !linksEqual(cur.links, e.links) ||
+        (e.dueDate !== undefined && (cur.dueDate ?? '') !== e.dueDate) ||
+        (e.goal !== undefined && (cur.goal ?? '') !== e.goal);
       if (changed) {
         summary.updated.push({ date: e.date, area: e.area, change: e.change, status: e.status });
         batch.update(db.collection(COL.activities).doc(cur.id), {
@@ -102,6 +104,9 @@ export async function syncChangelog(opts: {
           benefit: e.benefit ?? null,
           scope: e.scope ?? null,
           links: e.links ?? [],
+          // Termin und Ziel nur ueberschreiben, wenn die Datei sie angibt (sonst bleibt der Wert aus dem Admin)
+          ...(e.dueDate !== undefined ? { dueDate: e.dueDate } : {}),
+          ...(e.goal !== undefined ? { goal: e.goal } : {}),
           updatedAt: now,
         });
       } else {
@@ -123,6 +128,8 @@ export async function syncChangelog(opts: {
       ...(e.benefit ? { benefit: e.benefit } : {}),
       ...(e.scope ? { scope: e.scope } : {}),
       ...(e.links?.length ? { links: e.links } : {}),
+      ...(e.dueDate ? { dueDate: e.dueDate } : {}),
+      ...(e.goal ? { goal: e.goal } : {}),
       status: e.status,
       published,
       source: 'claude-code',

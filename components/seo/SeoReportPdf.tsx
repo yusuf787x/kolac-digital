@@ -2,7 +2,7 @@
 // Bewusst KEIN 'use client': wird serverseitig von lib/seo/server/report.tsx
 // gerendert (Cron, Freigabe). Gleiche Konvention wie InvoicePDF.
 
-import { Document, Page, View, Text, Image, Link, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, View, Text, Image, Link, StyleSheet, Svg, Path, Line, Circle } from '@react-pdf/renderer';
 import { BUCKET_LABELS, pctChange, type KeywordRow } from '@/lib/seo/analysis';
 import { stripInlineMarkdown } from '@/lib/seo/changelog-markdown';
 import { formatIsoDateDE, formatMonthDE, formatMonthShortDE } from '@/lib/seo/months';
@@ -19,10 +19,12 @@ import {
   rateLcp,
   rateScore,
   RATING_LABELS,
+  planDueLabel,
   shortUrl,
   type PortalData,
   type Rating,
 } from '@/lib/seo/view';
+import type { SeoDailyPoint } from '@/lib/seo/types';
 import { BUCKET_COLORS, BUCKET_ORDER, SERIES_COLOR, STATUS_COLORS } from './charts/palette';
 
 const C = {
@@ -159,6 +161,77 @@ function RatingText({ rating, text }: { rating: Rating; text: string }) {
   );
 }
 
+const CHART_W = 507;
+const CHART_H = 110;
+const DAY_MS = 86_400_000;
+const isoPlus = (iso: string, days: number) => new Date(Date.parse(`${iso}T12:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
+
+function niceMax(v: number): number {
+  if (v <= 0) return 1;
+  const mag = 10 ** Math.floor(Math.log10(v));
+  const n = v / mag;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * mag;
+}
+
+/** Die letzten 3 Monate pro Tag (Luecken mit 0 gefuellt) und dieselbe Spanne davor zum Vergleich. */
+function trendWindow(daily: SeoDailyPoint[]) {
+  // Die Tageswerte reichen genau bis zum Ende des Berichtsmonats
+  const end = daily[daily.length - 1]?.date ?? '';
+  const startD = new Date(`${end}T12:00:00Z`);
+  startD.setUTCMonth(startD.getUTCMonth() - 3);
+  const start = isoPlus(startD.toISOString().slice(0, 10), 1);
+  const byDate = new Map(daily.map((d) => [d.date, d.clicks]));
+  const first = daily[0]?.date ?? end;
+  const days: Array<{ date: string; v: number }> = [];
+  for (let d = start < first ? first : start; d <= end; d = isoPlus(d, 1)) days.push({ date: d, v: byDate.get(d) ?? 0 });
+  const prevStartD = new Date(`${start}T12:00:00Z`);
+  prevStartD.setUTCMonth(prevStartD.getUTCMonth() - 3);
+  const prevStart = prevStartD.toISOString().slice(0, 10);
+  const prev = first <= prevStart ? daily.filter((d) => d.date >= prevStart && d.date < start).reduce((a, d) => a + d.clicks, 0) : null;
+  return { days, prev, fullRange: start >= first };
+}
+
+function TrendChartPdf({ data }: { data: PortalData }) {
+  const { days, prev, fullRange } = trendWindow(data.daily);
+  const total = days.reduce((a, d) => a + d.v, 0);
+  const max = niceMax(Math.max(...days.map((d) => d.v), 0));
+  const x = (i: number) => (days.length < 2 ? CHART_W / 2 : (i / (days.length - 1)) * CHART_W);
+  const y = (v: number) => CHART_H - (v / max) * CHART_H;
+  const line = days.map((d, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(d.v).toFixed(1)}`).join(' ');
+  const area = `${line} L${x(days.length - 1).toFixed(1)},${CHART_H} L0,${CHART_H} Z`;
+  const ms = new Set(data.milestones.map((m) => m.date));
+  const ticks = days.map((d, i) => ({ d, i })).filter(({ d }) => d.date.endsWith('-01'));
+  const change = prev !== null ? pctChange(total, prev) : null;
+  return (
+    <View wrap={false}>
+      <Text style={s.h2}>Besucher über Google, Tag für Tag</Text>
+      <Text style={s.hint}>
+        {fmtInt(total)} Besucher {fullRange ? 'in den letzten 3 Monaten' : 'seit Beginn der Messung'}
+        {change !== null ? `, ${fmtSignedPct(change)} gegenüber den 3 Monaten davor` : ''}. Einzelne Tage schwanken, entscheidend ist die Richtung.
+        {ms.size ? ' Grüne Punkte: Tage, an denen wir etwas verbessert haben.' : ''}
+      </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+        <Text style={{ fontSize: 6.5, color: C.gray }}>{fmtInt(max)} pro Tag</Text>
+      </View>
+      <Svg width={CHART_W} height={CHART_H + 10}>
+        <Line x1={0} y1={0.5} x2={CHART_W} y2={0.5} stroke={C.border} strokeWidth={0.5} />
+        <Line x1={0} y1={CHART_H / 2} x2={CHART_W} y2={CHART_H / 2} stroke={C.border} strokeWidth={0.5} />
+        <Path d={area} fill={SERIES_COLOR} fillOpacity={0.1} />
+        <Path d={line} fill="none" stroke={SERIES_COLOR} strokeWidth={1.4} />
+        <Line x1={0} y1={CHART_H} x2={CHART_W} y2={CHART_H} stroke="#d1d5db" strokeWidth={0.75} />
+        {days.map((d, i) => (ms.has(d.date) ? <Circle key={d.date} cx={x(i)} cy={CHART_H + 5} r={2.2} fill="#059669" /> : null))}
+      </Svg>
+      <View style={{ position: 'relative', height: 10, marginTop: 1 }}>
+        {ticks.map(({ d, i }) => (
+          <Text key={d.date} style={{ position: 'absolute', left: Math.min(CHART_W - 30, Math.max(0, x(i) - 12)), fontSize: 6.5, color: C.gray }}>
+            {formatMonthShortDE(d.date.slice(0, 7))}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 export interface SeoReportPdfProps {
   data: PortalData;
   logoSrc: string | { data: Buffer; format: 'png' };
@@ -212,32 +285,37 @@ export default function SeoReportPdf({ data, logoSrc, draft }: SeoReportPdfProps
           </View>
         ) : null}
 
-        <Text style={s.h2}>Klicks der letzten {data.history.length} Monate</Text>
-        <View style={s.chart}>
-          {data.history.map((h) => (
-            <View key={h.month} style={s.chartCol}>
-              <Text style={{ fontSize: 6.5, color: C.gray, marginBottom: 2 }}>{h.month === month ? fmtInt(h.clicks) : ''}</Text>
-              <View
-                style={{
-                  width: '70%',
-                  maxWidth: 18,
-                  height: `${Math.max(1, (h.clicks / maxClicks) * 85)}%`,
-                  backgroundColor: SERIES_COLOR,
-                  opacity: h.month === month ? 1 : 0.55,
-                  borderTopLeftRadius: 3,
-                  borderTopRightRadius: 3,
-                }}
-              />
-            </View>
-          ))}
-        </View>
-        <View style={s.chartLabels}>
-          {data.history.map((h) => (
-            <Text key={h.month} style={s.chartLabel}>
-              {formatMonthShortDE(h.month)}
-            </Text>
-          ))}
-        </View>
+        {data.daily.length >= 14 && <TrendChartPdf data={data} />}
+        {data.history.length > 1 && (
+          <>
+          <Text style={s.h2}>Besucher pro Monat, letzte {data.history.length} Monate</Text>
+          <View style={s.chart}>
+            {data.history.map((h) => (
+              <View key={h.month} style={s.chartCol}>
+                <Text style={{ fontSize: 6.5, color: C.gray, marginBottom: 2 }}>{h.month === month ? fmtInt(h.clicks) : ''}</Text>
+                <View
+                  style={{
+                    width: '70%',
+                    maxWidth: 18,
+                    height: `${Math.max(1, (h.clicks / maxClicks) * 85)}%`,
+                    backgroundColor: SERIES_COLOR,
+                    opacity: h.month === month ? 1 : 0.55,
+                    borderTopLeftRadius: 3,
+                    borderTopRightRadius: 3,
+                  }}
+                />
+              </View>
+            ))}
+          </View>
+          <View style={s.chartLabels}>
+            {data.history.map((h) => (
+              <Text key={h.month} style={s.chartLabel}>
+                {formatMonthShortDE(h.month)}
+              </Text>
+            ))}
+          </View>
+          </>
+        )}
 
         <Footer data={data} />
       </Page>
@@ -306,14 +384,24 @@ export default function SeoReportPdf({ data, logoSrc, draft }: SeoReportPdfProps
 
         {data.planned.length > 0 && (
           <>
-            <Text style={s.h2}>Als Nächstes geplant</Text>
-            {data.planned.map((a) => (
-              <Text key={a.id} style={{ marginBottom: 3 }}>
-                {'·  '}
-                <Text style={{ fontFamily: 'Helvetica-Bold' }}>{a.area}: </Text>
-                {stripInlineMarkdown(a.change)}
-              </Text>
-            ))}
+            <Text style={s.h2}>Der Plan: Was als Nächstes kommt</Text>
+            {data.planned.map((a) => {
+              const due = planDueLabel(a.dueDate);
+              // Im PDF nur der Monat, die Überschrift sagt schon "Plan"
+              const dueShort = due && due !== 'In Arbeit' ? formatMonthDE(a.dueDate!.slice(0, 7)) : due;
+              return (
+                <View key={a.id} style={s.activity} wrap={false}>
+                  <Text style={{ width: 72, fontSize: 8, color: due === 'In Arbeit' ? '#92400e' : C.gray }}>{dueShort ?? a.area}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: 'Helvetica-Bold', fontSize: 9 }}>
+                      {due ? `${a.area}: ` : ''}
+                      {stripInlineMarkdown(a.change)}
+                    </Text>
+                    {a.goal ? <Text style={{ fontSize: 8.5, color: '#374151' }}>Das bringt Ihnen: {stripInlineMarkdown(a.goal)}</Text> : null}
+                  </View>
+                </View>
+              );
+            })}
           </>
         )}
 
@@ -335,6 +423,10 @@ export default function SeoReportPdf({ data, logoSrc, draft }: SeoReportPdfProps
         />
 
         <Text style={s.h2}>Wertvollste Suchbegriffe (ohne Marke)</Text>
+        <Text style={s.hint}>
+          Suchbegriffe sind die Wörter, die Menschen bei Google eintippen, bevor sie Ihre Website sehen. Klicks: so viele kamen darüber auf Ihre Seite.
+          Impressionen: so oft wurde Ihre Seite dabei angezeigt. Position: Ihr Platz in den Ergebnissen, Platz 1 bis 3 bringt die meisten Besucher.
+        </Text>
         <Table
           cols={[
             { label: 'Suchbegriff', width: '40%', render: (r: KeywordRow) => r.query },

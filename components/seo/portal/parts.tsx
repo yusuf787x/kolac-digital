@@ -2,7 +2,7 @@ import { Fragment } from 'react';
 import { pctChange } from '@/lib/seo/analysis';
 import { formatIsoDateDE, formatMonthDE } from '@/lib/seo/months';
 import { ACTIVITY_STATUS_BADGES, ACTIVITY_STATUS_LABELS } from '@/lib/seo/types';
-import { fmtSignedPct, type PortalActivity } from '@/lib/seo/view';
+import { fmtSignedPct, planDueLabel, type PortalActivity } from '@/lib/seo/view';
 import { LinkList } from './CheckCard';
 
 /** Bausteine fuer Portal und Admin-Vorschau. Ohne Hooks, also auch serverseitig nutzbar. */
@@ -163,16 +163,35 @@ export function ActivityTimeline({ items }: { items: PortalActivity[] }) {
 
 export function PlannedList({ items }: { items: PortalActivity[] }) {
   return (
-    <ul className="space-y-2.5">
-      {items.map((a) => (
-        <li key={a.id} className="flex gap-3 leading-relaxed">
-          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-400" aria-hidden />
-          <span>
-            <span className="font-medium">{a.area}: </span>
-            <InlineMd text={a.change} />
-          </span>
-        </li>
-      ))}
-    </ul>
+    <ol className="space-y-3">
+      {items.map((a) => {
+        const due = planDueLabel(a.dueDate);
+        return (
+          <li key={a.id} className="rounded-xl border border-gray-200 p-3 sm:p-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <span className="text-xs font-medium tracking-wide text-gray-500 uppercase">{a.area}</span>
+              {due && (
+                <span
+                  className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${
+                    due === 'In Arbeit' ? 'bg-amber-50 text-amber-800' : 'bg-sky-50 text-sky-800'
+                  }`}
+                >
+                  {due}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 font-medium leading-snug">
+              <InlineMd text={a.change} />
+            </p>
+            {a.goal && (
+              <p className="mt-1 text-sm leading-relaxed text-gray-600">
+                <span className="text-gray-500">Das bringt Ihnen: </span>
+                <InlineMd text={a.goal} />
+              </p>
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }

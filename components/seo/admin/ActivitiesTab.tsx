@@ -65,6 +65,8 @@ export default function ActivitiesTab({ client, onClientChange }: { client: SeoC
       const key = a.status === 'planned' ? 'planned' : a.month;
       map.set(key, [...(map.get(key) ?? []), a]);
     }
+    // Geplantes nach Faelligkeit, ohne Termin zuletzt
+    map.get('planned')?.sort((a, b) => (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'));
     return [...map.entries()].sort(([a], [b]) => (a === 'planned' ? -1 : b === 'planned' ? 1 : b.localeCompare(a)));
   }, [items]);
 
@@ -125,6 +127,12 @@ export default function ActivitiesTab({ client, onClientChange }: { client: SeoC
                       </p>
                     )}
                     {a.scope && <p className="text-xs text-gray-500">Umfang: {a.scope}</p>}
+                    {a.status === 'planned' && (
+                      <p className={`text-xs ${a.dueDate && a.dueDate < todayIso() ? 'font-medium text-red-700' : 'text-gray-500'}`}>
+                        {a.dueDate ? `Fällig: ${formatIsoDateDE(a.dueDate)}${a.dueDate < todayIso() ? ' (überfällig)' : ''}` : 'Ohne Termin, keine Erinnerung'}
+                        {a.goal ? ` · Ziel: ${a.goal}` : ''}
+                      </p>
+                    )}
                     {!!a.links?.length && (
                       <p className="text-xs text-gray-500">
                         Links:{' '}
@@ -155,6 +163,8 @@ export default function ActivitiesTab({ client, onClientChange }: { client: SeoC
                             status: a.status,
                             published: a.published,
                             links: a.links ?? [],
+                            dueDate: a.dueDate ?? null,
+                            goal: a.goal ?? '',
                           },
                         })
                       }
@@ -342,6 +352,38 @@ function ActivityModal({
           </label>
           <textarea id="a-change" required rows={2} className="input text-base sm:text-sm" value={f.change} onChange={(e) => set('change', e.target.value)} />
         </div>
+        {f.status === 'planned' && (
+          <div className="grid grid-cols-1 gap-4 rounded-lg bg-gray-50 p-3 sm:grid-cols-[10rem_1fr]">
+            <div>
+              <label className="label" htmlFor="a-due">
+                Fällig bis
+              </label>
+              <input
+                id="a-due"
+                type="date"
+                className="input text-base sm:text-sm"
+                value={f.dueDate ?? ''}
+                onChange={(e) => set('dueDate', e.target.value || null)}
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="a-goal">
+                Das bringt dem Kunden
+              </label>
+              <input
+                id="a-goal"
+                className="input text-base sm:text-sm"
+                placeholder="z. B. Mehr Anfragen über „Krankentransport Paderborn“"
+                value={f.goal ?? ''}
+                onChange={(e) => set('goal', e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-gray-500 sm:col-span-2">
+              Der Kunde sieht den Monat („Geplant für November 2026“), nach dem Termin „In Arbeit“. Du bekommst 7 Tage vorher, am Vortag und am
+              Tag selbst eine Mail, danach montags, bis der Punkt erledigt ist.
+            </p>
+          </div>
+        )}
         <div>
           <label className="label" htmlFor="a-benefit">
             Nutzen für den Kunden
