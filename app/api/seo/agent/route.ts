@@ -45,6 +45,8 @@ export const maxDuration = 300;
  *   items                          Massnahmen und Pruefungen mit IDs
  *   visibility { type: 'activity'|'check', id, published }
  *   delete    { type: 'activity'|'check', id }
+ *   deleteReport { month, confirm: true }
+ *                                  Bericht und PDF loeschen, Zahlen bleiben
  *   plan      { id?, area?, change?, goal?, dueDate?, published?, status? }
  *                                  Plan-Punkt anlegen/aendern (Erinnerung an Yusuf)
  *
@@ -101,6 +103,16 @@ async function handlePOST(req: Request) {
       return NextResponse.json({ ok: true, month: body.month, mailedTo: r.sentTo.length });
     }
 
+    case 'deleteReport': {
+      if (!isMonthKey(body.month)) return badRequest('month (YYYY-MM) fehlt.');
+      if (body.confirm !== true) {
+        return badRequest('Löscht Bericht und PDF (die Zahlen bleiben). Zur Bestätigung confirm: true mitsenden.');
+      }
+      const { deleteReport } = await import('@/lib/seo/server/report');
+      await deleteReport(client, body.month);
+      return NextResponse.json({ ok: true, month: body.month, deleted: true });
+    }
+
     case 'settings':
       return NextResponse.json(await updateSettings(client, body));
 
@@ -138,7 +150,7 @@ async function handlePOST(req: Request) {
     }
 
     default:
-      return badRequest('Unbekannte action. Erlaubt: status, data, fetch, report, release, settings, items, plan, visibility, delete.');
+      return badRequest('Unbekannte action. Erlaubt: status, data, fetch, report, release, deleteReport, settings, items, plan, visibility, delete.');
   }
 }
 
