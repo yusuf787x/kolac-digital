@@ -24,6 +24,7 @@ import {
   isOverdue,
   daysOverdue,
   invoiceGrossTotal,
+  compareInvoicesByNumberDesc,
 } from '@/lib/utils';
 import { activityDef } from '@/lib/sales';
 import { invoiceStatusBadgeClass, invoiceStatusLabel } from '@/lib/invoice-status';
@@ -164,7 +165,7 @@ export default function DashboardHomePage() {
   const recentInvoices = useMemo(
     () =>
       [...invoices]
-        .sort((a, b) => b.invoiceDate.toMillis() - a.invoiceDate.toMillis())
+        .sort(compareInvoicesByNumberDesc)
         .slice(0, 5),
     [invoices],
   );

@@ -52,6 +52,7 @@ import {
   buildInvoiceNumber,
   buildOrderConfirmationNumber,
   buildQuoteNumber,
+  compareInvoicesByNumberDesc,
   effectivePayments,
   invoiceGrossTotal,
   tsToMillis,
@@ -124,9 +125,7 @@ export async function listInvoicesByCustomer(
     query(invoicesCol(), where('customerId', '==', customerId)),
   );
   const list = snap.docs.map((d) => fromDoc<Invoice>(d));
-  return list.sort(
-    (a, b) => b.invoiceDate.toMillis() - a.invoiceDate.toMillis(),
-  );
+  return list.sort(compareInvoicesByNumberDesc);
 }
 
 export async function getInvoice(id: string): Promise<Invoice | null> {

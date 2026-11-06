@@ -4,12 +4,27 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { listInvoices, listCustomers } from '@/lib/firestore';
 import type { Invoice, InvoiceStatus, Customer } from '@/lib/types';
-import { formatEUR, formatDateDE, isOverdue, daysOverdue } from '@/lib/utils';
+import {
+  compareInvoicesByNumberDesc,
+  daysOverdue,
+  formatDateDE,
+  formatEUR,
+  isOverdue,
+} from '@/lib/utils';
 import { STATUS_LABELS } from '@/lib/invoice-status';
 import InvoiceStatusSelect from '@/components/invoice/InvoiceStatusSelect';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 
 type FilterStatus = 'all' | InvoiceStatus;
+type SortKey = 'number' | 'date';
+type SortDir = 'desc' | 'asc';
+
+function compareByDateDesc(a: Invoice, b: Invoice): number {
+  return (
+    b.invoiceDate.toMillis() - a.invoiceDate.toMillis() ||
+    compareInvoicesByNumberDesc(a, b)
+  );
+}
 
 const FILTERS: { value: FilterStatus; label: string }[] = [
   { value: 'all', label: 'Alle' },
@@ -28,6 +43,19 @@ export default function RechnungenPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [search, setSearch] = useState('');
+  // Standard: Rechnungsnummer, neueste oben. Wird bewusst nicht gespeichert.
+  const [sortKey, setSortKey] = useState<SortKey>('number');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  /** Klick auf dieselbe Spalte dreht die Richtung, neue Spalte startet mit neueste oben. */
+  const toggleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'));
+    } else {
+      setSortKey(key);
+      setSortDir('desc');
+    }
+  };
 
   useEffect(() => {
     Promise.all([listInvoices(), listCustomers()])
@@ -77,6 +105,12 @@ export default function RechnungenPage() {
       return blob.includes(q);
     });
   }, [enriched, filter, search]);
+
+  const sorted = useMemo(() => {
+    const cmp = sortKey === 'number' ? compareInvoicesByNumberDesc : compareByDateDesc;
+    const list = [...filtered].sort((a, b) => cmp(a.invoice, b.invoice));
+    return sortDir === 'desc' ? list : list.reverse();
+  }, [filtered, sortKey, sortDir]);
 
   const overdueCount = enriched.filter((e) => e.computedStatus === 'overdue')
     .length;
@@ -175,8 +209,18 @@ export default function RechnungenPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 tracking-wider">
               <tr>
-                <th className="text-left px-4 py-3">Rechnungsnr.</th>
-                <th className="text-left px-4 py-3">Datum</th>
+                <SortHeader
+                  label="Rechnungsnr."
+                  active={sortKey === 'number'}
+                  dir={sortDir}
+                  onClick={() => toggleSort('number')}
+                />
+                <SortHeader
+                  label="Datum"
+                  active={sortKey === 'date'}
+                  dir={sortDir}
+                  onClick={() => toggleSort('date')}
+                />
                 <th className="text-left px-4 py-3">Kunde</th>
                 <th className="text-left px-4 py-3">Status</th>
                 <th className="text-right px-4 py-3">Betrag</th>
@@ -184,7 +228,7 @@ export default function RechnungenPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtered.map(({ invoice, customer, computedStatus, daysLate }) => (
+              {sorted.map(({ invoice, customer, computedStatus, daysLate }) => (
                 <tr key={invoice.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-900">
                     {invoice.invoiceNumber ?? (
@@ -238,5 +282,39 @@ export default function RechnungenPage() {
         </div>
       )}
     </div>
+  );
+}
+
+/** Sortierbarer Spaltenkopf: Pfeil zeigt die Richtung, aria-sort für Screenreader. */
+function SortHeader({
+  label,
+  active,
+  dir,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  dir: SortDir;
+  onClick: () => void;
+}) {
+  return (
+    <th
+      className="text-left px-4 py-3"
+      aria-sort={active ? (dir === 'desc' ? 'descending' : 'ascending') : 'none'}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        className={`inline-flex items-center gap-1 uppercase tracking-wider rounded-sm hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue ${
+          active ? 'text-gray-900' : ''
+        }`}
+        title={`Nach ${label} sortieren`}
+      >
+        {label}
+        <span aria-hidden="true" className={active ? '' : 'opacity-30'}>
+          {active && dir === 'asc' ? '↑' : '↓'}
+        </span>
+      </button>
+    </th>
   );
 }

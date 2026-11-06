@@ -84,6 +84,36 @@ export function buildInvoiceNumber(
 }
 
 /**
+ * Laufender Zähler aus der Rechnungsnummer ("R1234" -> 1234,
+ * "KD-2027-1250" -> 1250). Beide Formate nutzen denselben Zähler, die
+ * Zahl am Ende ist also über den Formatwechsel hinweg fortlaufend.
+ * Entwürfe ohne Nummer -> null.
+ */
+export function invoiceNumberCounter(nr: string | null | undefined): number | null {
+  if (!nr) return null;
+  const m = nr.match(/(\d+)\s*$/);
+  return m ? Number(m[1]) : null;
+}
+
+type SortableInvoice = {
+  invoiceNumber: string | null;
+  invoiceDate: { toMillis(): number };
+};
+
+/**
+ * Standard-Reihenfolge aller Rechnungslisten: höchste Nummer oben.
+ * Entwürfe (noch ohne Nummer) stehen ganz oben, untereinander nach Datum.
+ */
+export function compareInvoicesByNumberDesc(a: SortableInvoice, b: SortableInvoice): number {
+  const na = invoiceNumberCounter(a.invoiceNumber);
+  const nb = invoiceNumberCounter(b.invoiceNumber);
+  if (na === null && nb !== null) return -1;
+  if (nb === null && na !== null) return 1;
+  if (na !== null && nb !== null && na !== nb) return nb - na;
+  return b.invoiceDate.toMillis() - a.invoiceDate.toMillis();
+}
+
+/**
  * Build a quote number: A-YYYY-NNN format, year-prefixed, 3-digit padded.
  * Independent counter from invoices.
  */
