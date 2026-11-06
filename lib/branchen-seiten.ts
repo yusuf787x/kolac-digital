@@ -423,7 +423,7 @@ export const branchenSeiten: BranchenSeite[] = [
     metaTitle:
       'Webseite für Kfz-Werkstätten erstellen lassen · mehr Aufträge | Kolac Digital',
     metaDescription:
-      'Webseite für deine Kfz-Werkstatt: jede Leistung mit eigener Seite, Anfrage mit Fahrzeugdaten, gefunden in deiner Stadt. Referenzen: Motorenfachmann und CarHiFi Herford.',
+      'Webseite für deine Kfz-Werkstatt: jede Leistung mit eigener Seite, Anfrage mit Fahrzeugdaten, gefunden in deiner Stadt. Referenzen: Motorenfachmann und Pader Automobilzentrum.',
     eyebrow: 'Webseite für Kfz-Werkstätten',
     h1: 'Webseite für deine Kfz-Werkstatt, die Aufträge bringt.',
     intro:
@@ -471,7 +471,7 @@ export const branchenSeiten: BranchenSeite[] = [
       },
     ],
     portfolioSlug: 'motorenfachmann',
-    weitereReferenzen: ['carhifi-herford'],
+    weitereReferenzen: ['carhifi-herford', 'pader-automobilzentrum'],
     faqs: [
       {
         question: 'Was gehört auf die Website einer Kfz-Werkstatt?',
@@ -482,6 +482,11 @@ export const branchenSeiten: BranchenSeite[] = [
         question: 'Ich habe schon eine Website. Muss die komplett neu?',
         answer:
           'Nicht unbedingt. Bei Motorenfachmann haben wir die bestehende Seite übernommen und technisch wie inhaltlich aufgeräumt, statt alles neu zu bauen. Ob ein Relaunch oder eine Überarbeitung mehr bringt, sagen wir dir im Erstgespräch ehrlich.',
+      },
+      {
+        question: 'Ich eröffne gerade meinen Betrieb. Womit fange ich an?',
+        answer:
+          'Mit einer SEO-Analyse, einer schlanken Website und deinem Google-Unternehmensprofil, am besten alles zum Start. So haben wir es bei Pader Automobilzentrum in Paderborn gemacht: Erst geklärt, welche Suchen Aufträge bringen, etwa „Autoankauf Paderborn“ oder „Reifenwechsel Paderborn“, dann die Seiten genau darauf ausgerichtet und das Google-Profil passend dazu angelegt.',
       },
       {
         question: 'Wie wird meine Werkstatt bei Google gefunden?',

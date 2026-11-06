@@ -184,6 +184,44 @@ export const portfolioProjects: PortfolioProject[] = [
       'Wie Kolac Digital die Website von Motorenfachmann aus Lage für Google aufgeräumt hat: Onpage-Score von 60 auf 95 Prozent, saubere Technik, neue Motorseiten.',
   },
   {
+    slug: 'pader-automobilzentrum',
+    company: 'Pader Automobilzentrum',
+    category: 'Autoankauf, Kfz-Service und Smart Repair',
+    location: 'Paderborn',
+    tag: 'Neugründung: Website und Google-Profil',
+    overviewImage: '/images/portfolio/pader-automobilzentrum.webp',
+    imageAlt:
+      'Startseite von Pader Automobilzentrum aus Paderborn: „Alles fürs Auto. Eine Adresse in Paderborn.“ mit Telefonnummer, Adresse und 13 Leistungsbereichen',
+    services: [
+      'SEO-Analyse der wichtigsten Suchbegriffe in Paderborn',
+      'Klare, einfach gehaltene Website mit 13 Leistungsbereichen',
+      '12 Ratgeber-Artikel und Inhalte für Paderborn und Umgebung',
+      'Google-Unternehmensprofil aufgesetzt',
+    ],
+    keyWin:
+      'Eine Neugründung, die vom ersten Tag an sichtbar ist: Website, Google-Profil und eine klare Ausrichtung auf Suchen wie „Autoankauf Paderborn“.',
+    link: 'https://www.pader-automobilzentrum.de/',
+    linkText: 'Website ansehen',
+    intro:
+      'Pader Automobilzentrum ist ein neuer Betrieb in Paderborn: Autoankauf und Fahrzeughandel, Reifen- und Ölwechsel, Autoaufbereitung und Smart Repair an der Halberstädter Straße. Für die Neugründung haben wir den Online-Auftritt von Grund auf aufgebaut: eine SEO-Analyse der wichtigsten Suchbegriffe, eine bewusst einfach gehaltene Website und ein Google-Unternehmensprofil. So ist der Betrieb vom Start an dort sichtbar, wo Kunden in Paderborn suchen.',
+    situation:
+      'Ein Start bei null: kein Name bei Google, keine Bewertungen, keine Website, keine Besucher. Am Standort war bei Google sogar noch der Eintrag eines früheren Betriebs zu finden. Dazu kommt ein breites Angebot vom Autoankauf bis zum Smart Repair, und Kunden sollten auf den ersten Blick verstehen, was sie hier bekommen und was in eine Fachwerkstatt gehört.',
+    approach: [
+      'SEO-Analyse vor dem ersten Entwurf: Welche Suchen in Paderborn bringen wirklich Aufträge? Die Website ist auf zehn davon ausgerichtet, etwa „Autoankauf Paderborn“, „Reifenwechsel Paderborn“ und „Smart Repair Paderborn“.',
+      'Optisch bewusst einfach gehalten: helles Design, das Blau aus dem Logo als einzige Akzentfarbe, die Telefonnummer gut sichtbar und auf dem Handy mit einem Tipp anrufbar. Wer sein Auto verkaufen oder einen Termin will, findet den Weg sofort.',
+      '13 Leistungsbereiche mit eigenen Seiten, jeweils mit Ablauf, Kosten, häufigen Fragen und einer ehrlichen Abgrenzung, was der Betrieb selbst macht und was er an Fachwerkstätten vermittelt. Jede Seite nennt die Paderborner Stadtteile und Nachbarorte wie Borchen, Salzkotten und Delbrück.',
+      '12 Ratgeber-Artikel zu den Fragen, die vor dem Termin kommen, zum Beispiel was Smart Repair ist, ob Steinschlag in der Scheibe repariert werden kann und wie man ein Auto in Paderborn am besten verkauft.',
+      'Google-Unternehmensprofil aufgesetzt, mit Beschreibung, Öffnungszeiten, Einzugsgebiet und 28 Leistungstexten passend zur Website. Die strukturierten Daten der Website nennen dieselben Angaben, damit Google beides eindeutig zusammenbringt.',
+      'Sauber vom ersten Tag an: nur eine Adresse mit www, die Google-Karte lädt erst nach Zustimmung, vollständiges Impressum und eine eingerichtete Search Console, damit die Sichtbarkeit von Anfang an messbar ist.',
+    ],
+    outcome:
+      'Der Betrieb startet nicht unsichtbar, sondern mit einer Website, die Google vom ersten Tag an eindeutig zuordnen kann: Paderborn, Autoankauf, Reifenservice, Smart Repair. Sobald Google das Unternehmensprofil bestätigt hat, erscheint Pader Automobilzentrum auch in Google Maps. Wie sich Besucher und Platzierungen entwickeln, sieht der Betrieb jeden Monat in seinem Kundenportal.',
+    metaTitle:
+      'Pader Automobilzentrum Paderborn · Neue Website und Google-Profil · Kolac Digital',
+    metaDescription:
+      'Wie Kolac Digital für die Neugründung Pader Automobilzentrum in Paderborn SEO-Analyse, Website und Google-Unternehmensprofil aufgebaut hat. Sichtbar vom ersten Tag an.',
+  },
+  {
     slug: 'fahrschule-kreuzer',
     company: 'Fahrschule Kreuzer',
     category: 'Fahrschule',

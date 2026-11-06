@@ -123,20 +123,26 @@ export const staedteSeiten: StadtSeite[] = [
     nachbarorte: ['Bad Lippspringe', 'Delbrück', 'Salzkotten', 'Büren', 'Hövelhof', 'Borchen', 'Altenbeken'],
     metaTitle: 'Webdesign Paderborn · Relaunch und Websites, die gefunden werden | Kolac Digital',
     metaDescription:
-      'Webdesign für Paderborn: Relaunch oder neue Website, die bei Google für Paderborn und den Kreis gefunden wird. Referenz: PaderPuls Krankenfahrdienst, von 5 auf über 40 Seiten.',
+      'Webdesign für Paderborn: Relaunch oder neue Website, die bei Google für Paderborn und den Kreis gefunden wird. Referenzen: PaderPuls Krankenfahrdienst und Pader Automobilzentrum.',
     h1: 'Webdesign für Paderborn: Websites, die in der Region gefunden werden.',
     intro:
       'Wir bauen Websites für Betriebe in Paderborn und im Kreis Paderborn, neu oder als Relaunch einer alten Seite. Mit klarer Struktur, Unterseiten für deine Leistungen und Orte und einer Technik, die Google sauber lesen kann. Damit Kunden aus Paderborn, Delbrück oder Salzkotten bei dir landen und nicht bei der Konkurrenz.',
     lokal: [
       'Für PaderPuls, einen Krankenfahrdienst aus Paderborn, haben wir die alte Baukasten-Seite durch einen kompletten Relaunch ersetzt. Aus fünf dünnen Seiten wurden über 40 Seiten mit echtem Inhalt: jede Leistung einzeln, dazu Seiten für die Paderborner Stadtteile und die Orte im Kreis Paderborn und im Kreis Höxter. Das Ergebnis: spürbar mehr Anfragen und Anrufe über die Website.',
-      'Diese Erfahrung bringen wir in jedes Projekt in Paderborn mit. Unser Büro ist in Bielefeld, das Erstgespräch läuft per Telefon, Video Call oder bei dir vor Ort. Den Entwurf siehst du nach wenigen Tagen online.',
+      'Ganz ohne Vorgänger startete Pader Automobilzentrum, ein neu gegründeter Betrieb für Autoankauf, Reifenservice und Smart Repair. Hier stand am Anfang eine SEO-Analyse: Welche Suchen in Paderborn bringen Aufträge? Darauf ist die einfach gehaltene Website ausgerichtet, mit 13 Leistungsseiten, Ratgeber-Artikeln und den Paderborner Stadtteilen. Dazu haben wir das Google-Unternehmensprofil aufgesetzt, damit der Betrieb auch in Google Maps auftaucht.',
+      'Diese Erfahrung bringen wir in jedes Projekt in Paderborn mit, ob Relaunch oder Neugründung. Unser Büro ist in Bielefeld, das Erstgespräch läuft per Telefon, Video Call oder bei dir vor Ort. Den Entwurf siehst du nach wenigen Tagen online.',
     ],
-    referenzen: ['paderpuls'],
+    referenzen: ['paderpuls', 'pader-automobilzentrum'],
     faqs: [
       {
         question: 'Lohnt sich ein Relaunch meiner alten Website?',
         answer:
           'Meistens dann, wenn die Seite am Handy schlecht aussieht, bei Google kaum auftaucht oder du Inhalte nicht selbst ändern kannst. Bei einem Relaunch übernehmen wir, was gut ist, leiten alle alten Adressen sauber weiter und bauen den Rest neu auf. So verlierst du keine Besucher, die über alte Links kommen.',
+      },
+      {
+        question: 'Ich gründe gerade in Paderborn. Brauche ich die Website sofort?',
+        answer:
+          'Ja, je früher, desto besser. Google braucht einige Wochen, bis eine neue Seite gut einsortiert ist, und ohne Website und Google-Profil findet dich in den ersten Monaten kaum jemand. Bei Pader Automobilzentrum waren Website und Google-Unternehmensprofil zum Start fertig, ausgerichtet auf die Suchen, die in Paderborn Aufträge bringen.',
       },
       {
         question: 'Wird meine Website bei Suchen in Paderborn gefunden?',
