@@ -67,8 +67,10 @@ Lokal ohne `RESEND_API_KEY` stehen die Mails samt Login-Link in der Konsole von 
 
      Mit „Regeln testen“ gleich prüfen. Änderungen gelten rückwirkend für alle gespeicherten Monate.
    - **Ladezeit-Seiten:** 3 bis 5 wichtige URLs (Startseite, Hauptleistungen).
-4. Tab **Daten**, „Historie laden (16 Monate)“. So weit hält Google die Daten vor. Ab dann speichern wir selbst und dauerhaft.
-5. Tab **Daten**, „Jetzt aktualisieren“: Vormonat plus Ladezeit, legt den ersten Bericht als Entwurf an.
+4. **Neue Website** (gerade live) oder vorher lief eine andere Seite auf der Domain: Tab **Einstellungen**, „Zahlen ab“ auf den Monat des Livegangs setzen und **keine Historie laden**.
+   Sonst Tab **Daten**, „Historie laden“: geht vom neuesten Monat rückwärts (höchstens 16 Monate) und hört beim ersten Monat ohne Zahlen auf. Google liefert Daten erst ab der Einrichtung der Search Console. Monate ohne Zahlen werden nicht angelegt.
+5. Tab **Daten**, „Jetzt aktualisieren“: Vormonat plus Ladezeit, legt den ersten Bericht als Entwurf an. Hat der Vormonat noch keine Zahlen, wird nichts angelegt; der Cron erstellt den ersten Bericht am 4. des Monats nach dem ersten Monat mit Zahlen.
+6. Alles Weitere (Maßnahmen aus der Git-Historie, Plan mit Terminen, Einschätzungen) im **Kundenprojekt** in Claude Code: „Portal einrichten“ sagen und den Schlüssel einfügen (siehe unten).
 
 ### 3. Maßnahmen und Prüfungen
 
