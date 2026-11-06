@@ -33,11 +33,13 @@ const portalUrl = String(JSON.parse(readFileSync('.kolac-portal.json', 'utf8')).
 if (!portalUrl) fail('portalUrl fehlt in .kolac-portal.json.');
 
 let token = process.env.KOLAC_PORTAL_TOKEN;
-if (!token && existsSync('.env')) {
-  const line = readFileSync('.env', 'utf8').split('\n').find((l) => l.trim().startsWith('KOLAC_PORTAL_TOKEN='));
+// .env oder .env.local (Next-Projekte halten Geheimnisse in .env.local)
+for (const f of ['.env', '.env.local']) {
+  if (token || !existsSync(f)) continue;
+  const line = readFileSync(f, 'utf8').split('\n').find((l) => l.trim().startsWith('KOLAC_PORTAL_TOKEN='));
   token = line?.split('=').slice(1).join('=').trim().replace(/^["']|["']$/g, '');
 }
-if (!token) fail('KOLAC_PORTAL_TOKEN fehlt (Umgebungsvariable oder .env im Projekt).');
+if (!token) fail('KOLAC_PORTAL_TOKEN fehlt (Umgebungsvariable, .env oder .env.local im Projekt).');
 
 let extra = {};
 if (arg) {
