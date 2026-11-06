@@ -290,10 +290,22 @@ export function visibleMonths(
   return sorted.filter((m) => m <= latest);
 }
 
+/**
+ * Monate mit Zahlen. Google liefert erst ab der Einrichtung der Search
+ * Console Daten, die leeren Monate davor sollen weder in der Monatsauswahl
+ * noch im Verlauf als "0 Besucher" erscheinen.
+ */
+export function monthsWithData(months: Array<{ month: SeoMonth; totals: SeoMetrics }>): SeoMonth[] {
+  const sorted = [...months].sort((a, b) => a.month.localeCompare(b.month));
+  const first = sorted.findIndex((m) => m.totals.impressions > 0 || m.totals.clicks > 0);
+  return first === -1 ? [] : sorted.slice(first).map((m) => m.month);
+}
+
 export function buildPortalData(input: BuildInput): PortalData {
   const { client } = input;
   const byMonth = new Map(input.months.map((m) => [m.month, m]));
-  const months = visibleMonths([...byMonth.keys()], input.reports, input.includeUnreleased);
+  const withData = new Set(monthsWithData(input.months));
+  const months = visibleMonths([...withData], input.reports, input.includeUnreleased);
   const month =
     input.requestedMonth && months.includes(input.requestedMonth)
       ? input.requestedMonth
@@ -346,8 +358,9 @@ export function buildPortalData(input: BuildInput): PortalData {
   if (!month) return base;
 
   const cur = byMonth.get(month)!;
-  const prev = byMonth.get(prevMonth(month)) ?? null;
-  const yoy = byMonth.get(sameMonthLastYear(month)) ?? null;
+  // Monate vor Messbeginn zaehlen nicht als Vergleich
+  const prev = withData.has(prevMonth(month)) ? (byMonth.get(prevMonth(month)) ?? null) : null;
+  const yoy = withData.has(sameMonthLastYear(month)) ? (byMonth.get(sameMonthLastYear(month)) ?? null) : null;
   const curQueries = cur.queries ?? [];
   const prevQueries = prev?.queries ?? null;
 
@@ -369,7 +382,7 @@ export function buildPortalData(input: BuildInput): PortalData {
   for (let i = HISTORY_MONTHS - 1; i >= 0; i--) {
     const m = addMonths(month, -i);
     const d = byMonth.get(m);
-    if (!d) continue;
+    if (!d || !withData.has(m)) continue;
     history.push({
       month: m,
       ...d.totals,

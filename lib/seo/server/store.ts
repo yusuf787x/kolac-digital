@@ -18,6 +18,7 @@ import type {
 import {
   buildPortalData,
   HISTORY_MONTHS,
+  monthsWithData,
   visibleMonths,
   type MonthInput,
   type PortalData,
@@ -284,7 +285,7 @@ export async function loadPortalData(
 
   // Erst bestimmen, welcher Monat gezeigt wird, dann nur dessen Zeilen laden
   const visible = visibleMonths(
-    monthDocs.map((m) => m.month),
+    monthsWithData(monthDocs),
     reportInputs,
     includeUnreleased,
   );
