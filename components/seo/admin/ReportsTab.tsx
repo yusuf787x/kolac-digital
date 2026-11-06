@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Modal from '@/components/ui/Modal';
-import { listAccess, listMonths, listReports, saveAssessment } from '@/lib/seo/client';
+import { listAccess, listMonthsWithData, listReports, saveAssessment } from '@/lib/seo/client';
 import { formatMonthDE } from '@/lib/seo/months';
 import type { PortalAccess, SeoClient, SeoMonthlyDoc, SeoReport } from '@/lib/seo/types';
 import { fmtInt } from '@/lib/seo/view';
@@ -27,7 +27,7 @@ export default function ReportsTab({ client, initialMonth }: { client: SeoClient
 
   const load = useCallback(async () => {
     const [m, r, a] = await Promise.all([
-      listMonths(client.customerId),
+      listMonthsWithData(client),
       listReports(client.customerId),
       listAccess(client.customerId),
     ]);
@@ -36,7 +36,7 @@ export default function ReportsTab({ client, initialMonth }: { client: SeoClient
     setAccess(a.filter((x) => x.active));
     setLoading(false);
     return { m, r };
-  }, [client.customerId]);
+  }, [client]);
 
   useEffect(() => {
     load().then(({ m, r }) => {
@@ -122,7 +122,9 @@ export default function ReportsTab({ client, initialMonth }: { client: SeoClient
   if (!months.length) {
     return (
       <div className="card text-sm text-gray-600">
-        Noch keine Zahlen. Unter <Link className="underline" href={`?tab=daten`}>Daten</Link> die Historie laden.
+        Noch keine Zahlen. Google liefert Daten erst ab dem Tag, an dem die Search Console eingerichtet ist. Der erste Bericht entsteht
+        automatisch am 4. des Folgemonats, sobald ein Monat Zahlen hat. Ältere Daten holst du unter{' '}
+        <Link className="underline" href={`?tab=daten`}>Daten</Link>.
       </div>
     );
   }

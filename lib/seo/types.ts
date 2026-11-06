@@ -49,12 +49,18 @@ export interface SeoClient {
   keywordGroups: KeywordGroup[];
   /** 3 bis 5 wichtige Seiten fuer die Ladezeit-Messung. */
   pagespeedUrls: string[];
+  /**
+   * Zahlen ab diesem Monat (YYYY-MM). Aeltere Monate werden weder abgerufen
+   * noch angezeigt, z. B. bei einer neuen Website oder Daten einer frueheren
+   * Website auf derselben Domain. Leer = alles, was Google liefert.
+   */
+  dataStart?: SeoMonth | null;
   /** SHA-256 des Changelog-Schluessels fuer Claude Code. */
   changelogTokenHash?: string;
   /** Letzte vier Zeichen, damit man den Schluessel wiedererkennt. */
   changelogTokenHint?: string;
   lastFetchAt?: TsLike;
-  lastFetchMonth?: SeoMonth;
+  lastFetchMonth?: SeoMonth | null;
   lastFetchError?: string | null;
   createdAt?: TsLike;
   updatedAt?: TsLike;

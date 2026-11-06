@@ -144,7 +144,13 @@ ${teaser ? `<p style="margin:0 0 12px;padding:14px 16px;background:#f9fafb;borde
 export async function sendReportsReadyEmail(opts: {
   items: Array<{ displayName: string; monthLabel: string; adminLink: string }>;
   errors: Array<{ displayName: string; message: string }>;
+  /** Kunden ohne Zahlen im Monat (neue Website), nur zur Info. */
+  noData?: string[];
+  monthLabel?: string;
 }): Promise<void> {
+  const noData = opts.noData?.length
+    ? `<p style="margin:16px 0 0;font-size:14px;color:#6b7280;">Noch keine Zahlen${opts.monthLabel ? ` für ${esc(opts.monthLabel)}` : ''}, deshalb kein Bericht: ${opts.noData.map(esc).join(', ')}.</p>`
+    : '';
   const list = opts.items
     .map(
       (i) =>
@@ -165,7 +171,7 @@ export async function sendReportsReadyEmail(opts: {
     html: layout({
       preheader: 'Prüfen, Einschätzung ergänzen, freigeben.',
       title: count ? 'Neue Berichte zur Freigabe' : 'SEO-Abruf',
-      bodyHtml: `${count ? `<p style="margin:0 0 12px;">Die Zahlen sind abgerufen und die Berichte als Entwurf erstellt. Bitte prüfen, Einschätzung ergänzen und freigeben:</p><ul style="margin:0;padding-left:20px;">${list}</ul>` : ''}${errs}`,
+      bodyHtml: `${count ? `<p style="margin:0 0 12px;">Die Zahlen sind abgerufen und die Berichte als Entwurf erstellt. Bitte prüfen, Einschätzung ergänzen und freigeben:</p><ul style="margin:0;padding-left:20px;">${list}</ul>` : ''}${errs}${noData}`,
       button: { label: 'Zur SEO-Übersicht', href: `${portalBaseUrl()}/dashboard/seo` },
       footnote: 'Die Kunden bekommen erst eine Mail, wenn du auf „Bericht freigeben und senden“ klickst.',
     }),

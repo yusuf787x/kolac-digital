@@ -14,6 +14,7 @@ import {
   getReport,
   listActivities,
   listChecks,
+  deleteEmptyMonths,
   listMonthDocs,
   listReports,
   loadPortalData,
@@ -223,6 +224,11 @@ async function status(client: SeoClient) {
   const id = client.customerId;
   const [months, reports, recipients] = await Promise.all([listMonthDocs(id), listReports(id), listActiveAccessEmails(id)]);
   const have = new Set(months.map((m) => m.month));
+  // Moegliche Monate: die letzten 16 abgeschlossenen, aber nicht vor "Zahlen ab"
+  const window = lastCompleteMonths(16)
+    .filter((m) => !client.dataStart || m >= client.dataStart)
+    .sort();
+  const firstStored = [...have].sort()[0] ?? null;
   return {
     customer: client.displayName,
     domain: client.domain,
@@ -234,13 +240,21 @@ async function status(client: SeoClient) {
       brandTerms: client.brandTerms ?? [],
       keywordGroups: client.keywordGroups ?? [],
       pagespeedUrls: client.pagespeedUrls ?? [],
+      dataStart: client.dataStart ?? null,
     },
     lastFetchError: client.lastFetchError ?? null,
     monthsWithData: [...have].sort().reverse(),
     /** Monate ohne Tageswerte (vor Einfuehrung abgerufen). Erneut fetch aufrufen, solange Google sie noch liefert (16 Monate). */
     monthsWithoutDaily: months.filter((m) => !m.daily?.length && m.totals.impressions > 0).map((m) => m.month),
-    /** Die letzten 16 abgeschlossenen Monate, die noch fehlen (Backfill). */
-    missingMonths: lastCompleteMonths(16).filter((m) => !have.has(m)),
+    /** Luecken zwischen dem ersten gespeicherten Monat (bzw. "Zahlen ab") und dem letzten abgeschlossenen Monat: abrufen. */
+    missingMonths: firstStored
+      ? window.filter((m) => m > firstStored && !have.has(m))
+      : window.slice(-1),
+    /**
+     * Aeltere Monate vor dem ersten gespeicherten, neuester zuerst: einzeln abrufen und beim
+     * ersten leeren Monat aufhoeren (davor hat Google keine Daten). Leere Monate werden nicht gespeichert.
+     */
+    olderMonthsToTry: firstStored ? window.filter((m) => m < firstStored).reverse() : window.slice(0, -1).reverse(),
     reports: reports
       .sort((a, b) => b.month.localeCompare(a.month))
       .map((r) => ({
@@ -264,6 +278,11 @@ async function updateSettings(client: SeoClient, body: Record<string, unknown>) 
   if (typeof body.displayName === 'string' && body.displayName.trim()) update.displayName = body.displayName.trim().slice(0, 120);
   if (typeof body.gscProperty === 'string' && body.gscProperty.trim()) update.gscProperty = body.gscProperty.trim();
   if (typeof body.enabled === 'boolean') update.enabled = body.enabled;
+  if (body.dataStart === null || body.dataStart === '') update.dataStart = null;
+  else if (body.dataStart !== undefined) {
+    if (!isMonthKey(body.dataStart)) errors.push('dataStart im Format YYYY-MM.');
+    else update.dataStart = body.dataStart;
+  }
   const brand = strList(body.brandTerms, 30);
   if (brand) update.brandTerms = brand;
   const urls = strList(body.pagespeedUrls, 5);
@@ -299,7 +318,9 @@ async function updateSettings(client: SeoClient, body: Record<string, unknown>) 
     .collection(COL.clients)
     .doc(client.customerId)
     .update({ ...update, updatedAt: Timestamp.now() });
-  return { ok: true, updated: Object.keys(update) };
+  // Neues "Zahlen ab": aeltere und leere Monate sofort entfernen
+  const removedMonths = 'dataStart' in update ? await deleteEmptyMonths(client.customerId, update.dataStart as string | null) : [];
+  return { ok: true, updated: Object.keys(update), ...(removedMonths.length ? { removedMonths } : {}) };
 }
 
 export const POST = safe(handlePOST);

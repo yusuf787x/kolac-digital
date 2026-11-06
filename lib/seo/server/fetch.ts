@@ -4,10 +4,12 @@ import { formatMonthDE, lastCompleteMonth, monthRange } from '../months';
 import type { PageSpeedResult, SeoClient, SeoMonth } from '../types';
 import { fetchGscMonth } from './gsc';
 import { measurePagespeed } from './pagespeed';
-import { markFetch, saveMonth, savePagespeed } from './store';
+import { deleteEmptyMonths, deleteMonth, markFetch, saveMonth, savePagespeed } from './store';
 
 export interface FetchSummary {
   month: SeoMonth;
+  /** Google hat fuer den Monat keine Zahlen (Search Console noch nicht eingerichtet, Seite neu). Nichts gespeichert. */
+  empty: boolean;
   clicks: number;
   impressions: number;
   queries: number;
@@ -19,6 +21,10 @@ export async function fetchMonth(client: SeoClient, month: SeoMonth): Promise<Fe
   if (month > lastCompleteMonth()) {
     throw new Error(`${formatMonthDE(month)} ist noch nicht abgeschlossen.`);
   }
+  if (client.dataStart && month < client.dataStart) {
+    await deleteMonth(client.customerId, month);
+    return { month, empty: true, clicks: 0, impressions: 0, queries: 0, pages: 0 };
+  }
   try {
     let data;
     if (client.demo) {
@@ -28,10 +34,19 @@ export async function fetchMonth(client: SeoClient, month: SeoMonth): Promise<Fe
       const { start, end } = monthRange(month);
       data = await fetchGscMonth(client.gscProperty, start, end);
     }
+    const empty = !data.totals.impressions && !data.totals.clicks && data.queries.length === 0;
+    if (empty) {
+      // Leere Monate nicht anlegen, einen frueher gespeicherten leeren Monat entfernen
+      await deleteMonth(client.customerId, month);
+      await markFetch(client.customerId, { error: null });
+      return { month, empty: true, clicks: 0, impressions: 0, queries: 0, pages: 0 };
+    }
     await saveMonth(client.customerId, month, data, client.demo ? 'demo' : 'gsc');
     await markFetch(client.customerId, { month, error: null });
+    await deleteEmptyMonths(client.customerId, client.dataStart);
     return {
       month,
+      empty: false,
       clicks: data.totals.clicks,
       impressions: data.totals.impressions,
       queries: data.queries.length,

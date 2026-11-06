@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { ParsedChangelogEntry } from './changelog-markdown';
+import { monthsWithData } from './view';
 import type {
   PortalAccess,
   PortalLoginEvent,
@@ -200,6 +201,13 @@ export async function saveAssessment(customerId: string, month: string, assessme
 
 export async function listMonths(customerId: string): Promise<SeoMonthlyDoc[]> {
   return (await byCustomer<SeoMonthlyDoc>('seoMonthly', customerId)).sort((a, b) => b.month.localeCompare(a.month));
+}
+
+/** Nur Monate mit Zahlen (ab dem ersten Monat mit Daten, nicht vor "Zahlen ab"), neuester zuerst. */
+export async function listMonthsWithData(client: Pick<SeoClient, 'customerId' | 'dataStart'>): Promise<SeoMonthlyDoc[]> {
+  const all = await listMonths(client.customerId);
+  const keep = new Set(monthsWithData(all, client.dataStart));
+  return all.filter((m) => keep.has(m.month));
 }
 
 // --- Portal-Zugang ---

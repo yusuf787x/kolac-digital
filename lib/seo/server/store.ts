@@ -152,6 +152,33 @@ export async function saveMonth(
   await ref.set(doc);
 }
 
+/** Monat samt Zeilen-Bloecken loeschen (leerer Monat oder vor "Zahlen ab"). */
+export async function deleteMonth(customerId: string, month: SeoMonth): Promise<boolean> {
+  const db = adminDb();
+  const ref = db.collection(COL.monthly).doc(monthDocId(customerId, month));
+  const [snap, rows] = await Promise.all([ref.get(), ref.collection('rows').get()]);
+  if (!snap.exists && rows.empty) return false;
+  const batch = db.batch();
+  rows.docs.forEach((d) => batch.delete(d.ref));
+  batch.delete(ref);
+  await batch.commit();
+  return true;
+}
+
+export const isEmptyMonth = (m: Pick<SeoMonthlyDoc, 'totals' | 'queryCount'>) =>
+  !m.totals.impressions && !m.totals.clicks && !m.queryCount;
+
+/**
+ * Raeumt gespeicherte Monate ohne Zahlen und Monate vor "Zahlen ab" auf.
+ * So entstehen im Admin und im Portal keine Monate, die es nicht gibt.
+ */
+export async function deleteEmptyMonths(customerId: string, dataStart?: SeoMonth | null): Promise<SeoMonth[]> {
+  const docs = await listMonthDocs(customerId);
+  const drop = docs.filter((m) => isEmptyMonth(m) || (dataStart && m.month < dataStart)).map((m) => m.month);
+  for (const m of drop) await deleteMonth(customerId, m);
+  return drop;
+}
+
 export async function listMonthDocs(customerId: string): Promise<SeoMonthlyDoc[]> {
   const snap = await adminDb()
     .collection(COL.monthly)
@@ -290,7 +317,7 @@ export async function loadPortalData(
 
   // Erst bestimmen, welcher Monat gezeigt wird, dann nur dessen Zeilen laden
   const visible = visibleMonths(
-    monthsWithData(monthDocs),
+    monthsWithData(monthDocs, client.dataStart),
     reportInputs,
     includeUnreleased,
   );

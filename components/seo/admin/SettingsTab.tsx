@@ -36,6 +36,7 @@ export default function SettingsTab({ client, onSaved }: { client: SeoClient; on
   const [domain, setDomain] = useState(client.domain);
   const [property, setProperty] = useState(client.gscProperty);
   const [enabled, setEnabled] = useState(client.enabled);
+  const [dataStart, setDataStart] = useState(client.dataStart ?? '');
   const [brand, setBrand] = useState((client.brandTerms ?? []).join('\n'));
   const [urls, setUrls] = useState((client.pagespeedUrls ?? []).join('\n'));
   const [groups, setGroups] = useState<GroupDraft[]>(
@@ -77,6 +78,9 @@ export default function SettingsTab({ client, onSaved }: { client: SeoClient; on
         domain: domain.trim(),
         gscProperty: property.trim(),
         enabled,
+        dataStart: dataStart || null,
+        // "Zahlen bis" in der Übersicht darf nicht auf einen ausgeblendeten Monat zeigen
+        ...(dataStart && client.lastFetchMonth && client.lastFetchMonth < dataStart ? { lastFetchMonth: null } : {}),
         brandTerms: lines(brand),
         pagespeedUrls: urlList,
         keywordGroups: parsedGroups.filter((g) => g.name && g.patterns.length),
@@ -117,6 +121,22 @@ export default function SettingsTab({ client, onSaved }: { client: SeoClient; on
             <input type="checkbox" className="h-4 w-4" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
             Monatlicher Abruf aktiv
           </label>
+        </div>
+        <div>
+          <label className="label" htmlFor="s-start">
+            Zahlen ab <span className="font-normal text-gray-400">(optional)</span>
+          </label>
+          <input
+            id="s-start"
+            type="month"
+            className="input text-base sm:text-sm"
+            value={dataStart}
+            onChange={(e) => setDataStart(e.target.value)}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Für neue Websites oder wenn auf der Domain vorher eine andere Seite lief. Ältere Monate werden nicht abgerufen und nirgends
+            angezeigt. Leer lassen = alles, was Google liefert.
+          </p>
         </div>
       </div>
 

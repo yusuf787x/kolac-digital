@@ -173,7 +173,7 @@ export interface ReportInput {
 export interface BuildInput {
   client: Pick<
     SeoClient,
-    'customerId' | 'displayName' | 'domain' | 'brandTerms' | 'keywordGroups' | 'demo'
+    'customerId' | 'displayName' | 'domain' | 'brandTerms' | 'keywordGroups' | 'demo' | 'dataStart'
   >;
   months: MonthInput[];
   requestedMonth: SeoMonth | null;
@@ -295,8 +295,13 @@ export function visibleMonths(
  * Console Daten, die leeren Monate davor sollen weder in der Monatsauswahl
  * noch im Verlauf als "0 Besucher" erscheinen.
  */
-export function monthsWithData(months: Array<{ month: SeoMonth; totals: SeoMetrics }>): SeoMonth[] {
-  const sorted = [...months].sort((a, b) => a.month.localeCompare(b.month));
+export function monthsWithData(
+  months: Array<{ month: SeoMonth; totals: SeoMetrics }>,
+  dataStart?: SeoMonth | null,
+): SeoMonth[] {
+  const sorted = [...months]
+    .filter((m) => !dataStart || m.month >= dataStart)
+    .sort((a, b) => a.month.localeCompare(b.month));
   const first = sorted.findIndex((m) => m.totals.impressions > 0 || m.totals.clicks > 0);
   return first === -1 ? [] : sorted.slice(first).map((m) => m.month);
 }
@@ -304,7 +309,7 @@ export function monthsWithData(months: Array<{ month: SeoMonth; totals: SeoMetri
 export function buildPortalData(input: BuildInput): PortalData {
   const { client } = input;
   const byMonth = new Map(input.months.map((m) => [m.month, m]));
-  const withData = new Set(monthsWithData(input.months));
+  const withData = new Set(monthsWithData(input.months, client.dataStart));
   const months = visibleMonths([...withData], input.reports, input.includeUnreleased);
   const month =
     input.requestedMonth && months.includes(input.requestedMonth)

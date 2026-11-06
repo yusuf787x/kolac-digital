@@ -36,12 +36,18 @@ async function handleGET(req: Request) {
   const clients = (await listSeoClients()).filter((c) => c.enabled && !c.demo);
   const items: Array<{ displayName: string; monthLabel: string; adminLink: string }> = [];
   const errors: Array<{ displayName: string; message: string }> = [];
+  const noData: string[] = [];
 
   for (const client of clients) {
     try {
       const existing = await getReport(client.customerId, month);
       if (existing?.status === 'released') continue; // schon erledigt, nichts ueberschreiben
-      await fetchMonth(client, month);
+      const summary = await fetchMonth(client, month);
+      if (summary.empty) {
+        // Neue Website oder Search Console noch nicht eingerichtet: kein Bericht, kein Fehler
+        noData.push(client.displayName);
+        continue;
+      }
       await measureMonth(client, month).catch((err) => {
         errors.push({ displayName: client.displayName, message: `PageSpeed: ${(err as Error).message}` });
       });
@@ -58,9 +64,9 @@ async function handleGET(req: Request) {
   }
 
   if (items.length || errors.length) {
-    await sendReportsReadyEmail({ items, errors }).catch((err) => console.error('SEO-Cron Mail', err));
+    await sendReportsReadyEmail({ items, errors, noData, monthLabel: formatMonthDE(month) }).catch((err) => console.error('SEO-Cron Mail', err));
   }
-  return NextResponse.json({ ok: true, month, processed: items.length, errors });
+  return NextResponse.json({ ok: true, month, processed: items.length, noData, errors });
 }
 
 export const GET = safe(handleGET);

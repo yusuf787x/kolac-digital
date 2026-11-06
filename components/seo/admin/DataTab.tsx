@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { listMonths, listReports } from '@/lib/seo/client';
+import { listMonthsWithData, listReports } from '@/lib/seo/client';
 import { formatMonthDE, lastCompleteMonth, lastCompleteMonths } from '@/lib/seo/months';
 import type { SeoClient, SeoMonthlyDoc } from '@/lib/seo/types';
 import { fmtInt, fmtPos } from '@/lib/seo/view';
@@ -16,21 +16,26 @@ export default function DataTab({ client, onClientChange }: { client: SeoClient;
   const [progress, setProgress] = useState<{ done: number; total: number; current: string } | null>(null);
   const [msg, setMsg] = useState<{ tone: 'error' | 'success' | 'info'; text: string } | null>(null);
 
-  const load = useCallback(async () => setMonths(await listMonths(client.customerId)), [client.customerId]);
+  const load = useCallback(async () => setMonths(await listMonthsWithData(client)), [client]);
 
   useEffect(() => {
     load();
     getJson<{ serviceAccount: string | null; pagespeedKey: boolean }>('/api/seo/fetch').then(setCreds).catch(() => null);
   }, [load]);
 
-  const fetchOne = (month: string, pagespeed = false) => postJson('/api/seo/fetch', { customerId: client.customerId, month, pagespeed });
+  const fetchOne = async (month: string, pagespeed = false) =>
+    (await postJson('/api/seo/fetch', { customerId: client.customerId, month, pagespeed })) as { summary?: { empty?: boolean } };
 
   const refreshNow = async () => {
     const month = lastCompleteMonth();
     setBusy('now');
     setMsg({ tone: 'info', text: `Rufe ${formatMonthDE(month)} ab und messe die Ladezeit. Das dauert bis zu einer Minute…` });
     try {
-      await fetchOne(month, true);
+      const r = await fetchOne(month, true);
+      if (r.summary?.empty) {
+        setMsg({ tone: 'info', text: `Für ${formatMonthDE(month)} hat Google noch keine Zahlen. Es wurde nichts angelegt.` });
+        return;
+      }
       // Bereits freigegebene Berichte bleiben unangetastet
       const reports = await listReports(client.customerId);
       if (reports.find((r) => r.month === month)?.status !== 'released') {
@@ -46,23 +51,41 @@ export default function DataTab({ client, onClientChange }: { client: SeoClient;
     }
   };
 
+  /**
+   * Historie: vom neuesten Monat rueckwaerts, hoechstens 16 Monate, nicht vor
+   * "Zahlen ab". Beim ersten Monat ohne Zahlen ist Schluss, davor hat Google
+   * nichts (Search Console erst seitdem eingerichtet). Leere Monate werden
+   * nicht gespeichert.
+   */
   const backfill = async (onlyMissing: boolean) => {
     const have = new Set(months.map((m) => m.month));
     const todo = lastCompleteMonths(BACKFILL_MONTHS)
-      .reverse()
+      .filter((m) => !client.dataStart || m >= client.dataStart)
       .filter((m) => !onlyMissing || !have.has(m));
     if (!todo.length) {
-      setMsg({ tone: 'info', text: 'Alle 16 Monate sind schon geladen.' });
+      setMsg({ tone: 'info', text: 'Alle verfügbaren Monate sind schon geladen.' });
       return;
     }
     setBusy('backfill');
     setMsg(null);
+    let loaded = 0;
+    let stoppedAt: string | null = null;
     try {
       for (let i = 0; i < todo.length; i++) {
         setProgress({ done: i, total: todo.length, current: todo[i] });
-        await fetchOne(todo[i]);
+        const r = await fetchOne(todo[i]);
+        if (r.summary?.empty) {
+          stoppedAt = todo[i];
+          break;
+        }
+        loaded++;
       }
-      setMsg({ tone: 'success', text: `${todo.length} Monate geladen.` });
+      setMsg({
+        tone: loaded ? 'success' : 'info',
+        text: stoppedAt
+          ? `${loaded} ${loaded === 1 ? 'Monat' : 'Monate'} geladen. Ab ${formatMonthDE(stoppedAt)} und davor hat Google keine Zahlen, dort wurde nichts angelegt.`
+          : `${loaded} Monate geladen.`,
+      });
     } catch (err) {
       setMsg({ tone: 'error', text: `Abgebrochen: ${(err as Error).message}. Bereits geladene Monate bleiben gespeichert, „Fehlende Monate laden“ macht weiter.` });
     } finally {
@@ -98,17 +121,17 @@ export default function DataTab({ client, onClientChange }: { client: SeoClient;
             {busy === 'now' ? 'Aktualisiert…' : `Jetzt aktualisieren (${formatMonthDE(lastCompleteMonth())})`}
           </button>
           <button className="btn-secondary" disabled={!!busy} onClick={() => backfill(true)}>
-            {months.length ? 'Fehlende Monate laden' : 'Historie laden (16 Monate)'}
+            {months.length ? 'Fehlende Monate laden' : 'Historie laden (bis 16 Monate)'}
           </button>
           {months.length > 0 && (
             <button className="btn-secondary" disabled={!!busy} onClick={() => backfill(false)}>
-              Alle 16 Monate neu laden
+              Alle Monate neu laden
             </button>
           )}
         </div>
         <p className="text-xs text-gray-500">
           Der Cron holt automatisch am 4. jedes Monats den Vormonat und schickt dir eine Mail zur Freigabe. Google hält Daten 16 Monate vor,
-          alles was hier gespeichert ist, bleibt dauerhaft.
+          aber nur ab dem Tag, an dem die Search Console eingerichtet wurde. Monate ohne Zahlen werden nicht angelegt.
         </p>
         {progress && (
           <div>
