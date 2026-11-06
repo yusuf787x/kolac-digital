@@ -61,17 +61,22 @@ export async function markFetch(
   customerId: string,
   data: { month?: SeoMonth; error?: string | null },
 ): Promise<void> {
-  await adminDb()
-    .collection(COL.clients)
-    .doc(customerId)
-    .set(
-      {
-        lastFetchAt: Timestamp.now(),
-        ...(data.month ? { lastFetchMonth: data.month } : {}),
-        lastFetchError: data.error ?? null,
-      },
-      { merge: true },
-    );
+  const ref = adminDb().collection(COL.clients).doc(customerId);
+  // lastFetchMonth ist der NEUESTE abgerufene Monat ("Zahlen bis ..."). Ein
+  // nachgeholter aelterer Monat (Historie) darf ihn nicht zuruecksetzen.
+  let newest = data.month;
+  if (newest) {
+    const cur = (await ref.get()).data()?.lastFetchMonth as SeoMonth | undefined;
+    if (cur && cur > newest) newest = cur;
+  }
+  await ref.set(
+    {
+      lastFetchAt: Timestamp.now(),
+      ...(newest ? { lastFetchMonth: newest } : {}),
+      lastFetchError: data.error ?? null,
+    },
+    { merge: true },
+  );
 }
 
 // ---------------------------------------------------------------------------
