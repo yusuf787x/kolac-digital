@@ -73,37 +73,51 @@ export function emailDataRows(rows: Array<[string, string]>): string {
     .join('')}</table>`;
 }
 
+/** Absender für alles rund um Rechnungen, Zahlungen und Mahnungen. */
+export const ACCOUNTING_FROM = 'Kolac Digital Buchhaltung <buchhaltung@kolac-digital.de>';
+export const ACCOUNTING_REPLY_TO = 'buchhaltung@kolac-digital.de';
+
+interface Persona {
+  name: string;
+  role: string;
+  photo: string;
+  phone?: { label: string; href: string };
+  email: string;
+}
+
+const PERSONAS: Record<Exclude<EmailSender, 'none'>, Persona> = {
+  yusuf: {
+    name: 'Yusuf Kolac',
+    role: 'Inhaber, Kolac Digital',
+    photo: `${ASSETS}/yk-signatur.jpg`,
+    phone: { label: '+49 176 95762018', href: 'tel:+4917695762018' },
+    email: 'yusuf@kolac-digital.de',
+  },
+  buchhaltung: {
+    name: 'Marci',
+    role: 'Buchhaltung, Kolac Digital',
+    photo: `${ASSETS}/marci-signatur.jpg`,
+    email: 'buchhaltung@kolac-digital.de',
+  },
+};
+
 function signatureHtml(sender: EmailSender, closing?: string): string {
   if (sender === 'none') return '';
+  const p = PERSONAS[sender];
   const closingHtml = closing
     ? `<p style="margin:0 0 16px; font-family:${FONT}; font-size:15px; color:${BRAND.text};">${esc(closing)}</p>`
     : '';
-
-  if (sender === 'buchhaltung') {
-    return `<tr><td class="px" style="padding:0 40px 32px;">
-  ${closingHtml}
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-family:${FONT};"><tr>
-    <td style="border-left:3px solid ${BRAND.blue}; padding:2px 0 2px 14px; font-size:14px; line-height:1.6; color:${BRAND.text};">
-      <div style="font-size:16px; font-weight:700; color:${BRAND.ink};">Marci</div>
-      <div style="color:${BRAND.muted};">Buchhaltung, Kolac Digital</div>
-      <div style="margin-top:8px;">${link('mailto:buchhaltung@kolac-digital.de', 'buchhaltung@kolac-digital.de')}</div>
-      <div>${link(SITE, 'www.kolac-digital.de')}</div>
-    </td>
-  </tr></table>
-</td></tr>`;
-  }
 
   return `<tr><td class="px" style="padding:0 40px 32px;">
   ${closingHtml}
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-family:${FONT};"><tr>
     <td style="vertical-align:top; padding-right:16px; width:72px;">
-      <img src="${ASSETS}/yk-signatur.jpg" alt="Yusuf Kolac" width="72" height="72" style="display:block; border:0; width:72px; height:72px; border-radius:50%;" />
+      <img src="${p.photo}" alt="${esc(p.name)}" width="72" height="72" style="display:block; border:0; width:72px; height:72px; border-radius:50%;" />
     </td>
     <td style="vertical-align:top; border-left:3px solid ${BRAND.blue}; padding:2px 0 2px 14px; font-size:14px; line-height:1.6; color:${BRAND.text};">
-      <div style="font-size:16px; font-weight:700; color:${BRAND.ink};">Yusuf Kolac</div>
-      <div style="color:${BRAND.muted};">Inhaber, Kolac Digital</div>
-      <div style="margin-top:8px;">${link('tel:+4917695762018', '+49 176 95762018', BRAND.text)}</div>
-      <div>${link('mailto:yusuf@kolac-digital.de', 'yusuf@kolac-digital.de')}</div>
+      <div style="font-size:16px; font-weight:700; color:${BRAND.ink};">${esc(p.name)}</div>
+      <div style="color:${BRAND.muted};">${esc(p.role)}</div>
+      <div style="margin-top:8px;">${p.phone ? `${link(p.phone.href, p.phone.label, BRAND.text)}</div><div>` : ''}${link(`mailto:${p.email}`, p.email)}</div>
       <div>${link(SITE, 'www.kolac-digital.de')}</div>
     </td>
   </tr></table>
@@ -185,15 +199,13 @@ export function emailSignatureText(sender: EmailSender, closing?: string): strin
   const footer = ['', '--', 'Kolac Digital · Yusuf Kolac · Beckhausstraße 108 · 33611 Bielefeld', legal];
   const head = closing ? [closing, ''] : [];
   if (sender === 'none') return footer.join('\n');
-  if (sender === 'buchhaltung') {
-    return [...head, 'Marci', 'Buchhaltung, Kolac Digital', 'buchhaltung@kolac-digital.de', 'www.kolac-digital.de', ...footer].join('\n');
-  }
+  const p = PERSONAS[sender];
   return [
     ...head,
-    'Yusuf Kolac',
-    'Inhaber, Kolac Digital',
-    '+49 176 95762018',
-    'yusuf@kolac-digital.de',
+    p.name,
+    p.role,
+    ...(p.phone ? [p.phone.label] : []),
+    p.email,
     'www.kolac-digital.de',
     ...footer,
   ].join('\n');

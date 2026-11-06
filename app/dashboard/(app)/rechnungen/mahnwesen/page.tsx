@@ -19,12 +19,12 @@ import {
   todayBerlin,
   type DunningState,
 } from '@/lib/dunning';
-import type { Customer, DunningEvent, Invoice, Settings } from '@/lib/types';
+import type { Customer, DunningEvent, DunningStage, Invoice, Settings } from '@/lib/types';
 import { formatEUR } from '@/lib/utils';
 import { invoiceRecipients } from '@/lib/invoice-recipients';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 import {
-  confirmAndSendNow,
+  DunningMailDialog,
   dayLabel,
   eventLabel,
   eventTime,
@@ -47,6 +47,12 @@ export default function MahnwesenPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toggling, setToggling] = useState(false);
   const [pauseFor, setPauseFor] = useState<Invoice | null>(null);
+  const [mailFor, setMailFor] = useState<{
+    entry: Entry;
+    stage: DunningStage;
+    sendDay: string;
+    canSend: boolean;
+  } | null>(null);
 
   const load = useCallback(async () => {
     const [inv, cust, s] = await Promise.all([
@@ -226,20 +232,25 @@ export default function MahnwesenPage() {
                     >
                       Pausieren…
                     </button>
+                    <button
+                      className="btn-secondary text-xs"
+                      disabled={busy}
+                      onClick={() =>
+                        setMailFor({
+                          entry,
+                          stage: s.stage,
+                          sendDay: s.day < today ? today : s.day,
+                          canSend: false,
+                        })
+                      }
+                    >
+                      Vorschau
+                    </button>
                     {s.kind === 'scheduled' && invoiceRecipients(entry.customer).length > 0 && (
                       <button
                         className="btn-secondary text-xs"
                         disabled={busy}
-                        onClick={() =>
-                          act(entry.invoice.id, () =>
-                            confirmAndSendNow({
-                              invoiceId: entry.invoice.id,
-                              invoiceNumber: entry.invoice.invoiceNumber ?? '',
-                              stage: s.stage,
-                              email: invoiceRecipients(entry.customer).join(', '),
-                            }),
-                          )
-                        }
+                        onClick={() => setMailFor({ entry, stage: s.stage, sendDay: today, canSend: true })}
                       >
                         {busy ? 'Moment…' : 'Jetzt senden'}
                       </button>
@@ -354,6 +365,18 @@ export default function MahnwesenPage() {
             ))}
           </Section>
         </>
+      )}
+
+      {mailFor && (
+        <DunningMailDialog
+          invoice={mailFor.entry.invoice}
+          customer={mailFor.entry.customer}
+          stage={mailFor.stage}
+          sendDay={mailFor.sendDay}
+          canSend={mailFor.canSend}
+          onClose={() => setMailFor(null)}
+          onSent={() => act(mailFor.entry.invoice.id, async () => {})}
+        />
       )}
 
       {pauseFor && (

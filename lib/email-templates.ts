@@ -1,5 +1,13 @@
 import { formatEUR } from './utils';
-import { emailBox, emailDataRows, emailLayout, emailSignatureText, esc } from './email-layout';
+import {
+  ACCOUNTING_FROM,
+  ACCOUNTING_REPLY_TO,
+  emailBox,
+  emailDataRows,
+  emailLayout,
+  emailSignatureText,
+  esc,
+} from './email-layout';
 
 const FROM_EMAIL = 'Kolac Digital <yusuf@kolac-digital.de>';
 const REPLY_TO = 'yusuf@kolac-digital.de';
@@ -64,6 +72,7 @@ export function buildInvoiceEmail(opts: {
       dann ist die Überweisung in Sekunden vorausgefüllt.</p>
       <p>Bei Fragen melden Sie sich gerne.</p>`,
     closing,
+    sender: 'buchhaltung',
   });
 
   const text = [
@@ -77,10 +86,10 @@ export function buildInvoiceEmail(opts: {
     '',
     'Bei Fragen melden Sie sich gerne.',
     '',
-    emailSignatureText('yusuf', closing),
+    emailSignatureText('buchhaltung', closing),
   ].join('\n');
 
-  return { from: FROM_EMAIL, replyTo: REPLY_TO, subject, html, text };
+  return { from: ACCOUNTING_FROM, replyTo: ACCOUNTING_REPLY_TO, subject, html, text };
 }
 
 /**
@@ -113,6 +122,7 @@ export function buildDirectDebitInvoiceEmail(opts: {
       eingezogen, du musst also nichts weiter tun.</p>
       <p>Bei Rückfragen einfach kurz Bescheid geben.</p>`,
     closing,
+    sender: 'buchhaltung',
   });
   const text = [
     `Hallo ${customerName},`,
@@ -123,11 +133,11 @@ export function buildDirectDebitInvoiceEmail(opts: {
     '',
     'Bei Rückfragen einfach kurz Bescheid geben.',
     '',
-    emailSignatureText('yusuf', closing),
+    emailSignatureText('buchhaltung', closing),
   ].join('\n');
   return {
-    from: FROM_EMAIL,
-    replyTo: REPLY_TO,
+    from: ACCOUNTING_FROM,
+    replyTo: ACCOUNTING_REPLY_TO,
     subject: `Rechnung ${invoiceNumber} – Lastschrift eingezogen`,
     html,
     text,

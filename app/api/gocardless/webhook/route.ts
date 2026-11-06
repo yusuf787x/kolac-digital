@@ -466,7 +466,7 @@ async function sendInvoiceMail(opts: {
   });
 
   const result = await resend.emails.send({
-    from: FROM_EMAIL,
+    from: tpl.from,
     to: opts.to,
     replyTo: tpl.replyTo,
     subject: tpl.subject,

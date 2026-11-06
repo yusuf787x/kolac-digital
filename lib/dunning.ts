@@ -5,6 +5,7 @@ import type {
   InvoiceDunning,
 } from './types';
 import { effectivePayments, invoiceGrossTotal } from './utils';
+import { ACCOUNTING_FROM, ACCOUNTING_REPLY_TO } from './email-layout';
 
 /**
  * Zahlungserinnerungen (Mahnwesen). Reine Logik ohne Firebase, damit
@@ -30,8 +31,8 @@ export const DUNNING_STAGES: Record<
   3: { label: 'Letzte Mahnung', offsetDays: 14, deadlineDays: 7 },
 };
 
-export const DUNNING_FROM = 'Kolac Digital Buchhaltung <buchhaltung@kolac-digital.de>';
-export const DUNNING_REPLY_TO = 'buchhaltung@kolac-digital.de';
+export const DUNNING_FROM = ACCOUNTING_FROM;
+export const DUNNING_REPLY_TO = ACCOUNTING_REPLY_TO;
 
 type Ts = { toMillis(): number };
 

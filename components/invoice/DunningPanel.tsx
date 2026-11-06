@@ -14,7 +14,7 @@ import {
 import type { Customer, DunningStage, Invoice, Settings } from '@/lib/types';
 import { invoiceRecipients } from '@/lib/invoice-recipients';
 import {
-  confirmAndSendNow,
+  DunningMailDialog,
   dayLabel,
   describeState,
   eventLabel,
@@ -36,6 +36,8 @@ export default function DunningPanel({
   const [settings, setSettings] = useState<Settings | null>(null);
   const [busy, setBusy] = useState(false);
   const [pauseOpen, setPauseOpen] = useState(false);
+  /** Offene Mail-Vorschau: welche Stufe, und ob von dort gesendet werden darf. */
+  const [mailDialog, setMailDialog] = useState<{ stage: DunningStage; canSend: boolean } | null>(null);
 
   useEffect(() => {
     getSettings().then(setSettings).catch(console.error);
@@ -73,6 +75,15 @@ export default function DunningPanel({
     } finally {
       setBusy(false);
     }
+  };
+
+  /** Versandtag für die Vorschau: verschickt, geplant oder heute. */
+  const previewDay = (s: DunningStage): string => {
+    if (sentDays[s]) return sentDays[s]!;
+    if ((state.kind === 'scheduled' || state.kind === 'no_email') && state.stage === s) {
+      return state.day < today ? today : state.day;
+    }
+    return today;
   };
 
   const stageStatus = (s: DunningStage): string => {
@@ -133,6 +144,13 @@ export default function DunningPanel({
                   Tag {DUNNING_STAGES[s].offsetDays} nach Fälligkeit
                   {status && <span className="text-gray-800"> · {status}</span>}
                 </div>
+                <button
+                  type="button"
+                  className="mt-1 text-xs font-medium text-brand-blue hover:underline"
+                  onClick={() => setMailDialog({ stage: s, canSend: false })}
+                >
+                  Vorschau
+                </button>
               </li>
             );
           })}
@@ -178,16 +196,7 @@ export default function DunningPanel({
             <button
               className="btn-secondary"
               disabled={busy}
-              onClick={() =>
-                run(() =>
-                  confirmAndSendNow({
-                    invoiceId: invoice.id,
-                    invoiceNumber,
-                    stage: manualStage,
-                    email: recipients,
-                  }),
-                )
-              }
+              onClick={() => setMailDialog({ stage: manualStage, canSend: true })}
             >
               {busy ? 'Moment…' : `${DUNNING_STAGES[manualStage].label} jetzt senden`}
             </button>
@@ -209,6 +218,18 @@ export default function DunningPanel({
             ))}
           </ul>
         </div>
+      )}
+
+      {mailDialog && (
+        <DunningMailDialog
+          invoice={invoice}
+          customer={customer}
+          stage={mailDialog.stage}
+          sendDay={mailDialog.canSend ? today : previewDay(mailDialog.stage)}
+          canSend={mailDialog.canSend}
+          onClose={() => setMailDialog(null)}
+          onSent={() => run(async () => {})}
+        />
       )}
 
       {pauseOpen && (

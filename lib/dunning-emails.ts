@@ -1,7 +1,15 @@
 import { BANK_DETAILS } from './company';
-import { DUNNING_FROM, DUNNING_REPLY_TO, formatDay } from './dunning';
-import type { DunningStage, Salutation } from './types';
-import { formatEUR } from './utils';
+import {
+  berlinDay,
+  deadlineForStage,
+  DUNNING_FROM,
+  DUNNING_REPLY_TO,
+  formatDay,
+  invoiceOpenAmount,
+  sentDayByStage,
+} from './dunning';
+import type { Customer, DunningStage, Invoice, Salutation } from './types';
+import { formatEUR, invoiceGrossTotal } from './utils';
 import { emailBox, emailDataRows, emailLayout, emailSignatureText, esc } from './email-layout';
 
 /**
@@ -152,4 +160,33 @@ export function buildDunningEmail(input: DunningEmailInput): DunningEmail {
   ].join('\n');
 
   return { from: DUNNING_FROM, replyTo: DUNNING_REPLY_TO, subject, html, text };
+}
+
+/**
+ * Mail einer Stufe für eine echte Rechnung. Gleiche Daten wie beim
+ * Versand, damit die Vorschau im Dashboard genau das zeigt, was rausgeht.
+ */
+export function dunningEmailForInvoice(opts: {
+  invoice: Invoice;
+  customer: Pick<Customer, 'salutation' | 'lastName'> | null;
+  stage: DunningStage;
+  /** Versandtag 'YYYY-MM-DD', bestimmt die Frist in Stufe 2 und 3. */
+  sendDay: string;
+  hasAttachment: boolean;
+}): DunningEmail {
+  const { invoice, customer, stage, sendDay, hasAttachment } = opts;
+  return buildDunningEmail({
+    stage,
+    salutation: customer?.salutation,
+    lastName: customer?.lastName,
+    invoiceNumber: invoice.invoiceNumber ?? '',
+    invoiceDay: berlinDay(invoice.invoiceDate.toMillis()),
+    dueDay: berlinDay(invoice.dueDate.toMillis()),
+    sendDay,
+    deadlineDay: deadlineForStage(stage, sendDay),
+    grossTotal: invoiceGrossTotal(invoice),
+    openAmount: invoiceOpenAmount(invoice),
+    previousSent: sentDayByStage(invoice),
+    hasAttachment,
+  });
 }

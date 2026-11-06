@@ -9,7 +9,11 @@ import {
   formatDay,
   type DunningState,
 } from '@/lib/dunning';
-import type { DunningEvent, DunningStage } from '@/lib/types';
+import type { Customer, DunningEvent, DunningStage, Invoice } from '@/lib/types';
+import { dunningEmailForInvoice } from '@/lib/dunning-emails';
+import { invoiceRecipients } from '@/lib/invoice-recipients';
+import Modal from '@/components/ui/Modal';
+import EmailPreviewFrame from '@/components/email/EmailPreviewFrame';
 import { formatEUR } from '@/lib/utils';
 
 /** 'Mo., 03.11.2026' bzw. 'heute' */
@@ -76,31 +80,127 @@ export function eventTime(e: DunningEvent): string {
   });
 }
 
-/** Fragt nach und verschickt die Stufe sofort. true = verschickt. */
-export async function confirmAndSendNow(opts: {
-  invoiceId: string;
-  invoiceNumber: string;
+/**
+ * Vorschau einer Mahnstufe mit echten Rechnungsdaten. Mit „Testmail an
+ * mich“ geht exakt diese Mail (mit PDF) an Yusuf. Ist `canSend` gesetzt,
+ * lässt sich die Stufe hier auch sofort an den Kunden schicken.
+ */
+export function DunningMailDialog({
+  invoice,
+  customer,
+  stage,
+  sendDay,
+  canSend,
+  onClose,
+  onSent,
+}: {
+  invoice: Invoice;
+  customer: Customer | null;
   stage: DunningStage;
-  email: string;
-}): Promise<boolean> {
-  const label = DUNNING_STAGES[opts.stage].label;
-  if (
-    !confirm(
-      `${label} zur Rechnung ${opts.invoiceNumber} jetzt an ${opts.email} senden?\n\nAbsender: buchhaltung@kolac-digital.de (Marci, Buchhaltung)`,
-    )
-  )
-    return false;
-  const res = await authedFetch(`/api/invoices/${opts.invoiceId}/dunning`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ stage: opts.stage }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    alert(`Nicht verschickt: ${body?.error ?? res.statusText}`);
-    return false;
-  }
-  return true;
+  /** Tag, an dem die Mail rausgeht bzw. rausging. Bestimmt die Frist. */
+  sendDay: string;
+  canSend: boolean;
+  onClose: () => void;
+  onSent?: () => Promise<void> | void;
+}) {
+  const [sending, setSending] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [notice, setNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+  const recipients = invoiceRecipients(customer);
+  const label = DUNNING_STAGES[stage].label;
+  const mail = dunningEmailForInvoice({ invoice, customer, stage, sendDay, hasAttachment: true });
+  const busy = sending || testing;
+
+  const post = async (test: boolean) => {
+    setNotice(null);
+    if (test) setTesting(true);
+    else setSending(true);
+    try {
+      const res = await authedFetch(`/api/invoices/${invoice.id}/dunning`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage, test }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body?.error ?? res.statusText);
+      if (test) {
+        setNotice({
+          kind: 'ok',
+          text: `Testmail mit PDF ist an ${body.sentTo ?? 'dich'} raus. Der Kunde hat nichts bekommen.`,
+        });
+      } else {
+        await onSent?.();
+        onClose();
+      }
+    } catch (err) {
+      setNotice({ kind: 'error', text: `${test ? 'Testmail' : label} nicht verschickt: ${(err as Error).message}` });
+    } finally {
+      setTesting(false);
+      setSending(false);
+    }
+  };
+
+  return (
+    <Modal
+      open
+      onClose={() => !busy && onClose()}
+      title={`${label} zur Rechnung ${invoice.invoiceNumber ?? ''}`}
+      maxWidth="max-w-3xl"
+    >
+      <div className="space-y-4">
+        <p className="text-sm text-gray-600">
+          {canSend
+            ? 'So kommt die Mail beim Kunden an. Absender ist die Buchhaltung, die Rechnung hängt als PDF dran.'
+            : `Vorschau mit den Daten dieser Rechnung, Versandtag ${formatDay(sendDay)}. Absender ist die Buchhaltung.`}
+        </p>
+        <EmailPreviewFrame
+          html={mail.html}
+          from={mail.from}
+          to={recipients.join(', ') || 'keine E-Mail beim Kunden hinterlegt'}
+          subject={mail.subject}
+          attachment="Rechnung als PDF"
+        />
+        {notice && (
+          <div
+            role="status"
+            aria-live="polite"
+            className={`rounded-lg border px-3 py-2 text-sm ${
+              notice.kind === 'ok'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-700'
+            }`}
+          >
+            {notice.text}
+          </div>
+        )}
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-1">
+          <button type="button" className="btn-secondary" onClick={onClose} disabled={busy}>
+            {canSend ? 'Abbrechen' : 'Schließen'}
+          </button>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => post(true)}
+            disabled={busy}
+            aria-busy={testing}
+          >
+            {testing ? 'Sende Test…' : 'Testmail an mich'}
+          </button>
+          {canSend && recipients.length > 0 && (
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => post(false)}
+              disabled={busy}
+              aria-busy={sending}
+            >
+              {sending ? 'Sende…' : `${label} jetzt senden`}
+            </button>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
 }
 
 export function PauseDialog({

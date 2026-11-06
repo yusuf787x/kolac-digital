@@ -3,17 +3,16 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { Resend } from 'resend';
 import { adminDb } from './firebase-admin';
 import {
-  berlinDay,
   computeDunningState,
   dayToDate,
   deadlineForStage,
   invoiceOpenAmount,
   nextManualStage,
-  sentDayByStage,
   todayBerlin,
   type DunningState,
 } from './dunning';
-import { buildDunningEmail } from './dunning-emails';
+import { dunningEmailForInvoice } from './dunning-emails';
+import { asTestMail, TEST_RECIPIENT } from './email-test';
 import { generateInvoicePdfBuffer } from './server-pdf';
 import type {
   Customer,
@@ -22,7 +21,6 @@ import type {
   Invoice,
   Settings,
 } from './types';
-import { invoiceGrossTotal } from './utils';
 import { invoiceRecipients } from './invoice-recipients';
 
 /** Ein laufender Versand blockiert weitere für diese Dauer. */
@@ -134,18 +132,11 @@ export async function sendDunningStage(
       console.error('Mahnwesen: PDF konnte nicht erzeugt werden', invoiceId, err);
     }
 
-    const mail = buildDunningEmail({
+    const mail = dunningEmailForInvoice({
+      invoice,
+      customer,
       stage,
-      salutation: customer.salutation,
-      lastName: customer.lastName,
-      invoiceNumber: invoice.invoiceNumber!,
-      invoiceDay: berlinDay(invoice.invoiceDate.toMillis()),
-      dueDay: berlinDay(invoice.dueDate.toMillis()),
       sendDay: today,
-      deadlineDay,
-      grossTotal: invoiceGrossTotal(invoice),
-      openAmount: invoiceOpenAmount(invoice),
-      previousSent: sentDayByStage(invoice),
       hasAttachment: !!attachment,
     });
 
@@ -210,4 +201,50 @@ export async function sendDunningStage(
       .catch(() => {});
     throw err;
   }
+}
+
+/**
+ * Testversand einer Stufe: exakt die Mail inkl. PDF, aber nur an Yusuf
+ * und mit [Test] im Betreff. Ändert nichts an der Rechnung.
+ */
+export async function sendDunningTest(
+  invoiceId: string,
+  stage: DunningStage,
+): Promise<{ sentTo: string; subject: string }> {
+  const snap = await adminDb().collection('invoices').doc(invoiceId).get();
+  if (!snap.exists) throw new Error('Rechnung nicht gefunden.');
+  const invoice = { id: snap.id, ...snap.data() } as Invoice;
+  const customer = await loadCustomer(invoice.customerId);
+  if (!customer) throw new Error('Kunde nicht gefunden.');
+
+  let attachment: { filename: string; content: Buffer } | null = null;
+  try {
+    const pdf = await generateInvoicePdfBuffer(invoice, customer);
+    attachment = { filename: `Rechnung ${invoice.invoiceNumber}.pdf`, content: pdf };
+  } catch (err) {
+    console.error('Mahnwesen-Test: PDF konnte nicht erzeugt werden', invoiceId, err);
+  }
+
+  const mail = asTestMail(
+    dunningEmailForInvoice({
+      invoice,
+      customer,
+      stage,
+      sendDay: todayBerlin(),
+      hasAttachment: !!attachment,
+    }),
+  );
+  if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY nicht gesetzt.');
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const { error } = await resend.emails.send({
+    from: mail.from,
+    to: TEST_RECIPIENT,
+    replyTo: mail.replyTo,
+    subject: mail.subject,
+    html: mail.html,
+    text: mail.text,
+    ...(attachment ? { attachments: [attachment] } : {}),
+  });
+  if (error) throw new Error(error.message ?? 'Resend-Fehler');
+  return { sentTo: TEST_RECIPIENT, subject: mail.subject };
 }
