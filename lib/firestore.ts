@@ -52,6 +52,7 @@ import {
   buildInvoiceNumber,
   buildOrderConfirmationNumber,
   buildQuoteNumber,
+  effectivePayments,
   invoiceGrossTotal,
   tsToMillis,
 } from './utils';
@@ -234,6 +235,101 @@ export async function createInvoiceWithNumber(
       ...data,
       invoiceNumber: number,
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return number;
+  });
+
+  return { id: newRef.id, invoiceNumber };
+}
+
+/**
+ * Storniert eine gestellte Rechnung (GoBD-konform, nichts wird gelöscht):
+ *  - legt eine STORNORECHNUNG mit der nächsten laufenden Nummer an:
+ *    gleiche Positionen mit negativen Beträgen, Verweis aufs Original
+ *  - setzt das Original auf 'cancelled' (mit Grund und Verweis)
+ * Alles in einer Transaktion, damit Nummer und Status nie auseinanderlaufen.
+ *
+ * Nicht erlaubt bei Entwürfen (einfach löschen), bereits stornierten
+ * Rechnungen, Stornorechnungen selbst und Rechnungen mit erfassten
+ * Zahlungen (dort müsste erst Geld zurück, das bildet das System nicht ab).
+ */
+export async function cancelInvoice(
+  id: string,
+  reason: string,
+): Promise<{ id: string; invoiceNumber: string }> {
+  const settingsRef = doc(db, 'settings', 'config');
+  const origRef = doc(db, 'invoices', id);
+  const newRef = doc(invoicesCol());
+
+  const invoiceNumber = await runTransaction(db, async (tx) => {
+    const origSnap = await tx.get(origRef);
+    if (!origSnap.exists()) throw new Error('Rechnung nicht gefunden.');
+    const orig = { id: origSnap.id, ...origSnap.data() } as Invoice;
+    if (!orig.invoiceNumber) {
+      throw new Error('Entwürfe haben noch keine Nummer, die kannst du einfach löschen.');
+    }
+    if (orig.kind === 'cancellation') {
+      throw new Error('Eine Stornorechnung kann nicht storniert werden.');
+    }
+    if (orig.status === 'cancelled') {
+      throw new Error(
+        `Rechnung ${orig.invoiceNumber} ist bereits storniert${orig.cancelledByInvoiceNumber ? ` (${orig.cancelledByInvoiceNumber})` : ''}.`,
+      );
+    }
+    if (effectivePayments(orig).length > 0) {
+      throw new Error(
+        'Für diese Rechnung sind Zahlungen erfasst. Stornieren geht nur ohne Zahlungseingang.',
+      );
+    }
+
+    const settingsSnap = await tx.get(settingsRef);
+    const current = settingsSnap.exists()
+      ? (settingsSnap.data() as Settings).nextInvoiceNumber
+      : 1218;
+    const today = new Date();
+    const number = buildInvoiceNumber(current, today);
+    const now = Timestamp.fromDate(today);
+
+    const items = orig.items.map((it, idx) => ({
+      position: idx + 1,
+      description: it.description,
+      quantity: it.quantity,
+      unitPrice: -it.unitPrice,
+      totalPrice: -it.totalPrice,
+      ...(it.vatRate !== undefined ? { vatRate: it.vatRate } : {}),
+    }));
+
+    tx.set(settingsRef, { nextInvoiceNumber: current + 1 }, { merge: true });
+    tx.set(newRef, {
+      customerId: orig.customerId,
+      invoiceNumber: number,
+      invoiceDate: now,
+      dueDate: now,
+      status: 'cancelled',
+      kind: 'cancellation',
+      cancelsInvoiceId: orig.id,
+      cancelsInvoiceNumber: orig.invoiceNumber,
+      cancelsInvoiceDate: orig.invoiceDate,
+      cancelReason: reason,
+      paidAmount: 0,
+      totalAmount: -orig.totalAmount,
+      ...(orig.vatRate !== undefined ? { vatRate: orig.vatRate } : {}),
+      closingText: '',
+      pdfUrl: null,
+      driveUrl: null,
+      sentAt: null,
+      paidAt: null,
+      items,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    tx.update(origRef, {
+      status: 'cancelled',
+      cancelledAt: now,
+      cancelReason: reason,
+      cancelledByInvoiceId: newRef.id,
+      cancelledByInvoiceNumber: number,
       updatedAt: serverTimestamp(),
     });
     return number;

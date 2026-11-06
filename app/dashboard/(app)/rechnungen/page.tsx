@@ -18,6 +18,7 @@ const FILTERS: { value: FilterStatus; label: string }[] = [
   { value: 'paid', label: 'Bezahlt' },
   { value: 'partially_paid', label: 'Teilweise bezahlt' },
   { value: 'overdue', label: 'Überfällig' },
+  { value: 'cancelled', label: 'Storniert' },
 ];
 
 export default function RechnungenPage() {

@@ -1,5 +1,10 @@
 import 'server-only';
-import { buildDealEmail, buildDirectDebitInvoiceEmail, buildInvoiceEmail } from '@/lib/email-templates';
+import {
+  buildCancellationEmail,
+  buildDealEmail,
+  buildDirectDebitInvoiceEmail,
+  buildInvoiceEmail,
+} from '@/lib/email-templates';
 import { buildDunningEmail } from '@/lib/dunning-emails';
 import { buildLoginLinkEmail, buildReportReleasedEmail } from '@/lib/seo/server/emails';
 import type { DunningStage } from '@/lib/types';
@@ -82,6 +87,24 @@ export const EMAIL_PREVIEWS: EmailPreviewDef[] = [
         invoiceNumber: SAMPLE_INVOICE,
         totalAmount: SAMPLE_GROSS,
         chargedAt: new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      }),
+  },
+  {
+    id: 'cancellation',
+    group: 'Rechnungen',
+    label: 'Stornorechnung',
+    when: 'Nach dem Stornieren auf der Stornorechnung „Per E-Mail senden“ klicken.',
+    build: () =>
+      buildCancellationEmail({
+        customerName: 'Max Mustermann',
+        invoiceNumber: 'R1242',
+        originalNumber: SAMPLE_INVOICE,
+        originalDate: new Date(Date.now() - 7 * 86400000).toLocaleDateString('de-DE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        }),
+        totalAmount: SAMPLE_GROSS,
       }),
   },
   {

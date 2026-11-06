@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { buildInvoiceEmail } from '@/lib/email-templates';
+import { buildCancellationEmail, buildInvoiceEmail } from '@/lib/email-templates';
 import { asTestMail, TEST_RECIPIENT } from '@/lib/email-test';
 import { authenticate, authErrorResponse } from '@/lib/server-auth';
 
@@ -16,6 +16,8 @@ interface Body {
   filename: string;
   /** Nur an Yusuf schicken, Betreff mit [Test]. Status bleibt unverändert. */
   test?: boolean;
+  /** Gesetzt = Stornorechnung, eigene Mail-Vorlage. */
+  cancellation?: { originalNumber: string; originalDate: string };
 }
 
 export async function POST(req: Request) {
@@ -46,12 +48,20 @@ export async function POST(req: Request) {
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const built = buildInvoiceEmail({
-    customerName: body.customerName,
-    invoiceNumber: body.invoiceNumber,
-    totalAmount: body.totalAmount,
-    dueDate: body.dueDate,
-  });
+  const built = body.cancellation
+    ? buildCancellationEmail({
+        customerName: body.customerName,
+        invoiceNumber: body.invoiceNumber,
+        originalNumber: body.cancellation.originalNumber,
+        originalDate: body.cancellation.originalDate,
+        totalAmount: Math.abs(body.totalAmount),
+      })
+    : buildInvoiceEmail({
+        customerName: body.customerName,
+        invoiceNumber: body.invoiceNumber,
+        totalAmount: body.totalAmount,
+        dueDate: body.dueDate,
+      });
   const tpl = body.test ? asTestMail(built) : built;
 
   try {

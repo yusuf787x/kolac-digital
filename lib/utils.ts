@@ -149,7 +149,7 @@ export function isOverdue(
   dueDate: Date,
   now: Date = new Date(),
 ): boolean {
-  if (status === 'paid') return false;
+  if (status === 'paid' || status === 'cancelled') return false;
   return dueDate.getTime() < now.getTime();
 }
 

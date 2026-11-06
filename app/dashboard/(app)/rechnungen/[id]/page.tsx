@@ -15,6 +15,7 @@ import {
   removeInvoicePayment,
   createInvoiceDraft,
   getSettings,
+  cancelInvoice,
 } from '@/lib/firestore';
 import type { Invoice, Customer, InvoicePayment } from '@/lib/types';
 import {
@@ -26,12 +27,16 @@ import {
   effectivePayments,
   invoiceGrossTotal,
 } from '@/lib/utils';
-import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
+import {
+  invoiceStatusBadgeClass,
+  invoiceStatusLabel,
+  isCancelledOrCancellation,
+} from '@/lib/invoice-status';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 import DunningPanel from '@/components/invoice/DunningPanel';
 import { authedFetch } from '@/lib/api-client';
 import { invoiceRecipients } from '@/lib/invoice-recipients';
-import { buildInvoiceEmail } from '@/lib/email-templates';
+import { buildCancellationEmail, buildInvoiceEmail } from '@/lib/email-templates';
 import Modal from '@/components/ui/Modal';
 import EmailPreviewFrame from '@/components/email/EmailPreviewFrame';
 import { parseRichText, type MdInlineSegment } from '@/lib/simple-markdown';
@@ -98,6 +103,12 @@ export default function RechnungDetailPage() {
   const [mailDialogOpen, setMailDialogOpen] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
   const [mailNotice, setMailNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+  // Storno-Dialog
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelCreateDraft, setCancelCreateDraft] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
   const [syncingDrive, setSyncingDrive] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
@@ -288,7 +299,10 @@ export default function RechnungDetailPage() {
     const label = invoice.invoiceNumber
       ? `Rechnung ${invoice.invoiceNumber}`
       : 'diesen Entwurf';
-    if (!confirm(`${label} wirklich löschen?`)) return;
+    const warning = invoice.invoiceNumber
+      ? '\n\nAchtung: Die Nummer ist dann weg und die Nummernfolge hat eine Lücke. Für Rechnungen, die schon raus sind, besser „Stornieren“ nutzen.'
+      : '';
+    if (!confirm(`${label} wirklich löschen?${warning}`)) return;
     try {
       await deleteInvoice(invoice.id);
       router.push('/dashboard/rechnungen');
@@ -306,10 +320,8 @@ export default function RechnungDetailPage() {
    * Nummer und wird erst durch "Rechnung stellen" buchhaltungs-
    * relevant. invoiceDate = heute, dueDate = heute + default.
    */
-  const handleDuplicate = async () => {
-    if (duplicating) return;
-    setDuplicating(true);
-    try {
+  /** Neuer Entwurf mit denselben Positionen, Kunde und Texten. Liefert die ID. */
+  const createDraftCopy = async (): Promise<string> => {
       const settings = await getSettings();
       const today = new Date();
       const dueDate = new Date(today);
@@ -340,11 +352,75 @@ export default function RechnungDetailPage() {
         paidAt: null,
         items,
       });
+      return newId;
+  };
+
+  const handleDuplicate = async () => {
+    if (duplicating) return;
+    setDuplicating(true);
+    try {
+      const newId = await createDraftCopy();
       router.push(`/dashboard/rechnungen/${newId}`);
     } catch (err) {
       console.error(err);
       alert(`Duplizieren fehlgeschlagen: ${(err as Error).message}`);
       setDuplicating(false);
+    }
+  };
+
+  const openCancelDialog = () => {
+    setCancelReason('');
+    setCancelCreateDraft(true);
+    setCancelError(null);
+    setCancelOpen(true);
+  };
+
+  /**
+   * Storniert die Rechnung: Stornorechnung mit neuer Nummer, Original auf
+   * "Storniert". Danach optional korrigierter Entwurf, Drive-Sicherung der
+   * Stornorechnung wie beim Rechnung stellen (best effort).
+   */
+  const handleCancel = async () => {
+    const reason = cancelReason.trim();
+    if (!reason) {
+      setCancelError('Bitte kurz den Grund angeben, er steht später an beiden Rechnungen.');
+      return;
+    }
+    setCancelling(true);
+    setCancelError(null);
+    try {
+      const { id: stornoId, invoiceNumber: stornoNumber } = await cancelInvoice(
+        invoice.id,
+        reason,
+      );
+
+      let driveNote = '';
+      try {
+        const auth = await getGoogleAuth();
+        const storno = await getInvoice(stornoId);
+        if (auth?.refreshToken && storno && customer) {
+          const { syncInvoiceToDrive } = await import('@/lib/drive-sync');
+          await syncInvoiceToDrive(storno, customer);
+          driveNote = ' Auf Drive gesichert.';
+        }
+      } catch (syncErr) {
+        console.warn('Drive-Sync der Stornorechnung fehlgeschlagen:', syncErr);
+        driveNote = ' Drive-Sicherung fehlgeschlagen, bitte dort von Hand nachholen.';
+      }
+
+      if (cancelCreateDraft) {
+        const draftId = await createDraftCopy();
+        alert(
+          `Rechnung ${invoice.invoiceNumber} ist storniert (Stornorechnung ${stornoNumber}).${driveNote}\n\nDie korrigierte Rechnung ist als Entwurf angelegt. Positionen oder Kundendaten anpassen und dann „Rechnung stellen“.`,
+        );
+        router.push(`/dashboard/rechnungen/${draftId}/edit`);
+      } else {
+        router.push(`/dashboard/rechnungen/${stornoId}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setCancelError((err as Error).message);
+      setCancelling(false);
     }
   };
 
@@ -436,6 +512,16 @@ export default function RechnungDetailPage() {
         invoiceNumber: invoice.invoiceNumber ?? '',
         totalAmount: invoiceGrossTotal(invoice),
         dueDate: formatDateDE(invoice.dueDate.toDate()),
+        ...(invoice.kind === 'cancellation'
+          ? {
+              cancellation: {
+                originalNumber: invoice.cancelsInvoiceNumber ?? '',
+                originalDate: invoice.cancelsInvoiceDate
+                  ? formatDateDE(invoice.cancelsInvoiceDate.toDate())
+                  : '',
+              },
+            }
+          : {}),
       }
     : null;
 
@@ -554,9 +640,9 @@ export default function RechnungDetailPage() {
                 </span>
               ) : (
                 <span
-                  className={`text-sm font-medium px-2 py-0.5 rounded-sm ${STATUS_BADGE_CLASSES[computedStatus]}`}
+                  className={`text-sm font-medium px-2 py-0.5 rounded-sm ${invoiceStatusBadgeClass(invoice, computedStatus)}`}
                 >
-                  {STATUS_LABELS[computedStatus]}
+                  {invoiceStatusLabel(invoice, computedStatus)}
                   {computedStatus === 'overdue' && daysLate > 0 && (
                     <span> · {daysLate} Tage</span>
                   )}
@@ -565,8 +651,10 @@ export default function RechnungDetailPage() {
             </h1>
             <p className="mt-1 text-sm text-gray-500">
               {customer?.company ?? 'Kunde unbekannt'} ·{' '}
-              {formatDateDE(invoice.invoiceDate.toDate())} · zahlbar bis{' '}
-              {formatDateDE(dueDate)}
+              {formatDateDE(invoice.invoiceDate.toDate())}
+              {isCancelledOrCancellation(invoice) ? null : (
+                <> · zahlbar bis {formatDateDE(dueDate)}</>
+              )}
             </p>
           </div>
 
@@ -595,7 +683,7 @@ export default function RechnungDetailPage() {
             >
               {generatingPdf ? 'Generiere PDF…' : 'PDF herunterladen'}
             </button>
-            {!isDraft && (
+            {!isDraft && (invoice.status !== 'cancelled' || invoice.kind === 'cancellation') ? (
               <>
                 <button
                   onClick={openMailDialog}
@@ -621,21 +709,34 @@ export default function RechnungDetailPage() {
                       : 'Auf Drive sichern'}
                 </button>
               </>
+            ) : null}
+            {invoice.kind !== 'cancellation' && (
+              <button
+                onClick={handleDuplicate}
+                disabled={duplicating}
+                className="btn-secondary"
+                title="Neue Rechnung als Entwurf mit denselben Positionen anlegen"
+              >
+                {duplicating ? 'Dupliziere…' : 'Duplizieren'}
+              </button>
             )}
-            <button
-              onClick={handleDuplicate}
-              disabled={duplicating}
-              className="btn-secondary"
-              title="Neue Rechnung als Entwurf mit denselben Positionen anlegen"
-            >
-              {duplicating ? 'Dupliziere…' : 'Duplizieren'}
-            </button>
-            <button
-              onClick={handleDelete}
-              className="btn-secondary text-red-600 hover:bg-red-50"
-            >
-              Löschen
-            </button>
+            {!isDraft && !isCancelledOrCancellation(invoice) && (
+              <button
+                onClick={openCancelDialog}
+                className="btn-secondary text-red-600 hover:bg-red-50"
+                title="Rechnung aufheben: Stornorechnung mit neuer Nummer, das Original bleibt erhalten"
+              >
+                Stornieren…
+              </button>
+            )}
+            {!isCancelledOrCancellation(invoice) && (
+              <button
+                onClick={handleDelete}
+                className="btn-secondary text-red-600 hover:bg-red-50"
+              >
+                Löschen
+              </button>
+            )}
           </div>
         </div>
         {finalizeMsg && (
@@ -645,7 +746,59 @@ export default function RechnungDetailPage() {
         )}
       </header>
 
+      {invoice.status === 'cancelled' && invoice.kind !== 'cancellation' && (
+        <section className="card mb-6 border-gray-300 bg-gray-50">
+          <h2 className="text-base font-semibold text-gray-900">Diese Rechnung ist storniert</h2>
+          <p className="mt-1 text-sm text-gray-700">
+            {invoice.cancelledAt ? `Am ${formatDateDE(invoice.cancelledAt.toDate())}` : 'Sie wurde'}{' '}
+            durch die Stornorechnung{' '}
+            {invoice.cancelledByInvoiceId ? (
+              <Link
+                href={`/dashboard/rechnungen/${invoice.cancelledByInvoiceId}`}
+                className="font-medium text-brand-blue hover:underline"
+              >
+                {invoice.cancelledByInvoiceNumber ?? 'öffnen'}
+              </Link>
+            ) : (
+              invoice.cancelledByInvoiceNumber
+            )}{' '}
+            aufgehoben. Sie zählt nicht mehr als offen, es gehen keine Erinnerungen raus.
+          </p>
+          {invoice.cancelReason && (
+            <p className="mt-1 text-sm text-gray-600">Grund: {invoice.cancelReason}</p>
+          )}
+        </section>
+      )}
+
+      {invoice.kind === 'cancellation' && (
+        <section className="card mb-6 border-purple-200 bg-purple-50/60">
+          <h2 className="text-base font-semibold text-gray-900">Stornorechnung</h2>
+          <p className="mt-1 text-sm text-gray-700">
+            Hebt die Rechnung{' '}
+            {invoice.cancelsInvoiceId ? (
+              <Link
+                href={`/dashboard/rechnungen/${invoice.cancelsInvoiceId}`}
+                className="font-medium text-brand-blue hover:underline"
+              >
+                {invoice.cancelsInvoiceNumber ?? 'öffnen'}
+              </Link>
+            ) : (
+              invoice.cancelsInvoiceNumber
+            )}
+            {invoice.cancelsInvoiceDate
+              ? ` vom ${formatDateDE(invoice.cancelsInvoiceDate.toDate())}`
+              : ''}{' '}
+            vollständig auf. Nichts zu bezahlen. Mit „Per E-Mail senden“ bekommt
+            der Kunde sie von der Buchhaltung.
+          </p>
+          {invoice.cancelReason && (
+            <p className="mt-1 text-sm text-gray-600">Grund: {invoice.cancelReason}</p>
+          )}
+        </section>
+      )}
+
       {/* Status-Aktionen */}
+      {!isCancelledOrCancellation(invoice) && (
       <section className="card mb-6">
         <h2 className="text-base font-semibold text-gray-900 mb-3">Status</h2>
         <div className="flex flex-wrap gap-2">
@@ -716,6 +869,7 @@ export default function RechnungDetailPage() {
           </p>
         )}
       </section>
+      )}
 
       <DunningPanel invoice={invoice} customer={customer} onChanged={refresh} />
 
@@ -759,21 +913,114 @@ export default function RechnungDetailPage() {
         </section>
       )}
 
+      <Modal
+        open={cancelOpen}
+        onClose={() => !cancelling && setCancelOpen(false)}
+        title={`Rechnung ${invoice.invoiceNumber ?? ''} stornieren?`}
+        maxWidth="max-w-lg"
+      >
+        {paymentsList.length > 0 ? (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-700">
+              Für diese Rechnung sind Zahlungen erfasst. Stornieren geht nur
+              ohne Zahlungseingang, sonst müsste erst Geld zurück. Entferne
+              die Zahlung, wenn sie falsch erfasst war, oder kläre die
+              Erstattung zuerst.
+            </p>
+            <div className="flex justify-end">
+              <button type="button" className="btn-secondary" onClick={() => setCancelOpen(false)}>
+                Schließen
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <ul className="text-sm text-gray-700 space-y-1.5 list-disc pl-5">
+              <li>
+                Es entsteht eine <strong>Stornorechnung</strong> mit der nächsten
+                Rechnungsnummer und dem negativen Betrag.
+              </li>
+              <li>
+                Rechnung {invoice.invoiceNumber} bleibt erhalten, steht dann auf{' '}
+                <strong>Storniert</strong> und zählt nicht mehr als offen.
+                Erinnerungen und Mahnungen stoppen.
+              </li>
+              <li>Die Stornorechnung schickst du danach per Mail an den Kunden, wenn du willst.</li>
+            </ul>
+            <div>
+              <label className="label" htmlFor="cancel-reason">
+                Grund *
+              </label>
+              <input
+                id="cancel-reason"
+                className="input"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="z.B. Falsche Rechnungsadresse"
+                autoFocus
+              />
+            </div>
+            <label className="flex items-start gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={cancelCreateDraft}
+                onChange={(e) => setCancelCreateDraft(e.target.checked)}
+              />
+              <span>
+                Danach eine korrigierte Rechnung als Entwurf anlegen (gleiche
+                Positionen, neue Nummer erst beim Stellen)
+              </span>
+            </label>
+            {cancelError && (
+              <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {cancelError}
+              </div>
+            )}
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-1">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setCancelOpen(false)}
+                disabled={cancelling}
+              >
+                Abbrechen
+              </button>
+              <button
+                type="button"
+                className="btn-primary bg-red-600 hover:bg-red-700 border-red-600"
+                onClick={handleCancel}
+                disabled={cancelling}
+                aria-busy={cancelling}
+              >
+                {cancelling ? 'Storniere…' : 'Rechnung stornieren'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
       {/* Payment-Dialog */}
       {mailData && (
         <Modal
           open={mailDialogOpen}
           onClose={() => !sendingEmail && !sendingTest && setMailDialogOpen(false)}
-          title={`Rechnung ${invoice.invoiceNumber ?? ''} per E-Mail senden`}
+          title={`${invoice.kind === 'cancellation' ? 'Stornorechnung' : 'Rechnung'} ${invoice.invoiceNumber ?? ''} per E-Mail senden`}
           maxWidth="max-w-3xl"
         >
           {(() => {
-            const mail = buildInvoiceEmail(mailData);
+            const mail = mailData.cancellation
+              ? buildCancellationEmail({
+                  ...mailData,
+                  ...mailData.cancellation,
+                  totalAmount: Math.abs(mailData.totalAmount),
+                })
+              : buildInvoiceEmail(mailData);
             const busy = sendingEmail || sendingTest;
             return (
               <div className="space-y-4">
                 <p className="text-sm text-gray-600">
-                  So kommt die Mail beim Kunden an. Die Rechnung hängt als PDF dran.
+                  So kommt die Mail beim Kunden an. Die {invoice.kind === 'cancellation' ? 'Stornorechnung' : 'Rechnung'} hängt als PDF dran.
                   Mit „Testmail an mich“ bekommst du genau diese Mail vorher selbst.
                 </p>
                 <EmailPreviewFrame
@@ -781,7 +1028,11 @@ export default function RechnungDetailPage() {
                   from={mail.from}
                   to={recipients.join(', ')}
                   subject={mail.subject}
-                  attachment={customer ? 'Rechnung als PDF' : undefined}
+                  attachment={
+                    customer
+                      ? `${invoice.kind === 'cancellation' ? 'Stornorechnung' : 'Rechnung'} als PDF`
+                      : undefined
+                  }
                 />
                 {mailNotice && (
                   <div

@@ -460,6 +460,7 @@ export default function UStVAPage() {
           const openInvoices = invoices.filter(
             (i) =>
               i.invoiceNumber !== null &&
+              i.status !== 'cancelled' &&
               (effectivePayments(i) as InvoicePayment[]).length === 0,
           );
           if (openInvoices.length === 0) return null;

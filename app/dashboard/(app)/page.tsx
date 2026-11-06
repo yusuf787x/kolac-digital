@@ -26,7 +26,7 @@ import {
   invoiceGrossTotal,
 } from '@/lib/utils';
 import { activityDef } from '@/lib/sales';
-import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/lib/invoice-status';
+import { invoiceStatusBadgeClass, invoiceStatusLabel } from '@/lib/invoice-status';
 import { computeQuoteStatus } from '@/lib/quote-status';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 
@@ -359,9 +359,9 @@ export default function DashboardHomePage() {
                         </div>
                         <div className="flex items-center gap-3 ml-3">
                           <span
-                            className={`text-xs font-medium px-2 py-0.5 rounded-sm ${STATUS_BADGE_CLASSES[computedStatus]}`}
+                            className={`text-xs font-medium px-2 py-0.5 rounded-sm ${invoiceStatusBadgeClass(inv, computedStatus)}`}
                           >
-                            {STATUS_LABELS[computedStatus]}
+                            {invoiceStatusLabel(inv, computedStatus)}
                           </span>
                           <span className="text-sm font-medium text-gray-900 w-24 text-right">
                             <SensitiveValue>

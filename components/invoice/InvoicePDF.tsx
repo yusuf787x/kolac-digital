@@ -402,6 +402,9 @@ export default function InvoicePDF({
   // Lastschrift-Rechnung: Geld wurde bereits eingezogen. Kein Ueberweisungs-
   // Hinweis, kein GiroCode noetig.
   const isDirectDebit = Boolean(invoice.gocardlessPaymentId);
+  // Stornorechnung: negative Beträge, kein Zahlungshinweis, kein GiroCode.
+  const isCancellation = invoice.kind === 'cancellation';
+  const cancelsDate = tsToDate(invoice.cancelsInvoiceDate);
   const chargedAt =
     tsToDate(invoice.gocardlessChargedAt) ?? tsToDate(invoice.paidAt);
   // MwSt: pro Position berechnen (mit fallback auf Rechnungs-vatRate).
@@ -457,24 +460,44 @@ export default function InvoicePDF({
                 {formatDateDE(invoice.invoiceDate.toDate())}
               </Text>
             </View>
-            <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>ZAHLBAR BIS:</Text>
-              <Text style={styles.metaValue}>
-                {formatDateDE(invoice.dueDate.toDate())}
-              </Text>
-            </View>
+            {isCancellation ? (
+              <View style={styles.metaRow}>
+                <Text style={styles.metaLabel}>ZU RECHNUNG:</Text>
+                <Text style={styles.metaValue}>
+                  {invoice.cancelsInvoiceNumber ?? '?'}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.metaRow}>
+                <Text style={styles.metaLabel}>ZAHLBAR BIS:</Text>
+                <Text style={styles.metaValue}>
+                  {formatDateDE(invoice.dueDate.toDate())}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
         {/* Title */}
-        <Text style={styles.rechnungTitle}>RECHNUNG</Text>
+        <Text style={styles.rechnungTitle}>
+          {isCancellation ? 'STORNORECHNUNG' : 'RECHNUNG'}
+        </Text>
 
         {/* Greeting */}
         <Text style={styles.paragraph}>{salutationGreeting(customer)}</Text>
-        <Text style={styles.paragraph}>
-          wir bedanken uns für Ihren Auftrag und berechnen Ihnen folgende
-          Positionen:
-        </Text>
+        {isCancellation ? (
+          <Text style={styles.paragraph}>
+            hiermit stornieren wir unsere Rechnung Nr.{' '}
+            <Text style={styles.bold}>{invoice.cancelsInvoiceNumber ?? '?'}</Text>
+            {cancelsDate ? ` vom ${formatDateDE(cancelsDate)}` : ''} vollständig.
+            Die folgenden Positionen werden damit aufgehoben:
+          </Text>
+        ) : (
+          <Text style={styles.paragraph}>
+            wir bedanken uns für Ihren Auftrag und berechnen Ihnen folgende
+            Positionen:
+          </Text>
+        )}
 
         {/* Items table */}
         <View style={styles.table}>
@@ -564,7 +587,13 @@ export default function InvoicePDF({
             Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.
           </Text>
         )}
-        {isDirectDebit ? (
+        {isCancellation ? (
+          <Text style={styles.paragraph}>
+            Die Rechnung {invoice.cancelsInvoiceNumber ?? ''} ist damit
+            aufgehoben, der Betrag muss nicht bezahlt werden. Sollten Sie
+            bereits gezahlt haben, erstatten wir den Betrag selbstverständlich.
+          </Text>
+        ) : isDirectDebit ? (
           <Text style={styles.paragraph}>
             Der Rechnungsbetrag wurde am{' '}
             <Text style={styles.bold}>
@@ -585,11 +614,14 @@ export default function InvoicePDF({
           Bei Rückfragen stehe ich unter der Rufnummer {COMPANY_INFO.phone} zur
           Verfügung.
         </Text>
-        <Text style={styles.paragraph}>{invoice.closingText}</Text>
+        {invoice.closingText ? (
+          <Text style={styles.paragraph}>{invoice.closingText}</Text>
+        ) : null}
 
         {/* Referral-Kasten + GiroCode — beides nur EINMAL, natural
             flow, wrap={false} haelt Kasten und QR zusammen und rutscht
             gemeinsam auf naechste Seite, falls nicht mehr Platz. */}
+        {!isCancellation && (
         <View wrap={false}>
           <View style={styles.referralBox}>
             <View style={styles.referralTextCol}>
@@ -633,6 +665,7 @@ export default function InvoicePDF({
             </View>
           )}
         </View>
+        )}
 
         {/* Footer — jetzt OHNE QR, laeuft weiterhin auf jeder Seite. */}
         <View style={styles.footer} fixed>

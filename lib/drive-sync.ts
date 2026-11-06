@@ -34,8 +34,9 @@ export async function syncInvoiceToDrive(
   const pdf = await generateInvoicePdfBlob(invoice, customer);
   const pdfBase64 = await fileToBase64(pdf);
   const filename = buildInvoiceFilename(invoice, customer);
-  const leistung =
-    invoice.items
+  const leistung = invoice.kind === 'cancellation'
+    ? `Storno zu ${invoice.cancelsInvoiceNumber ?? '?'}`
+    : invoice.items
       .map((i) => i.description.split('\n')[0])
       .filter(Boolean)
       .slice(0, 3)

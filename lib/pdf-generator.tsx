@@ -25,10 +25,14 @@ export async function generateInvoicePdfBlob(
   // totalAmount ist Netto; Brutto ueber computeInvoiceVat pro Item,
   // Fallback auf Rechnungs-vatRate fuer Legacy.
   const invoiceGross = computeInvoiceVat(invoice.items, invoice.vatRate).gross;
-  const qrCodeDataUrl = await buildInvoiceQrDataUrl({
-    amount: invoiceGross,
-    invoiceNumber: invoice.invoiceNumber ?? 'ENTWURF',
-  });
+  // Stornorechnung (negativer Betrag): kein GiroCode, wird im PDF nicht gezeigt.
+  const qrCodeDataUrl =
+    invoice.kind === 'cancellation' || invoiceGross <= 0
+      ? ''
+      : await buildInvoiceQrDataUrl({
+          amount: invoiceGross,
+          invoiceNumber: invoice.invoiceNumber ?? 'ENTWURF',
+        });
 
   const logoSrc =
     typeof window !== 'undefined'
@@ -63,7 +67,8 @@ export function buildInvoiceFilename(
   const cust = customer.company || customer.lastName || 'Kunde';
   const safe = cust.replace(/[^a-zA-ZäöüÄÖÜß0-9 -]/g, '').trim();
   const nr = invoice.invoiceNumber ?? 'Entwurf';
-  return `Rechnung ${nr} ${safe}.pdf`;
+  const label = invoice.kind === 'cancellation' ? 'Stornorechnung' : 'Rechnung';
+  return `${label} ${nr} ${safe}.pdf`;
 }
 
 /**

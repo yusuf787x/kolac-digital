@@ -136,6 +136,9 @@ export function computeDunningState(
   if (!inv.invoiceNumber || inv.status === 'draft') {
     return { kind: 'none', reason: 'Entwurf' };
   }
+  if (inv.status === 'cancelled') {
+    return { kind: 'none', reason: 'Storniert' };
+  }
   if (inv.gocardlessPaymentId) {
     return { kind: 'none', reason: 'Lastschrift' };
   }

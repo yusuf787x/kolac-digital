@@ -30,7 +30,9 @@ export type InvoiceStatus =
   | 'sent'
   | 'paid'
   | 'partially_paid'
-  | 'overdue';
+  | 'overdue'
+  /** Storniert. Gilt für die aufgehobene Rechnung UND die Stornorechnung (siehe `kind`). */
+  | 'cancelled';
 
 export interface InvoiceItem {
   position: number;
@@ -122,6 +124,21 @@ export interface Invoice {
   gocardlessChargedAt?: Timestamp;
   /** Zahlungserinnerungen (Mahnwesen), Logik in `lib/dunning.ts`. */
   dunning?: InvoiceDunning;
+  /**
+   * 'cancellation' = Stornorechnung: eigene laufende Nummer, negative
+   * Beträge, hebt die Rechnung `cancelsInvoiceId` vollständig auf.
+   * Fehlt = normale Rechnung.
+   */
+  kind?: 'cancellation';
+  /** Nur Stornorechnung: die aufgehobene Rechnung. */
+  cancelsInvoiceId?: string;
+  cancelsInvoiceNumber?: string;
+  cancelsInvoiceDate?: Timestamp;
+  /** Nur stornierte Rechnung: wann, warum und durch welche Stornorechnung. */
+  cancelledAt?: Timestamp;
+  cancelReason?: string;
+  cancelledByInvoiceId?: string;
+  cancelledByInvoiceNumber?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

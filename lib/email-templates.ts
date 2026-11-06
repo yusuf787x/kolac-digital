@@ -93,6 +93,58 @@ export function buildInvoiceEmail(opts: {
 }
 
 /**
+ * Stornorechnung an den Kunden. Absender Buchhaltung, Sie-Form.
+ * Betrag positiv übergeben (der aufgehobene Bruttobetrag).
+ */
+export function buildCancellationEmail(opts: {
+  customerName: string;
+  /** Nummer der Stornorechnung. */
+  invoiceNumber: string;
+  originalNumber: string;
+  /** Bereits formatiert, z.B. "06.11.2026". */
+  originalDate: string;
+  totalAmount: number;
+}): { from: string; replyTo: string; subject: string; html: string; text: string } {
+  const { customerName, invoiceNumber, originalNumber, originalDate, totalAmount } = opts;
+  const subject = `Stornorechnung ${invoiceNumber} zur Rechnung ${originalNumber} – Kolac Digital`;
+  const greeting = `Hallo${customerName ? ` ${customerName}` : ''},`;
+  const closing = 'Viele Grüße';
+
+  const html = emailLayout({
+    preheader: `Rechnung ${originalNumber} ist storniert, Sie müssen sie nicht bezahlen.`,
+    bodyHtml: `<p>${esc(greeting)}</p>
+      <p>wie besprochen haben wir die Rechnung <strong>${esc(originalNumber)}</strong>
+      vom ${esc(originalDate)} storniert. Im Anhang finden Sie die Stornorechnung.</p>
+      ${emailBox(
+        emailDataRows([
+          ['Stornorechnung', invoiceNumber],
+          ['Storniert', `Rechnung ${originalNumber}`],
+          ['Betrag', formatEUR(totalAmount)],
+        ]),
+      )}
+      <p>Die Rechnung ${esc(originalNumber)} müssen Sie damit nicht mehr bezahlen.
+      Falls eine korrigierte Rechnung nötig ist, erhalten Sie diese separat.</p>
+      <p>Bei Fragen melden Sie sich gerne.</p>`,
+    closing,
+    sender: 'buchhaltung',
+  });
+
+  const text = [
+    greeting,
+    '',
+    `wie besprochen haben wir die Rechnung ${originalNumber} vom ${originalDate} storniert. Im Anhang finden Sie die Stornorechnung ${invoiceNumber}.`,
+    '',
+    `Die Rechnung ${originalNumber} (${formatEUR(totalAmount)}) müssen Sie damit nicht mehr bezahlen. Falls eine korrigierte Rechnung nötig ist, erhalten Sie diese separat.`,
+    '',
+    'Bei Fragen melden Sie sich gerne.',
+    '',
+    emailSignatureText('buchhaltung', closing),
+  ].join('\n');
+
+  return { from: ACCOUNTING_FROM, replyTo: ACCOUNTING_REPLY_TO, subject, html, text };
+}
+
+/**
  * Rechnung nach SEPA-Lastschrift (GoCardless). Du-Form, der Betrag ist
  * schon eingezogen, der Kunde muss nichts tun.
  */

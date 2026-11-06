@@ -7,6 +7,9 @@ import type { Invoice, InvoiceStatus } from '@/lib/types';
 import {
   STATUS_SELECT_CLASSES,
   SETTABLE_STATUSES,
+  invoiceStatusBadgeClass,
+  invoiceStatusLabel,
+  isCancelledOrCancellation,
 } from '@/lib/invoice-status';
 import { effectivePayments, formatEUR, invoiceGrossTotal } from '@/lib/utils';
 
@@ -27,6 +30,17 @@ export default function InvoiceStatusSelect({
   onUpdated,
 }: Props) {
   const [updating, setUpdating] = useState(false);
+
+  // Stornierte Rechnungen und Stornorechnungen sind abgeschlossen.
+  if (isCancelledOrCancellation(invoice)) {
+    return (
+      <span
+        className={`inline-block text-xs font-medium px-2 py-1 rounded-md ${invoiceStatusBadgeClass(invoice, computedStatus)}`}
+      >
+        {invoiceStatusLabel(invoice, computedStatus)}
+      </span>
+    );
+  }
 
   const handleChange = async (rawNew: string) => {
     const newStatus = rawNew as InvoiceStatus;

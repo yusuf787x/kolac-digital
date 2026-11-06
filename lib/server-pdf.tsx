@@ -14,10 +14,14 @@ export async function generateInvoicePdfBuffer(
 ): Promise<Buffer> {
   // Brutto-Betrag fuer GiroCode (was der Kunde per QR ueberweist).
   const invoiceGross = computeInvoiceVat(invoice.items, invoice.vatRate).gross;
-  const qrCodeDataUrl = await buildInvoiceQrDataUrl({
-    amount: invoiceGross,
-    invoiceNumber: invoice.invoiceNumber ?? 'ENTWURF',
-  });
+  // Stornorechnung (negativer Betrag): kein GiroCode, wird im PDF nicht gezeigt.
+  const qrCodeDataUrl =
+    invoice.kind === 'cancellation' || invoiceGross <= 0
+      ? ''
+      : await buildInvoiceQrDataUrl({
+          amount: invoiceGross,
+          invoiceNumber: invoice.invoiceNumber ?? 'ENTWURF',
+        });
 
   const base = appBaseUrl();
   const logoSrc = base
