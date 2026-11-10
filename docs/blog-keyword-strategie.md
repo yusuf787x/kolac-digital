@@ -150,6 +150,29 @@ Softwarehäuser vorne), /ki-beratung bleibt.
   Erstgespräch braucht einen besseren Übergang zur Leistung, keinen
   neuen Text.
 
+## Erste echte Zahlen (Stand 10. November 2026)
+
+Search Console, Oktober 2026: 26 Artikel live, 1.085 von 2.570
+Impressionen auf /blog, aber nur 2 Klicks. 14 Artikel ohne
+nennenswerte Impressionen. Auf der ganzen Website kamen nur 6 Klicks
+ohne Markenbezug. Engpass ist die junge Domain mit wenig Verweisen,
+nicht die Zahl der Artikel.
+
+Folgerungen:
+
+- **Keine neuen Artikel**, bis die bestehenden ranken. Zeit in
+  Verweise (Portale, Kunden, Unternehmensprofil) und in die Branchen-
+  und Stadtseiten stecken.
+- **Gesucht wird „Website“, nicht „Webseite“** (barrierefreie website
+  pflicht, website bringt keine anfragen). Titel und Einstieg auf die
+  gesuchte Schreibweise ausrichten.
+- **Breite Rechtsbegriffe** wie „barrierefreie website pflicht“ bringen
+  Impressionen, stehen aber gegen eRecht24, Händlerbund und Behörden
+  (Platz 19 bis 37). Nur mit dem gründlichsten Text gewinnbar.
+- Am 10.11.2026 überarbeitet: BFSG, „Website bringt keine Anfragen“,
+  „Baukasten oder eigene Webseite“. **Anfang Februar 2027** je Artikel
+  prüfen: Position, Klicks, Klicks auf das Erstgespräch.
+
 ## Themen aus dieser Recherche
 
 Die 20 Themen stehen in `lib/blog-seed-topics.ts` (Abschnitt
