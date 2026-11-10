@@ -118,8 +118,8 @@ export const branchenSeiten: BranchenSeite[] = [
     ],
     portfolioSlug: 'fahrschule-kreuzer',
     ratgeber: {
-      href: '/blog/webseite-fahrschule-praxis-werkstatt',
-      title: 'Fahrschule, Praxis, Werkstatt: was online zählt',
+      href: '/blog/fahrschule-mehr-anmeldungen-webseite',
+      title: 'Fahrschule: mehr Anmeldungen über Google und die eigene Webseite',
     },
     faqs: [
       {
@@ -472,6 +472,10 @@ export const branchenSeiten: BranchenSeite[] = [
     ],
     portfolioSlug: 'motorenfachmann',
     weitereReferenzen: ['carhifi-herford', 'pader-automobilzentrum'],
+    ratgeber: {
+      href: '/blog/webseite-fahrschule-praxis-werkstatt',
+      title: 'Fahrschule, Praxis, Werkstatt: was online zählt',
+    },
     faqs: [
       {
         question: 'Was gehört auf die Website einer Kfz-Werkstatt?',

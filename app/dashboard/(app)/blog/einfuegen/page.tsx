@@ -7,8 +7,10 @@ import {
   listBlogPosts,
   listBlogTopics,
   createBlogPost,
+  updateBlogPost,
   updateBlogTopic,
 } from '@/lib/firestore';
+import { authedFetch } from '@/lib/api-client';
 import type { BlogPost, BlogTopic, BlogCategory } from '@/lib/types';
 import { BLOG_CATEGORIES } from '@/lib/types';
 import {
@@ -177,13 +179,69 @@ export default function BlogPastePage() {
     }
   };
 
+  /**
+   * Ueberarbeitete Fassung eines bestehenden Artikels uebernehmen.
+   * Ersetzt nur die Textfelder. URL, Status, Veroeffentlichungsdatum,
+   * Titelbild und Zaehlung bleiben, damit Rankings und Statistik nicht
+   * verloren gehen. updatedAt wird gesetzt und erscheint als
+   * dateModified im Schema.
+   */
+  const updateExisting = async (existing: BlogPost) => {
+    if (!parsed) return;
+    if (
+      !confirm(
+        `Text von "${existing.title}" durch die eingefügte Fassung ersetzen? URL, Datum und Bild bleiben.`,
+      )
+    )
+      return;
+    setSaving(true);
+    setError(null);
+    try {
+      const category = (parsed.category &&
+      BLOG_CATEGORIES.includes(parsed.category as BlogCategory)
+        ? parsed.category
+        : existing.category) as BlogCategory;
+      await updateBlogPost(existing.id, {
+        title: parsed.title.trim(),
+        excerpt: parsed.excerpt.trim(),
+        tldr: parsed.tldr.trim(),
+        keyTakeaways: parsed.keyTakeaways ?? existing.keyTakeaways ?? [],
+        body: parsed.body,
+        category,
+        targetKeywords: parsed.targetKeywords ?? existing.targetKeywords,
+        faq: parsed.faq ?? existing.faq,
+        sources: parsed.sources ?? existing.sources ?? [],
+        metaTitle: parsed.metaTitle?.trim() || parsed.title.trim(),
+        metaDescription:
+          parsed.metaDescription?.trim() || parsed.excerpt.trim(),
+        imageAlt: parsed.imageAlt || existing.imageAlt || '',
+        readingMinutes: estimateReadingMinutes(parsed.body),
+      });
+      try {
+        await authedFetch('/api/blog/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: existing.slug }),
+        });
+      } catch (err) {
+        console.warn('Seiten konnten nicht sofort erneuert werden:', err);
+      }
+      router.push(`/dashboard/blog/${existing.id}`);
+    } catch (err) {
+      setError(`Aktualisieren fehlgeschlagen: ${(err as Error).message}`);
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return <div className="card text-sm text-gray-500">Lädt…</div>;
   }
 
   const openTopics = topics.filter((t) => t.status === 'open');
-  const slugTaken =
-    parsed && posts.some((p) => p.slug === parsed.slug.trim());
+  const existingPost = parsed
+    ? (posts.find((p) => p.slug === parsed.slug.trim()) ?? null)
+    : null;
+  const slugTaken = !!existingPost;
 
   return (
     <div>
@@ -345,10 +403,11 @@ export default function BlogPastePage() {
           <div className="mt-3 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-sm text-green-900">
             Gelesen: {parsed.title} · {estimateReadingMinutes(parsed.body)} Min.
             Lesezeit · {parsed.faq?.length ?? 0} Fragen
-            {slugTaken && (
-              <div className="mt-1 text-red-700 font-medium">
-                Achtung: Es gibt schon einen Artikel mit dem URL-Teil
-                &quot;{parsed.slug}&quot;. Bitte im Editor ändern.
+            {existingPost && (
+              <div className="mt-1 text-amber-800 font-medium">
+                Diesen URL-Teil gibt es schon: &quot;{existingPost.title}&quot;.
+                Du kannst den bestehenden Artikel unten mit dieser Fassung
+                aktualisieren. URL, Datum und Bild bleiben erhalten.
               </div>
             )}
           </div>
@@ -450,22 +509,34 @@ export default function BlogPastePage() {
             )}
           </section>
 
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => save(false)}
-              disabled={saving}
-              className="btn-secondary"
-            >
-              {saving ? 'Legt an…' : 'Als Entwurf anlegen'}
-            </button>
-            <button
-              onClick={() => save(true)}
-              disabled={saving || !!slugTaken}
-              className="btn-primary"
-            >
-              Anlegen und veröffentlichen
-            </button>
-          </div>
+          {existingPost ? (
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => updateExisting(existingPost)}
+                disabled={saving}
+                className="btn-primary"
+              >
+                {saving ? 'Aktualisiert…' : 'Bestehenden Artikel aktualisieren'}
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => save(false)}
+                disabled={saving}
+                className="btn-secondary"
+              >
+                {saving ? 'Legt an…' : 'Als Entwurf anlegen'}
+              </button>
+              <button
+                onClick={() => save(true)}
+                disabled={saving}
+                className="btn-primary"
+              >
+                Anlegen und veröffentlichen
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
