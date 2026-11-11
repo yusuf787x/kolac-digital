@@ -44,6 +44,19 @@ export async function POST(req: Request) {
 
   try {
     const result = await runSeoCheck(url);
+    // Ohne Google-Platzierungen waere die Punktzahl geschoent. Besucher
+    // bekommen dann kein Ergebnis und behalten ihren Gratis-Check. Der
+    // Inhaber sieht das Ergebnis trotzdem, mit dem technischen Grund.
+    if (!result.rankings.available && !owner) {
+      console.error('SEO-Check ohne Platzierungen:', result.rankings.error);
+      return NextResponse.json(
+        {
+          error: 'Die Google-Daten sind gerade nicht erreichbar. Bitte versuch es in ein paar Minuten noch einmal, dein Gratis-Check bleibt erhalten.',
+          code: 'rankings',
+        },
+        { status: 503 },
+      );
+    }
     const id = await saveCheck(result, owner, ip);
     if (!owner) await recordUsage(ip, id);
     const response: SeoCheckResponse = {

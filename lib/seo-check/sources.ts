@@ -41,9 +41,25 @@ interface DfsOrganicMetrics {
   count?: number;
 }
 
+/** Verstaendlicher Grund fuer den Inhaber, warum keine Platzierungen kamen. */
+function explainDfsError(httpStatus: number, code: number | undefined, msg: string): string {
+  if (httpStatus === 401 || code === 40100) return 'DataForSEO lehnt den Zugang ab: DATAFORSEO_LOGIN oder DATAFORSEO_PASSWORD falsch (Leerzeichen, Anführungszeichen?).';
+  if (code === 40200 || code === 40210 || /balance|funds|payment/i.test(msg)) return 'DataForSEO-Guthaben ist aufgebraucht.';
+  return `DataForSEO-Fehler: ${msg}`;
+}
+
 export async function fetchRankings(domain: string): Promise<RankingData> {
+  const first = await fetchRankingsOnce(domain);
+  // Ein zweiter Versuch bei Netzwerk- oder Serverfehlern, nicht bei falschem Zugang.
+  if (first.available || first.error === 'not-configured' || /Zugang|Guthaben/.test(first.error ?? '')) return first;
+  return fetchRankingsOnce(domain);
+}
+
+async function fetchRankingsOnce(domain: string): Promise<RankingData> {
   if (!rankingsConfigured()) return { ...EMPTY_RANKINGS, error: 'not-configured' };
-  const auth = Buffer.from(`${process.env.DATAFORSEO_LOGIN}:${process.env.DATAFORSEO_PASSWORD}`).toString('base64');
+  const login = (process.env.DATAFORSEO_LOGIN ?? '').trim().replace(/^["']|["']$/g, '');
+  const password = (process.env.DATAFORSEO_PASSWORD ?? '').trim().replace(/^["']|["']$/g, '');
+  const auth = Buffer.from(`${login}:${password}`).toString('base64');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 25_000);
   try {
@@ -70,9 +86,10 @@ export async function fetchRankings(domain: string): Promise<RankingData> {
     } | null;
     const task = json?.tasks?.[0];
     if (!res.ok || !json || json.status_code !== 20000 || !task || task.status_code !== 20000) {
+      const code = task?.status_code ?? json?.status_code;
       const msg = task?.status_message ?? json?.status_message ?? `HTTP ${res.status}`;
-      console.error('DataForSEO ranked_keywords:', msg);
-      return { ...EMPTY_RANKINGS, error: msg };
+      console.error('DataForSEO ranked_keywords:', res.status, code, msg);
+      return { ...EMPTY_RANKINGS, error: explainDfsError(res.status, code, msg) };
     }
     const result = task.result?.[0];
     const m = result?.metrics?.organic ?? {};
@@ -107,7 +124,8 @@ export async function fetchRankings(domain: string): Promise<RankingData> {
     };
   } catch (err) {
     console.error('DataForSEO Fehler:', err);
-    return { ...EMPTY_RANKINGS, error: err instanceof Error ? err.message : 'Fehler' };
+    const timeout = err instanceof Error && err.name === 'AbortError';
+    return { ...EMPTY_RANKINGS, error: timeout ? 'DataForSEO hat nicht rechtzeitig geantwortet.' : `Verbindung zu DataForSEO fehlgeschlagen: ${err instanceof Error ? err.message : 'unbekannt'}` };
   } finally {
     clearTimeout(timer);
   }

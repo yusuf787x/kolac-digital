@@ -36,9 +36,15 @@ const STATUS_STYLE: Record<CheckStatus, { label: string; cls: string }> = {
 const CATEGORY_ORDER: CheckCategory[] = ['sichtbarkeit', 'technik', 'inhalte', 'lokal'];
 
 function scoreTone(score: number): { color: string; label: string } {
-  if (score >= 80) return { color: 'var(--color-ok)', label: 'Gut aufgestellt' };
-  if (score >= 50) return { color: 'var(--color-warn)', label: 'Ausbaufähig' };
+  if (score >= 85) return { color: 'var(--color-ok)', label: 'Gut aufgestellt' };
+  if (score >= 60) return { color: 'var(--color-warn)', label: 'Ausbaufähig' };
   return { color: 'var(--color-fail)', label: 'Viel Luft nach oben' };
+}
+
+function rankingErrorText(error?: string): string {
+  if (!error) return 'Unbekannter Grund.';
+  if (error === 'not-configured') return 'DATAFORSEO_LOGIN oder DATAFORSEO_PASSWORD fehlen in dieser Umgebung (Vercel: Production gesetzt und neu deployt?).';
+  return error;
 }
 
 /**
@@ -323,6 +329,11 @@ function Report({
             <p className="mt-6 rounded-[12px] bg-[var(--color-blue-light)] px-4 py-3 text-[15px] text-[var(--color-black)]">
               Die Platzierungen bei Google konnten diesmal nicht abgerufen werden. Die Punktzahl zeigt deshalb nur Technik, Inhalte
               und lokale Signale. Eine gut gebaute Seite ist noch keine sichtbare Seite.
+              {data.owner && (
+                <span className="mt-2 block text-[13px] font-semibold text-[var(--color-fail)]">
+                  Nur für dich sichtbar: {rankingErrorText(r.rankings.error)}
+                </span>
+              )}
             </p>
           )}
           {data.owner && (

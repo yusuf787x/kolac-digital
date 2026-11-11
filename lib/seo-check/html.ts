@@ -40,6 +40,8 @@ export interface ParsedPage {
   generator?: string;
   h1: string[];
   h2Count: number;
+  /** Reihenfolge der Ueberschriften-Ebenen, z. B. [1, 2, 3, 2]. */
+  headingLevels: number[];
   words: number;
   text: string;
   images: { total: number; missingAlt: number };
@@ -99,6 +101,7 @@ export function parsePage(html: string, pageUrl: string): ParsedPage {
 
   const h1 = Array.from(bodyOnly.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)).map((m) => stripTags(m[1])).filter(Boolean);
   const h2Count = (bodyOnly.match(/<h2\b/gi) ?? []).length;
+  const headingLevels = Array.from(bodyOnly.matchAll(/<h([1-6])\b/gi)).map((m) => Number(m[1]));
 
   const imgs = bodyOnly.match(/<img\b[^>]*>/gi) ?? [];
   const missingAlt = imgs.filter((i) => {
@@ -160,6 +163,7 @@ export function parsePage(html: string, pageUrl: string): ParsedPage {
     generator: meta('generator'),
     h1,
     h2Count,
+    headingLevels,
     words,
     text,
     images: { total: imgs.length, missingAlt },
@@ -197,9 +201,15 @@ export function detectPlatform(html: string, page: ParsedPage, headers: Headers)
   return page.generator || undefined;
 }
 
-/** Postleitzahl und Ort, z. B. "33611 Bielefeld". */
+/**
+ * Postleitzahl und Ort, z. B. "33611 Bielefeld". Ein zweites Wort nur bei
+ * typischen Ortsvorsaetzen ("Bad Rappenau", "Sankt Augustin"), sonst
+ * landet die naechste Fusszeilen-Angabe ("Herford Impressum") im Ort.
+ */
 export function findAddress(text: string): { zip: string; city: string } | undefined {
-  const m = text.match(/\b(\d{5})\s+([A-ZÄÖÜ][a-zäöüß]+(?:[ -][A-ZÄÖÜ]?[a-zäöüß]+)?)/);
+  const m = text.match(
+    /\b(\d{5})\s+((?:(?:Bad|Sankt|St\.|Groß|Klein|Neu|Alt|Hohen|Ober|Unter)\s+)?[A-ZÄÖÜ][a-zäöüß]+(?:-[A-ZÄÖÜ][a-zäöüß]+)*)/,
+  );
   if (!m) return undefined;
   return { zip: m[1], city: m[2] };
 }

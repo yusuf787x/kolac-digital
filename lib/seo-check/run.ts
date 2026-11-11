@@ -84,7 +84,8 @@ function statusFrom(value: number, okFrom: number, warnFrom: number): CheckStatu
   return 'fail';
 }
 
-const POINTS: Record<CheckStatus, number | null> = { ok: 1, warn: 0.5, fail: 0, info: null };
+// Bewusst streng: "verbesserbar" zaehlt weniger als die Haelfte.
+const POINTS: Record<CheckStatus, number | null> = { ok: 1, warn: 0.4, fail: 0, info: null };
 
 function categoryScore(checks: CheckItem[], cat: CheckCategory): number {
   let sum = 0;
@@ -99,9 +100,16 @@ function categoryScore(checks: CheckItem[], cat: CheckCategory): number {
   return max ? Math.round((sum / max) * 100) : 0;
 }
 
+/**
+ * Sichtbarkeit 0 bis 100, kalibriert fuer lokale Betriebe:
+ * keine Seite-1-Begriffe ~10, 4 auf Seite 1 ohne Top 3 ~35,
+ * 10 auf Seite 1 / 3 Top 3 / 100 Besuche ~55, 30 / 10 / 500 ~75.
+ * Top-3-Plaetze zaehlen doppelt, weil sie die meisten Klicks bekommen.
+ */
 function visibilityScore(r: RankingData): number {
   if (!r.available) return 0;
-  return Math.min(100, Math.round(18 * Math.log(1 + r.top10) + 8 * Math.log(1 + r.total)));
+  const s = 9 * Math.log(1 + r.top10 + 2 * r.top3) + 5 * Math.log(1 + r.estTraffic) + 2 * Math.log(1 + r.total);
+  return Math.min(100, Math.round(s));
 }
 
 const fmt = (n: number) => n.toLocaleString('de-DE');
@@ -358,13 +366,13 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
     category: 'inhalte',
     title: 'Seitentitel',
     weight: 3,
-    status: !titleLen ? 'fail' : titleLen >= 30 && titleLen <= 65 ? 'ok' : 'warn',
+    status: !titleLen ? 'fail' : titleLen >= 30 && titleLen <= 60 ? 'ok' : titleLen > 75 || titleLen < 15 ? 'fail' : 'warn',
     detail: !titleLen
       ? 'Die Startseite hat keinen Seitentitel. Das ist die Überschrift in den Google-Ergebnissen.'
       : `„${page.title}“ (${titleLen} Zeichen). ${
-          titleLen < 30 ? 'Zu kurz, es fehlen Leistung und Ort.' : titleLen > 65 ? 'Zu lang, Google schneidet ab.' : 'Die Länge passt.'
+          titleLen < 30 ? 'Zu kurz, es fehlen Leistung und Ort.' : titleLen > 60 ? 'Zu lang, Google schneidet am Handy ab.' : 'Die Länge passt.'
         }`,
-    fix: 'Titel mit Hauptleistung und Ort, 30 bis 65 Zeichen, z. B. „Gebäudereinigung Bielefeld | Firmenname“.',
+    fix: 'Titel mit Hauptleistung und Ort, 30 bis 60 Zeichen, z. B. „Gebäudereinigung Bielefeld | Firmenname“.',
   });
 
   const descLen = page.description?.length ?? 0;
@@ -385,7 +393,7 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
     category: 'inhalte',
     title: 'Hauptüberschrift (H1)',
     weight: 2,
-    status: page.h1.length === 1 ? 'ok' : page.h1.length === 0 ? 'fail' : 'warn',
+    status: page.h1.length === 1 ? 'ok' : page.h1.length === 2 ? 'warn' : 'fail',
     detail:
       page.h1.length === 0
         ? 'Die Startseite hat keine Hauptüberschrift.'
@@ -400,21 +408,89 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
     category: 'inhalte',
     title: 'Gliederung mit Zwischenüberschriften',
     weight: 1,
-    status: page.h2Count >= 2 ? 'ok' : 'warn',
-    detail: page.h2Count >= 2 ? `${page.h2Count} Zwischenüberschriften gliedern den Inhalt.` : 'Der Inhalt ist kaum gegliedert.',
-    fix: 'Abschnitte mit aussagekräftigen H2-Überschriften gliedern.',
+    status: page.h2Count >= 3 ? 'ok' : page.h2Count >= 1 ? 'warn' : 'fail',
+    detail: page.h2Count >= 3 ? `${page.h2Count} Zwischenüberschriften gliedern den Inhalt.` : `Nur ${page.h2Count} Zwischenüberschriften. Der Inhalt ist kaum gegliedert.`,
+    fix: 'Jeden Abschnitt mit einer aussagekräftigen H2-Überschrift beginnen, möglichst mit Leistung oder Ort.',
+  });
+
+  // Reihenfolge der Ueberschriften: keine uebersprungenen Ebenen (H2 -> H4)
+  // und keine H3 vor der ersten H2. Baukaesten setzen Ebenen oft nach Optik.
+  const levels = page.headingLevels;
+  let skipped = 0;
+  for (let i = 1; i < levels.length; i++) if (levels[i] > levels[i - 1] + 1) skipped++;
+  const firstH2 = levels.indexOf(2);
+  const h3BeforeH2 = levels.some((l, i) => l >= 3 && (firstH2 === -1 || i < firstH2));
+  const structureIssues = skipped + (h3BeforeH2 ? 1 : 0) + (levels[0] !== undefined && levels[0] !== 1 ? 1 : 0);
+  add({
+    id: 'heading-order',
+    category: 'inhalte',
+    title: 'Saubere Reihenfolge der Überschriften',
+    weight: 2,
+    status: levels.length === 0 ? 'fail' : structureIssues === 0 ? 'ok' : structureIssues <= 2 ? 'warn' : 'fail',
+    detail:
+      levels.length === 0
+        ? 'Die Seite hat keine Überschriften im HTML. Google erkennt keine Gliederung.'
+        : structureIssues === 0
+          ? 'Die Überschriften bauen sauber aufeinander auf (H1, dann H2, dann H3).'
+          : `Die Überschriften springen ${structureIssues}-mal in der Ebene. Google erkennt dadurch schlechter, was Haupt- und was Unterthema ist.`,
+    fix: 'Überschriften nach Bedeutung setzen, nicht nach Optik: eine H1, darunter H2, darunter H3.',
   });
 
   add({
     id: 'words',
     category: 'inhalte',
     title: 'Textmenge der Startseite',
-    weight: 2,
-    status: statusFrom(page.words, 300, 150),
+    weight: 3,
+    status: statusFrom(page.words, 500, 300),
     detail: `Rund ${fmt(page.words)} Wörter. ${
-      page.words < 150 ? 'Zu wenig, damit Google versteht, was du anbietest.' : page.words < 300 ? 'Eher knapp.' : 'Genug Inhalt für Google.'
+      page.words < 300
+        ? 'Zu wenig, damit Google versteht, was du anbietest und wo. Gut gefundene Seiten haben meist deutlich über 500 Wörter.'
+        : page.words < 500
+          ? 'Eher knapp. Mitbewerber auf Seite 1 haben meist mehr Inhalt.'
+          : 'Genug Inhalt für Google.'
     }`,
-    fix: 'Leistungen, Einsatzgebiet und häufige Fragen ausführlicher beschreiben.',
+    fix: 'Leistungen, Einsatzgebiet, Ablauf, Preise als Richtwert und häufige Fragen ausführlicher beschreiben.',
+  });
+
+  // Hauptthema: das erste Stichwort aus dem Titel (vor | , - :) muss in der
+  // H1 und mehrfach im Text vorkommen, sonst ist das Thema der Seite unklar.
+  // Firmenname (steckt in der Domain) ist kein Thema, dann das naechste Wort.
+  const domainKey = domain.replace(/[^a-zäöüß0-9]/gi, '').toLowerCase();
+  const topicWord = (page.title ?? '')
+    .split(/[|,:–—·•-]/)
+    .flatMap((seg) => seg.split(/\s+/))
+    .map((w) => w.replace(/[^a-zäöüß0-9]/gi, ''))
+    .find(
+      (w) =>
+        w.length >= 4 &&
+        !domainKey.includes(w.toLowerCase()) &&
+        !/^(home|startseite|willkommen|welcome|ihre|deine|ihr|dein|die|der|das|und|aus|für|mit)$/i.test(w),
+    );
+  if (topicWord) {
+    const stem = topicWord.slice(0, Math.max(4, topicWord.length - 2)).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const inH1 = page.h1.some((h) => new RegExp(stem, 'i').test(h));
+    const mentions = (page.text.match(new RegExp(stem, 'gi')) ?? []).length;
+    add({
+      id: 'topic',
+      category: 'inhalte',
+      title: 'Hauptthema durchgängig',
+      weight: 2,
+      status: inH1 && mentions >= 3 ? 'ok' : inH1 || mentions >= 3 ? 'warn' : 'fail',
+      detail: `„${topicWord}“ aus dem Titel steht ${inH1 ? 'in der Hauptüberschrift' : 'nicht in der Hauptüberschrift'} und ${mentions}-mal im Text.${
+        inH1 && mentions >= 3 ? ' Das Thema ist klar.' : ' Google erkennt das Hauptthema dadurch schlechter.'
+      }`,
+      fix: `Den wichtigsten Suchbegriff („${topicWord}“) in Titel, H1 und mehrfach natürlich im Text verwenden.`,
+    });
+  }
+
+  add({
+    id: 'internal-links',
+    category: 'inhalte',
+    title: 'Verlinkung zu Unterseiten',
+    weight: 1,
+    status: statusFrom(page.internalLinks.length, 10, 5),
+    detail: `Die Startseite verlinkt auf ${page.internalLinks.length} eigene Unterseiten.`,
+    fix: 'Von der Startseite auf jede Leistungs- und Ortsseite verlinken, mit aussagekräftigem Linktext.',
   });
 
   const altShare = page.images.total ? 1 - page.images.missingAlt / page.images.total : 1;
@@ -423,7 +499,7 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
     category: 'inhalte',
     title: 'Bildbeschreibungen (Alt-Texte)',
     weight: 1,
-    status: altShare >= 0.9 ? 'ok' : altShare >= 0.6 ? 'warn' : 'fail',
+    status: altShare >= 0.95 ? 'ok' : altShare >= 0.75 ? 'warn' : 'fail',
     detail: page.images.total
       ? `${page.images.total - page.images.missingAlt} von ${page.images.total} Bildern sind beschrieben.`
       : 'Auf der Startseite wurden keine Bilder gefunden.',
@@ -622,19 +698,42 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
       category: 'sichtbarkeit',
       title: 'Suchbegriffe auf Seite 1',
       weight: 3,
-      status: rankings.top10 >= 10 ? 'ok' : rankings.top10 >= 1 ? 'warn' : 'fail',
+      status: rankings.top10 >= 20 ? 'ok' : rankings.top10 >= 5 ? 'warn' : 'fail',
       detail:
         rankings.top10 === 0
           ? 'Für keinen Suchbegriff steht die Website auf Seite 1 bei Google.'
-          : `Für ${fmt(rankings.top10)} Suchbegriffe steht die Website auf Seite 1, davon ${fmt(rankings.top3)} unter den ersten drei.`,
+          : `Für ${fmt(rankings.top10)} Suchbegriffe steht die Website auf Seite 1. ${rankings.top10 < 5 ? 'Das ist sehr wenig, die meisten Kunden finden dich so nicht.' : ''}`.trim(),
       fix: 'Seiten gezielt auf die Begriffe ausrichten, nach denen deine Kunden suchen.',
+    });
+    add({
+      id: 'kw-top3',
+      category: 'sichtbarkeit',
+      title: 'Platzierungen unter den ersten drei',
+      weight: 3,
+      status: rankings.top3 >= 5 ? 'ok' : rankings.top3 >= 1 ? 'warn' : 'fail',
+      detail:
+        rankings.top3 === 0
+          ? 'Für keinen Suchbegriff steht die Website unter den ersten drei. Dort landen über die Hälfte aller Klicks.'
+          : `Für ${fmt(rankings.top3)} Suchbegriffe steht die Website unter den ersten drei.`,
+      fix: 'Die stärksten Begriffe mit eigener, ausführlicher Seite und Verlinkung nach ganz vorne bringen.',
+    });
+    add({
+      id: 'kw-traffic',
+      category: 'sichtbarkeit',
+      title: 'Besuche über Google (geschätzt)',
+      weight: 2,
+      status: rankings.estTraffic >= 300 ? 'ok' : rankings.estTraffic >= 50 ? 'warn' : 'fail',
+      detail: `Rund ${fmt(rankings.estTraffic)} Besuche pro Monat kommen geschätzt über die normale Google-Suche.${
+        rankings.estTraffic < 50 ? ' Das reicht nicht für regelmäßige Anfragen.' : ''
+      }`,
+      fix: 'Mehr Begriffe mit echtem Suchvolumen auf Seite 1 bringen, vor allem Leistung plus Ort.',
     });
     add({
       id: 'kw-total',
       category: 'sichtbarkeit',
       title: 'Suchbegriffe insgesamt',
       weight: 2,
-      status: rankings.total >= 50 ? 'ok' : rankings.total >= 10 ? 'warn' : 'fail',
+      status: rankings.total >= 100 ? 'ok' : rankings.total >= 30 ? 'warn' : 'fail',
       detail: `Die Website wird für ${fmt(rankings.total)} Suchbegriffe unter den ersten 100 Ergebnissen angezeigt.`,
       fix: 'Mehr Inhalte zu Leistungen, Orten und Kundenfragen erstellen.',
     });
@@ -657,17 +756,19 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
     lokal: categoryScore(checks, 'lokal'),
     sichtbarkeit: rankings.available ? visibilityScore(rankings) : null,
   };
-  // Sichtbarkeit zaehlt am meisten: eine technisch saubere Seite, die bei
-  // Google nicht erscheint, soll keine Spitzennote bekommen.
+  // Sichtbarkeit zaehlt am meisten, und die Gesamtnote darf hoechstens 30
+  // Punkte darueber liegen: eine saubere Seite, die bei Google nicht
+  // erscheint, ist nicht "gut aufgestellt".
   const weights: [number | null, number][] = [
-    [categories.technik, 0.25],
+    [categories.technik, 0.2],
     [categories.inhalte, 0.25],
     [categories.lokal, 0.15],
-    [categories.sichtbarkeit, 0.35],
+    [categories.sichtbarkeit, 0.4],
   ];
   const usable = weights.filter((w): w is [number, number] => w[0] !== null);
   const wsum = usable.reduce((a, [, w]) => a + w, 0);
-  const score = Math.round(usable.reduce((a, [v, w]) => a + v * w, 0) / wsum);
+  let score = Math.round(usable.reduce((a, [v, w]) => a + v * w, 0) / wsum);
+  if (categories.sichtbarkeit !== null) score = Math.min(score, categories.sichtbarkeit + 30);
 
   return {
     url: inputUrl,
@@ -704,6 +805,9 @@ const MEASURE_WHY: Record<string, string> = {
   description: 'Eine gute Beschreibung entscheidet, ob jemand in Google auf dich klickt.',
   h1: 'Die Hauptüberschrift sagt Google, worum es auf der Seite geht.',
   h2: 'Gliederung hilft Google und Lesern, Inhalte schnell zu erfassen.',
+  'heading-order': 'Springende Überschriften verwischen für Google, was Haupt- und was Unterthema ist.',
+  topic: 'Nur wenn Titel, Überschrift und Text dasselbe Thema tragen, ordnet Google die Seite diesem Suchbegriff zu.',
+  'internal-links': 'Interne Links zeigen Google, welche Seiten wichtig sind, und verteilen die Stärke der Startseite.',
   words: 'Ohne genug Text versteht Google nicht, wofür du gefunden werden sollst.',
   alt: 'Beschriebene Bilder bringen Zusatztreffer in der Bildersuche und sind barrierefrei.',
   pages: 'Jede Leistung mit eigener Seite ist eine zusätzliche Chance, gefunden zu werden.',
@@ -733,8 +837,10 @@ function buildMeasures(checks: CheckItem[], rankings: RankingData): Measure[] {
       how: `Die passenden Seiten gezielt auf diese Begriffe ausbauen: ${names}.`,
     });
   }
+  // kw-* sind Ergebnisse, keine Handlungen. Die Hebel dafuer liefern die
+  // uebrigen Punkte und die Massnahmen fuer Google-Profil und Ortsseiten.
   const ranked = checks
-    .filter((c) => (c.status === 'fail' || c.status === 'warn') && c.fix)
+    .filter((c) => (c.status === 'fail' || c.status === 'warn') && c.fix && !c.id.startsWith('kw-'))
     .map((c) => ({
       c,
       prio: (c.status === 'fail' ? 2 : 1) * c.weight * CATEGORY_PRIORITY[c.category],
