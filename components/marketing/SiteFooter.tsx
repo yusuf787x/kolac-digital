@@ -28,6 +28,7 @@ export default function SiteFooter() {
                 <Link href="/case-studys">Case Studys</Link>
                 <Link href="/portfolio">Portfolio</Link>
                 <Link href="/blog">Ratgeber</Link>
+                <Link href="/seo-check">Kostenloser SEO-Check</Link>
                 <a href="/#about">Über uns</a>
                 <a href="/#kontakt">Kontakt</a>
               </div>

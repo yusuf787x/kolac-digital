@@ -6,6 +6,15 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ---
 
+## 11.11.2026
+
+### Neue Seite
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| 🟡 | Kostenloser SEO-Check: Besucher geben ihre Website ein und sehen in rund 30 Sekunden Punktzahl, Prüfpunkte zu Technik, Inhalten, lokaler Auffindbarkeit und Sichtbarkeit bei Google sowie ihre fünf wichtigsten Maßnahmen | Neuer Weg zu Anfragen: Interessenten bekommen sofort echten Nutzen und können den vollständigen Bericht mit Kontaktdaten freischalten | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| 🟡 | SEO-Check im Fußbereich aller Seiten und in der Sitemap verlinkt | Besucher und Google finden die neue Seite | [Sitemap](https://www.kolac-digital.de/sitemap-pages.xml) |
+
 ## 10.11.2026
 
 ### Ratgeber und Google

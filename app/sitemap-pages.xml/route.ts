@@ -80,6 +80,12 @@ export function GET() {
       priority: 0.8,
     },
     {
+      path: '/seo-check',
+      lastmod: '2026-11-11',
+      changefreq: 'monthly',
+      priority: 0.8,
+    },
+    {
       path: '/case-studys',
       lastmod: '2026-09-10',
       changefreq: 'monthly',
