@@ -18,6 +18,7 @@ const MAX_BATCH = 400;
  * POST Authorization: Bearer kdp_... (Schluessel aus .env.local von kolac-digital-web)
  *   { action: "pull" }                  → alle Betriebe
  *   { action: "push", leads: [...] }    → anlegen oder Recherche-Felder aktualisieren
+ *   { action: "legacy" }                → alte Cold-Call-Leads (nur lesen)
  *
  * Ein Push ueberschreibt nie Status, Versanddaten oder Notizen aus dem
  * Dashboard, und Texte nur, solange der Betrieb noch nicht angeschrieben ist.
@@ -33,6 +34,18 @@ async function handlePOST(req: Request) {
   if (body?.action === 'pull') {
     const snap = await db.collection(COL).get();
     return NextResponse.json({ leads: snap.docs.map((d) => ({ id: d.id, ...d.data() })) });
+  }
+
+  // Alte Cold-Call-Leads (Collection "leads", Modul entfernt), nur lesen, fuer die Instagram-Suche
+  if (body?.action === 'legacy') {
+    const snap = await db.collection('leads').get();
+    const pick = ['company', 'contactName', 'website', 'websiteAge', 'category', 'city', 'street', 'zip', 'rating', 'reviewCount', 'googleMapsUrl', 'status', 'notes'] as const;
+    return NextResponse.json({
+      leads: snap.docs.map((d) => {
+        const data = d.data();
+        return { id: d.id, ...Object.fromEntries(pick.filter((k) => data[k] !== undefined && data[k] !== '').map((k) => [k, data[k]])) };
+      }),
+    });
   }
 
   if (body?.action === 'push') {
