@@ -14,7 +14,7 @@ import { emailBox, emailDataRows, emailLayout, emailSignatureText, esc } from '.
 
 /**
  * Texte der drei Zahlungserinnerungen. Absender ist die Buchhaltung
- * (Marci), nicht Yusuf. Sie-Form, wie auf der Rechnung.
+ * (Marci Anders), nicht Yusuf. Sie-Form, wie auf der Rechnung.
  */
 
 export interface DunningEmailInput {

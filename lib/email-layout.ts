@@ -94,7 +94,7 @@ const PERSONAS: Record<Exclude<EmailSender, 'none'>, Persona> = {
     email: 'yusuf@kolac-digital.de',
   },
   buchhaltung: {
-    name: 'Marci',
+    name: 'Marci Anders',
     role: 'Buchhaltung, Kolac Digital',
     photo: `${ASSETS}/marci-signatur.jpg`,
     email: 'buchhaltung@kolac-digital.de',

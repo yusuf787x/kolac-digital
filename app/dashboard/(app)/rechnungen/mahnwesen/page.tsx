@@ -156,7 +156,7 @@ export default function MahnwesenPage() {
         </Link>
         <h1 className="text-3xl font-semibold text-gray-900">Zahlungserinnerungen</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Absender buchhaltung@kolac-digital.de, unterschrieben von Marci,
+          Absender buchhaltung@kolac-digital.de, unterschrieben von Marci Anders,
           Buchhaltung. Jeden Morgen um ca. 8 bis 9 Uhr.
         </p>
       </header>
