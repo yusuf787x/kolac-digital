@@ -2,7 +2,8 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { collection, doc, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
+import ReplyBox from '@/components/outreach/ReplyBox';
 import { db } from '@/lib/firebase';
 import {
   OUTREACH_DAILY_LIMIT,
@@ -11,6 +12,7 @@ import {
   OUTREACH_STATUS_LABELS,
   instagramSearchUrl,
   instagramUrl,
+  lintMessage,
   normalizeInstagram,
   type OutreachLead,
   type OutreachStatus,
@@ -107,6 +109,11 @@ function OutreachInner() {
     setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, ...data } : l)));
   }, []);
 
+  const reload = useCallback(async (id: string) => {
+    const snap = await getDoc(doc(db, 'outreachLeads', id));
+    if (snap.exists()) setLeads((ls) => ls.map((l) => (l.id === id ? { ...(snap.data() as OutreachLead), id } : l)));
+  }, []);
+
   const queries = useMemo(() => [...new Set(leads.map((l) => l.query))].sort((a, b) => a.localeCompare(b, 'de')), [leads]);
   const scoped = useMemo(() => leads.filter((l) => !query || l.query === query), [leads, query]);
   const visible = scoped.filter((l) => inView(l, view)).sort((a, b) => rank(b) - rank(a) || a.name.localeCompare(b.name, 'de'));
@@ -196,7 +203,7 @@ function OutreachInner() {
       ) : (
         <ul className="space-y-3">
           {visible.map((l) => (
-            <LeadCard key={l.id} lead={l} view={view} limitReached={sentToday >= OUTREACH_DAILY_LIMIT} onSave={save} />
+            <LeadCard key={l.id} lead={l} view={view} limitReached={sentToday >= OUTREACH_DAILY_LIMIT} onSave={save} onReload={reload} />
           ))}
         </ul>
       )}
@@ -219,11 +226,13 @@ function LeadCard({
   view,
   limitReached,
   onSave,
+  onReload,
 }: {
   lead: OutreachLead;
   view: View;
   limitReached: boolean;
   onSave: (id: string, patch: Partial<OutreachLead>) => Promise<void>;
+  onReload: (id: string) => Promise<void>;
 }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -258,6 +267,17 @@ function LeadCard({
   };
 
   const now = () => new Date().toISOString();
+  const warnings = text ? lintMessage(text) : [];
+  const showReplies = !!l.sentAt || !!l.thread?.length;
+  const igIdleDays = l.ig?.lastPostAt ? Math.floor(daysSince(l.ig.lastPostAt)) : null;
+  const igInfo = l.ig
+    ? [
+        typeof l.ig.followers === 'number' ? `${l.ig.followers.toLocaleString('de-DE')} Follower` : null,
+        l.ig.lastPostAt ? `letzter Beitrag ${formatDate(l.ig.lastPostAt)}` : 'keine Beiträge sichtbar',
+        l.ig.link ? 'Link in Bio' : 'kein Link in Bio',
+        l.ig.private ? 'privates Profil' : null,
+      ].filter(Boolean)
+    : [];
   const rating = l.rating ? `★ ${String(l.rating).replace('.', ',')}${l.reviews ? ` (${l.reviews})` : ''}` : null;
 
   return (
@@ -328,6 +348,13 @@ function LeadCard({
         )}
       </div>
 
+      {igInfo.length > 0 && (
+        <p className={`mt-2 text-xs ${igIdleDays !== null && igIdleDays > 180 ? 'text-amber-700' : 'text-gray-500'}`}>
+          Instagram: {igInfo.join(' · ')}
+          {igIdleDays !== null && igIdleDays > 180 && ' (liest DMs evtl. selten)'}
+        </p>
+      )}
+
       {!!l.scan?.findings.length && (
         <ul className="mt-3 list-disc space-y-0.5 pl-5 text-sm text-gray-600">
           {l.scan.findings.slice(0, 4).map((f) => (
@@ -340,6 +367,13 @@ function LeadCard({
         <div className="mt-3 rounded-lg bg-blue-50 p-3">
           <div className="text-xs font-semibold uppercase tracking-wide text-brand-blue">{followMode ? 'Nachfassen' : 'Nachricht'}</div>
           <p className="mt-1 whitespace-pre-wrap text-[15px] leading-relaxed text-gray-900">{text}</p>
+          {warnings.length > 0 && (
+            <ul className="mt-2 space-y-0.5 text-xs text-amber-700">
+              {warnings.map((w) => (
+                <li key={w}>Hinweis: {w}</li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
       {l.status === 'neu' && !l.dm && <p className="mt-3 text-sm text-gray-500">Kein Text: Website ohne deutlichen Ansatzpunkt.</p>}
@@ -422,6 +456,10 @@ function LeadCard({
         <p role="alert" className="mt-2 text-sm text-red-700">
           {err}
         </p>
+      )}
+
+      {showReplies && view !== 'schreiben' && (
+        <ReplyBox lead={l} onChanged={() => onReload(l.id)} onMarkNoInterest={() => run({ status: 'kein-interesse' })} />
       )}
     </li>
   );

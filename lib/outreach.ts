@@ -50,6 +50,19 @@ export interface OutreachLead {
   foundAt: string;
   /** Instagram-Name ohne @. */
   instagram?: string;
+  /** Oeffentliche Profildaten, von Claude Code ausgelesen. */
+  ig?: {
+    checkedAt: string;
+    handle: string;
+    fullName?: string;
+    bio?: string;
+    link?: string;
+    followers?: number;
+    posts?: number;
+    lastPostAt?: string;
+    category?: string;
+    private?: boolean;
+  };
   scan?: OutreachScan;
   dm?: string;
   followup?: string;
@@ -58,11 +71,13 @@ export interface OutreachLead {
   followedUpAt?: string;
   repliedAt?: string;
   note?: string;
+  /** Antworten des Studios und Yusufs Nachrichten danach, aelteste zuerst. */
+  thread?: OutreachMessage[];
   updatedAt?: string;
 }
 
 /** Felder, die nur im Dashboard gepflegt werden. Ein Push aus Claude Code ueberschreibt sie nie. */
-export const OUTREACH_MANUAL_FIELDS = ['status', 'sentAt', 'followedUpAt', 'repliedAt', 'note'] as const;
+export const OUTREACH_MANUAL_FIELDS = ['status', 'sentAt', 'followedUpAt', 'repliedAt', 'note', 'thread'] as const;
 
 export const OUTREACH_STATUS_LABELS: Record<OutreachStatus, string> = {
   neu: 'Neu',
@@ -102,3 +117,53 @@ export function normalizeInstagram(raw: string): string {
 export const instagramUrl = (handle: string) => `https://www.instagram.com/${encodeURIComponent(handle)}/`;
 export const instagramSearchUrl = (l: Pick<OutreachLead, 'name' | 'city'>) =>
   `https://www.google.com/search?q=${encodeURIComponent(`site:instagram.com "${l.name}" ${l.city ?? ''}`.trim())}`;
+
+// --- Gespraechsverlauf ---
+
+export interface OutreachMessage {
+  from: 'studio' | 'yusuf';
+  text: string;
+  at: string;
+}
+
+// --- Pruefung vor dem Versand ---
+
+const BANNED: [RegExp, string][] = [
+  [/ich hoffe,? (es geht|du hast|ihr habt|sie haben)/i, 'Floskel „Ich hoffe, es geht …“'],
+  [/kurze frage/i, 'Floskel „kurze Frage“'],
+  [/sehr geehrte/i, '„Sehr geehrte“ wirkt wie ein Werbebrief'],
+  [/garantiert|100\s?%/i, 'Versprechen wie „garantiert“ oder „100 %“'],
+  [/!!|\?\?/, 'doppelte Satzzeichen'],
+  [/\{\{|\}\}|\[name\]|\[studio\]|lorem/i, 'Platzhalter nicht ersetzt'],
+];
+
+/**
+ * Hinweise zu einer DM, bevor sie rausgeht. Nur Hinweise, nichts wird
+ * blockiert: Yusuf entscheidet.
+ */
+export function lintMessage(text: string): string[] {
+  const t = text.trim();
+  const out: string[] = [];
+  if (!t) return out;
+  if (t.length > 650) out.push(`Mit ${t.length} Zeichen recht lang (Ziel unter 650)`);
+  if (/https?:\/\/|www\.|\.de\b\/|\.com\b\//i.test(t)) out.push('Enthält einen Link, in der ersten Nachricht besser keinen');
+  if (/\d[\d.,]*\s?(€|euro)\b|\bpreis(e)?\b(?! ?(sehen|sieht))/i.test(t) && !/keine preise|weder .*preise|behandlungen und preise|preise sehen/i.test(t)) out.push('Nennt einen Preis');
+  for (const [re, label] of BANNED) if (re.test(t)) out.push(label);
+  const du = (t.match(/\b(du|dir|dich|dein|deine|deinen|deinem|deiner|deins)\b/g) ?? []).length;
+  const ihr = (t.match(/\b(ihr|euch|euer|eure|euren|eurem|eurer)\b/g) ?? []).length;
+  const sie = (t.match(/(?<![.!?]\s)(?<!^)\b(Sie|Ihnen|Ihre|Ihren|Ihrem|Ihrer)\b/g) ?? []).length;
+  const forms = [du && 'du', ihr && 'ihr', sie && 'Sie'].filter(Boolean);
+  if (forms.length > 1) out.push(`Mischt ${forms.join(' und ')}`);
+  if (!t.includes('?')) out.push('Enthält keine Frage, auf die man antworten kann');
+  return out;
+}
+
+// --- Absagen erkennen ---
+
+const OPT_OUT =
+  /\b(kein(e|en)?\s+(interesse|bedarf)|nicht\s+interessiert|nein,?\s+danke|danke,?\s+nein|brauche?n?\s+(ich|wir)\s+(das\s+)?nicht|(ich|wir)\s+brauche?n?\s+(das\s+)?(nicht|keine)|bitte\s+nicht\s+mehr|nicht\s+mehr\s+(schreiben|anschreiben|kontaktieren)|(lass|lasst)\s+(mich|uns)\s+(bitte\s+)?in\s+ruhe|hör(t)?\s+auf|stop+|abmelden|spam)\b/i;
+
+/** Klare Absage? Dann wird der Betrieb sofort und dauerhaft auf „Kein Interesse“ gesetzt. */
+export function isOptOut(reply: string): boolean {
+  return OPT_OUT.test(reply);
+}

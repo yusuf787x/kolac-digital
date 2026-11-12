@@ -5,7 +5,8 @@
  *   node scripts/outreach/apply-dms.mjs outreach/dms-<name>.json
  *
  * Die Datei ist ein Objekt { "<lead-id>": { "dm": "...", "followup": "..." } }.
- * Leere Texte werden uebersprungen, bereits gesendete Betriebe nicht veraendert.
+ * Ein leerer Text ("") loescht den Entwurf (Betrieb wird nicht angeschrieben).
+ * Bereits gesendete Betriebe werden nicht veraendert.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -30,8 +31,8 @@ for (const [id, d] of Object.entries(drafts)) {
     continue;
   }
   if (lead.status !== 'neu') continue;
-  if (d.dm?.trim()) lead.dm = d.dm.trim();
-  if (d.followup?.trim()) lead.followup = d.followup.trim();
+  if (typeof d.dm === 'string') lead.dm = d.dm.trim();
+  if (typeof d.followup === 'string') lead.followup = d.followup.trim();
   applied++;
 }
 writeFileSync(STORE, JSON.stringify(leads, null, 2) + '\n');

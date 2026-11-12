@@ -47,7 +47,7 @@ async function call(body) {
 }
 
 const local = existsSync(STORE) ? JSON.parse(readFileSync(STORE, 'utf8')) : [];
-const MANUAL = ['status', 'sentAt', 'followedUpAt', 'repliedAt', 'note'];
+const MANUAL = ['status', 'sentAt', 'followedUpAt', 'repliedAt', 'note', 'thread'];
 
 try {
   if (action === 'pull') {

@@ -34,6 +34,19 @@ export interface LeadScan {
   top10?: number;
 }
 
+export interface LeadIg {
+  checkedAt: string;
+  handle: string;
+  fullName?: string;
+  bio?: string;
+  link?: string;
+  followers?: number;
+  posts?: number;
+  lastPostAt?: string;
+  category?: string;
+  private?: boolean;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -48,6 +61,10 @@ export interface Lead {
   query: string;
   foundAt: string;
   instagram?: string;
+  /** Woher der Instagram-Name stammt: eigene Website (sicher) oder Suche (wird gegen den Namen geprueft). */
+  igSource?: 'website' | 'suche' | 'dashboard';
+  /** Oeffentliche Profildaten (ScrapeCreators), siehe profiles.mts. */
+  ig?: LeadIg;
   scan?: LeadScan;
   dm?: string;
   followup?: string;
