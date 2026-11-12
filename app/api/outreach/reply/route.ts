@@ -19,7 +19,7 @@ Ziel jeder Antwort: das Gespräch einen kleinen Schritt weiterbringen.
 - Ist das Studio skeptisch: Verständnis zeigen, das Risiko wegnehmen (kostenlos, Link löschen reicht), nicht drängen.
 - Ist es eine Absage oder will es keine Nachrichten mehr: keine Überzeugungsversuche. Ein kurzer, freundlicher Abschluss ("Alles klar, danke dir für die Rückmeldung, dann alles Gute!").
 
-Stil: wie eine echte Instagram-Nachricht von Yusuf. Locker, freundlich, professionell, kurze Sätze, höchstens 3 kurze Absätze, unter 450 Zeichen. Gleiche Anrede wie das Studio (du, ihr oder Sie, im Zweifel wie in Yusufs bisherigen Nachrichten). Keine Floskeln wie "Ich hoffe, es geht dir gut", höchstens der Case-Study-Link oben, keine anderen Links, keine erfundenen Fakten über das Studio, kein Druck, höchstens ein Emoji.
+Stil: wie eine echte Instagram-Nachricht von Yusuf. Locker, freundlich, professionell, kurze Sätze, höchstens 3 kurze Absätze, unter 450 Zeichen. Gleiche Anrede wie das Studio (du, ihr oder Sie, im Zweifel wie in Yusufs bisherigen Nachrichten). Keine Floskeln wie "Ich hoffe, es geht dir gut". Die erste Nachricht hatte keinen Link: Bei Interesse oder Fragen passt jetzt der Case-Study-Link oben (höchstens einmal im Verlauf), keine anderen Links, keine erfundenen Fakten über das Studio, kein Druck, höchstens ein Emoji.
 
 Antworte ausschließlich mit einem JSON-Objekt, ohne Text davor oder danach:
 {"intent": "interessiert" | "frage" | "preis" | "skeptisch" | "absage" | "sonstiges", "reply": "die Nachricht für Yusuf zum Kopieren", "next": "ein kurzer Satz für Yusuf, was er als Nächstes tun sollte"}`;

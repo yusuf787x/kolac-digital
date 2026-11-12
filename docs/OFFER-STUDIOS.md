@@ -38,7 +38,7 @@ Kundinnen buchen selbst, rund um die Uhr, vom Handy. Erinnerungen gehen automati
 Warum das wirkt: Das Studio muss nichts entscheiden, nur hinschauen. Es sieht sein eigenes Studio, nicht eine Beispielseite. Wer einmal seine eigene fertige Seite gesehen hat, will sie behalten.
 
 ## Beweis
-Bacara Ästhetik, Bünde (öffentliche Case Study, darf verlinkt werden): **kolac-digital.de/case-studys/bacara-aesthetik**. Wörtlich auf der Seite: „Über 800 Termine online gebucht, ohne einen einzigen Anruf“, „Ein System statt fünf“, Einwilligungen digital auf dem iPad, Erinnerungen und Bewertungsanfragen automatisch. „Buchungen verdreifacht“ steht nur im Portfolio, in DMs lieber die 800 Termine nennen.
+Bacara Ästhetik, Bünde (öffentliche Case Study, darf verlinkt werden): **kolac-digital.de/case-studys/bacara-aesthetik**. Wörtlich auf der Seite: „Über 800 Termine online gebucht, ohne einen einzigen Anruf“, „Ein System statt fünf“, Einwilligungen digital auf dem iPad, Erinnerungen und Bewertungsanfragen automatisch. „Buchungen verdreifacht“ steht nur im Portfolio, lieber die 800 Termine nennen. **Nicht in der ersten DM** (seit 12.11.2026: erste Nachricht ohne Link, nur der Gewinn fürs Studio). Der Link kommt in der Antwort, sobald das Studio reagiert.
 
 ## Kernangebot nach dem Entwurf (Vorschlag)
 | Baustein | Inhalt |
@@ -53,4 +53,4 @@ Bacara Ästhetik, Bünde (öffentliche Case Study, darf verlinkt werden): **kola
 **Garantie (Vorschlag):** Bezahlt wird erst, wenn die Seite online ist und gefällt. Bringt die Online-Buchung in den ersten 90 Tagen keine einzige Buchung, gibt es das Geld zurück.
 
 ## Regeln für die DMs
-Stehen im Skill `instagram-outreach`. Kurz: echtes Kompliment aus den Daten, die ein bis zwei Probleme oben, die zu diesem Studio passen (als Wiedererkennen, nicht als Kritik), das System dahinter in einem Satz (selbst buchen, Erinnerung am Vortag, Anamnese vorab am Handy, ein Kalender), Case-Link, kostenloser Entwurf ohne Haken, eine Ein-Wort-Frage. Kein Preis, keine fremden Links.
+Stehen im Skill `instagram-outreach`. Kurz: echtes Kompliment aus den Daten, die ein bis zwei Probleme oben, die zu diesem Studio passen (als Wiedererkennen, nicht als Kritik), das System dahinter in einem Satz (selbst buchen, Erinnerung am Vortag, Anamnese vorab am Handy, ein Kalender), der Gewinn fürs Studio in einem Satz („Heißt für dich: …“), kostenloser Entwurf ohne Haken, eine Ein-Wort-Frage. Kein Preis, kein Link.

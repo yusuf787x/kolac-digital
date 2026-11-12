@@ -141,15 +141,17 @@ const BANNED: [RegExp, string][] = [
  * Hinweise zu einer DM, bevor sie rausgeht. Nur Hinweise, nichts wird
  * blockiert: Yusuf entscheidet.
  */
-export function lintMessage(text: string): string[] {
+/** first: Erstnachricht oder Nachfassen, bevor das Studio geantwortet hat. Dann gar kein Link. */
+export function lintMessage(text: string, opts: { first?: boolean } = {}): string[] {
   const t = text.trim();
   const out: string[] = [];
   if (!t) return out;
   if (t.length > 750) out.push(`Mit ${t.length} Zeichen recht lang (Ziel unter 750)`);
-  // Eigene Case Studys sind erwuenscht, fremde Links wirken wie Spam
+  // Erste Nachricht ohne Link (wirkt wie Werbung). In Antworten ist die eigene Case Study erlaubt, fremde Links nie.
   const links = t.match(/(https?:\/\/)?(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)*\.(de|com|net|io|ee|app|co)(\/[^\s]*)?/gi) ?? [];
-  if (links.some((l) => !/kolac-digital\.de/i.test(l))) out.push('Enthält einen fremden Link');
-  if (links.length > 1) out.push('Mehr als ein Link');
+  if (opts.first && links.length) out.push('Erste Nachricht mit Link (den Link erst schicken, wenn sie antworten)');
+  else if (links.some((l) => !/kolac-digital\.de/i.test(l))) out.push('Enthält einen fremden Link');
+  if (!opts.first && links.length > 1) out.push('Mehr als ein Link');
   if (/\d[\d.,]*\s?(€|euro)\b|\bpreis(e)?\b(?! ?(sehen|sieht))/i.test(t) && !/keine preise|weder .*preise|behandlungen und preise|preise sehen/i.test(t)) out.push('Nennt einen Preis');
   for (const [re, label] of BANNED) if (re.test(t)) out.push(label);
   const du = (t.match(/\b(du|dir|dich|dein|deine|deinen|deinem|deiner|deins)\b/g) ?? []).length;

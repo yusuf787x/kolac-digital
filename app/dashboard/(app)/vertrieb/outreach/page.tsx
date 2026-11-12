@@ -267,7 +267,7 @@ function LeadCard({
   };
 
   const now = () => new Date().toISOString();
-  const warnings = text ? lintMessage(text) : [];
+  const warnings = text ? lintMessage(text, { first: !l.thread?.length }) : [];
   const showReplies = !!l.sentAt || !!l.thread?.length;
   const igIdleDays = l.ig?.lastPostAt ? Math.floor(daysSince(l.ig.lastPostAt)) : null;
   const igInfo = l.ig
