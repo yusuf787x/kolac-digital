@@ -23,7 +23,7 @@ if (!login || !password) {
 }
 const auth = `Basic ${Buffer.from(`${login}:${password}`).toString('base64')}`;
 
-const SKIP = new Set(['p', 'reel', 'reels', 'explore', 'stories', 'accounts', 'tv', 'popular', 'about']);
+const SKIP = new Set(['p', 'reel', 'reels', 'explore', 'stories', 'accounts', 'tv', 'popular', 'about', 'wix', 'legal', 'jimdo', 'ionos', 'instagram', 'help']);
 const GENERIC = new Set([
   'beauty', 'kosmetik', 'kosmetikstudio', 'studio', 'salon', 'cosmetic', 'cosmetics', 'lounge', 'care', 'und', 'the', 'by', 'and', 'wellness', 'aesthetic', 'aesthetics',
   'friseur', 'friseursalon', 'hair', 'haare', 'barber', 'barbershop', 'nails', 'nail', 'nagelstudio', 'lashes', 'spa',
@@ -31,6 +31,10 @@ const GENERIC = new Set([
   'kuechen', 'kuechenstudio', 'baeder', 'bad', 'badezimmer', 'garten', 'gartenbau', 'landschaftsbau', 'galabau', 'moebel', 'tischlerei', 'schreinerei',
   'brautmode', 'hochzeit', 'location', 'event', 'juwelier', 'trauringe', 'folierung', 'aufbereitung', 'kamin', 'ofen', 'zahnarzt', 'zahnaerzte', 'dental',
   'bielefeld', 'paderborn', 'guetersloh', 'osnabrueck', 'minden', 'herford', 'detmold', 'owl',
+  // Branchenwoerter stecken in vielen fremden Accounts, sie duerfen allein keinen Treffer ausloesen
+  'goldschmiede', 'goldschmied', 'silberschmiede', 'schmuck', 'gartengestaltung', 'gartenservice', 'haustechnik', 'sanitaer', 'heizung', 'metallbau',
+  'brautmoden', 'fahrzeugaufbereitung', 'autoaufbereitung', 'detailing', 'autopflege', 'eventlocation', 'tischler', 'kaminstudio', 'glaserei', 'hochzeitssaal',
+  'hotel', 'landhaus', 'restaurant', 'gaststaette', 'bestattungen', 'sonnenschutz', 'fliesen', 'kuechenhaus', 'moebeltischlerei', 'auto', 'service', 'center',
 ]);
 const norm = (s: string) =>
   s
@@ -38,7 +42,7 @@ const norm = (s: string) =>
     .normalize('NFKD')
     .replace(/[̀-ͯ]/g, '')
     .replace(/ß/g, 'ss');
-const tokens = (name: string) => norm(name).split(/[^a-z0-9]+/).filter((t) => t.length >= 3 && !GENERIC.has(t));
+const tokens = (name: string) => norm(name).split(/[^a-z0-9]+/).filter((t) => t.length >= 4 && !GENERIC.has(t));
 
 const leads = loadLeads();
 const todo = leads.filter((l) => !l.instagram && l.status !== 'ausgeschlossen' && (needOnly ? hasNeed(l) && !l.igSearchedAt : all || l.dm));
@@ -91,9 +95,11 @@ async function findOne(lead: (typeof leads)[number]) {
       title: i.title ?? '',
     }))
     .filter((i): i is { handle: string; title: string } => !!i.handle && !SKIP.has(i.handle.toLowerCase()))
-    .find((i) => want.some((t) => norm(i.handle).includes(t) || norm(i.title).includes(t)));
+    // Der Instagram-Name selbst muss zum Betrieb passen, ein passender Titel allein fuehrte zu fremden Profilen
+    .find((i) => want.some((t) => norm(i.handle).replace(/[._]/g, '').includes(t)));
   if (hit) {
     lead.instagram = hit.handle;
+    lead.igSource = 'suche';
     found++;
     console.log(`${lead.name}: @${hit.handle}`);
   } else {

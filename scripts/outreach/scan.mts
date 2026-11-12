@@ -34,12 +34,13 @@ const BOOKING: [RegExp, string][] = [
   [/phorest\./i, 'Phorest'],
   [/bookingkit|termin-direkt|setmore\./i, 'Online-Buchung'],
 ];
-const IG_SKIP = new Set(['p', 'reel', 'reels', 'explore', 'stories', 'accounts', 'tv', 'share', 'instagram']);
+// Baukaesten verlinken im Footer gern ihre eigenen Accounts
+const IG_SKIP = new Set(['p', 'reel', 'reels', 'explore', 'stories', 'accounts', 'tv', 'share', 'instagram', 'wix', 'legal', 'jimdo', 'ionos', 'strato', 'squarespace', 'wordpress', 'shopify', 'about', 'help', 'developer']);
 
 function instagramHandle(html: string): string | undefined {
   for (const m of html.matchAll(/instagram\.com\/([A-Za-z0-9_.]{2,30})/gi)) {
     const h = m[1].replace(/\.$/, '');
-    if (!IG_SKIP.has(h.toLowerCase())) return h;
+    if (!IG_SKIP.has(h.toLowerCase()) && !/\.(php|js|css|html?)$/i.test(h)) return h;
   }
   return undefined;
 }
@@ -135,7 +136,10 @@ async function quickScan(lead: Lead): Promise<LeadScan> {
       findings.push('Kein Kontaktformular und keine anklickbare Telefonnummer');
       priority += 1;
     }
-    if (!lead.instagram) lead.instagram = instagramHandle(html);
+    if (!lead.instagram) {
+      lead.instagram = instagramHandle(html);
+      if (lead.instagram) lead.igSource = 'website';
+    }
 
     return {
       at,

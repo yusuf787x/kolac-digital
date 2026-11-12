@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
 import ReplyBox from '@/components/outreach/ReplyBox';
 import { postJson } from '@/components/seo/admin/api';
+import { branchOf, type Branch } from '@/lib/outreach-playbook';
 import { db } from '@/lib/firebase';
 import {
   OUTREACH_DAILY_LIMIT,
@@ -50,8 +51,11 @@ function inView(l: OutreachLead, v: View): boolean {
   }
 }
 
-/** Mit Text und Instagram zuerst, dann nach Hebel. */
-const rank = (l: OutreachLead) => (l.dm ? 100 : 0) + (l.instagram ? 20 : 0) + (l.scan?.priority ?? 0);
+const HIGH_TICKET = new Set<Branch>(['kueche', 'bad', 'galabau', 'tischlerei', 'ausbau', 'hochzeitslocation', 'brautmode', 'aufbereitung', 'juwelier', 'aesthetik']);
+
+/** Mit Text zuerst, dann High-Ticket-Branchen (mehr Auftragswert), dann Instagram und Hebel. */
+const rank = (l: OutreachLead) =>
+  (l.dm ? 100 : 0) + (HIGH_TICKET.has(branchOf(l)) ? 50 : 0) + (l.instagram ? 20 : 0) + (l.scan?.priority ?? 0);
 
 const EMPTY: Record<View, string> = {
   schreiben: 'Alle Betriebe mit Text sind angeschrieben. Für neue in Claude Code sagen: „Outreach: Branche, Stadt“.',
