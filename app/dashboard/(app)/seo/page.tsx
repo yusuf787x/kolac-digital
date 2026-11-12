@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import Modal from '@/components/ui/Modal';
+import SeoSectionTabs from '@/components/seo/admin/SeoSectionTabs';
 import { getJson, postJson } from '@/components/seo/admin/api';
 import { db } from '@/lib/firebase';
 import { listCustomers } from '@/lib/firestore';
@@ -125,6 +126,8 @@ export default function SeoOverviewPage() {
           SEO-Kunde hinzufügen
         </button>
       </div>
+
+      <SeoSectionTabs />
 
       {missing.length > 0 && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
