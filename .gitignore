@@ -27,3 +27,6 @@ next-env.d.ts
 *.log
 .vercel
 .env*
+
+# Outreach-Kontaktdaten (lokal)
+/outreach/
