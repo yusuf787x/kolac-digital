@@ -48,6 +48,10 @@ export interface OutreachLead {
   /** Suche, ueber die der Betrieb gefunden wurde, z. B. "Kosmetikstudio Bielefeld". */
   query: string;
   foundAt: string;
+  /** Bedarf geprueft und Instagram gefunden (scripts/outreach/promote.mts): darf angeschrieben werden, auch ohne fertigen Text. */
+  bedarf?: boolean;
+  /** Ansprechpartner (Inhaber), falls bekannt, z. B. aus dem alten Leads-Modul. */
+  contact?: string;
   /** Instagram-Name ohne @. */
   instagram?: string;
   /** Oeffentliche Profildaten, von Claude Code ausgelesen. */
@@ -152,7 +156,8 @@ export function lintMessage(text: string, opts: { first?: boolean } = {}): strin
   if (opts.first && links.length) out.push('Erste Nachricht mit Link (den Link erst schicken, wenn sie antworten)');
   else if (links.some((l) => !/kolac-digital\.de/i.test(l))) out.push('Enthält einen fremden Link');
   if (!opts.first && links.length > 1) out.push('Mehr als ein Link');
-  if (/\d[\d.,]*\s?(€|euro)\b|\bpreis(e)?\b(?! ?(sehen|sieht))/i.test(t) && !/keine preise|weder .*preise|behandlungen und preise|preise sehen/i.test(t)) out.push('Nennt einen Preis');
+  // Nur echte Betraege: Zitate wie "nach dem Preis ist Funkstille" sind erlaubt
+  if (/\d[\d.,]*\s?(€|euro)(?![a-zäöü])|\bab \d+\s?(€|euro)/i.test(t)) out.push('Nennt einen Preis');
   for (const [re, label] of BANNED) if (re.test(t)) out.push(label);
   const du = (t.match(/\b(du|dir|dich|dein|deine|deinen|deinem|deiner|deins)\b/g) ?? []).length;
   const ihr = (t.match(/\b(ihr|euch|euer|eure|euren|eurem|eurer)\b/g) ?? []).length;

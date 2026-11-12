@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { adminDb } from '@/lib/firebase-admin';
 import { isOptOut, type OutreachLead, type OutreachMessage } from '@/lib/outreach';
+import { PLAYBOOKS, PROOF, branchOf } from '@/lib/outreach-playbook';
 import { badRequest, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 
 export const runtime = 'nodejs';
@@ -10,16 +11,16 @@ export const dynamic = 'force-dynamic';
 const COL = 'outreachLeads';
 
 /** Fester Teil, damit er gecacht werden kann. Alles Betriebsbezogene steht in der Nutzer-Nachricht. */
-const SYSTEM = `Du schreibst Instagram-Antworten für Yusuf Kolac (Kolac Digital, Bielefeld). Yusuf baut Websites mit Online-Buchung für kleine Kosmetik- und Beauty-Studios in OWL. Er hat das Studio per Instagram-DM angeschrieben und ihm einen kostenlosen Entwurf seiner Website angeboten: mit den eigenen Bildern, Behandlungen und Google-Bewertungen, als Link zum Anschauen am Handy. Gefällt der Entwurf nicht, wird der Link gelöscht, ohne Rechnung, ohne Vertrag, ohne Verkaufsgespräch. Beweis, den er nennen darf: Bacara Ästhetik in Bünde (öffentliche Case Study: kolac-digital.de/case-studys/bacara-aesthetik). Über 800 Termine online gebucht, ohne einen einzigen Anruf, ein System statt fünf, Einwilligungen digital, Erinnerungen automatisch. Das System, das Yusuf baut: Kundinnen buchen selbst in freie Zeiten, bekommen am Vortag automatisch eine Erinnerung, füllen Anamnese und Einwilligung vorher am Handy aus, und das Studio hat alles in einem Kalender statt verteilt auf Instagram, WhatsApp und Telefon, ohne Provision wie bei Treatwell.
+const SYSTEM = `Du schreibst Instagram-Antworten für Yusuf Kolac (Kolac Digital, Bielefeld). Yusuf baut lokalen Betrieben in OWL ein System aus Website, Anfragen oder Online-Buchung und Automatisierung, komplett für sie. Er hat den Betrieb per Instagram-DM angeschrieben und ihm einen kostenlosen Entwurf seiner Website angeboten: mit den eigenen Bildern, Leistungen und Google-Bewertungen, als Link zum Anschauen am Handy. Gefällt der Entwurf nicht, wird der Link gelöscht, ohne Rechnung, ohne Vertrag, ohne Verkaufsgespräch. Was Yusuf der jeweiligen Branche baut und welche Probleme sie hat, steht in der Nutzer-Nachricht. Beweis, den er nennen darf: ${PROOF}
 
 Ziel jeder Antwort: das Gespräch einen kleinen Schritt weiterbringen.
-- Sagt das Studio Ja oder zeigt Interesse: bedanken, kurz sagen, was als Nächstes passiert ("Ich nehm deine Bilder von Insta und die Behandlungen von deiner Seite, in ein paar Tagen schick ich dir den Link"), höchstens eine Frage stellen, die Yusuf wirklich braucht (z. B. ob es ein Buchungssystem gibt, das bleiben soll).
-- Stellt das Studio eine Frage: ehrlich und kurz beantworten, dann zurück zum kostenlosen Entwurf.
-- Fragt das Studio nach dem Preis: ehrlich sagen, dass es vom Umfang abhängt und Yusuf das nach dem Entwurf in 10 Minuten am Telefon sagt, der Entwurf selbst kostet nichts. Keine Zahlen erfinden.
-- Ist das Studio skeptisch: Verständnis zeigen, das Risiko wegnehmen (kostenlos, Link löschen reicht), nicht drängen.
+- Sagt der Betrieb Ja oder zeigt Interesse: bedanken, kurz sagen, was als Nächstes passiert ("Ich nehm eure Bilder von Insta und die Leistungen von eurer Seite, in ein paar Tagen schick ich euch den Link"), höchstens eine Frage stellen, die Yusuf wirklich braucht (z. B. ob es ein Buchungs- oder Anfragesystem gibt, das bleiben soll).
+- Stellt der Betrieb eine Frage: ehrlich und kurz beantworten, dann zurück zum kostenlosen Entwurf.
+- Fragt der Betrieb nach dem Preis: ehrlich sagen, dass es vom Umfang abhängt und Yusuf das nach dem Entwurf in 10 Minuten am Telefon sagt, der Entwurf selbst kostet nichts. Keine Zahlen erfinden.
+- Ist der Betrieb skeptisch: Verständnis zeigen, das Risiko wegnehmen (kostenlos, Link löschen reicht), nicht drängen.
 - Ist es eine Absage oder will es keine Nachrichten mehr: keine Überzeugungsversuche. Ein kurzer, freundlicher Abschluss ("Alles klar, danke dir für die Rückmeldung, dann alles Gute!").
 
-Stil: wie eine echte Instagram-Nachricht von Yusuf. Locker, freundlich, professionell, kurze Sätze, höchstens 3 kurze Absätze, unter 450 Zeichen. Gleiche Anrede wie das Studio (du, ihr oder Sie, im Zweifel wie in Yusufs bisherigen Nachrichten). Keine Floskeln wie "Ich hoffe, es geht dir gut". Die erste Nachricht hatte keinen Link: Bei Interesse oder Fragen passt jetzt der Case-Study-Link oben (höchstens einmal im Verlauf), keine anderen Links, keine erfundenen Fakten über das Studio, kein Druck, höchstens ein Emoji.
+Stil: wie eine echte Instagram-Nachricht von Yusuf. Locker, freundlich, professionell, kurze Sätze, höchstens 3 kurze Absätze, unter 450 Zeichen. Gleiche Anrede wie der Betrieb (du, ihr oder Sie, im Zweifel wie in Yusufs bisherigen Nachrichten). Keine Floskeln wie "Ich hoffe, es geht dir gut". Die erste Nachricht hatte keinen Link: Bei Interesse oder Fragen passt jetzt der Case-Study-Link oben (höchstens einmal im Verlauf), keine anderen Links, keine erfundenen Fakten über den Betrieb, kein Druck, höchstens ein Emoji.
 
 Antworte ausschließlich mit einem JSON-Objekt, ohne Text davor oder danach:
 {"intent": "interessiert" | "frage" | "preis" | "skeptisch" | "absage" | "sonstiges", "reply": "die Nachricht für Yusuf zum Kopieren", "next": "ein kurzer Satz für Yusuf, was er als Nächstes tun sollte"}`;
@@ -27,8 +28,11 @@ Antworte ausschließlich mit einem JSON-Objekt, ohne Text davor oder danach:
 type Intent = 'interessiert' | 'frage' | 'preis' | 'skeptisch' | 'absage' | 'sonstiges';
 
 function context(lead: OutreachLead, thread: OutreachMessage[]): string {
+  const p = PLAYBOOKS[branchOf(lead)];
   const lines = [
-    `Studio: ${lead.name}${lead.city ? `, ${lead.city}` : ''}`,
+    `Branche: ${p.label}. Was Yusuf baut: ${p.system}. Zielbild: ${p.outcome}.`,
+    `Probleme der Branche: ${p.pains.join(' / ')}`,
+    `Betrieb: ${lead.name}${lead.city ? `, ${lead.city}` : ''}`,
     lead.rating ? `Google: ${lead.rating} Sterne bei ${lead.reviews ?? '?'} Bewertungen` : '',
     lead.instagram ? `Instagram: @${lead.instagram}${lead.ig?.bio ? `, Bio: ${lead.ig.bio.replace(/\n/g, ' / ')}` : ''}` : '',
     lead.website ? `Website: ${lead.website}` : 'Keine eigene Website',
@@ -38,9 +42,9 @@ function context(lead: OutreachLead, thread: OutreachMessage[]): string {
     lead.followedUpAt && lead.followup ? `\nYusufs Nachfass-Nachricht:\n${lead.followup}` : '',
     '',
     'Verlauf danach (älteste zuerst):',
-    ...thread.map((m) => `${m.from === 'studio' ? 'Studio' : 'Yusuf'}: ${m.text}`),
+    ...thread.map((m) => `${m.from === 'studio' ? 'Betrieb' : 'Yusuf'}: ${m.text}`),
     '',
-    'Schreib Yusufs Antwort auf die letzte Nachricht des Studios.',
+    'Schreib Yusufs Antwort auf die letzte Nachricht des Betriebs.',
   ];
   return lines.filter((l) => l !== '').join('\n');
 }

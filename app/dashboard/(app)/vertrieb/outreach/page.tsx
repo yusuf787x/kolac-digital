@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { collection, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
 import ReplyBox from '@/components/outreach/ReplyBox';
+import { postJson } from '@/components/seo/admin/api';
 import { db } from '@/lib/firebase';
 import {
   OUTREACH_DAILY_LIMIT,
@@ -36,7 +37,8 @@ const formatDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('de
 function inView(l: OutreachLead, v: View): boolean {
   switch (v) {
     case 'schreiben':
-      return l.status === 'neu' && !!l.dm;
+      // Ohne Text nur mit geprueftem Bedarf und Instagram, der Text laesst sich auf der Karte schreiben
+      return l.status === 'neu' && (!!l.dm || (!!l.bedarf && !!l.instagram));
     case 'nachfassen':
       return l.status === 'gesendet' && daysSince(l.sentAt) >= OUTREACH_FOLLOWUP_DAYS && !!l.followup;
     case 'gesendet':
@@ -239,6 +241,7 @@ function LeadCard({
   const [copied, setCopied] = useState(false);
   const [handle, setHandle] = useState('');
   const [note, setNote] = useState(l.note ?? '');
+  const [drafting, setDrafting] = useState(false);
   const followMode = view === 'nachfassen';
   const text = followMode ? l.followup : l.status === 'neu' ? l.dm : undefined;
   const closed = l.status === 'kein-interesse' || l.status === 'ausgeschlossen';
@@ -263,6 +266,20 @@ function LeadCard({
       setTimeout(() => setCopied(false), 2500);
     } catch {
       setErr('Kopieren ging nicht. Text gedrückt halten und manuell kopieren.');
+    }
+  };
+
+  // Claude schreibt DM und Nachfass-Text nach Branchen-Playbook und speichert sie am Betrieb
+  const writeDraft = async () => {
+    setDrafting(true);
+    setErr(null);
+    try {
+      await postJson('/api/outreach/draft', { id: l.id });
+      await onReload(l.id);
+    } catch (e) {
+      setErr(`Kein Text geschrieben: ${(e as Error).message}`);
+    } finally {
+      setDrafting(false);
     }
   };
 
@@ -376,7 +393,14 @@ function LeadCard({
           )}
         </div>
       )}
-      {l.status === 'neu' && !l.dm && <p className="mt-3 text-sm text-gray-500">Kein Text: Website ohne deutlichen Ansatzpunkt.</p>}
+      {l.status === 'neu' && !l.dm && (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button type="button" className="btn-primary pointer-coarse:h-11" disabled={drafting} onClick={writeDraft}>
+            {drafting ? 'Claude schreibt…' : 'Text schreiben'}
+          </button>
+          <span className="text-xs text-gray-500">Nach Branchen-Playbook, dauert etwa 20 Sekunden.</span>
+        </div>
+      )}
 
       {(view === 'antworten' || l.note) && (
         <div className="mt-3">
@@ -438,6 +462,11 @@ function LeadCard({
               <StatusLink busy={busy} onClick={() => run({ status: 'kein-interesse' })}>
                 Kein Interesse
               </StatusLink>
+              {l.status === 'neu' && l.dm && (
+                <StatusLink busy={busy || drafting} onClick={writeDraft}>
+                  {drafting ? 'Schreibt…' : 'Neu schreiben'}
+                </StatusLink>
+              )}
               {l.status === 'neu' && (
                 <StatusLink busy={busy} onClick={() => run({ status: 'ausgeschlossen' })}>
                   Ausschließen

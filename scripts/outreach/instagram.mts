@@ -9,9 +9,11 @@
  * werden nicht eingetragen, die stehen im Dashboard mit "Profil suchen".
  * Ohne --alle nur Betriebe, die einen Text haben (die werden angeschrieben).
  */
-import { loadEnv, loadLeads, saveLeads } from './store.mts';
+import { hasNeed, loadEnv, loadLeads, saveLeads } from './store.mts';
 
 const all = process.argv.includes('--alle');
+// --bedarf: nur Betriebe mit echtem Bedarf (hasNeed), fuer den Zwischenspeicher
+const needOnly = process.argv.includes('--bedarf');
 loadEnv(['DATAFORSEO_LOGIN', 'DATAFORSEO_PASSWORD']);
 const login = process.env.DATAFORSEO_LOGIN;
 const password = process.env.DATAFORSEO_PASSWORD;
@@ -22,7 +24,14 @@ if (!login || !password) {
 const auth = `Basic ${Buffer.from(`${login}:${password}`).toString('base64')}`;
 
 const SKIP = new Set(['p', 'reel', 'reels', 'explore', 'stories', 'accounts', 'tv', 'popular', 'about']);
-const GENERIC = new Set(['beauty', 'kosmetik', 'kosmetikstudio', 'studio', 'salon', 'bielefeld', 'cosmetic', 'cosmetics', 'lounge', 'care', 'und', 'the', 'by', 'and', 'wellness', 'aesthetic', 'aesthetics']);
+const GENERIC = new Set([
+  'beauty', 'kosmetik', 'kosmetikstudio', 'studio', 'salon', 'cosmetic', 'cosmetics', 'lounge', 'care', 'und', 'the', 'by', 'and', 'wellness', 'aesthetic', 'aesthetics',
+  'friseur', 'friseursalon', 'hair', 'haare', 'barber', 'barbershop', 'nails', 'nail', 'nagelstudio', 'lashes', 'spa',
+  'gmbh', 'mbh', 'ohg', 'inh', 'inhaber', 'team', 'haus', 'design', 'service', 'praxis', 'zentrum', 'center', 'atelier', 'shop', 'store',
+  'kuechen', 'kuechenstudio', 'baeder', 'bad', 'badezimmer', 'garten', 'gartenbau', 'landschaftsbau', 'galabau', 'moebel', 'tischlerei', 'schreinerei',
+  'brautmode', 'hochzeit', 'location', 'event', 'juwelier', 'trauringe', 'folierung', 'aufbereitung', 'kamin', 'ofen', 'zahnarzt', 'zahnaerzte', 'dental',
+  'bielefeld', 'paderborn', 'guetersloh', 'osnabrueck', 'minden', 'herford', 'detmold', 'owl',
+]);
 const norm = (s: string) =>
   s
     .toLowerCase()
@@ -32,11 +41,21 @@ const norm = (s: string) =>
 const tokens = (name: string) => norm(name).split(/[^a-z0-9]+/).filter((t) => t.length >= 3 && !GENERIC.has(t));
 
 const leads = loadLeads();
-const todo = leads.filter((l) => !l.instagram && l.status !== 'ausgeschlossen' && (all || l.dm));
+const todo = leads.filter((l) => !l.instagram && l.status !== 'ausgeschlossen' && (needOnly ? hasNeed(l) && !l.igSearchedAt : all || l.dm));
 let found = 0;
 let cost = 0;
 
-for (const lead of todo) {
+// 4 gleichzeitig, DataForSEO erlaubt deutlich mehr; Zwischenstand alle 50 speichern
+const queue = [...todo];
+let done = 0;
+async function worker() {
+  while (queue.length) {
+    const lead = queue.shift()!;
+    await findOne(lead);
+    if (++done % 50 === 0) saveLeads(leads);
+  }
+}
+async function findOne(lead: (typeof leads)[number]) {
   const keyword = `${lead.name.split(/[-–|•/]/)[0].trim()} ${lead.city ?? ''} instagram`.replace(/\s+/g, ' ').trim();
   const search = () => fetch('https://api.dataforseo.com/v3/serp/google/organic/live/advanced', {
     method: 'POST',
@@ -58,8 +77,9 @@ for (const lead of todo) {
   const task = json.tasks?.[0];
   if (task?.status_code !== 20000) {
     console.log(`${lead.name}: Suche fehlgeschlagen (${task?.status_message ?? res.status})`);
-    continue;
+    return;
   }
+  lead.igSearchedAt = new Date().toISOString();
   const want = tokens(lead.name);
   const hit = (task.result?.[0]?.items ?? [])
     .filter((i) => i.type === 'organic')
@@ -81,5 +101,6 @@ for (const lead of todo) {
   }
 }
 
+await Promise.all(Array.from({ length: 4 }, worker));
 saveLeads(leads);
 console.log(`${found} von ${todo.length} Profilen gefunden. Kosten: ${cost.toFixed(3)} $`);

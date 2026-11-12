@@ -7,7 +7,7 @@
  * Doppelte Betriebe (gleiche Maps-ID oder gleiche Website) werden
  * uebersprungen, bereits angeschriebene bleiben unberuehrt.
  */
-import { loadEnv, loadLeads, saveLeads, slug, type Lead } from './store.mts';
+import { EXCLUDE_NAMES, knownKeys, loadEnv, loadLeads, saveLeads, slug, type Lead } from './store.mts';
 
 interface MapsItem {
   type?: string;
@@ -67,7 +67,7 @@ if (!res.ok || json.status_code !== 20000 || task?.status_code !== 20000) {
 
 const items = (task.result?.[0]?.items ?? []).filter((i) => i.type === 'maps_search' && i.title);
 const leads = loadLeads();
-const known = new Set(leads.flatMap((l) => [l.id, l.website && new URL(l.website).hostname.replace(/^www\./, '')].filter(Boolean)));
+const known = knownKeys();
 const now = new Date().toISOString();
 let added = 0;
 
@@ -81,7 +81,7 @@ for (const it of items) {
   }
   // Instagram- oder Facebook-Seite als "Website" eingetragen: als Handle merken, nicht als Website
   const social = host && /(^|\.)(instagram|facebook)\.com$/.test(host);
-  if (known.has(id) || (host && !social && known.has(host))) continue;
+  if (known.has(id) || (host && !social && known.has(host)) || EXCLUDE_NAMES.test(it.title!)) continue;
   const lead: Lead = {
     id,
     name: it.title!,

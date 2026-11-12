@@ -112,7 +112,7 @@ async function quickScan(lead: Lead): Promise<LeadScan> {
       priority += 3;
     }
     if (!booking) {
-      findings.push('Keine Online-Buchung, Kundinnen müssen anrufen oder schreiben');
+      findings.push('Keine Online-Buchung, man muss anrufen oder schreiben');
       priority += 2;
     }
     if (year && year <= thisYear - 3) {
