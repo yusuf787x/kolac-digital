@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { postJson } from '@/components/seo/admin/api';
 import { db } from '@/lib/firebase';
-import { lintMessage, type OutreachLead } from '@/lib/outreach';
+import { isMailLead, lintMessage, type OutreachLead } from '@/lib/outreach';
 
 type Suggestion = { intent: string; reply: string; next: string };
 type ReplyResult = { optOut?: boolean; saved?: boolean; error?: string } & Partial<Suggestion>;
@@ -101,7 +101,7 @@ export default function ReplyBox({
     }
   };
 
-  const warnings = draft ? lintMessage(draft) : [];
+  const warnings = draft ? lintMessage(draft, { max: isMailLead(lead) ? 1000 : 750 }) : [];
 
   return (
     <div className="mt-3 space-y-3 border-t border-gray-100 pt-3">
@@ -182,7 +182,7 @@ export default function ReplyBox({
               id={`incoming-${lead.id}`}
               rows={3}
               className="input text-base sm:text-sm"
-              placeholder="Nachricht aus Instagram hier einfügen"
+              placeholder={isMailLead(lead) ? "Antwort-Mail hier einfügen" : "Nachricht aus Instagram hier einfügen"}
               value={incoming}
               onChange={(e) => setIncoming(e.target.value)}
             />

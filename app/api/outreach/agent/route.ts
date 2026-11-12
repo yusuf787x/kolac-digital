@@ -82,6 +82,8 @@ async function handlePOST(req: Request) {
       }
       // Ein im Dashboard eingetragenes Instagram-Profil hat Vorrang
       if (cur.instagram) delete data.instagram;
+      // „Kein Instagram“ im Dashboard: das alte Profil und die DM nicht zurueckholen
+      if (cur.channel === 'mail') for (const k of ['instagram', 'ig', 'dm', 'followup']) delete data[k];
       batch.set(refs[i], data, { merge: true });
       updated++;
     });

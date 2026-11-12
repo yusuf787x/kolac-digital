@@ -36,3 +36,8 @@ Die Quellen sind dünn und oft Foren oder Anbieter-Blogs. Sie decken sich aber m
 ## Offene Punkte
 - **Icebreaker aus Beiträgen** brauchen die Profildaten von ScrapeCreators (1 Credit pro Profil). Auf dem Testzugang sind nur noch 9 Credits.
 - **Der Preis für Handwerks- und High-Ticket-Kunden** ist offen. Der Vorschlag in `OFFER-STUDIOS.md` (990 bis 1.490 €) ist für Studios gedacht. Für Küchenstudios und Handwerk ist er wohl zu niedrig.
+
+## Ohne passendes Instagram: per Mail
+Passt das gefundene Profil nicht oder gibt es keins, drückt Yusuf auf der Karte „Kein Instagram“. Der Betrieb wandert in die Ansicht „Per Mail“. „Mail schreiben“ holt die Adresse aus Impressum oder Kontakt (`lib/outreach-email.ts`, Adressen von Buchungsportalen werden ignoriert) und schreibt mit Claude eine Mail mit kurzer Auswertung der Website (`lib/outreach-mail.ts`). Der Aufbau ist derselbe wie bei der DM, nur in Sie-Form und mit Abmelde-Satz, ohne Link und ohne Preis. „In Mail öffnen“ füllt das Mailprogramm vor, Yusuf schickt selbst ab. Findet sich keine Adresse, trägt er sie von Hand ein oder ruft an; die Nummer steht auf der Karte. „Doch per Instagram“ holt das verworfene Profil zurück.
+
+Recht: Werbe-Mails brauchen auch an Firmen eine vorherige Einwilligung (§ 7 Abs. 2 Nr. 2 UWG). Ein berechtigtes Interesse nach DSGVO ändert daran nichts, und eine Auswertung als Aufhänger macht die Mail nicht zur Nicht-Werbung. Das Risiko ist eine Abmahnung. Rechtlich sicherer erreicht man dieselben Betriebe per Anruf (bei Firmen reicht eine mutmaßliche Einwilligung) oder per Brief.

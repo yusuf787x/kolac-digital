@@ -7,14 +7,18 @@ import ReplyBox from '@/components/outreach/ReplyBox';
 import { postJson } from '@/components/seo/admin/api';
 import { branchOf, type Branch } from '@/lib/outreach-playbook';
 import { db } from '@/lib/firebase';
+import { MAIL_MAX } from '@/lib/outreach-mail';
 import {
   OUTREACH_DAILY_LIMIT,
   OUTREACH_FOLLOWUP_DAYS,
   OUTREACH_STATUS_BADGES,
   OUTREACH_STATUS_LABELS,
+  EMAIL_RE,
   instagramSearchUrl,
   instagramUrl,
+  isMailLead,
   lintMessage,
+  mailtoUrl,
   normalizeInstagram,
   type OutreachLead,
   type OutreachStatus,
@@ -22,6 +26,7 @@ import {
 
 const VIEWS = [
   ['schreiben', 'Zu schreiben'],
+  ['mail', 'Per Mail'],
   ['nachfassen', 'Nachfassen'],
   ['gesendet', 'Gesendet'],
   ['antworten', 'Antworten'],
@@ -39,9 +44,11 @@ function inView(l: OutreachLead, v: View): boolean {
   switch (v) {
     case 'schreiben':
       // Ohne Text nur mit geprueftem Bedarf und Instagram, der Text laesst sich auf der Karte schreiben
-      return l.status === 'neu' && (!!l.dm || (!!l.bedarf && !!l.instagram));
+      return l.status === 'neu' && !isMailLead(l) && (!!l.dm || (!!l.bedarf && !!l.instagram));
+    case 'mail':
+      return l.status === 'neu' && isMailLead(l);
     case 'nachfassen':
-      return l.status === 'gesendet' && daysSince(l.sentAt) >= OUTREACH_FOLLOWUP_DAYS && !!l.followup;
+      return l.status === 'gesendet' && daysSince(l.sentAt) >= OUTREACH_FOLLOWUP_DAYS && !!(isMailLead(l) ? l.mailFollowup : l.followup);
     case 'gesendet':
       return l.status === 'gesendet' || l.status === 'nachgefasst';
     case 'antworten':
@@ -53,12 +60,16 @@ function inView(l: OutreachLead, v: View): boolean {
 
 const HIGH_TICKET = new Set<Branch>(['kueche', 'bad', 'galabau', 'tischlerei', 'ausbau', 'hochzeitslocation', 'brautmode', 'aufbereitung', 'juwelier', 'aesthetik']);
 
-/** Mit Text zuerst, dann High-Ticket-Branchen (mehr Auftragswert), dann Instagram und Hebel. */
+/** Mit Text zuerst, dann High-Ticket-Branchen (mehr Auftragswert), dann Instagram oder Mail-Adresse und Hebel. */
 const rank = (l: OutreachLead) =>
-  (l.dm ? 100 : 0) + (HIGH_TICKET.has(branchOf(l)) ? 50 : 0) + (l.instagram ? 20 : 0) + (l.scan?.priority ?? 0);
+  ((isMailLead(l) ? l.mailBody : l.dm) ? 100 : 0) +
+  (HIGH_TICKET.has(branchOf(l)) ? 50 : 0) +
+  ((isMailLead(l) ? l.email : l.instagram) ? 20 : 0) +
+  (l.scan?.priority ?? 0);
 
 const EMPTY: Record<View, string> = {
   schreiben: 'Alle Betriebe mit Text sind angeschrieben. Für neue in Claude Code sagen: „Outreach: Branche, Stadt“.',
+  mail: 'Noch keine Betriebe per Mail. Passt das Instagram-Profil auf einer Karte nicht, dort „Kein Instagram“ drücken: Der Betrieb landet hier und bekommt eine Mail mit Auswertung seiner Website.',
   nachfassen: `Gerade ist niemand dran. Nachgefasst wird einmal, ${OUTREACH_FOLLOWUP_DAYS} Tage nach der ersten Nachricht.`,
   gesendet: 'Noch nichts gesendet.',
   antworten: 'Noch keine Antworten. Antwortet jemand, hier auf „Geantwortet“ setzen und die Antwort Claude zeigen.',
@@ -135,7 +146,7 @@ function OutreachInner() {
       <div>
         <h1 className="text-3xl font-semibold text-gray-900">Outreach</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Instagram-Nachrichten an Betriebe. Text kopieren, Profil öffnen, selbst abschicken, dann „Gesendet“ drücken.
+          Instagram-Nachrichten an Betriebe, ohne passendes Instagram per Mail. Text kopieren oder Mail öffnen, selbst abschicken, dann „Gesendet“ drücken.
         </p>
       </div>
 
@@ -246,8 +257,14 @@ function LeadCard({
   const [handle, setHandle] = useState('');
   const [note, setNote] = useState(l.note ?? '');
   const [drafting, setDrafting] = useState(false);
+  const [email, setEmail] = useState('');
+  const [editEmail, setEditEmail] = useState(false);
+  const [info, setInfo] = useState<string | null>(null);
+  const mail = isMailLead(l);
   const followMode = view === 'nachfassen';
-  const text = followMode ? l.followup : l.status === 'neu' ? l.dm : undefined;
+  const first = mail ? l.mailBody : l.dm;
+  const text = followMode ? (mail ? l.mailFollowup : l.followup) : l.status === 'neu' ? first : undefined;
+  const subject = mail && l.mailSubject ? (followMode ? `Re: ${l.mailSubject}` : l.mailSubject) : '';
   const closed = l.status === 'kein-interesse' || l.status === 'ausgeschlossen';
 
   const run = async (patch: Partial<OutreachLead>) => {
@@ -287,8 +304,24 @@ function LeadCard({
     }
   };
 
+  // Mail-Adresse aus dem Impressum holen und Mail mit Auswertung der Website schreiben
+  const writeMail = async () => {
+    setDrafting(true);
+    setErr(null);
+    setInfo(null);
+    try {
+      const r = await postJson<{ emailFound: boolean }>('/api/outreach/mail', { id: l.id });
+      await onReload(l.id);
+      if (!r.emailFound) setInfo('Keine Mail-Adresse auf der Website gefunden. Bitte im Impressum nachsehen und oben eintragen, oder anrufen.');
+    } catch (e) {
+      setErr(`Keine Mail geschrieben: ${(e as Error).message}`);
+    } finally {
+      setDrafting(false);
+    }
+  };
+
   const now = () => new Date().toISOString();
-  const warnings = text ? lintMessage(text, { first: !l.thread?.length }) : [];
+  const warnings = text ? lintMessage(text, { first: !l.thread?.length, max: mail ? (followMode ? 500 : MAIL_MAX) : 750 }) : [];
   const showReplies = !!l.sentAt || !!l.thread?.length;
   const igIdleDays = l.ig?.lastPostAt ? Math.floor(daysSince(l.ig.lastPostAt)) : null;
   const igInfo = l.ig
@@ -318,7 +351,51 @@ function LeadCard({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {l.instagram ? (
+        {mail ? (
+          l.email && !editEmail ? (
+            <span className="inline-flex flex-wrap items-center gap-1 text-sm">
+              <span className="font-medium text-gray-900">{l.email}</span>
+              {l.status === 'neu' && (
+                <button
+                  type="button"
+                  className="rounded px-2 py-1.5 text-gray-500 hover:text-gray-900"
+                  onClick={() => {
+                    setEmail(l.email ?? '');
+                    setEditEmail(true);
+                  }}
+                >
+                  Ändern
+                </button>
+              )}
+            </span>
+          ) : (
+            <form
+              className="flex flex-wrap items-center gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const v = email.trim().toLowerCase();
+                if (EMAIL_RE.test(v)) run({ email: v }).then(() => setEditEmail(false));
+              }}
+            >
+              <label className="sr-only" htmlFor={`mail-${l.id}`}>
+                Mail-Adresse von {l.name}
+              </label>
+              <input
+                id={`mail-${l.id}`}
+                type="email"
+                className="input w-60 text-base sm:text-sm"
+                placeholder="Mail-Adresse aus dem Impressum"
+                autoComplete="off"
+                enterKeyHint="done"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <button type="submit" className="btn-secondary" disabled={busy || !EMAIL_RE.test(email.trim())}>
+                Speichern
+              </button>
+            </form>
+          )
+        ) : l.instagram ? (
           <a
             href={instagramUrl(l.instagram)}
             target="_blank"
@@ -362,6 +439,11 @@ function LeadCard({
             Website
           </a>
         )}
+        {mail && l.phone && (
+          <a href={`tel:${l.phone.replace(/[^\d+]/g, '')}`} className="whitespace-nowrap px-1 py-2 text-sm text-gray-500 hover:text-gray-900">
+            {l.phone}
+          </a>
+        )}
         {l.mapsUrl && (
           <a href={l.mapsUrl} target="_blank" rel="noopener noreferrer" className="px-1 py-2 text-sm text-gray-500 hover:text-gray-900">
             Google Maps
@@ -369,7 +451,7 @@ function LeadCard({
         )}
       </div>
 
-      {igInfo.length > 0 && (
+      {!mail && igInfo.length > 0 && (
         <p className={`mt-2 text-xs ${igIdleDays !== null && igIdleDays > 180 ? 'text-amber-700' : 'text-gray-500'}`}>
           Instagram: {igInfo.join(' · ')}
           {igIdleDays !== null && igIdleDays > 180 && ' (liest DMs evtl. selten)'}
@@ -386,7 +468,14 @@ function LeadCard({
 
       {text && (
         <div className="mt-3 rounded-lg bg-blue-50 p-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-brand-blue">{followMode ? 'Nachfassen' : 'Nachricht'}</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-brand-blue">
+            {mail ? (followMode ? 'Nachfass-Mail' : 'Mail') : followMode ? 'Nachfassen' : 'Nachricht'}
+          </div>
+          {subject && (
+            <p className="mt-1 text-sm text-gray-900">
+              <span className="text-gray-500">Betreff:</span> {subject}
+            </p>
+          )}
           <p className="mt-1 whitespace-pre-wrap text-[15px] leading-relaxed text-gray-900">{text}</p>
           {warnings.length > 0 && (
             <ul className="mt-2 space-y-0.5 text-xs text-amber-700">
@@ -397,14 +486,19 @@ function LeadCard({
           )}
         </div>
       )}
-      {l.status === 'neu' && !l.dm && (
+      {l.status === 'neu' && !first && (
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <button type="button" className="btn-primary pointer-coarse:h-11" disabled={drafting} onClick={writeDraft}>
-            {drafting ? 'Claude schreibt…' : 'Text schreiben'}
+          <button type="button" className="btn-primary pointer-coarse:h-11" disabled={drafting} onClick={mail ? writeMail : writeDraft}>
+            {drafting ? 'Claude schreibt…' : mail ? 'Mail schreiben' : 'Text schreiben'}
           </button>
-          <span className="text-xs text-gray-500">Nach Branchen-Playbook, dauert etwa 20 Sekunden.</span>
+          <span className="text-xs text-gray-500">
+            {mail
+              ? 'Sucht die Mail-Adresse im Impressum und schreibt eine Mail mit Auswertung der Website, etwa 30 Sekunden.'
+              : 'Nach Branchen-Playbook, dauert etwa 20 Sekunden.'}
+          </span>
         </div>
       )}
+      {info && <p className="mt-2 text-sm text-amber-700">{info}</p>}
 
       {(view === 'antworten' || l.note) && (
         <div className="mt-3">
@@ -424,12 +518,17 @@ function LeadCard({
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
+        {text && mail && l.email && (
+          <a href={mailtoUrl(l.email, subject, text)} className="btn-primary pointer-coarse:h-11">
+            In Mail öffnen
+          </a>
+        )}
         {text && (
-          <button type="button" className="btn-primary pointer-coarse:h-11" onClick={copy}>
+          <button type="button" className={`${mail && l.email ? 'btn-secondary' : 'btn-primary'} pointer-coarse:h-11`} onClick={copy}>
             {copied ? 'Kopiert ✓' : 'Text kopieren'}
           </button>
         )}
-        {l.status === 'neu' && l.dm && (
+        {l.status === 'neu' && first && (
           <button
             type="button"
             className="btn-secondary pointer-coarse:h-11"
@@ -466,9 +565,20 @@ function LeadCard({
               <StatusLink busy={busy} onClick={() => run({ status: 'kein-interesse' })}>
                 Kein Interesse
               </StatusLink>
-              {l.status === 'neu' && l.dm && (
-                <StatusLink busy={busy || drafting} onClick={writeDraft}>
+              {l.status === 'neu' && first && (
+                <StatusLink busy={busy || drafting} onClick={mail ? writeMail : writeDraft}>
                   {drafting ? 'Schreibt…' : 'Neu schreiben'}
+                </StatusLink>
+              )}
+              {l.status === 'neu' && !mail && (
+                // Profil passt nicht oder fehlt: Betrieb wandert in „Per Mail“
+                <StatusLink busy={busy} onClick={() => run({ channel: 'mail', instagram: '', igRejected: l.instagram ?? '' })}>
+                  Kein Instagram
+                </StatusLink>
+              )}
+              {l.status === 'neu' && mail && l.igRejected && (
+                <StatusLink busy={busy} onClick={() => run({ channel: 'instagram', instagram: l.igRejected })}>
+                  Doch per Instagram
                 </StatusLink>
               )}
               {l.status === 'neu' && (

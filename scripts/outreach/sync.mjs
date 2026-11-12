@@ -48,7 +48,7 @@ async function call(body) {
 }
 
 const local = existsSync(STORE) ? JSON.parse(readFileSync(STORE, 'utf8')) : [];
-const MANUAL = ['status', 'sentAt', 'followedUpAt', 'repliedAt', 'note', 'thread'];
+const MANUAL = ['status', 'sentAt', 'followedUpAt', 'repliedAt', 'note', 'thread', 'channel', 'email', 'mailSubject', 'mailBody', 'mailFollowup'];
 
 try {
   if (action === 'pull') {
@@ -65,6 +65,8 @@ try {
         else delete l[k];
       }
       if (r.instagram) l.instagram = r.instagram;
+      // Im Dashboard „Kein Instagram“ gedrueckt: Profil und DM lokal entfernen
+      if (r.channel === 'mail') delete l.instagram;
     }
     const merged = [...byId.values()];
     mkdirSync(dirname(STORE), { recursive: true });

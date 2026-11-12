@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { adminDb } from '@/lib/firebase-admin';
-import { isOptOut, type OutreachLead, type OutreachMessage } from '@/lib/outreach';
+import { isMailLead, isOptOut, type OutreachLead, type OutreachMessage } from '@/lib/outreach';
 import { PLAYBOOKS, PROOF, branchOf } from '@/lib/outreach-playbook';
 import { badRequest, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 
@@ -29,7 +29,13 @@ type Intent = 'interessiert' | 'frage' | 'preis' | 'skeptisch' | 'absage' | 'son
 
 function context(lead: OutreachLead, thread: OutreachMessage[]): string {
   const p = PLAYBOOKS[branchOf(lead)];
+  const mail = isMailLead(lead);
+  const first = mail ? lead.mailBody : lead.dm;
+  const followup = mail ? lead.mailFollowup : lead.followup;
   const lines = [
+    mail
+      ? 'Kanal: E-Mail statt Instagram. Die Antwort ist eine E-Mail: Sie-Form, mit Anrede wie in Yusufs Mail, bis 900 Zeichen, Schluss mit "Viele Grüße" und "Yusuf Kolac". Der Rest gilt wie beschrieben.'
+      : '',
     `Branche: ${p.label}. Was Yusuf baut: ${p.system}. Zielbild: ${p.outcome}.`,
     `Probleme der Branche: ${p.pains.join(' / ')}`,
     `Betrieb: ${lead.name}${lead.city ? `, ${lead.city}` : ''}`,
@@ -38,8 +44,8 @@ function context(lead: OutreachLead, thread: OutreachMessage[]): string {
     lead.website ? `Website: ${lead.website}` : 'Keine eigene Website',
     lead.scan?.findings.length ? `Funde: ${lead.scan.findings.join('; ')}` : '',
     '',
-    `Yusufs erste Nachricht:\n${lead.dm ?? '(nicht gespeichert)'}`,
-    lead.followedUpAt && lead.followup ? `\nYusufs Nachfass-Nachricht:\n${lead.followup}` : '',
+    `Yusufs erste Nachricht:\n${first ?? '(nicht gespeichert)'}`,
+    lead.followedUpAt && followup ? `\nYusufs Nachfass-Nachricht:\n${followup}` : '',
     '',
     'Verlauf danach (älteste zuerst):',
     ...thread.map((m) => `${m.from === 'studio' ? 'Betrieb' : 'Yusuf'}: ${m.text}`),

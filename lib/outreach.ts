@@ -52,8 +52,18 @@ export interface OutreachLead {
   bedarf?: boolean;
   /** Ansprechpartner (Inhaber), falls bekannt, z. B. aus dem alten Leads-Modul. */
   contact?: string;
-  /** Instagram-Name ohne @. */
+  /** Instagram-Name ohne @. Leer, wenn Yusuf „Kein Instagram“ gedrückt hat. */
   instagram?: string;
+  /** "mail": kein (passendes) Instagram, Ansprache per E-Mail mit Auswertung der Website. */
+  channel?: 'mail' | 'instagram';
+  /** Instagram-Name, den Yusuf mit „Kein Instagram“ verworfen hat (für „Doch per Instagram“). */
+  igRejected?: string;
+  /** E-Mail-Adresse aus dem Impressum der Website oder von Yusuf eingetragen. */
+  email?: string;
+  /** E-Mail an den Betrieb (Betreff, Text, Nachfassen), von Claude geschrieben. */
+  mailSubject?: string;
+  mailBody?: string;
+  mailFollowup?: string;
   /** Oeffentliche Profildaten, von Claude Code ausgelesen. */
   ig?: {
     checkedAt: string;
@@ -80,8 +90,8 @@ export interface OutreachLead {
   updatedAt?: string;
 }
 
-/** Felder, die nur im Dashboard gepflegt werden. Ein Push aus Claude Code ueberschreibt sie nie. */
-export const OUTREACH_MANUAL_FIELDS = ['status', 'sentAt', 'followedUpAt', 'repliedAt', 'note', 'thread'] as const;
+/** Felder, die nur im Dashboard gepflegt werden (auch Kanal und Mail-Texte). Ein Push aus Claude Code ueberschreibt sie nie. */
+export const OUTREACH_MANUAL_FIELDS = ['status', 'sentAt', 'followedUpAt', 'repliedAt', 'note', 'thread', 'channel', 'email', 'mailSubject', 'mailBody', 'mailFollowup'] as const;
 
 export const OUTREACH_STATUS_LABELS: Record<OutreachStatus, string> = {
   neu: 'Neu',
@@ -118,6 +128,14 @@ export function normalizeInstagram(raw: string): string {
     .replace(/[/?#].*$/, '');
 }
 
+export const isMailLead = (l: Pick<OutreachLead, 'channel'>) => l.channel === 'mail';
+
+export const EMAIL_RE = /^[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}$/i;
+
+/** Öffnet das Mailprogramm mit Empfänger, Betreff und Text. */
+export const mailtoUrl = (to: string, subject: string, body: string) =>
+  `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
 export const instagramUrl = (handle: string) => `https://www.instagram.com/${encodeURIComponent(handle)}/`;
 export const instagramSearchUrl = (l: Pick<OutreachLead, 'name' | 'city'>) =>
   `https://www.google.com/search?q=${encodeURIComponent(`site:instagram.com "${l.name}" ${l.city ?? ''}`.trim())}`;
@@ -145,12 +163,16 @@ const BANNED: [RegExp, string][] = [
  * Hinweise zu einer DM, bevor sie rausgeht. Nur Hinweise, nichts wird
  * blockiert: Yusuf entscheidet.
  */
-/** first: Erstnachricht oder Nachfassen, bevor das Studio geantwortet hat. Dann gar kein Link. */
-export function lintMessage(text: string, opts: { first?: boolean } = {}): string[] {
+/**
+ * first: Erstnachricht oder Nachfassen, bevor das Studio geantwortet hat. Dann gar kein Link.
+ * max: Zeichengrenze (Instagram 750, E-Mail mehr, weil die Auswertung drinsteht).
+ */
+export function lintMessage(text: string, opts: { first?: boolean; max?: number } = {}): string[] {
   const t = text.trim();
   const out: string[] = [];
   if (!t) return out;
-  if (t.length > 750) out.push(`Mit ${t.length} Zeichen recht lang (Ziel unter 750)`);
+  const max = opts.max ?? 750;
+  if (t.length > max) out.push(`Mit ${t.length} Zeichen recht lang (Ziel unter ${max})`);
   // Erste Nachricht ohne Link (wirkt wie Werbung). In Antworten ist die eigene Case Study erlaubt, fremde Links nie.
   const links = t.match(/(https?:\/\/)?(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)*\.(de|com|net|io|ee|app|co)(\/[^\s]*)?/gi) ?? [];
   if (opts.first && links.length) out.push('Erste Nachricht mit Link (den Link erst schicken, wenn sie antworten)');
