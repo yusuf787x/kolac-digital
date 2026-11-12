@@ -5,6 +5,7 @@
  *
  *   node scripts/outreach/sync.mjs pull   Dashboard → leads.json (Status, Notizen, Instagram)
  *   node scripts/outreach/sync.mjs push   leads.json → Dashboard (neue Betriebe, Prüfung, Texte)
+ *   node scripts/outreach/sync.mjs exclude <id,id,...> "Grund"   noch nicht angeschriebene ausschliessen
  *
  * Das Dashboard ist die Quelle fuer alles, was Yusuf pflegt (Status,
  * Versanddaten, Notizen). Ein Push ueberschreibt das nie, und Texte nur,
@@ -19,8 +20,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const STORE = join(ROOT, 'outreach', 'leads.json');
 const action = process.argv[2];
-if (action !== 'pull' && action !== 'push') {
-  console.error('Aufruf: node scripts/outreach/sync.mjs pull|push');
+if (!['pull', 'push', 'exclude'].includes(action)) {
+  console.error('Aufruf: node scripts/outreach/sync.mjs pull|push|exclude <ids> "Grund"');
   process.exit(1);
 }
 
@@ -73,6 +74,11 @@ try {
       `Geholt: ${remote.length} Betriebe im Dashboard. Gesendet ${count(['gesendet', 'nachgefasst'])}, ` +
         `geantwortet ${count(['geantwortet'])}, Termine ${count(['termin', 'kunde'])}, kein Interesse ${count(['kein-interesse'])}.`,
     );
+  } else if (action === 'exclude') {
+    const ids = String(process.argv[3] ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    if (!ids.length) throw new Error('Keine ids angegeben.');
+    const r = await call({ action: 'exclude', ids, reason: process.argv[4] ?? '' });
+    console.log(`Ausgeschlossen: ${r.excluded} von ${ids.length} (nur Betriebe im Status „neu“). Danach pull.`);
   } else {
     let created = 0;
     let updated = 0;

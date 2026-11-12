@@ -19,6 +19,7 @@ const MAX_BATCH = 400;
  *   { action: "pull" }                  → alle Betriebe
  *   { action: "push", leads: [...] }    → anlegen oder Recherche-Felder aktualisieren
  *   { action: "legacy" }                → alte Cold-Call-Leads (nur lesen)
+ *   { action: "exclude", ids, reason }  → noch nicht angeschriebene Betriebe ausschliessen
  *
  * Ein Push ueberschreibt nie Status, Versanddaten oder Notizen aus dem
  * Dashboard, und Texte nur, solange der Betrieb noch nicht angeschrieben ist.
@@ -89,7 +90,27 @@ async function handlePOST(req: Request) {
     return NextResponse.json({ ok: true, created, updated });
   }
 
-  return badRequest('Unbekannte Aktion. Erlaubt: pull, push.');
+  // Nur Betriebe im Status "neu": was Yusuf schon angeschrieben oder bewertet hat, bleibt unberuehrt
+  if (body?.action === 'exclude') {
+    const { ids, reason } = body as { ids?: unknown; reason?: unknown };
+    if (!Array.isArray(ids) || !ids.every((id) => typeof id === 'string' && /^[\w-]{3,120}$/.test(id))) return badRequest('ids fehlt.');
+    if (ids.length > MAX_BATCH) return badRequest(`Höchstens ${MAX_BATCH} Betriebe pro Aufruf.`);
+    const refs = (ids as string[]).map((id) => db.collection(COL).doc(id));
+    const snaps = refs.length ? await db.getAll(...refs) : [];
+    const batch = db.batch();
+    let excluded = 0;
+    snaps.forEach((snap, i) => {
+      const cur = snap.data() as OutreachLead | undefined;
+      if (!cur || cur.status !== 'neu') return;
+      const note = typeof reason === 'string' && reason.trim() ? reason.trim().slice(0, 200) : '';
+      batch.set(refs[i], { status: 'ausgeschlossen', ...(note && !cur.note ? { note } : {}), updatedAt: new Date().toISOString() }, { merge: true });
+      excluded++;
+    });
+    await batch.commit();
+    return NextResponse.json({ ok: true, excluded });
+  }
+
+  return badRequest('Unbekannte Aktion. Erlaubt: pull, push, legacy, exclude.');
 }
 
 export const POST = safe(handlePOST);
