@@ -145,8 +145,11 @@ export function lintMessage(text: string): string[] {
   const t = text.trim();
   const out: string[] = [];
   if (!t) return out;
-  if (t.length > 650) out.push(`Mit ${t.length} Zeichen recht lang (Ziel unter 650)`);
-  if (/https?:\/\/|www\.|\.de\b\/|\.com\b\//i.test(t)) out.push('Enthält einen Link, in der ersten Nachricht besser keinen');
+  if (t.length > 750) out.push(`Mit ${t.length} Zeichen recht lang (Ziel unter 750)`);
+  // Eigene Case Studys sind erwuenscht, fremde Links wirken wie Spam
+  const links = t.match(/(https?:\/\/)?(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)*\.(de|com|net|io|ee|app|co)(\/[^\s]*)?/gi) ?? [];
+  if (links.some((l) => !/kolac-digital\.de/i.test(l))) out.push('Enthält einen fremden Link');
+  if (links.length > 1) out.push('Mehr als ein Link');
   if (/\d[\d.,]*\s?(€|euro)\b|\bpreis(e)?\b(?! ?(sehen|sieht))/i.test(t) && !/keine preise|weder .*preise|behandlungen und preise|preise sehen/i.test(t)) out.push('Nennt einen Preis');
   for (const [re, label] of BANNED) if (re.test(t)) out.push(label);
   const du = (t.match(/\b(du|dir|dich|dein|deine|deinen|deinem|deiner|deins)\b/g) ?? []).length;

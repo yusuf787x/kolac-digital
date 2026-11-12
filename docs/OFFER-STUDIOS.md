@@ -16,6 +16,16 @@ Kosmetik-, Wimpern-, Nagel- und Beauty-Studios mit 1 bis 3 Personen in OWL. Sie 
 - „Kundinnen sagen kurzfristig ab oder kommen einfach nicht.“
 - „Die gute Arbeit sieht man auf Insta, aber bei Google findet uns keiner Neues.“
 
+## Die größten Probleme (Recherche 12.11.2026)
+Quellen: Reddit (r/Esthetics, r/lashextensions), Branchenberichte, Buchungssoftware-Vergleiche.
+1. **DMs und Anrufe während der Behandlung.** Antwortet das Studio, stört es die Kundin auf der Liege (eine Kundin auf Reddit hat deshalb das Studio gewechselt). Antwortet es nicht, ist die Neue weg: „By the time you reply, they've gone quiet… or booked someone else.“
+2. **Vergessene Termine und kurzfristige Absagen.** Häufigste Ursache: schlichtes Vergessen. „Ein, zwei Lücken pro Woche summieren sich auf Tausende im Jahr.“ Erinnerungen am Vortag und Anzahlungen helfen am meisten.
+3. **Papierkram bei Microneedling, PMU, Laser.** Anamnese, Allergien, Einwilligung gehören vor den Termin, nicht auf Papier am Empfang.
+4. **Provisionen der Portale.** Treatwell bis zu 35 % auf Neukundinnen, Fresha und Booksy 20 bis 30 %.
+5. **Alles auf vier Kanälen.** Instagram, WhatsApp, Telefon, Zettelkalender. Bacara-Case: „Ein System statt fünf.“
+
+Was die Studios schon wissen: dass eine Website gut ist. Was sie nicht im Kopf haben: dass dahinter ein System stecken kann, das ihnen genau diese fünf Dinge abnimmt. Die DM zeigt den Gewinn, nicht die Website.
+
 ## Ergebnis
 Kundinnen buchen selbst, rund um die Uhr, vom Handy. Erinnerungen gehen automatisch raus, das senkt Ausfälle. Das Telefon bleibt in der Behandlung still. Neue Kundinnen finden das Studio bei Google und sehen sofort Behandlungen, Preise und Bewertungen.
 
@@ -28,7 +38,7 @@ Kundinnen buchen selbst, rund um die Uhr, vom Handy. Erinnerungen gehen automati
 Warum das wirkt: Das Studio muss nichts entscheiden, nur hinschauen. Es sieht sein eigenes Studio, nicht eine Beispielseite. Wer einmal seine eigene fertige Seite gesehen hat, will sie behalten.
 
 ## Beweis
-Bacara Ästhetik, Bünde (öffentliche Case Study): Website mit Online-Buchung, **Buchungen verdreifacht, über 800 Termine online gebucht**, Erinnerungen und Bestätigungen automatisch. In DMs ohne Namen: „eine Ästhetik-Praxis in Bünde“.
+Bacara Ästhetik, Bünde (öffentliche Case Study, darf verlinkt werden): **kolac-digital.de/case-studys/bacara-aesthetik**. Wörtlich auf der Seite: „Über 800 Termine online gebucht, ohne einen einzigen Anruf“, „Ein System statt fünf“, Einwilligungen digital auf dem iPad, Erinnerungen und Bewertungsanfragen automatisch. „Buchungen verdreifacht“ steht nur im Portfolio, in DMs lieber die 800 Termine nennen.
 
 ## Kernangebot nach dem Entwurf (Vorschlag)
 | Baustein | Inhalt |
@@ -43,4 +53,4 @@ Bacara Ästhetik, Bünde (öffentliche Case Study): Website mit Online-Buchung, 
 **Garantie (Vorschlag):** Bezahlt wird erst, wenn die Seite online ist und gefällt. Bringt die Online-Buchung in den ersten 90 Tagen keine einzige Buchung, gibt es das Geld zurück.
 
 ## Regeln für die DMs
-Stehen im Skill `instagram-outreach`. Kurz: ein echtes Kompliment aus den Daten, ein konkreter Fund als eigene Beobachtung, das kostenlose Entwurfs-Angebot mit „Gefällt's dir nicht, löschst du den Link“, ein Satz Beweis, eine Ein-Wort-Antwort als Ziel („Magst du?“). Kein Link, kein Preis.
+Stehen im Skill `instagram-outreach`. Kurz: echtes Kompliment aus den Daten, die ein bis zwei Probleme oben, die zu diesem Studio passen (als Wiedererkennen, nicht als Kritik), das System dahinter in einem Satz (selbst buchen, Erinnerung am Vortag, Anamnese vorab am Handy, ein Kalender), Case-Link, kostenloser Entwurf ohne Haken, eine Ein-Wort-Frage. Kein Preis, keine fremden Links.
