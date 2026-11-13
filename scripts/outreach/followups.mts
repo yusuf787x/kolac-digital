@@ -2,7 +2,7 @@
  * Nachfass-Nachrichten fuer alle angeschriebenen Instagram-Betriebe (Status "gesendet")
  * vorschreiben, passend zur DM, die laut Dashboard wirklich rausging.
  *
- *   npx tsx scripts/outreach/followups.mts [--alle] [--probe]
+ *   npx tsx scripts/outreach/followups.mts [--ids a,b] [--probe]
  *
  * Ohne --alle nur Betriebe ohne Nachfass-Text oder mit einem, der vor dem Versand
  * zusammen mit der DM entstand (also alle, die noch nicht nachgefasst sind).
@@ -15,6 +15,8 @@ import type { OutreachLead } from '../../lib/outreach.ts';
 import { loadEnv } from './store.mts';
 
 const probe = process.argv.includes('--probe');
+const idsArg = process.argv[process.argv.indexOf('--ids') + 1];
+const onlyIds = process.argv.includes('--ids') ? new Set(String(idsArg).split(',')) : null;
 loadEnv(['ANTHROPIC_API_KEY', 'KOLAC_PORTAL_TOKEN']);
 const portalUrl = String(JSON.parse(readFileSync(join(process.cwd(), '.kolac-portal.json'), 'utf8')).portalUrl ?? '').replace(/\/$/, '');
 
@@ -30,7 +32,7 @@ async function call<T>(body: unknown): Promise<T> {
 }
 
 const { leads } = await call<{ leads: OutreachLead[] }>({ action: 'pull' });
-const todo = leads.filter((l) => l.status === 'gesendet' && l.channel !== 'mail' && l.instagram && l.dm);
+const todo = leads.filter((l) => l.status === 'gesendet' && l.channel !== 'mail' && l.instagram && l.dm && (!onlyIds || onlyIds.has(l.id)));
 console.log(`${todo.length} Nachfass-Texte zu schreiben.`);
 if (probe) process.exit(0);
 // Schnittstelle bereit? Sonst gingen die geschriebenen Texte am Ende verloren.

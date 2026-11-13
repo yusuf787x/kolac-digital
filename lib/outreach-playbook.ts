@@ -530,6 +530,10 @@ export function followupContext(lead: OutreachLead & { contact?: string }, branc
     visitLine(lead),
     '',
     `Erste Nachricht, die Yusuf geschickt hat:\n${lead.dm ?? '(nicht gespeichert)'}`,
+    // Die alte Pruefung hat "Nicht sicher" oft falsch gemeldet (http-Adresse aus Google Maps)
+    /nicht sicher|https/i.test(lead.dm ?? '') && lead.scan?.https !== false
+      ? 'Wichtig: Den Punkt „Nicht sicher“ / HTTPS aus der ersten Nachricht NICHT wiederholen, er hat sich als ungenau herausgestellt. Nimm einen anderen Punkt.'
+      : '',
     '',
     'Schreib die Nachfass-Nachricht.',
   ]

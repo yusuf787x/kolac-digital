@@ -126,7 +126,7 @@ async function handlePOST(req: Request) {
     if (!Array.isArray(updates) || updates.length > MAX_BATCH) return badRequest('updates fehlt.');
     const valid = updates.filter(
       (u): u is { id: string; instagram: string | null } =>
-        !!u && typeof u.id === 'string' && /^[\w-]{3,120}$/.test(u.id) && (u.instagram === null || (typeof u.instagram === 'string' && /^[A-Za-z0-9_.]{2,30}$/.test(u.instagram))),
+        !!u && typeof u.id === 'string' && /^[\w-]{3,120}$/.test(u.id) && (u.instagram === null || (typeof u.instagram === 'string' && /^[A-Za-z0-9_.]{2,30}$/.test(u.instagram) && !/^\d+$/.test(u.instagram))),
     );
     const refs = valid.map((u) => db.collection(COL).doc(u.id));
     const snaps = refs.length ? await db.getAll(...refs) : [];

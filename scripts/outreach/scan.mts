@@ -40,7 +40,7 @@ const IG_SKIP = new Set(['p', 'reel', 'reels', 'explore', 'stories', 'accounts',
 function instagramHandle(html: string): string | undefined {
   for (const m of html.matchAll(/instagram\.com\/([A-Za-z0-9_.]{2,30})/gi)) {
     const h = m[1].replace(/\.$/, '');
-    if (!IG_SKIP.has(h.toLowerCase()) && !/\.(php|js|css|html?)$/i.test(h)) return h;
+    if (!IG_SKIP.has(h.toLowerCase()) && !/\.(php|js|css|html?)$/i.test(h) && !/^\d+$/.test(h)) return h;
   }
   return undefined;
 }

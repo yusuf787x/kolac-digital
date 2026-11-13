@@ -56,7 +56,8 @@ const IG_SKIP = new Set(['p', 'reel', 'reels', 'explore', 'stories', 'accounts',
 const handlesIn = (html: string) =>
   [...html.matchAll(/instagram\.com\/([A-Za-z0-9_.]{2,30})/gi)]
     .map((m) => m[1].replace(/\.$/, ''))
-    .filter((h) => !IG_SKIP.has(h.toLowerCase()) && !/\.(php|js|css|html?)$/i.test(h));
+    // Reine Zahlen sind Seiten-IDs aus Einbettungen, kein Profilname
+    .filter((h) => !IG_SKIP.has(h.toLowerCase()) && !/\.(php|js|css|html?)$/i.test(h) && !/^\d+$/.test(h));
 
 const httpsFirst = async (url: string, timeoutMs = 12_000) => {
   const s = url.replace(/^http:\/\//i, 'https://');
