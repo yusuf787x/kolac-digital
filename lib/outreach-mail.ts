@@ -4,7 +4,7 @@
  * und etwas foermlicher. Genutzt von /api/outreach/mail.
  */
 import type { OutreachLead } from './outreach';
-import { PLAYBOOKS, branchOf, findingLines, proofLines, type Branch } from './outreach-playbook';
+import { PLAYBOOKS, branchOf, findingLines, proofLines, visitLine, type Branch } from './outreach-playbook';
 
 export const MAIL_MAX = 1600;
 
@@ -15,12 +15,12 @@ Der Aufhänger ist eine kurze, ehrliche Auswertung der Website des Betriebs (ode
 Aufbau:
 1. Anrede: "Hallo Frau <Nachname>," oder "Hallo Herr <Nachname>," wenn ein Ansprechpartner bekannt ist (Geschlecht nur, wenn eindeutig, sonst "Hallo <Vorname> <Nachname>,"), sonst "Hallo zusammen,". Nie einen Namen erfinden.
 2. Icebreaker, ein Satz, konkret aus den Daten: Spezialisierung, Standort, Bewertungen. Ehrlich, kein Schleimen.
-3. "Ich habe einen kurzen Scan über Ihre Website laufen lassen, dabei sind mir <zwei oder drei> Dinge aufgefallen:" und dann die Funde als kurze Liste mit "- ". Je Punkt: was auffällt und in einem Halbsatz, was es den Betrieb kostet (Anfragen, Anrufe, Zeit, Google-Platz). Nur Funde aus den Daten, in einfachen Worten, ohne Fachbegriffe, nie herablassend. Ohne eigene Website: sagen, dass Sie den Betrieb bei Google gefunden haben, aber keine eigene Seite (nur den Eintrag, ggf. Instagram), und was das bedeutet.
+3. "Ich habe einen kurzen Scan über Ihre Website laufen lassen, dabei sind mir ein paar Dinge aufgefallen:" und dann ALLE Funde aus der Nutzer-Nachricht als kurze Liste mit "- ". Je Punkt: was auffällt und in einem Halbsatz, was es den Betrieb kostet (Anfragen, Anrufe, Zeit, Google-Platz). Nur Funde aus den Daten, in einfachen Worten, ohne Fachbegriffe, nie herablassend. Ohne eigene Website: sagen, dass Sie den Betrieb bei Google gefunden haben, aber keine eigene Seite (nur den Eintrag, ggf. Instagram), und was das bedeutet.
 4. "Ich bin Yusuf Kolac aus Bielefeld und baue <Branche> <das System in Kurzform>, komplett fertig."
 5. Der Schmerz in ihren Worten: "Viele <Branche>, mit denen ich spreche, sagen mir: „…“" mit EINEM Problem aus der Liste, das zu den Funden passt.
-6. Das Angebot: Die Funde behebt Yusuf kostenlos bzw. baut das Fehlende kostenlos ein (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, damit <Zielbild>. Gefällt er nicht, wird der Link gelöscht, ohne Rechnung und ohne Verkaufsgespräch.
+6. Das Angebot: Die Funde behebt Yusuf kostenlos bzw. baut das Fehlende kostenlos ein (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, damit <Zielbild>. In der Nähe (siehe "Nähe"): Yusuf kommt vorbei und zeigt den Entwurf vor Ort, in einer Viertelstunde. Gefällt er nicht, ist er weg, ohne Rechnung und ohne Verkaufsgespräch. Nie behaupten, der Entwurf sei schon fertig.
 7. Beweis in einem Satz ohne Link: der Beweis aus der Nutzer-Nachricht, sinngemäß in Sie-Form ("habe" statt "hab"). Keine anderen Zahlen oder Kunden erfinden, keinen Kundennamen nennen. Ist ein lokaler Bezug angegeben, darf er als Halbsatz dazu.
-8. "Ich liefere lieber erst, dann reden wir." und eine kurze Frage, ob Yusuf den Entwurf bauen soll.
+8. "Ich liefere lieber erst, dann reden wir." und eine kurze Frage: in der Nähe, wann es passt, dass Yusuf vorbeikommt, sonst ob er den Entwurf bauen soll.
 9. "Falls das gerade kein Thema ist, reicht eine kurze Antwort, dann melde ich mich nicht wieder."
 10. "Viele Grüße" und in der nächsten Zeile "Yusuf Kolac".
 
@@ -73,6 +73,7 @@ export function mailContext(lead: OutreachLead, branch: Branch = branchOf(lead))
     lead.rating ? `Google: ${lead.rating} Sterne bei ${lead.reviews ?? '?'} Bewertungen` : '',
     lead.website ? 'Eigene Website: vorhanden' : 'Keine eigene Website, nur der Google-Eintrag',
     findingLines(lead),
+    visitLine(lead),
     ...scanFacts(lead),
     '',
     'Schreib die erste Mail und die Nachfass-Mail.',

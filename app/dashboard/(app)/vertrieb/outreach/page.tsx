@@ -59,7 +59,7 @@ function inView(l: OutreachLead, v: View): boolean {
   }
 }
 
-const HIGH_TICKET = new Set<Branch>(['kueche', 'bad', 'galabau', 'tischlerei', 'ausbau', 'hochzeitslocation', 'brautmode', 'aufbereitung', 'juwelier', 'aesthetik']);
+const HIGH_TICKET = new Set<Branch>(['kueche', 'bad', 'galabau', 'tischlerei', 'ausbau', 'hochzeitslocation', 'brautmode', 'aufbereitung', 'kfz', 'juwelier', 'aesthetik']);
 
 /** Mit Text zuerst, dann High-Ticket-Branchen (mehr Auftragswert), dann Instagram oder Mail-Adresse und Hebel. */
 const rank = (l: OutreachLead) =>

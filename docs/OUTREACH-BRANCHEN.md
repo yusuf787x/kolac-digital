@@ -24,25 +24,25 @@ Die Quellen sind dünn und oft Foren oder Anbieter-Blogs. Sie decken sich aber m
 1. Hey + Vorname (nur wenn bekannt, nie erfinden)
 2. Icebreaker aus Beitrag oder Bio, sonst aus Spezialisierung, Standorten oder Bewertungen
 3. „Ich bin Yusuf, ich bau <Branche> <System>, komplett für euch.“
-4. Scan: „Ich hab mal einen kurzen Scan über eure Seite laufen lassen …“ und der wichtigste Fund (höchstens zwei), z. B. „Nicht sicher“ im Browser, keine Online-Buchung, keine eigene Website (nur Google und Instagram)
+4. Scan: „Ich hab mal einen kurzen Scan über deine Seite laufen lassen:“ und alle Funde (bis vier) als kurze Liste, z. B. „Nicht sicher“ im Browser, keine Online-Buchung, langsame Antwort, keine Beschreibung für Google, keine eigene Website (nur Google und Instagram)
 5. Schmerz als Brücke: „Das hör ich oft, die meisten <Branche> sagen mir: „…““
-6. Den Fund behebt Yusuf kostenlos bzw. baut das Fehlende kostenlos ein, direkt im Entwurf für <Betrieb>, damit <Zielbild>. Gefällt er nicht: Link löschen, kein Stress.
+6. Die Funde behebt Yusuf kostenlos bzw. baut das Fehlende kostenlos ein, direkt im Entwurf für <Betrieb>, damit <Zielbild>. **In OWL (`isNearby`): Yusuf zeigt den Entwurf vor Ort**, Schlussfrage „Wann passt es dir, dass ich vorbeikomme?“. Nie behaupten, der Entwurf sei schon fertig.
 7. Beweis ohne Link und ohne Namen, passend zum Betrieb (siehe unten)
 8. „Ich liefer lieber erst, dann reden wir.“ und eine kurze Frage
 9. LG Yusuf
 
-600 bis 820 Zeichen, kein Link, kein Preis. Ohne Funde fällt Punkt 4 weg. Was Yusuf je Fund kostenlos anbietet, steht in `FIX` (`lib/outreach-playbook.ts`). Die Case Study kommt erst in der Antwort. Claude überspringt Betriebe, die nicht passen, etwa Einkaufszentren, Ketten oder eine Waschstraße statt eines Aufbereiters.
+650 bis 950 Zeichen, kein Link, kein Preis. Ohne Funde fällt Punkt 4 weg. Was Yusuf je Fund kostenlos anbietet, steht in `FIX` (`lib/outreach-playbook.ts`). Die Case Study kommt erst in der Antwort. Claude überspringt Betriebe, die nicht passen, etwa Einkaufszentren, Ketten oder eine Waschstraße statt eines Aufbereiters.
 
 ### Welche Referenz?
-`referenceFor` in `lib/outreach-playbook.ts` wählt je Betrieb: zuerst passende Branche, dann gleiche Stadt, sonst Bacara (größter Erfolg). Liegt eine andere Referenz in derselben Stadt, darf sie als Halbsatz mit rein („in Paderborn hab ich auch schon …“).
+`referenceFor` in `lib/outreach-playbook.ts` wählt je Betrieb: zuerst die Branche (aus Kategorie und Name, erst dann aus der Suche), bei mehreren Referenzen in der Branche entscheidet das Stichwort (Ausbeulen → MC-Autopflege, Werkstatt → Motorenfachmann). Ohne passende Branche wählt Claude aus allen Referenzen die nächstliegende. Liegt eine andere Referenz in derselben Stadt, darf sie als Halbsatz mit rein („in Paderborn hab ich auch schon …“).
 
 | Referenz | Für | Beweis |
 |---|---|---|
 | Bacara Ästhetik, Bünde | Kosmetik, Friseur, Ästhetik, Brautmode, Location, Juwelier | über 800 Termine online, ohne Anruf |
-| MC-Autopflege, Herford | Aufbereitung | Ladezeit-Note Handy 99 statt 68, eigene Seiten für Leistungen und 12 Orte (neu, noch keine Anfrage-Zahlen) |
+| MC-Autopflege, Herford | Aufbereitung, Smart-Repair, Ausbeulen, Lack | Ladezeit-Note Handy 99 statt 68, eigene Seiten für Leistungen und 12 Orte (neu, noch keine Anfrage-Zahlen) |
 | CarHiFi Herford | Küche, Bad, GaLaBau, Tischlerei, Ausbau | 74 % mehr Anfragen, vorsortiert |
 | PaderPuls, Paderborn | Fahrdienste, Pflege, Paderborn | spürbar mehr Anfragen und Anrufe |
-| Motorenfachmann, Lage | Kfz, Werkstatt | Onpage-Check 95 statt 60 Prozent |
+| Motorenfachmann, Lage | Kfz-Werkstatt, Motoren | Onpage-Check 95 statt 60 Prozent |
 | Fahrschule Kreuzer, Bielefeld | Fahrschulen, Bielefeld | Anmeldungen online statt nur per Anruf |
 | AF-Gebäudeservice, OWL | Reinigung | Anfragen auch außerhalb der Bürozeiten |
 | Pader Automobilzentrum, Paderborn | nur lokaler Bezug | Website und Google-Profil von null |

@@ -18,6 +18,7 @@ export type Branch =
   | 'hochzeitslocation'
   | 'brautmode'
   | 'aufbereitung'
+  | 'kfz'
   | 'juwelier'
   | 'sonstiges';
 
@@ -183,6 +184,19 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     outcome: 'Anfragen mit allen Infos, feste Termine statt Chat-Ping-Pong, und mehr Kunden über Google',
     freebie: 'eine Vorschau seiner Seite mit Vorher-Nachher-Bildern und Terminanfrage',
   },
+  kfz: {
+    label: 'Kfz-Betrieb: Werkstatt, Smart-Repair, Ausbeulen, Lackierer',
+    plural: 'Kfz-Betriebe',
+    anrede: 'du',
+    system: 'Website, auf der Kunden Fahrzeug und Fotos vom Schaden hochladen und direkt einen Termin anfragen, jede Leistung mit eigener Seite, damit Google dich für Dellen, Kratzer oder Reparatur in deiner Stadt findet',
+    pains: [
+      'Ständig Anrufe: Was kostet die Delle? Und dann muss ich die Fotos erst per WhatsApp hinterherfragen',
+      'Ich bin mitten in der Arbeit am Auto, das Telefon klingelt, und der Kunde ruft einfach den Nächsten an',
+      'Bei Google stehen Ketten und Portale vor mir, obwohl ich hier der Spezialist bin',
+    ],
+    outcome: 'Anfragen mit Fotos und Fahrzeugdaten, weniger Telefon in der Werkstatt und mehr Kunden über Google',
+    freebie: 'eine Vorschau seiner Seite mit Leistungen, Vorher-Nachher-Bildern und Anfrage mit Foto-Upload',
+  },
   juwelier: {
     label: 'Juwelier, Trauringe',
     plural: 'Juweliere',
@@ -217,15 +231,39 @@ const RULES: [RegExp, Branch][] = [
   [/hochzeitsloc|eventloc|location|veranstaltung|wedding venue|event venue|banquet|festsaal/i, 'hochzeitslocation'],
   [/braut|bridal/i, 'brautmode'],
   [/aufbereit|folier|detailing|car wash|keramikversiegel|wrap/i, 'aufbereitung'],
+  [/kfz|ausbeul|beulen|dellen|smart.?repair|lackier|karosserie|autowerkstatt|werkstatt|reifen|autoglas|autoservice|motoren|car repair|auto repair|body shop/i, 'kfz'],
   [/juwel|trauring|goldschmied|jewel/i, 'juwelier'],
   [/friseur|barb|hair salon|haarstudio|coiffeur|hairdresser/i, 'friseur'],
   [/kosmetik|beaut|nagel|nail|wimpern|lash|brow|spa|massage|wellness|waxing|sugaring|haarentfern|hair removal|permanent|make-up|fuß|fuss|podolog|foot|tanning|facial|tattoo|piercing/i, 'kosmetik'],
 ];
 
+/**
+ * Branche zuerst aus Kategorie und Name (was der Betrieb ist), erst dann aus
+ * der Suche, ueber die er gefunden wurde. Sonst wird z. B. ein Ausbeulservice,
+ * der bei "Fahrzeugaufbereitung Gütersloh" auftaucht, zum Aufbereiter.
+ */
 export function branchOf(lead: Pick<OutreachLead, 'category' | 'query' | 'name'>): Branch {
-  const text = `${lead.category ?? ''} ${lead.query ?? ''} ${lead.name}`;
-  return RULES.find(([re]) => re.test(text))?.[1] ?? 'sonstiges';
+  const own = `${lead.category ?? ''} ${lead.name}`;
+  return (
+    RULES.find(([re]) => re.test(own))?.[1] ??
+    RULES.find(([re]) => re.test(lead.query ?? ''))?.[1] ??
+    'sonstiges'
+  );
 }
+
+/** Orte, in die Yusuf ab Bielefeld vorbeifahren kann (rund eine Stunde), klein geschrieben. */
+const NEARBY = [
+  'bielefeld', 'herford', 'bünde', 'buende', 'gütersloh', 'guetersloh', 'paderborn', 'detmold', 'lemgo', 'lage',
+  'bad salzuflen', 'löhne', 'loehne', 'bad oeynhausen', 'minden', 'enger', 'spenge', 'hiddenhausen', 'kirchlengern',
+  'rödinghausen', 'vlotho', 'verl', 'harsewinkel', 'rheda', 'wiedenbrück', 'schloß holte', 'schloss holte', 'stukenbrock',
+  'oerlinghausen', 'leopoldshöhe', 'halle (westf', 'halle westf', 'werther', 'steinhagen', 'versmold', 'borgholzhausen',
+  'delbrück', 'salzkotten', 'bad lippspringe', 'schlangen', 'horn-bad meinberg', 'blomberg', 'extertal', 'kalletal',
+  'barntrup', 'dörentrup', 'augustdorf', 'porta westfalica', 'lübbecke', 'espelkamp', 'hüllhorst', 'preußisch oldendorf',
+  'rietberg', 'langenberg', 'herzebrock', 'bad driburg', 'hövelhof', 'büren', 'bad wünnenberg', 'altenbeken', 'höxter',
+  'osnabrück', 'melle', 'bad essen', 'bückeburg', 'rinteln', 'hameln',
+];
+
+export const isNearby = (city?: string) => !!city && NEARBY.some((c) => city.toLowerCase().includes(c));
 
 // --- Referenzen: passender Beweis je Betrieb ---
 
@@ -269,7 +307,8 @@ export const REFERENCES: Reference[] = [
     name: 'MC-Autopflege',
     city: 'herford',
     who: 'einen Autoaufbereiter',
-    branches: ['aufbereitung'],
+    branches: ['aufbereitung', 'kfz'],
+    match: /beul|dell|smart.?repair|lackier|polier|folier|aufbereit|autopflege|fahrzeugpflege|detailing|keramik|car wash/i,
     proof: 'Für einen Autoaufbereiter in Herford hab ich gerade die alte Website komplett neu gebaut: Google bewertet die Ladezeit auf dem Handy jetzt mit 99 statt 68 von 100, und jede Leistung und zwölf Orte drumherum haben eine eigene Seite. (Die Seite ist neu, darum keine Zahlen zu Anfragen nennen.)',
     url: 'kolac-digital.de/portfolio/mc-autopflege',
   },
@@ -298,8 +337,8 @@ export const REFERENCES: Reference[] = [
     name: 'Motorenfachmann',
     city: 'lage',
     who: 'einen Kfz-Meisterbetrieb',
-    branches: [],
-    match: /kfz|werkstatt|motor|autohaus|autoservice|reifen/i,
+    branches: ['kfz'],
+    match: /motor|getriebe|werkstatt|kfz-meister|autohaus|autoservice|reifen|kfz/i,
     proof: 'Für einen Kfz-Meisterbetrieb in Lage hab ich die Website für Google aufgeräumt: Die Startseite steht im Onpage-Check jetzt bei 95 statt 60 Prozent.',
     url: 'kolac-digital.de/portfolio/motorenfachmann',
   },
@@ -345,26 +384,43 @@ const sameCity = (r: Reference, city?: string) => !!city && city.toLowerCase().i
 export function referenceFor(
   lead: Pick<OutreachLead, 'category' | 'query' | 'name' | 'city'>,
   branch: Branch = branchOf(lead),
-): { main: Reference; local?: Reference } {
-  const text = `${lead.category ?? ''} ${lead.query ?? ''} ${lead.name}`;
+): { main: Reference; local?: Reference; exact: boolean } {
+  const own = `${lead.category ?? ''} ${lead.name}`;
   const usable = REFERENCES.filter((r) => !r.localOnly);
-  const main =
-    usable.find((r) => r.branches.includes(branch) || r.match?.test(text)) ??
-    usable.find((r) => sameCity(r, lead.city)) ??
-    usable[0];
+  // Zuerst die Branche; gibt es dort mehrere Referenzen, entscheidet das Stichwort
+  // (Ausbeulen → MC-Autopflege, Werkstatt → Motorenfachmann). Stichworte allein
+  // nur bei "sonstiges", sonst wird aus "Gartenpflege" ein Krankenfahrdienst.
+  const inBranch = usable.filter((r) => r.branches.includes(branch));
+  const exact =
+    inBranch.find((r) => r.match?.test(own)) ??
+    inBranch[0] ??
+    (branch === 'sonstiges' ? usable.find((r) => r.match?.test(own)) : undefined);
+  const main = exact ?? usable.find((r) => sameCity(r, lead.city)) ?? usable[0];
   const local = REFERENCES.find((r) => r !== main && sameCity(r, lead.city));
-  return { main, local };
+  return { main, local, exact: !!exact };
 }
 
 /** Zeilen fuer den Kontext der ersten Nachricht (ohne Link). */
 export function proofLines(lead: Pick<OutreachLead, 'category' | 'query' | 'name' | 'city'>, branch: Branch = branchOf(lead)): string[] {
-  const { main, local } = referenceFor(lead, branch);
+  const { main, local, exact } = referenceFor(lead, branch);
+  const proof = exact
+    ? `Beweis (nur diesen, sinngemäß, ohne Namen und ohne Link): ${main.proof}`
+    : `Beweis: Keine Referenz aus genau dieser Branche. Nimm aus dieser Liste den einen, der dem Betrieb am nächsten kommt (ähnliche Kunden, ähnliches Problem), sinngemäß, ohne Namen und ohne Link:\n${REFERENCES.filter((r) => !r.localOnly)
+        .map((r) => `- ${r.proof}`)
+        .join('\n')}`;
   return [
-    `Beweis (nur diesen, sinngemäß, ohne Namen und ohne Link): ${main.proof}`,
+    proof,
     local
       ? `Lokaler Bezug (optional, höchstens ein Halbsatz, ohne Namen): Yusuf hat in ${lead.city} auch schon für ${local.who} gearbeitet.`
       : '',
   ];
+}
+
+/** Hinweis fuer den Kontext: in der Naehe den Entwurf vor Ort zeigen. */
+export function visitLine(lead: Pick<OutreachLead, 'city'>): string {
+  return isNearby(lead.city)
+    ? `Nähe: ${lead.city} liegt in Yusufs Gegend (OWL). Er baut den Entwurf und zeigt ihn persönlich vor Ort, Schlussfrage: wann es passt, dass er vorbeikommt.`
+    : 'Nähe: nicht in Yusufs Gegend. Den Entwurf schickt er als Link zum Anschauen am Handy.';
 }
 
 // --- Scan-Funde als Aufhaenger mit kostenlosem Angebot ---
@@ -403,6 +459,7 @@ export function pitchFindings(lead: Pick<OutreachLead, 'website' | 'instagram' |
 export function findingLines(lead: Pick<OutreachLead, 'website' | 'instagram' | 'scan'>): string {
   const f = pitchFindings(lead);
   if (!f.length) return 'Funde des Scans: keine, also den Scan-Teil weglassen.';
+  f.splice(4);
   return `Funde des Scans, wichtigster zuerst, mit dem, was Yusuf kostenlos dafür macht:\n${f.map((x) => `- ${x.finding} → ${x.fix}`).join('\n')}`;
 }
 
@@ -416,16 +473,16 @@ Aufbau der ersten Nachricht (nach einer bewährten LinkedIn-Vorlage, für Instag
 1. "Hey <Vorname>," wenn ein Vorname bekannt ist, sonst "Hey ihr," oder "Hey," (bei Sie-Form "Hallo Frau/Herr <Nachname>," oder "Hallo,"). Nie einen Namen erfinden.
 2. Icebreaker, ein Satz, so persönlich wie möglich und nur aus den Daten. Vorrang: ein Beitrag oder die Bio, dann Spezialisierung aus Name und Kategorie (z. B. Keramikversiegelung, Massivholz, Scheunenhochzeit), Standorte, Jahre im Geschäft, erst zuletzt die Bewertungen. Ehrlich, konkret, kein Schleimen, keine Floskel wie "das gibt's nicht geschenkt".
 3. "Ich bin Yusuf, ich bau <Branche> <das System in Kurzform>, komplett für euch." (Anrede anpassen.)
-4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über eure Seite laufen lassen, dabei ist mir aufgefallen: …". Dann der wichtigste Fund in einfachen Worten, höchstens zwei. Ohne eigene Website: "Ich hab euch bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
+4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über deine Seite laufen lassen, dabei ist mir aufgefallen:". Dann ALLE Funde aus der Nutzer-Nachricht als kurze Liste mit "- ", je Punkt ein kurzer Halbsatz in einfachen Worten, gern mit der Folge (z. B. "- Der Browser zeigt „Nicht sicher“ an, da springen viele direkt ab"). Ohne eigene Website: "Ich hab dich bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
 5. Der Schmerz in ihren Worten, als Brücke vom Fund: "Das hör ich oft, die meisten <Branche> sagen mir: „…“" mit EINEM Problem aus der Liste, das zum Fund und zum Betrieb passt, als wörtliches Zitat in „…“.
-6. Das Angebot: Den Fund behebt Yusuf kostenlos bzw. baut das fehlende Feature kostenlos ein (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, damit <Zielbild>. Gefällt er nicht: Link löschen, kein Stress.
+6. Das Angebot: Die Funde behebt Yusuf kostenlos bzw. baut das Fehlende kostenlos ein (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, damit <Zielbild>. In der Nähe (siehe "Nähe"): Yusuf kommt vorbei und zeigt den Entwurf vor Ort, dauert eine Viertelstunde. Sonst: Er schickt den Link. Gefällt er nicht: weg damit, kein Stress. Nie behaupten, der Entwurf sei schon fertig.
 7. Beweis in einem Satz ohne Link: der Beweis aus der Nutzer-Nachricht, sinngemäß und in der gewählten Anrede. Nur diesen Beweis, keine anderen Zahlen oder Kunden erfinden, keinen Kundennamen nennen. Ist ein lokaler Bezug angegeben, darf er als Halbsatz dazu.
-8. "Ich liefer lieber erst, dann reden wir." und eine kurze Schlussfrage ("Wie sieht's aus?", "Lust drauf?", "Soll ich?").
+8. "Ich liefer lieber erst, dann reden wir." und eine kurze Schlussfrage. In der Nähe nach dem Termin fragen ("Wann passt es dir, dass ich kurz vorbeikomme?", "Wann bist du am besten im Laden?"), sonst "Lust drauf?" oder "Soll ich?".
 9. "LG Yusuf"
 Ohne Funde: Punkt 4 weglassen, nach Punkt 3 direkt der Schmerz ("Die meisten <Branche>, mit denen ich spreche, sagen mir: „…“"), dann der kostenlose Entwurf.
 
 Regeln:
-- 600 bis 820 Zeichen inklusive Grußformel. Kurze Absätze, Instagram-Ton: locker, ehrlich, wie ein Mensch, nicht wie Werbung.
+- 650 bis 950 Zeichen inklusive Grußformel (mit der Liste der Funde darf es länger sein als ohne). Kurze Absätze, Instagram-Ton: locker, ehrlich, wie ein Mensch, nicht wie Werbung.
 - Funde nur so stark formulieren, wie sie tragen: keine pauschalen Urteile über Baukästen (nicht "Wix ist langsam"), keine erfundenen Messwerte, keine Fachbegriffe ("HTTPS" nur in Klammern hinter "Browser zeigt ‚Nicht sicher‘").
 - Kein Link, keine Domain, keine E-Mail-Adresse, kein Preis, keine Emojis außer höchstens einem.
 - Keine Floskeln ("Ich hoffe, es geht dir gut", "kurze Frage", "Sehr geehrte"), keine Versprechen wie "garantiert" oder "100 %".
@@ -434,7 +491,7 @@ Regeln:
 
 Nicht schreiben, wenn der Betrieb nicht passt: Einkaufszentrum, Kette oder Filiale eines Konzerns, Waschstraße statt Aufbereiter, keine Branche aus der Liste, oder die Daten widersprechen sich. Dann nur {"skip": "kurzer Grund für Yusuf"} ausgeben.
 
-Nachfass-Nachricht: höchstens 260 Zeichen, gleiche Anrede, "falls untergegangen", Entwurf kostenlos, eine Frage, und "wenn nicht, alles gut, dann meld ich mich nicht nochmal".
+Nachfass-Nachricht: höchstens 300 Zeichen, gleiche Anrede, "falls untergegangen", Entwurf kostenlos (in der Nähe: zeig ich dir vor Ort), eine Frage, und "wenn nicht, alles gut, dann meld ich mich nicht nochmal".
 
 Antworte ausschließlich mit einem JSON-Objekt, ohne Text davor oder danach:
 {"dm": "…", "followup": "…"} oder {"skip": "…"}`;
@@ -458,6 +515,7 @@ export function draftContext(lead: OutreachLead & { contact?: string }, branch =
     typeof lead.ig?.followers === 'number' ? `Follower: ${lead.ig.followers}` : '',
     lead.website ? `Website: vorhanden` : 'Keine eigene Website',
     findingLines(lead),
+    visitLine(lead),
     '',
     'Schreib die erste Nachricht und die Nachfass-Nachricht.',
   ];

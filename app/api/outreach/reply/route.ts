@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { adminDb } from '@/lib/firebase-admin';
 import { isMailLead, isOptOut, type OutreachLead, type OutreachMessage } from '@/lib/outreach';
-import { PLAYBOOKS, branchOf, referenceFor } from '@/lib/outreach-playbook';
+import { PLAYBOOKS, REFERENCES, branchOf, referenceFor, visitLine } from '@/lib/outreach-playbook';
 import { badRequest, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 
 export const runtime = 'nodejs';
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 const COL = 'outreachLeads';
 
 /** Fester Teil, damit er gecacht werden kann. Alles Betriebsbezogene steht in der Nutzer-Nachricht. */
-const SYSTEM = `Du schreibst Instagram-Antworten für Yusuf Kolac (Kolac Digital, Bielefeld). Yusuf baut lokalen Betrieben in OWL ein System aus Website, Anfragen oder Online-Buchung und Automatisierung, komplett für sie. Er hat den Betrieb per Instagram-DM angeschrieben und ihm einen kostenlosen Entwurf seiner Website angeboten: mit den eigenen Bildern, Leistungen und Google-Bewertungen, als Link zum Anschauen am Handy. Gefällt der Entwurf nicht, wird der Link gelöscht, ohne Rechnung, ohne Vertrag, ohne Verkaufsgespräch. Was Yusuf der jeweiligen Branche baut, welche Probleme sie hat und welche Referenz (mit Link) zu diesem Betrieb passt, steht in der Nutzer-Nachricht. Nur diese Referenz nennen, keine anderen Kunden oder Zahlen erfinden.
+const SYSTEM = `Du schreibst Instagram-Antworten für Yusuf Kolac (Kolac Digital, Bielefeld). Yusuf baut lokalen Betrieben in OWL ein System aus Website, Anfragen oder Online-Buchung und Automatisierung, komplett für sie. Er hat den Betrieb per Instagram-DM angeschrieben und ihm einen kostenlosen Entwurf seiner Website angeboten: mit den eigenen Bildern, Leistungen und Google-Bewertungen, als Link zum Anschauen am Handy oder, wenn der Betrieb in der Nähe ist, persönlich vor Ort (siehe "Nähe" in der Nutzer-Nachricht; dann bei Interesse einen Termin zum Vorbeikommen ausmachen). Gefällt der Entwurf nicht, wird der Link gelöscht, ohne Rechnung, ohne Vertrag, ohne Verkaufsgespräch. Was Yusuf der jeweiligen Branche baut, welche Probleme sie hat und welche Referenz (mit Link) zu diesem Betrieb passt, steht in der Nutzer-Nachricht. Nur diese Referenz nennen, keine anderen Kunden oder Zahlen erfinden.
 
 Ziel jeder Antwort: das Gespräch einen kleinen Schritt weiterbringen.
 - Sagt der Betrieb Ja oder zeigt Interesse: bedanken, kurz sagen, was als Nächstes passiert ("Ich nehm eure Bilder von Insta und die Leistungen von eurer Seite, in ein paar Tagen schick ich euch den Link"), höchstens eine Frage stellen, die Yusuf wirklich braucht (z. B. ob es ein Buchungs- oder Anfragesystem gibt, das bleiben soll).
@@ -30,7 +30,7 @@ type Intent = 'interessiert' | 'frage' | 'preis' | 'skeptisch' | 'absage' | 'son
 function context(lead: OutreachLead, thread: OutreachMessage[]): string {
   const branch = branchOf(lead);
   const p = PLAYBOOKS[branch];
-  const ref = referenceFor(lead, branch).main;
+  const { main: ref, exact } = referenceFor(lead, branch);
   const mail = isMailLead(lead);
   const first = mail ? lead.mailBody : lead.dm;
   const followup = mail ? lead.mailFollowup : lead.followup;
@@ -40,7 +40,10 @@ function context(lead: OutreachLead, thread: OutreachMessage[]): string {
       : '',
     `Branche: ${p.label}. Was Yusuf baut: ${p.system}. Zielbild: ${p.outcome}.`,
     `Probleme der Branche: ${p.pains.join(' / ')}`,
-    `Referenz für diesen Betrieb: ${ref.name}. ${ref.proof} Link (der Case-Study-Link oben): ${ref.url}`,
+    exact
+      ? `Referenz für diesen Betrieb: ${ref.name}. ${ref.proof} Link (der Case-Study-Link oben): ${ref.url}`
+      : `Referenzen (nimm die, die Yusuf in seiner ersten Nachricht genannt hat, sonst die passendste): ${REFERENCES.filter((r) => !r.localOnly).map((r) => `${r.name}: ${r.proof} Link: ${r.url}`).join(' | ')}`,
+    visitLine(lead),
     `Betrieb: ${lead.name}${lead.city ? `, ${lead.city}` : ''}`,
     lead.rating ? `Google: ${lead.rating} Sterne bei ${lead.reviews ?? '?'} Bewertungen` : '',
     lead.instagram ? `Instagram: @${lead.instagram}${lead.ig?.bio ? `, Bio: ${lead.ig.bio.replace(/\n/g, ' / ')}` : ''}` : '',

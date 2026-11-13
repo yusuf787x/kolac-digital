@@ -4,6 +4,8 @@
  *
  *   npx tsx scripts/outreach/draft.mts [--max 50] [--alt 60] [--probe] [--neu-schreiben]
  *
+ * --vorhandene: nur Betriebe, die schon einen Text haben, neu schreiben (z. B. nach einer Aenderung am Aufbau)
+ *
  * --alt N: vom Altbestand (alte Cold-Call-Leads) nur die N mit den meisten Bewertungen
  *
  * Nur Betriebe im Status "neu" mit Instagram-Profil und Bedarf (hasNeed), die
@@ -23,6 +25,7 @@ const flag = (name: string) => {
 const max = Number(flag('--max') ?? 1000);
 const probe = args.includes('--probe');
 const rewrite = args.includes('--neu-schreiben');
+const onlyExisting = args.includes('--vorhandene');
 
 loadEnv(['ANTHROPIC_API_KEY']);
 if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY fehlt in .env.local.');
@@ -32,7 +35,7 @@ const leads = loadLeads();
 const altMax = Number(flag('--alt') ?? Infinity);
 const isAlt = (l: { query: string }) => l.query.startsWith('Altbestand');
 const open = leads
-  .filter((l) => l.status === 'neu' && l.instagram && hasNeed(l) && (rewrite || !l.dm))
+  .filter((l) => l.status === 'neu' && l.instagram && hasNeed(l) && (onlyExisting ? !!l.dm : rewrite || !l.dm))
   .sort((a, b) => (b.reviews ?? 0) - (a.reviews ?? 0));
 const todo = [...open.filter((l) => !isAlt(l)), ...open.filter(isAlt).slice(0, altMax)].slice(0, max);
 console.log(`${todo.length} Texte zu schreiben.`);
