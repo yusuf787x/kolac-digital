@@ -97,6 +97,7 @@ Grundlage war ein TermLabs-Abgleich der Google-Treffer (de-de):
 | /webseiten/kosmetikstudio | webseite kosmetikstudio erstellen lassen | kleine Agenturen und Blogs | Bacara Ästhetik |
 | /webseiten/fahrdienst | webseite fahrdienst erstellen lassen | Software-Anbieter, Vorlagen, Pinterest, kaum Agenturen | PaderPuls |
 | /webseiten/kfz-werkstatt | webseite kfz werkstatt erstellen lassen | Website-Dienste, Baukästen, ADAC, Rechnungssoftware | Motorenfachmann, CarHiFi Herford |
+| /webseiten/autoaufbereitung | webseite autoaufbereitung erstellen lassen | Baukästen (Yola, design.com, Brandcrowd), Verbandsartikel, eine dünne Agentur-Projektseite, ab Platz 10 Aufbereiter selbst (TermLabs 13.11.2026) | MC-Autopflege, CarHiFi Herford, Motorenfachmann |
 
 **Stadtseiten** unter `/webdesign/{stadt}`, Inhalte in `lib/staedte-seiten.ts`.
 Bielefeld selbst ist /webseiten.

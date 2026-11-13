@@ -511,6 +511,103 @@ export const branchenSeiten: BranchenSeite[] = [
     ],
     formSource: 'Branchenseite Kfz-Werkstatt',
   },
+  {
+    slug: 'autoaufbereitung',
+    name: 'Autoaufbereitung',
+    zielgruppe: 'Autoaufbereiter',
+    metaTitle:
+      'Webseite für Autoaufbereitung erstellen lassen · mit Terminanfrage | Kolac Digital',
+    metaDescription:
+      'Webseite für deine Autoaufbereitung: Pakete, Vorher-Nachher-Bilder, Anfrage mit Fotos und Terminwunsch, schnell geladen und in deiner Stadt gefunden. Referenz: MC-Autopflege Herford.',
+    eyebrow: 'Webseite für Autoaufbereitung',
+    h1: 'Webseite für deine Autoaufbereitung, die deine Arbeit zeigt und Kunden bringt.',
+    intro:
+      'Wer sein Auto professionell aufbereiten lassen will, sucht bei Google nach Autoaufbereitung, Autoreinigung oder Lackaufbereitung in seiner Stadt und entscheidet nach dem, was er sieht. Er will sehen, wie deine Ergebnisse aussehen, was deine Dienstleistungen umfassen und wie er schnell an einen Termin kommt. Wir erstellen dir eine Website, die das auf einen Blick zeigt, am Handy sofort lädt und Kunden mit allen Infos zu dir bringt. Für Autoaufbereiter, Unternehmen der Fahrzeugaufbereitung und Fahrzeugpflege sowie Autopflege-Betriebe in ganz Deutschland.',
+    problemsTitle: 'Kennst du das aus deiner Aufbereitung?',
+    problems: [
+      'Jeden Tag die gleiche Nachricht: Was kostet Keramik für meinen Golf? Ohne Fotos, ohne Zustand, und nach deinem Preis kommt nichts mehr.',
+      'Du polierst gerade, das Handy klingelt, und die Nachrichten verteilen sich auf WhatsApp, Instagram und Telefon.',
+      'Auf Instagram sieht man deine Arbeit, aber bei Google findet dich für Lackaufbereitung in deiner Stadt keiner.',
+      'Deine Online-Präsenz aus dem Baukasten ist alt, lädt am Handy ewig und zeigt nicht, was du kannst.',
+      'Kunden halten deine Fahrzeugreinigung für eine Waschstraße und sehen nicht, wie viel Handarbeit in jeder Aufbereitung steckt, von der Reinigung bis zum Schutz des Lacks.',
+    ],
+    featuresTitle: 'Was die Website deiner Autoaufbereitung kann.',
+    featuresIntro:
+      'Bei der Autoaufbereitung verkauft das Ergebnis: Glanz, sauberer Innenraum, geschützter Lack. Deshalb baut die Seite auf deinen Fotos und deinen Leistungen auf, und das Formular liefert dir alles Wichtige vorab.',
+    features: [
+      {
+        icon: '✨',
+        title: 'Vorher-Nachher, das überzeugt',
+        text: 'Deine Ergebnisse als Galerie zu jeder Leistung, von der Innenreinigung über die Politur bis zur Versiegelung. Echte Fotos von deinen Fahrzeugen und deinem Team statt Stockbilder, das Fotoshooting vor Ort ist bei uns dabei.',
+      },
+      {
+        icon: '📦',
+        title: 'Leistungen und Pakete klar erklärt',
+        text: 'Innenreinigung, Außenreinigung, Komplettaufbereitung, Lackaufbereitung mit Politur, Lackschutz durch Keramikversiegelung, Smart-Repair oder Leasingrückgabe: Jede Dienstleistung mit Ablauf, Vorteilen und, wenn du willst, deinem Ab-Preis. Kunden sehen sofort den Unterschied zur Waschstraße.',
+      },
+      {
+        icon: '📸',
+        title: 'Formular mit Fahrzeug und Fotos',
+        text: 'Marke, Modell, Zustand, Wunschpaket und Fotos vom Lack oder Innenraum: Das Formular fragt alles ab, was du für ein ehrliches Angebot brauchst. Dazu ein Wunschdatum, damit aus dem ersten Kontakt direkt ein Termin wird.',
+      },
+      {
+        icon: '📍',
+        title: 'Gefunden in deiner Stadt und Umgebung',
+        text: 'Mehr Sichtbarkeit durch eine eigene Seite für jede Leistung und Ortsseiten für dein Einzugsgebiet, jeweils mit Fahrstrecke zu dir. Dazu dein Google-Unternehmensprofil mit Bewertungen und Öffnungszeiten.',
+      },
+      {
+        icon: '⚡',
+        title: 'Schnell auf dem Handy',
+        text: 'Die meisten Kunden suchen am Handy. Bei MC-Autopflege in Herford bewertet Google die Ladezeit auf dem Handy jetzt mit 99 statt 68 von 100, der Hauptinhalt steht nach 1,2 statt 8,2 Sekunden.',
+      },
+      {
+        icon: '⭐',
+        title: 'Vertrauen auf den ersten Blick',
+        text: 'Deine Bewertungen zufriedener Kunden von Google und anderen Portalen zusammengefasst, Jahre im Geschäft, Marken und Fahrzeuge, die du pflegst. Ein professioneller Auftritt mit eigenem Design statt Vorlage, damit Kunden wissen, wem sie ihr Auto anvertrauen.',
+      },
+    ],
+    portfolioSlug: 'mc-autopflege',
+    weitereReferenzen: ['carhifi-herford', 'motorenfachmann'],
+    faqs: [
+      {
+        question: 'Was gehört auf die Webseite einer Autoaufbereitung?',
+        answer:
+          'Deine Leistungen einzeln erklärt, Vorher-Nachher-Bilder, Adresse mit Öffnungszeiten, eine anklickbare Telefonnummer zum direkten Anrufen und ein Formular, in dem Kunden Fahrzeug, Zustand und Fotos angeben. Dazu deine Bewertungen und ein paar Worte über dich und dein Unternehmen. Bei der Fahrzeugaufbereitung entscheiden Kunden mit den Augen, deshalb gehören die Fotos nach vorne.',
+      },
+      {
+        question: 'Können Kunden direkt online einen Termin anfragen oder buchen?',
+        answer:
+          'Ja. Für einfache Leistungen wie eine Innenreinigung bucht der Kunde direkt einen freien Platz in deinem Kalender. Für eine Lackaufbereitung ist ein Formular mit Fotos meist besser, weil du den Zustand des Lacks sehen willst, bevor du dich festlegst. Beides lässt sich kombinieren.',
+      },
+      {
+        question: 'Soll ich meine Preise auf die Website schreiben?',
+        answer:
+          'Ab-Preise für feste Leistungen helfen: Interessenten sortieren sich selbst vor und melden sich gezielter. Bei Keramikversiegelung, Smart-Repair oder stark verschmutzten Fahrzeugen bleibt es beim Angebot nach Begutachtung. Wir zeigen dir im Erstgespräch, wie andere Aufbereiter das lösen.',
+      },
+      {
+        question: 'Ich habe schon eine Website. Verliere ich beim Wechsel meine Google-Platzierungen?',
+        answer:
+          'Nicht, wenn der Umzug sauber läuft. Bei MC-Autopflege sind alle bisherigen Adressen und Seitentitel gleich geblieben, alte Links leiten auf die passende neue Seite weiter, und die Sitemap war am ersten Tag bei Google eingereicht. Die Platzierungen messen wir vor und nach dem Umzug.',
+      },
+      {
+        question: 'Wie wird meine Autoaufbereitung bei Google gefunden?',
+        answer:
+          'Mit einer eigenen Seite für jede Leistung, Ortsseiten für dein Einzugsgebiet, Texten für Suchen wie Autoreinigung oder Aufbereitung plus Ort, schneller Technik und einem gepflegten Google-Unternehmensprofil. Einen garantierten ersten Platz verspricht niemand seriös, aber Google versteht dann eindeutig, was du anbietest und wo.',
+      },
+      {
+        question: 'Was kostet es, eine Webseite für eine Autoaufbereitung erstellen zu lassen?',
+        answer: kostenAntwort(
+          'Eine Seite mit Paketen, Bildern und Anfrageformular',
+          'eine Seite mit vielen Leistungs- und Ortsseiten oder Online-Buchung',
+        ),
+      },
+      {
+        question: 'Mein Betrieb ist nicht in OWL. Geht das trotzdem?',
+        answer: deutschlandweitAntwort,
+      },
+    ],
+    formSource: 'Branchenseite Autoaufbereitung',
+  },
 ];
 
 export function findBranchenSeite(slug: string): BranchenSeite | undefined {

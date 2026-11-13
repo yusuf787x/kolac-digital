@@ -8,12 +8,19 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ## 13.11.2026
 
+### Neue Seite
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Branchenseite „Webseite für Autoaufbereitung“ mit typischen Problemen von Aufbereitern, Funktionen, häufigen Fragen und MC-Autopflege als Referenz, Text nach einer Analyse der Google-Treffer abgestimmt | Gefunden bei Suchen wie „Webseite Autoaufbereitung erstellen lassen“, dort stehen bisher vor allem Baukästen | [Branchenseite](https://www.kolac-digital.de/webseiten/autoaufbereitung) |
+| ✅ | Branchenseite auf der Startseite und in der Sitemap verlinkt, die Projektseite von MC-Autopflege verweist darauf | Besucher und Google finden die neue Seite | [Startseite](https://www.kolac-digital.de/#branchen) [Sitemap](https://www.kolac-digital.de/sitemap-pages.xml) |
+
 ### Portfolio
 
 | Status | Änderung | Nutzen | Nachweis |
 |---|---|---|---|
-| 🟡 | Neues Projekt im Portfolio: MC-Autopflege aus Herford, neue Website mit Vorher-Nachher-Vergleich der Ladezeit (Google-Note auf dem Handy 99 statt 68 von 100) und Link zum Original-Bericht | Interessenten sehen ein weiteres echtes Projekt mit messbarem Ergebnis, und Google findet eine weitere Referenz aus OWL | [Projekt](https://www.kolac-digital.de/portfolio/mc-autopflege) |
-| 🟡 | Projektliste für KI-Suchsysteme (llms.txt) um MC-Autopflege, Motorenfachmann und Pader Automobilzentrum ergänzt | ChatGPT, Perplexity und Co. kennen alle aktuellen Projekte | [llms.txt](https://www.kolac-digital.de/llms.txt) |
+| ✅ | Neues Projekt im Portfolio: MC-Autopflege aus Herford, neue Website mit Vorher-Nachher-Vergleich der Ladezeit (Google-Note auf dem Handy 99 statt 68 von 100) und Link zum Original-Bericht | Interessenten sehen ein weiteres echtes Projekt mit messbarem Ergebnis, und Google findet eine weitere Referenz aus OWL | [Projekt](https://www.kolac-digital.de/portfolio/mc-autopflege) |
+| ✅ | Projektliste für KI-Suchsysteme (llms.txt) um MC-Autopflege, Motorenfachmann und Pader Automobilzentrum ergänzt | ChatGPT, Perplexity und Co. kennen alle aktuellen Projekte | [llms.txt](https://www.kolac-digital.de/llms.txt) |
 
 ## 11.11.2026
 
