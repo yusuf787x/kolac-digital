@@ -21,9 +21,9 @@ export interface BeforeAfterSide {
   score: number;
   /** Datum oder kurzer Zusatz, z.B. "28.10.2026, 4 kritische Probleme". */
   note: string;
-  /** Screenshot des Original-Berichts als Beleg. Pfad ab /public. */
-  image: string;
-  imageAlt: string;
+  /** Screenshot des Original-Berichts als Beleg. Pfad ab /public. Fehlt, wenn es keinen gibt (z.B. alte Seite schon abgeschaltet). */
+  image?: string;
+  imageAlt?: string;
 }
 
 export interface BeforeAfter {
@@ -31,10 +31,14 @@ export interface BeforeAfter {
   headline: string;
   /** Was gemessen wurde und womit. */
   measure: string;
+  /** Einheit hinter den Werten, Standard " %". Fuer Google-Noten z.B. "/100". */
+  unit?: string;
   before: BeforeAfterSide;
   after: BeforeAfterSide;
-  /** Teilbereiche, die sich veraendert haben (Prozentwerte). */
+  /** Teilbereiche, die sich veraendert haben (Werte von 0 bis 100). */
   metrics: { label: string; before: number; after: number }[];
+  /** Optional: Links zum Original-Bericht, z.B. PageSpeed Insights. */
+  proofLinks?: { label: string; url: string }[];
 }
 
 export interface PortfolioProject {
@@ -120,6 +124,68 @@ export const portfolioProjects: PortfolioProject[] = [
       'PaderPuls Krankenfahrdienst Paderborn · Rebranding und Relaunch · Kolac Digital',
     metaDescription:
       'Wie Kolac Digital für PaderPuls aus Paderborn die veraltete Webseite durch ein modernes Rebranding mit SEO und GEO ersetzt hat. Mehr Sichtbarkeit, mehr Anfragen, mehr Anrufe.',
+  },
+  {
+    slug: 'mc-autopflege',
+    company: 'MC-Autopflege',
+    category: 'Autoaufbereitung, Versiegelung und Smart-Repair',
+    location: 'Herford',
+    tag: 'Relaunch mit SEO',
+    overviewImage: '/images/portfolio/mc-autopflege.webp',
+    imageAlt:
+      'Neue Startseite von MC-Autopflege aus Herford: „Professionelle Autoaufbereitung in Herford“ mit Telefonnummer und Anruf-Knopf',
+    services: [
+      'Website komplett neu gebaut, im bekannten MC-Stil',
+      'Ladezeit-Note auf dem Handy von 68 auf 99',
+      'Eigene Seiten für jede Leistung und 12 Orte rund um Herford',
+      'Alle alten Adressen erhalten, damit keine Platzierung verloren geht',
+    ],
+    keyWin:
+      'Eine technisch veraltete Seite durch eine schnelle, für Google gebaute Website ersetzt: Ladezeit-Note auf dem Handy von 68 auf 99, aus 13 Seiten wurden 31.',
+    link: 'https://www.mc-autopflege.de/',
+    linkText: 'Website ansehen',
+    intro:
+      'MC-Autopflege ist seit 2002 der Autoaufbereiter in Herford: Innen- und Außenreinigung, Hochglanzpolitur, Keramikversiegelung und Smart-Repair für Autos aller Marken, dazu Wohnmobile und Oldtimer. Wir haben die alte Baukasten-Seite durch eine neue Website ersetzt, die schnell lädt, jede Leistung erklärt und bei Google auch außerhalb von Herford gefunden werden soll.',
+    situation:
+      'Bei Google lag MC-Autopflege in Herford vorne, aber vor allem wegen des alten Namens, nicht wegen der Website. Die Seite war technisch veraltet und lange nicht gepflegt: Auf dem Handy war der Hauptinhalt erst nach 8,2 Sekunden zu sehen, jede Seite hatte dieselben fünf Hauptüberschriften aus dem Seitenfuß, die Telefonnummer war nirgends anklickbar und die Leistungsseiten hatten oft unter 150 Wörter eigenen Text. Außerhalb von Herford, etwa in Bünde, Löhne oder Bielefeld, war der Betrieb kaum sichtbar.',
+    approach: [
+      'Neue Website im bekannten MC-Stil: helle Seiten, blaue Bänder, die Telefonnummer oben auf jeder Seite und auf dem Handy mit einem Tipp anrufbar.',
+      'Jede Leistung mit eigener Seite, Ablauf und Antworten auf häufige Fragen. Neu dazu: Wohnmobil-Aufbereitung, Oldtimerpflege, Ozonbehandlung sowie Polster- und Lederreinigung, dazu eine Preisliste mit allen Paketen.',
+      '12 Ortsseiten von Hiddenhausen bis Gütersloh, jeweils mit echter Fahrstrecke und Fahrzeit nach Herford.',
+      '27 Fotos aus dem Fotoshooting und zwei Videos statt Symbolbildern. Die Bewertungen von Google und ProvenExpert stehen zusammengefasst auf der Seite: 4,7 von 5 Sternen aus 193 Bewertungen.',
+      'Umzug ohne Verlust: Alle bisherigen Adressen und Seitentitel sind gleich geblieben, 16 alte Links leiten auf die passende neue Seite weiter, die Sitemap ist bei Google eingereicht.',
+      'Kontaktformular mit Prüfung der Eingaben, Spamschutz und automatischer Bestätigung an den Kunden. Kein Tracking, darum auch keine Cookie-Abfrage, die Besucher wegklicken müssen.',
+    ],
+    outcome:
+      'Die neue Seite lädt auf dem Handy in 1,2 statt 8,2 Sekunden, und Google bewertet Ladezeit, Barrierefreiheit und Suchmaschinen-Grundlagen jeweils mit 99 bis 100 von 100. Aus 13 dünnen Seiten wurden 31 Seiten mit echtem Inhalt, die Google eindeutig zuordnen kann: Herford, Autoaufbereitung, Keramikversiegelung, Smart-Repair und die Orte drumherum. Die Website ist seit November 2026 online. Wie sich Anfragen und Platzierungen entwickeln, sieht MC-Autopflege jeden Monat im Kundenportal.',
+    beforeAfter: {
+      headline: 'Ladezeit-Note auf dem Handy von 68 auf 99',
+      measure:
+        'Googles Ladezeit-Messung (Lighthouse) der Startseite auf dem Handy: alte Website am 05.11.2026, neue Website am 12.11.2026. Ab 90 ist die Note grün.',
+      unit: '/100',
+      before: {
+        score: 68,
+        note: '05.11.2026 · Hauptinhalt nach 8,2 Sekunden',
+      },
+      after: {
+        score: 99,
+        note: '12.11.2026 · Hauptinhalt nach 1,2 Sekunden',
+      },
+      metrics: [
+        { label: 'Ladezeit Handy', before: 68, after: 99 },
+        { label: 'Ladezeit Computer', before: 94, after: 100 },
+      ],
+      proofLinks: [
+        {
+          label: 'Bericht der neuen Seite bei Google (Handy)',
+          url: 'https://pagespeed.web.dev/analysis/https-www-mc-autopflege-de/7qi06i03ig?form_factor=mobile',
+        },
+      ],
+    },
+    metaTitle:
+      'MC-Autopflege Herford · Relaunch mit SEO · Projekt von Kolac Digital',
+    metaDescription:
+      'Wie Kolac Digital für MC-Autopflege in Herford die veraltete Website neu gebaut hat: Ladezeit-Note auf dem Handy von 68 auf 99, 31 statt 13 Seiten, Ortsseiten für OWL.',
   },
   {
     slug: 'motorenfachmann',

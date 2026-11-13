@@ -423,6 +423,8 @@ function BeforeAfterBlock({ data }: { data: BeforeAfter }) {
     { key: 'before', label: 'Vorher', side: data.before },
     { key: 'after', label: 'Nachher', side: data.after },
   ] as const;
+  const unit = data.unit ?? ' %';
+  const proofs = sides.filter(({ side }) => side.image);
   return (
     <div className="portfolio-detail-block">
       <div className="section-label">VORHER UND NACHHER</div>
@@ -433,7 +435,10 @@ function BeforeAfterBlock({ data }: { data: BeforeAfter }) {
         {sides.map(({ key, label, side }) => (
           <div key={key} className={`portfolio-ba-score portfolio-ba-score-${key}`}>
             <span className="portfolio-ba-score-label">{label}</span>
-            <span className="portfolio-ba-score-value">{side.score} %</span>
+            <span className="portfolio-ba-score-value">
+              {side.score}
+              {unit}
+            </span>
             <span className="portfolio-ba-score-note">{side.note}</span>
           </div>
         ))}
@@ -445,7 +450,8 @@ function BeforeAfterBlock({ data }: { data: BeforeAfter }) {
             <dt>{m.label}</dt>
             <dd>
               <span className="portfolio-ba-values">
-                {m.before} % → <strong>{m.after} %</strong>
+                {m.before}
+                {unit} → <strong>{m.after}{unit}</strong>
               </span>
               <span className="portfolio-ba-track" aria-hidden="true">
                 <span
@@ -466,12 +472,13 @@ function BeforeAfterBlock({ data }: { data: BeforeAfter }) {
         <span className="portfolio-ba-legend-after" aria-hidden="true" /> nachher
       </p>
 
+      {proofs.length > 0 && (
       <div className="portfolio-ba-proof">
-        {sides.map(({ key, label, side }) => (
+        {proofs.map(({ key, label, side }) => (
           <figure key={key}>
             <Image
-              src={side.image}
-              alt={side.imageAlt}
+              src={side.image!}
+              alt={side.imageAlt ?? ''}
               width={1216}
               height={320}
               className="portfolio-ba-proof-image"
@@ -483,6 +490,19 @@ function BeforeAfterBlock({ data }: { data: BeforeAfter }) {
           </figure>
         ))}
       </div>
+      )}
+      {data.proofLinks?.length ? (
+        <p className="portfolio-ba-legend">
+          {data.proofLinks.map((l, i) => (
+            <span key={l.url}>
+              {i > 0 && ' · '}
+              <a href={l.url} target="_blank" rel="noopener noreferrer">
+                {l.label}
+              </a>
+            </span>
+          ))}
+        </p>
+      ) : null}
     </div>
   );
 }

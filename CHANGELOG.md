@@ -6,6 +6,15 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ---
 
+## 13.11.2026
+
+### Portfolio
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| 🟡 | Neues Projekt im Portfolio: MC-Autopflege aus Herford, neue Website mit Vorher-Nachher-Vergleich der Ladezeit (Google-Note auf dem Handy 99 statt 68 von 100) und Link zum Original-Bericht | Interessenten sehen ein weiteres echtes Projekt mit messbarem Ergebnis, und Google findet eine weitere Referenz aus OWL | [Projekt](https://www.kolac-digital.de/portfolio/mc-autopflege) |
+| 🟡 | Projektliste für KI-Suchsysteme (llms.txt) um MC-Autopflege, Motorenfachmann und Pader Automobilzentrum ergänzt | ChatGPT, Perplexity und Co. kennen alle aktuellen Projekte | [llms.txt](https://www.kolac-digital.de/llms.txt) |
+
 ## 11.11.2026
 
 ### Neue Seite

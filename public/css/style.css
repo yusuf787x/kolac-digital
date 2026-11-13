@@ -4161,6 +4161,11 @@
   margin-left: 12px;
   background: var(--color-blue);
 }
+.portfolio-ba-legend a {
+  color: var(--color-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .portfolio-ba-proof {
   display: flex;
   flex-direction: column;
