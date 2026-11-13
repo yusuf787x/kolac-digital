@@ -2,7 +2,10 @@
  * Die ersten N Betriebe der Dashboard-Liste „Schreiben“ gruendlich pruefen und neu texten.
  *
  *   node scripts/outreach/sync.mjs pull
- *   NODE_OPTIONS=--conditions=react-server npx tsx scripts/outreach/check.mts [--top 20] [--ab 0] [--probe]
+ *   NODE_OPTIONS=--conditions=react-server npx tsx scripts/outreach/check.mts [--top 20] [--ab 0] [--ungeprueft] [--probe]
+ *
+ * --ungeprueft: nur Betriebe ohne SEO-Check (schon gepruefte ueberspringen)
+ * --mit-text:   nur Betriebe, die schon einen Text haben
  *   node scripts/outreach/sync.mjs push && node scripts/outreach/sync.mjs pull
  *
  * Je Betrieb:
@@ -31,6 +34,8 @@ const flag = (n: string) => {
 const top = Number(flag('--top') ?? 20);
 const from = Number(flag('--ab') ?? 0);
 const probe = args.includes('--probe');
+const onlyUnchecked = args.includes('--ungeprueft');
+const withText = args.includes('--mit-text');
 
 // Gleiche Reihenfolge wie die Ansicht „Schreiben“ im Dashboard
 const HIGH_TICKET = new Set<Branch>(['kueche', 'bad', 'galabau', 'tischlerei', 'ausbau', 'hochzeitslocation', 'brautmode', 'aufbereitung', 'kfz', 'juwelier', 'aesthetik']);
@@ -38,7 +43,7 @@ const inSchreiben = (l: Lead) => l.status === 'neu' && l.channel !== 'mail' && (
 const rank = (l: Lead) => (l.dm ? 100 : 0) + (HIGH_TICKET.has(branchOf(l as never)) ? 50 : 0) + (l.instagram ? 20 : 0) + (l.scan?.priority ?? 0);
 
 const leads = loadLeads();
-const list = leads.filter(inSchreiben).sort((a, b) => rank(b) - rank(a) || a.name.localeCompare(b.name, 'de'));
+const list = leads.filter((l) => inSchreiben(l) && (!onlyUnchecked || typeof l.scan?.seoScore !== 'number') && (!withText || !!l.dm)).sort((a, b) => rank(b) - rank(a) || a.name.localeCompare(b.name, 'de'));
 const todo = list.slice(from, from + top);
 console.log(`${todo.length} Betriebe: ${todo.map((l) => l.name).join(' · ')}`);
 if (probe) process.exit(0);
@@ -117,6 +122,7 @@ async function setInstagram(updates: { id: string; instagram: string | null }[])
 }
 
 const igUpdates: { id: string; instagram: string | null }[] = [];
+const toExclude: { id: string; reason: string }[] = [];
 const report: string[] = [];
 let cost = 0;
 const queue = [...todo];
@@ -181,7 +187,13 @@ async function one(lead: Lead) {
       cost += draftCost(d.usage);
       notes.push(`Text neu (${d.dm.length} Zeichen${d.warnings.length ? `, ${d.warnings.join('; ')}` : ''})`);
     } catch (err) {
-      notes.push(err instanceof DraftSkip ? `übersprungen: ${err.message}` : `Text fehlgeschlagen: ${(err as Error).message}`);
+      if (err instanceof DraftSkip) {
+        // Lead-Qualitaet: was Claude fuer unpassend haelt, gar nicht erst anschreiben
+        toExclude.push({ id: lead.id, reason: `Claude rät ab: ${err.message}`.slice(0, 200) });
+        delete lead.dm;
+        delete lead.followup;
+        notes.push(`ausgeschlossen: ${err.message}`);
+      } else notes.push(`Text fehlgeschlagen: ${(err as Error).message}`);
     }
   }
   report.push(`${lead.name} (${lead.city ?? '?'}): ${notes.join(' | ')}`);
@@ -192,7 +204,36 @@ await Promise.all(
     while (queue.length) await one(queue.shift()!);
   }),
 );
+
+// Doppelte Instagram-Profile: nur der Betrieb mit den meisten Bewertungen bleibt
+const byHandle = new Map<string, Lead[]>();
+for (const l of leads.filter((x) => x.status === 'neu' && x.instagram && x.channel !== 'mail' && !toExclude.some((e) => e.id === x.id))) {
+  const k = l.instagram!.toLowerCase();
+  byHandle.set(k, [...(byHandle.get(k) ?? []), l]);
+}
+for (const [h, group] of byHandle) {
+  if (group.length < 2 || !group.some((l) => todo.includes(l))) continue;
+  const [keep, ...rest] = group.sort((a, b) => (b.reviews ?? 0) - (a.reviews ?? 0));
+  for (const r of rest) {
+    toExclude.push({ id: r.id, reason: `Doppelt: gleiches Instagram @${h} wie ${keep.name}` });
+    report.push(`${r.name}: doppelt mit ${keep.name} (@${h}), ausgeschlossen`);
+  }
+}
+
 saveLeads(leads);
 const changed = await setInstagram(igUpdates);
+// Ausschliessen je Grund in einem Aufruf (nur Status "neu")
+const reasons = new Map<string, string[]>();
+for (const e of toExclude) reasons.set(e.reason, [...(reasons.get(e.reason) ?? []), e.id]);
+let excluded = 0;
+for (const [reason, ids] of reasons) {
+  const res = await fetch(`${portalUrl}/api/outreach/agent`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.KOLAC_PORTAL_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'exclude', ids, reason }),
+  });
+  excluded += ((await res.json().catch(() => ({}))) as { excluded?: number }).excluded ?? 0;
+}
+console.log(`Ausgeschlossen: ${excluded}.`);
 console.log(report.join('\n'));
 console.log(`\nInstagram im Dashboard geändert: ${changed}. Texte: ${cost.toFixed(2)} $ (+ SEO-Check ca. ${(todo.length * 0.02).toFixed(2)} $). Jetzt: sync.mjs push, dann pull.`);

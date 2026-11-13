@@ -97,6 +97,7 @@ function OutreachInner() {
   const [leads, setLeads] = useState<OutreachLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [channel, setChannel] = useState<'instagram' | 'mail'>('instagram');
 
   const load = useCallback(async () => {
     setError(null);
@@ -147,11 +148,22 @@ function OutreachInner() {
           : (a, b) => rank(b) - rank(a) || a.name.localeCompare(b.name, 'de'),
     );
 
-  const contacted = scoped.filter((l) => l.sentAt);
-  const replied = scoped.filter((l) => ['geantwortet', 'termin', 'kunde'].includes(l.status));
-  const meetings = scoped.filter((l) => ['termin', 'kunde'].includes(l.status));
-  const sentToday = leads.filter((l) => dayKey(l.sentAt) === todayKey() || dayKey(l.followedUpAt) === todayKey()).length;
+  // Kennzahlen je Kanal: Instagram und Mail getrennt
+  const channelLeads = scoped.filter((l) => (channel === 'mail') === isMailLead(l));
+  const contacted = channelLeads.filter((l) => l.sentAt);
+  const followedUp = channelLeads.filter((l) => l.followedUpAt);
+  const replied = channelLeads.filter((l) => ['geantwortet', 'termin', 'kunde'].includes(l.status));
+  const meetings = channelLeads.filter((l) => ['termin', 'kunde'].includes(l.status));
   const rate = contacted.length ? Math.round((replied.length / contacted.length) * 100) : 0;
+  const isToday = (l: OutreachLead) => dayKey(l.sentAt) === todayKey() || dayKey(l.followedUpAt) === todayKey();
+  // Das Tageslimit schuetzt den Instagram-Account, Mails zaehlen nicht mit
+  const sentTodayIg = leads.filter((l) => !isMailLead(l) && isToday(l)).length;
+  const sentTodayChannel = channelLeads.filter(isToday).length;
+  const week = lastDays(7).map((day) => ({
+    day,
+    first: channelLeads.filter((l) => dayKey(l.sentAt) === day).length,
+    follow: channelLeads.filter((l) => dayKey(l.followedUpAt) === day).length,
+  }));
 
   return (
     <div className="space-y-6">
@@ -162,17 +174,50 @@ function OutreachInner() {
         </p>
       </div>
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Kpi label="Angeschrieben" value={String(contacted.length)} />
-        <Kpi label="Antworten" value={String(replied.length)} hint={contacted.length ? `${rate} %` : undefined} />
-        <Kpi label="Termine" value={String(meetings.length)} />
-        <Kpi
-          label="Heute gesendet"
-          value={`${sentToday} / ${OUTREACH_DAILY_LIMIT}`}
-          warn={sentToday >= OUTREACH_DAILY_LIMIT}
-          hint={sentToday >= OUTREACH_DAILY_LIMIT ? 'Limit erreicht, morgen weiter' : undefined}
-        />
-      </dl>
+      <section aria-labelledby="outreach-kpis" className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="outreach-kpis" className="text-sm font-semibold text-gray-900">
+            Kennzahlen
+          </h2>
+          <div role="group" aria-label="Kanal" className="inline-flex gap-1 rounded-lg bg-gray-100 p-1">
+            {(
+              [
+                ['instagram', 'Instagram'],
+                ['mail', 'Mail'],
+              ] as const
+            ).map(([c, label]) => (
+              <button
+                key={c}
+                type="button"
+                aria-pressed={channel === c}
+                onClick={() => setChannel(c)}
+                className={`rounded-md px-3 py-1.5 text-sm font-medium pointer-coarse:py-2.5 ${
+                  channel === c ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <Kpi label="Angeschrieben" value={String(contacted.length)} />
+          <Kpi label="Nachgefasst" value={String(followedUp.length)} />
+          <Kpi label="Antworten" value={String(replied.length)} hint={contacted.length ? `${rate} % Antwortquote` : undefined} />
+          <Kpi label="Termine" value={String(meetings.length)} />
+          {channel === 'instagram' ? (
+            <Kpi
+              label="Heute gesendet"
+              value={`${sentTodayIg} / ${OUTREACH_DAILY_LIMIT}`}
+              warn={sentTodayIg >= OUTREACH_DAILY_LIMIT}
+              hint={sentTodayIg >= OUTREACH_DAILY_LIMIT ? 'Limit erreicht, morgen weiter' : 'inkl. Nachfassen'}
+            />
+          ) : (
+            <Kpi label="Heute gesendet" value={String(sentTodayChannel)} hint="inkl. Nachfassen" />
+          )}
+        </dl>
+        <WeekChart week={week} />
+      </section>
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
@@ -232,10 +277,59 @@ function OutreachInner() {
       ) : (
         <ul className="space-y-3">
           {visible.map((l) => (
-            <LeadCard key={l.id} lead={l} view={view} limitReached={sentToday >= OUTREACH_DAILY_LIMIT} onSave={save} onReload={reload} />
+            <LeadCard key={l.id} lead={l} view={view} limitReached={!isMailLead(l) && sentTodayIg >= OUTREACH_DAILY_LIMIT} onSave={save} onReload={reload} />
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+/** Tages-Schluessel (YYYY-MM-DD, Berlin) der letzten n Tage, aeltester zuerst. */
+function lastDays(n: number): string[] {
+  return Array.from({ length: n }, (_, i) =>
+    new Date(Date.now() - (n - 1 - i) * DAY_MS).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' }),
+  );
+}
+
+/** Gesendet pro Tag, letzte 7 Tage: Erstnachrichten und Nachfassen gestapelt. */
+function WeekChart({ week }: { week: { day: string; first: number; follow: number }[] }) {
+  const max = Math.max(1, ...week.map((d) => d.first + d.follow));
+  const total = week.reduce((s, d) => s + d.first + d.follow, 0);
+  const firsts = week.reduce((s, d) => s + d.first, 0);
+  return (
+    <div className="card">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-xs font-medium text-gray-500">Gesendet in den letzten 7 Tagen</h3>
+        <p className="text-xs text-gray-500">
+          <span className="font-semibold tabular-nums text-gray-900">{total}</span> Nachrichten, davon {firsts} Erstnachrichten · Ø{' '}
+          {(total / 7).toLocaleString('de-DE', { maximumFractionDigits: 1 })} pro Tag
+        </p>
+      </div>
+      <ol className="mt-3 grid grid-cols-7 items-end gap-2" aria-label="Nachrichten pro Tag">
+        {week.map((d) => {
+          const label = new Date(`${d.day}T12:00:00`).toLocaleDateString('de-DE', { weekday: 'short' });
+          const sum = d.first + d.follow;
+          return (
+            <li key={d.day} className="flex flex-col items-center gap-1" aria-label={`${label}: ${d.first} Erstnachrichten, ${d.follow} Nachfassen`}>
+              <span className="text-xs tabular-nums text-gray-700">{sum || ''}</span>
+              <div className="flex h-20 w-full max-w-10 flex-col justify-end overflow-hidden rounded-md bg-gray-50">
+                <div className="w-full bg-blue-200" style={{ height: `${(d.follow / max) * 100}%` }} />
+                <div className="w-full bg-brand-blue" style={{ height: `${(d.first / max) * 100}%` }} />
+              </div>
+              <span className="text-xs text-gray-500">{label}</span>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="mt-2 flex gap-4 text-xs text-gray-500">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-sm bg-brand-blue" aria-hidden="true" /> Erstnachricht
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-sm bg-blue-200" aria-hidden="true" /> Nachfassen
+        </span>
+      </p>
     </div>
   );
 }
