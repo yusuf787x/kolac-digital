@@ -482,7 +482,7 @@ Aufbau der ersten Nachricht (nach einer bewährten LinkedIn-Vorlage, für Instag
 Ohne Funde: Punkt 4 weglassen, nach Punkt 3 direkt der Schmerz ("Die meisten <Branche>, mit denen ich spreche, sagen mir: „…“"), dann der kostenlose Entwurf.
 
 Regeln:
-- 650 bis 950 Zeichen inklusive Grußformel (mit der Liste der Funde darf es länger sein als ohne). Kurze Absätze, Instagram-Ton: locker, ehrlich, wie ein Mensch, nicht wie Werbung.
+- 650 bis 900 Zeichen inklusive Grußformel, nie über 950 (Instagram schneidet bei 1000 ab). Bei vier Funden jeden Punkt und den Icebreaker besonders kurz halten. Kurze Absätze, Instagram-Ton: locker, ehrlich, wie ein Mensch, nicht wie Werbung.
 - Funde nur so stark formulieren, wie sie tragen: keine pauschalen Urteile über Baukästen (nicht "Wix ist langsam"), keine erfundenen Messwerte, keine Fachbegriffe ("HTTPS" nur in Klammern hinter "Browser zeigt ‚Nicht sicher‘").
 - Kein Link, keine Domain, keine E-Mail-Adresse, kein Preis, keine Emojis außer höchstens einem.
 - Keine Floskeln ("Ich hoffe, es geht dir gut", "kurze Frage", "Sehr geehrte"), keine Versprechen wie "garantiert" oder "100 %".
