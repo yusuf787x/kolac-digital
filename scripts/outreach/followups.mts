@@ -33,6 +33,8 @@ const { leads } = await call<{ leads: OutreachLead[] }>({ action: 'pull' });
 const todo = leads.filter((l) => l.status === 'gesendet' && l.channel !== 'mail' && l.instagram && l.dm);
 console.log(`${todo.length} Nachfass-Texte zu schreiben.`);
 if (probe) process.exit(0);
+// Schnittstelle bereit? Sonst gingen die geschriebenen Texte am Ende verloren.
+await call({ action: 'followups', updates: [] });
 
 const updates: { id: string; followup: string }[] = [];
 let cost = 0;
