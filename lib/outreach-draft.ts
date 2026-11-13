@@ -8,7 +8,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { DM_MAX, lintMessage, type OutreachLead } from './outreach';
 import { MAIL_MAX, MAIL_SYSTEM, mailContext, parseMail } from './outreach-mail';
-import { DRAFT_SYSTEM, branchOf, draftContext, parseDraft, type Branch } from './outreach-playbook';
+import { DRAFT_SYSTEM, FOLLOWUP_SYSTEM, branchOf, draftContext, followupContext, parseDraft, type Branch } from './outreach-playbook';
 
 type Usage = { input: number; output: number; cacheRead: number; cacheWrite: number };
 
@@ -112,6 +112,29 @@ export async function generateMail(lead: OutreachLead, client = new Anthropic())
     '{"subject": "…", "body": "…", "followup": "…"}',
   );
   return { ...r.result, branch, warnings: r.warnings, usage: r.usage };
+}
+
+/** Nachfass-Nachricht nach dem Versand, passend zur DM, die wirklich rausging. */
+export async function generateFollowup(lead: OutreachLead & { contact?: string }, client = new Anthropic()): Promise<{ followup: string; warnings: string[]; usage: Usage }> {
+  const r = await write<{ followup: string }>(
+    client,
+    FOLLOWUP_SYSTEM,
+    followupContext(lead),
+    (t) => {
+      const m = t.match(/\{[\s\S]*\}/);
+      if (!m) return null;
+      try {
+        const j = JSON.parse(m[0]) as { followup?: unknown; skip?: unknown };
+        if (typeof j.skip === 'string' && j.skip.trim()) return { skip: j.skip.trim() };
+        return typeof j.followup === 'string' && j.followup.trim() ? { followup: j.followup.trim() } : null;
+      } catch {
+        return null;
+      }
+    },
+    (p) => lintMessage(p.followup, { first: true, max: 400 }),
+    '{"followup": "…"}',
+  );
+  return { followup: r.result.followup, warnings: r.warnings, usage: r.usage };
 }
 
 /** Kosten in US-Dollar (Opus 5.5: 4 $ Eingabe, 20 $ Ausgabe, 0,20 $ Cache-Lesen, 5 $ Cache-Schreiben je Mio. Tokens). */

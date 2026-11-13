@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { adminDb } from '@/lib/firebase-admin';
 import type { OutreachLead } from '@/lib/outreach';
-import { DraftError, DraftSkip, generateDraft } from '@/lib/outreach-draft';
+import { DraftError, DraftSkip, generateDraft, generateFollowup } from '@/lib/outreach-draft';
 import { badRequest, requireAdmin, safe } from '@/lib/seo/server/admin-route';
 
 export const runtime = 'nodejs';
@@ -11,12 +11,14 @@ export const dynamic = 'force-dynamic';
 /**
  * POST { id }  erste DM und Nachfass-Text fuer einen noch nicht angeschriebenen
  * Betrieb schreiben (Dashboard, angemeldet) und am Betrieb speichern.
+ * POST { id, followup: true }  nur die Nachfass-Nachricht fuer einen angeschriebenen
+ * Betrieb (Status "gesendet"), passend zur DM, die rausging.
  */
 async function handlePOST(req: Request) {
   const denied = await requireAdmin(req);
   if (denied) return denied;
 
-  const body = (await req.json().catch(() => null)) as { id?: string } | null;
+  const body = (await req.json().catch(() => null)) as { id?: string; followup?: boolean } | null;
   const id = body?.id?.trim();
   if (!id) return badRequest('id fehlt.');
 
@@ -24,6 +26,19 @@ async function handlePOST(req: Request) {
   const snap = await ref.get();
   if (!snap.exists) return badRequest('Betrieb nicht gefunden.', 404);
   const lead = { id, ...snap.data() } as OutreachLead;
+  if (body?.followup) {
+    if (lead.status !== 'gesendet') return badRequest('Nachfassen geht nur bei Betrieben im Status „Gesendet“.');
+    if (lead.channel === 'mail') return badRequest('Für Mail-Betriebe die Nachfass-Mail über „Mail schreiben“ erzeugen.');
+    try {
+      const r = await generateFollowup(lead);
+      await ref.update({ followup: r.followup, updatedAt: new Date().toISOString() });
+      return NextResponse.json({ followup: r.followup, warnings: r.warnings });
+    } catch (err) {
+      if (err instanceof DraftError) return NextResponse.json({ error: `${err.message} Bitte noch einmal versuchen.` }, { status: 502 });
+      if (err instanceof Anthropic.APIError) return NextResponse.json({ error: `Claude ist gerade nicht erreichbar (${err.status ?? 'Netzwerk'}).` }, { status: 502 });
+      throw err;
+    }
+  }
   if (lead.status !== 'neu') return badRequest('Der Betrieb ist schon angeschrieben, der Text bleibt wie er war.');
 
   try {

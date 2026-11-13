@@ -466,7 +466,7 @@ export function findingLines(lead: Pick<OutreachLead, 'website' | 'instagram' | 
   const f = pitchFindings(lead);
   const score = typeof lead.scan?.seoScore === 'number' ? `Ergebnis des SEO-Checks (in der Nachricht nennen): ${lead.scan.seoScore} von 100 Punkten.\n` : '';
   if (!f.length) return `${score}Funde des Scans: keine, also die Liste weglassen.`;
-  f.splice(4);
+  f.splice(3);
   return `${score}Funde des Scans, wichtigster zuerst, mit dem, was Yusuf kostenlos dafür macht:\n${f.map((x) => `- ${x.finding} → ${x.fix}`).join('\n')}`;
 }
 
@@ -480,16 +480,17 @@ Aufbau der ersten Nachricht (nach einer bewährten LinkedIn-Vorlage, für Instag
 1. "Hey <Vorname>," wenn ein Vorname bekannt ist, sonst "Hey ihr," oder "Hey," (bei Sie-Form "Hallo Frau/Herr <Nachname>," oder "Hallo,"). Nie einen Namen erfinden.
 2. Icebreaker, ein Satz, so persönlich wie möglich und nur aus den Daten. Vorrang: ein Beitrag oder die Bio, dann Spezialisierung aus Name und Kategorie (z. B. Keramikversiegelung, Massivholz, Scheunenhochzeit), Standorte, Jahre im Geschäft, erst zuletzt die Bewertungen. Ehrlich, konkret, kein Schleimen, keine Floskel wie "das gibt's nicht geschenkt".
 3. "Ich bin Yusuf, ich bau <Branche> <das System in Kurzform>, komplett für euch." (Anrede anpassen.)
-4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über deine Seite laufen lassen, dabei ist mir aufgefallen:". Gibt es ein Ergebnis des SEO-Checks, nenn es dabei: "Ich hab deine Seite durch meinen SEO-Check laufen lassen: 46 von 100 Punkten. Aufgefallen ist mir:". Dann ALLE Funde aus der Nutzer-Nachricht als kurze Liste mit "- ", je Punkt ein kurzer Halbsatz in einfachen Worten, gern mit der Folge (z. B. "- Der Browser zeigt „Nicht sicher“ an, da springen viele direkt ab"). Ohne eigene Website: "Ich hab dich bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
+4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über deine Seite laufen lassen, dabei ist mir aufgefallen:". Gibt es ein Ergebnis des SEO-Checks, nenn es dabei: "Ich hab deine Seite durch meinen SEO-Check laufen lassen: 46 von 100 Punkten. Aufgefallen ist mir:". Dann ALLE Funde aus der Nutzer-Nachricht als kurze Liste mit "- ", je Punkt nur 2 bis 6 Wörter in einfachen Worten (z. B. "- Bei Google nirgends auf Seite 1").
+4b. Was das für den Betrieb heißt (Pflicht, wenn Funde oder eine Punktzahl unter 70 vorliegen): zwei Sätze mit zusammen 25 bis 45 Wörtern, ausgeschrieben, nicht im Telegrammstil. Sie übersetzen die Funde in Kunden: wenig Sichtbarkeit bei Google, Besucher finden nicht schnell, was sie suchen, deshalb kaum Anfragen über die Website und weniger Neukunden, z. B. "Heißt für dich: Bei Google findet dich kaum jemand, und wer doch auf der Seite landet, findet nicht schnell, was er sucht. So kommen über die Website kaum Anfragen und wenig Neukunden." Nur Folgen, die aus den Funden folgen (keine Platzierung auf Seite 1 → wenig Sichtbarkeit; keine Buchung oder Anfrage → Anfragen gehen verloren; wenig Text oder fehlender Ort → Besucher und Google verstehen nicht, was angeboten wird). Keine erfundenen Zahlen. Ohne eigene Website: "Ich hab dich bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
 5. Der Schmerz in ihren Worten, als Brücke vom Fund: "Das hör ich oft, die meisten <Branche> sagen mir: „…“" mit EINEM Problem aus der Liste, das zum Fund und zum Betrieb passt, als wörtliches Zitat in „…“.
-6. Das Angebot: Die Funde behebt Yusuf kostenlos bzw. baut das Fehlende kostenlos ein (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, damit <Zielbild>. In der Nähe (siehe "Nähe"): Yusuf kommt vorbei und zeigt den Entwurf vor Ort, dauert eine Viertelstunde. Sonst: Er schickt den Link. Gefällt er nicht: weg damit, kein Stress. Nie behaupten, der Entwurf sei schon fertig.
+6. Das Angebot: Genau das verbessert Yusuf: Die Funde behebt er kostenlos bzw. baut das Fehlende kostenlos ein (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, damit er besser gefunden wird, Besucher sofort finden, was sie suchen, und mehr Anfragen reinkommen (passend zum Zielbild). In der Nähe (siehe "Nähe"): Yusuf kommt vorbei und zeigt den Entwurf vor Ort, dauert eine Viertelstunde. Sonst: Er schickt den Link. Gefällt er nicht: weg damit, kein Stress. Nie behaupten, der Entwurf sei schon fertig.
 7. Beweis in einem Satz ohne Link: der Beweis aus der Nutzer-Nachricht, sinngemäß und in der gewählten Anrede. Nur diesen Beweis, keine anderen Zahlen oder Kunden erfinden, keinen Kundennamen nennen. Ist ein lokaler Bezug angegeben, darf er als Halbsatz dazu.
 8. "Ich liefer lieber erst, dann reden wir." und eine kurze Schlussfrage. In der Nähe nach dem Termin fragen ("Wann passt es dir, dass ich kurz vorbeikomme?", "Wann bist du am besten im Laden?"), sonst "Lust drauf?" oder "Soll ich?".
 9. "LG Yusuf"
 Ohne Funde: Punkt 4 weglassen, nach Punkt 3 direkt der Schmerz ("Die meisten <Branche>, mit denen ich spreche, sagen mir: „…“"), dann der kostenlose Entwurf.
 
 Regeln:
-- 650 bis 900 Zeichen inklusive Grußformel, nie über 950 (Instagram schneidet bei 1000 ab). Bei vier Funden jeden Punkt und den Icebreaker besonders kurz halten. Kurze Absätze, Instagram-Ton: locker, ehrlich, wie ein Mensch, nicht wie Werbung.
+- 650 bis 900 Zeichen inklusive Grußformel, nie über 950 (Instagram schneidet bei 1000 ab). Platz sparen bei Icebreaker, Zitat und Beweis (je ein kurzer Satz), nie beim Satz, was das für den Betrieb heißt. Kurze Absätze, Instagram-Ton: locker, ehrlich, wie ein Mensch, nicht wie Werbung.
 - Funde nur so stark formulieren, wie sie tragen: keine pauschalen Urteile über Baukästen (nicht "Wix ist langsam"), keine erfundenen Messwerte, keine Fachbegriffe ("HTTPS" nur in Klammern hinter "Browser zeigt ‚Nicht sicher‘").
 - Kein Link, keine Domain, keine E-Mail-Adresse, kein Preis, keine Emojis außer höchstens einem.
 - Keine Floskeln ("Ich hoffe, es geht dir gut", "kurze Frage", "Sehr geehrte"), keine Versprechen wie "garantiert" oder "100 %".
@@ -498,10 +499,43 @@ Regeln:
 
 Nicht schreiben, wenn der Betrieb nicht passt: Einkaufszentrum, Kette oder Filiale eines Konzerns, Waschstraße statt Aufbereiter, keine Branche aus der Liste, oder die Daten widersprechen sich. Dann nur {"skip": "kurzer Grund für Yusuf"} ausgeben.
 
-Nachfass-Nachricht: höchstens 300 Zeichen, gleiche Anrede, "falls untergegangen", Entwurf kostenlos (in der Nähe: zeig ich dir vor Ort), eine Frage, und "wenn nicht, alles gut, dann meld ich mich nicht nochmal".
+Nachfass-Nachricht: höchstens 350 Zeichen, gleiche Anrede, "falls untergegangen", ein konkreter Punkt aus der ersten Nachricht (die Punktzahl des SEO-Checks oder der wichtigste Fund und was er für den Betrieb heißt), Entwurf kostenlos (in der Nähe: zeig ich dir vor Ort), eine Frage, und "wenn nicht, alles gut, dann meld ich mich nicht nochmal". Mit "LG Yusuf".
 
 Antworte ausschließlich mit einem JSON-Objekt, ohne Text davor oder danach:
 {"dm": "…", "followup": "…"} oder {"skip": "…"}`;
+
+/**
+ * Systemprompt fuer das Nachfassen nach dem Versand: bezieht sich auf die
+ * Nachricht, die wirklich rausging. Fest, damit er gecacht wird.
+ */
+export const FOLLOWUP_SYSTEM = `Du schreibst die Nachfass-Nachricht auf Instagram für Yusuf Kolac (Kolac Digital, Bielefeld). Yusuf hat dem Betrieb vor ein paar Tagen eine erste DM geschickt (steht in der Nutzer-Nachricht) und keine Antwort bekommen. Er baut lokalen Betrieben Websites mit Anfrage oder Online-Buchung, komplett für sie, und bietet einen kostenlosen Entwurf an.
+
+Aufbau:
+1. Gleiche Anrede wie in der ersten Nachricht ("Hey <Vorname>," / "Hey ihr," / "Hey,").
+2. Locker: "falls meine Nachricht untergegangen ist" oder ähnlich, jedes Mal anders formuliert.
+3. EIN konkreter Punkt aus der ersten Nachricht, damit es nicht wie eine Massen-Erinnerung wirkt: die Punktzahl des SEO-Checks oder der wichtigste Fund, und in einem Halbsatz, was er für den Betrieb heißt (z. B. "dein SEO-Check lag bei 31 von 100, gerade findet dich bei Google kaum jemand").
+4. Das Angebot noch einmal kurz: Entwurf kostenlos. Hat die erste Nachricht Vorbeikommen angeboten, wieder vor Ort anbieten und nach einem Termin fragen ("Hast du diese oder nächste Woche eine Viertelstunde?"), sonst fragen, ob er den Entwurf schicken soll.
+5. "Wenn nicht, alles gut, dann meld ich mich nicht nochmal."
+6. "LG Yusuf"
+
+Regeln: 200 bis 350 Zeichen. Kein Link, kein Preis, keine Emojis außer höchstens einem, keine Floskeln, nichts behaupten, was nicht in der ersten Nachricht oder den Daten steht. Nie behaupten, der Entwurf sei schon fertig. Gleiche Anrede durchhalten.
+
+Antworte ausschließlich mit einem JSON-Objekt: {"followup": "…"}`;
+
+export function followupContext(lead: OutreachLead & { contact?: string }, branch = branchOf(lead)): string {
+  return [
+    `Branche: ${PLAYBOOKS[branch].label}. Zielbild: ${PLAYBOOKS[branch].outcome}.`,
+    `Betrieb: ${lead.name}${lead.city ? `, ${lead.city}` : ''}`,
+    findingLines(lead),
+    visitLine(lead),
+    '',
+    `Erste Nachricht, die Yusuf geschickt hat:\n${lead.dm ?? '(nicht gespeichert)'}`,
+    '',
+    'Schreib die Nachfass-Nachricht.',
+  ]
+    .filter((l) => l !== '')
+    .join('\n');
+}
 
 export function draftContext(lead: OutreachLead & { contact?: string }, branch = branchOf(lead)): string {
   const p = PLAYBOOKS[branch];

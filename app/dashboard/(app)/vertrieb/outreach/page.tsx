@@ -49,7 +49,8 @@ function inView(l: OutreachLead, v: View): boolean {
     case 'mail':
       return l.status === 'neu' && isMailLead(l);
     case 'nachfassen':
-      return l.status === 'gesendet' && daysSince(l.sentAt) >= OUTREACH_FOLLOWUP_DAYS && !!(isMailLead(l) ? l.mailFollowup : l.followup);
+      // Instagram auch ohne Nachfass-Text: der laesst sich auf der Karte schreiben
+      return l.status === 'gesendet' && daysSince(l.sentAt) >= OUTREACH_FOLLOWUP_DAYS && (isMailLead(l) ? !!l.mailFollowup : true);
     case 'gesendet':
       return l.status === 'gesendet' || l.status === 'nachgefasst';
     case 'antworten':
@@ -134,7 +135,17 @@ function OutreachInner() {
 
   const queries = useMemo(() => [...new Set(leads.map((l) => l.query))].sort((a, b) => a.localeCompare(b, 'de')), [leads]);
   const scoped = useMemo(() => leads.filter((l) => !query || l.query === query), [leads, query]);
-  const visible = scoped.filter((l) => inView(l, view)).sort((a, b) => rank(b) - rank(a) || a.name.localeCompare(b.name, 'de'));
+  // Gesendet und Antworten: neueste zuerst. Sonst nach Hebel.
+  const byDate = (k: 'sentAt' | 'repliedAt') => (a: OutreachLead, b: OutreachLead) => (b[k] ?? '').localeCompare(a[k] ?? '');
+  const visible = scoped
+    .filter((l) => inView(l, view))
+    .sort(
+      view === 'gesendet'
+        ? byDate('sentAt')
+        : view === 'antworten'
+          ? byDate('repliedAt')
+          : (a, b) => rank(b) - rank(a) || a.name.localeCompare(b.name, 'de'),
+    );
 
   const contacted = scoped.filter((l) => l.sentAt);
   const replied = scoped.filter((l) => ['geantwortet', 'termin', 'kunde'].includes(l.status));
@@ -300,6 +311,20 @@ function LeadCard({
       await onReload(l.id);
     } catch (e) {
       setErr(`Kein Text geschrieben: ${(e as Error).message}`);
+    } finally {
+      setDrafting(false);
+    }
+  };
+
+  // Nachfass-Nachricht passend zur DM, die rausging
+  const writeFollowup = async () => {
+    setDrafting(true);
+    setErr(null);
+    try {
+      await postJson('/api/outreach/draft', { id: l.id, followup: true });
+      await onReload(l.id);
+    } catch (e) {
+      setErr(`Kein Nachfass-Text geschrieben: ${(e as Error).message}`);
     } finally {
       setDrafting(false);
     }
@@ -499,6 +524,14 @@ function LeadCard({
           </span>
         </div>
       )}
+      {followMode && !mail && !text && (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button type="button" className="btn-primary pointer-coarse:h-11" disabled={drafting} onClick={writeFollowup}>
+            {drafting ? 'Claude schreibt…' : 'Nachfass-Text schreiben'}
+          </button>
+          <span className="text-xs text-gray-500">Bezieht sich auf deine erste Nachricht, etwa 15 Sekunden.</span>
+        </div>
+      )}
       {info && <p className="mt-2 text-sm text-amber-700">{info}</p>}
 
       {(view === 'antworten' || l.note) && (
@@ -540,7 +573,7 @@ function LeadCard({
             Gesendet
           </button>
         )}
-        {followMode && (
+        {followMode && text && (
           <button type="button" className="btn-secondary pointer-coarse:h-11" disabled={busy} onClick={() => run({ status: 'nachgefasst', followedUpAt: now() })}>
             Nachgefasst
           </button>
@@ -568,6 +601,11 @@ function LeadCard({
               </StatusLink>
               {l.status === 'neu' && first && (
                 <StatusLink busy={busy || drafting} onClick={mail ? writeMail : writeDraft}>
+                  {drafting ? 'Schreibt…' : 'Neu schreiben'}
+                </StatusLink>
+              )}
+              {followMode && !mail && text && (
+                <StatusLink busy={busy || drafting} onClick={writeFollowup}>
                   {drafting ? 'Schreibt…' : 'Neu schreiben'}
                 </StatusLink>
               )}

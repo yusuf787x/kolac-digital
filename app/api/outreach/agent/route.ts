@@ -21,6 +21,7 @@ const MAX_BATCH = 400;
  *   { action: "push", leads: [...] }    → anlegen oder Recherche-Felder aktualisieren
  *   { action: "legacy" }                → alte Cold-Call-Leads (nur lesen)
  *   { action: "exclude", ids, reason }  → noch nicht angeschriebene Betriebe ausschliessen
+ *   { action: "followups", updates: [{ id, followup }] }  → Nachfass-Text fuer Betriebe im Status "gesendet"
  *   { action: "instagram", updates: [{ id, instagram }] }
  *                                       → geprueftes Profil setzen (von der Website des Betriebs),
  *                                         instagram: null wie „Kein Instagram“ (Ansprache per Mail)
@@ -94,6 +95,28 @@ async function handlePOST(req: Request) {
 
     await batch.commit();
     return NextResponse.json({ ok: true, created, updated });
+  }
+
+  // Nachfass-Texte nach dem Versand (Push schreibt Texte nur bei Status "neu")
+  if (body?.action === 'followups') {
+    const updates = (body as { updates?: unknown }).updates;
+    if (!Array.isArray(updates) || updates.length > MAX_BATCH) return badRequest('updates fehlt.');
+    const valid = updates.filter(
+      (u): u is { id: string; followup: string } =>
+        !!u && typeof u.id === 'string' && /^[\w-]{3,120}$/.test(u.id) && typeof u.followup === 'string' && u.followup.trim().length > 20 && u.followup.length < 1000,
+    );
+    const refs = valid.map((u) => db.collection(COL).doc(u.id));
+    const snaps = refs.length ? await db.getAll(...refs) : [];
+    const batch = db.batch();
+    let changed = 0;
+    snaps.forEach((snap, i) => {
+      const cur = snap.data() as OutreachLead | undefined;
+      if (!cur || cur.status !== 'gesendet' || cur.channel === 'mail') return;
+      batch.set(refs[i], { followup: valid[i].followup.trim(), updatedAt: new Date().toISOString() }, { merge: true });
+      changed++;
+    });
+    await batch.commit();
+    return NextResponse.json({ ok: true, changed });
   }
 
   // Instagram nach Pruefung korrigieren. Nur Status "neu" und nie, wenn Yusuf schon selbst
