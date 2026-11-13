@@ -23,15 +23,31 @@ Die Quellen sind dünn und oft Foren oder Anbieter-Blogs. Sie decken sich aber m
 ## Das Anschreiben (nach Jans LinkedIn-Vorlage, für Instagram kürzer)
 1. Hey + Vorname (nur wenn bekannt, nie erfinden)
 2. Icebreaker aus Beitrag oder Bio, sonst aus Spezialisierung, Standorten oder Bewertungen
-3. Brücke zum Thema, gern als kleines Zukunftsbild
-4. „Ich bin Yusuf, ich bau <Branche> <System>, komplett für euch.“
-5. „Die meisten <Branche>, mit denen ich spreche, sagen mir: „…““ (ein Problem in ihren Worten)
-6. Kostenloser Entwurf für <Betrieb>, damit <Zielbild>. Gefällt er nicht: Link löschen, kein Stress.
-7. Beweis ohne Link: Praxis in Bünde, über 800 Termine ohne einen Anruf
+3. „Ich bin Yusuf, ich bau <Branche> <System>, komplett für euch.“
+4. Scan: „Ich hab mal einen kurzen Scan über eure Seite laufen lassen …“ und der wichtigste Fund (höchstens zwei), z. B. „Nicht sicher“ im Browser, keine Online-Buchung, keine eigene Website (nur Google und Instagram)
+5. Schmerz als Brücke: „Das hör ich oft, die meisten <Branche> sagen mir: „…““
+6. Den Fund behebt Yusuf kostenlos bzw. baut das Fehlende kostenlos ein, direkt im Entwurf für <Betrieb>, damit <Zielbild>. Gefällt er nicht: Link löschen, kein Stress.
+7. Beweis ohne Link und ohne Namen, passend zum Betrieb (siehe unten)
 8. „Ich liefer lieber erst, dann reden wir.“ und eine kurze Frage
 9. LG Yusuf
 
-550 bis 740 Zeichen, kein Link, kein Preis. Die Case Study kommt erst in der Antwort. Claude überspringt Betriebe, die nicht passen, etwa Einkaufszentren, Ketten oder eine Waschstraße statt eines Aufbereiters.
+600 bis 820 Zeichen, kein Link, kein Preis. Ohne Funde fällt Punkt 4 weg. Was Yusuf je Fund kostenlos anbietet, steht in `FIX` (`lib/outreach-playbook.ts`). Die Case Study kommt erst in der Antwort. Claude überspringt Betriebe, die nicht passen, etwa Einkaufszentren, Ketten oder eine Waschstraße statt eines Aufbereiters.
+
+### Welche Referenz?
+`referenceFor` in `lib/outreach-playbook.ts` wählt je Betrieb: zuerst passende Branche, dann gleiche Stadt, sonst Bacara (größter Erfolg). Liegt eine andere Referenz in derselben Stadt, darf sie als Halbsatz mit rein („in Paderborn hab ich auch schon …“).
+
+| Referenz | Für | Beweis |
+|---|---|---|
+| Bacara Ästhetik, Bünde | Kosmetik, Friseur, Ästhetik, Brautmode, Location, Juwelier | über 800 Termine online, ohne Anruf |
+| MC-Autopflege, Herford | Aufbereitung | Ladezeit-Note Handy 99 statt 68, eigene Seiten für Leistungen und 12 Orte (neu, noch keine Anfrage-Zahlen) |
+| CarHiFi Herford | Küche, Bad, GaLaBau, Tischlerei, Ausbau | 74 % mehr Anfragen, vorsortiert |
+| PaderPuls, Paderborn | Fahrdienste, Pflege, Paderborn | spürbar mehr Anfragen und Anrufe |
+| Motorenfachmann, Lage | Kfz, Werkstatt | Onpage-Check 95 statt 60 Prozent |
+| Fahrschule Kreuzer, Bielefeld | Fahrschulen, Bielefeld | Anmeldungen online statt nur per Anruf |
+| AF-Gebäudeservice, OWL | Reinigung | Anfragen auch außerhalb der Bürozeiten |
+| Pader Automobilzentrum, Paderborn | nur lokaler Bezug | Website und Google-Profil von null |
+
+Neue Referenz: in `REFERENCES` eintragen, nur belegte Zahlen aus `lib/portfolio.ts`.
 
 ## Offene Punkte
 - **Icebreaker aus Beiträgen** brauchen die Profildaten von ScrapeCreators (1 Credit pro Profil). Auf dem Testzugang sind nur noch 9 Credits.

@@ -6,7 +6,7 @@
  * Genutzt von /api/outreach/draft, /api/outreach/mail und scripts/outreach/draft.mts.
  */
 import Anthropic from '@anthropic-ai/sdk';
-import { lintMessage, type OutreachLead } from './outreach';
+import { DM_MAX, lintMessage, type OutreachLead } from './outreach';
 import { MAIL_MAX, MAIL_SYSTEM, mailContext, parseMail } from './outreach-mail';
 import { DRAFT_SYSTEM, branchOf, draftContext, parseDraft, type Branch } from './outreach-playbook';
 
@@ -91,7 +91,7 @@ export async function generateDraft(lead: OutreachLead & { contact?: string }, c
     DRAFT_SYSTEM,
     draftContext(lead, branch),
     (t) => parseDraft(t),
-    (p) => [...lintMessage(p.dm, { first: true }), ...lintMessage(p.followup, { first: true }).map((w) => `Nachfassen: ${w}`)],
+    (p) => [...lintMessage(p.dm, { first: true, max: DM_MAX }), ...lintMessage(p.followup, { first: true }).map((w) => `Nachfassen: ${w}`)],
     '{"dm": "…", "followup": "…"}',
   );
   return { ...r.result, branch, warnings: r.warnings, usage: r.usage };

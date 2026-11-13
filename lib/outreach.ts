@@ -115,6 +115,9 @@ export const OUTREACH_STATUS_BADGES: Record<OutreachStatus, string> = {
   ausgeschlossen: 'bg-gray-100 text-gray-500',
 };
 
+/** Zeichengrenze der ersten Instagram-DM (mit Scan-Fund etwas laenger als eine Antwort). */
+export const DM_MAX = 850;
+
 /** Hoechstens so viele Erst-Nachrichten und Nachfass-Nachrichten pro Tag (Sperr- und Spam-Schutz). */
 export const OUTREACH_DAILY_LIMIT = 25;
 /** Nachgefasst wird einmal, so viele Tage nach der ersten Nachricht. */

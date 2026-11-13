@@ -227,9 +227,184 @@ export function branchOf(lead: Pick<OutreachLead, 'category' | 'query' | 'name'>
   return RULES.find(([re]) => re.test(text))?.[1] ?? 'sonstiges';
 }
 
-/** Beweis, den Yusuf ohne Link nennen darf (die Case Study kommt erst in der Antwort). */
-export const PROOF =
-  'Bacara Ästhetik in Bünde: über 800 Termine online gebucht, ohne einen einzigen Anruf, ein System statt fünf (Website, Buchung, Erinnerungen, Einwilligungen, Bewertungen). Öffentliche Case Study: kolac-digital.de/case-studys/bacara-aesthetik';
+// --- Referenzen: passender Beweis je Betrieb ---
+
+export interface Reference {
+  id: string;
+  /** Echter Name, erst in der Antwort (mit Link). */
+  name: string;
+  /** Stadt fuer den lokalen Bezug (klein geschrieben verglichen). */
+  city: string;
+  /** Wer das war, ohne Namen, fuer die erste Nachricht: "einen Autoaufbereiter". */
+  who: string;
+  /** Branchen, fuer die diese Referenz der beste Beweis ist. */
+  branches: Branch[];
+  /** Zusaetzlich passend, wenn Kategorie, Suche oder Name darauf passen (z. B. Kfz). */
+  match?: RegExp;
+  /** Beweis-Satz ohne Namen und ohne Link, nur belegte Zahlen. */
+  proof: string;
+  /** Oeffentliche Seite zum Projekt, erst in der Antwort verlinken. */
+  url: string;
+  /** Nur als lokaler Bezug geeignet, nicht als Hauptbeweis (kein messbares Ergebnis). */
+  localOnly?: boolean;
+}
+
+/**
+ * Reihenfolge = Staerke des Beweises. Nur Fakten aus lib/portfolio.ts und den
+ * Case Studies, nichts aufrunden. MC-Autopflege ist neu (live seit 12.11.2026):
+ * noch keine Zahlen zu Anfragen, also nur Ladezeit und Umfang nennen.
+ */
+export const REFERENCES: Reference[] = [
+  {
+    id: 'bacara-aesthetik',
+    name: 'Bacara Ästhetik',
+    city: 'bünde',
+    who: 'eine Ästhetik-Praxis',
+    branches: ['aesthetik', 'kosmetik', 'friseur', 'brautmode', 'hochzeitslocation', 'juwelier'],
+    proof: 'Für eine Praxis in Bünde hab ich so ein System gebaut, da kamen über 800 Termine online rein, ohne einen einzigen Anruf.',
+    url: 'kolac-digital.de/case-studys/bacara-aesthetik',
+  },
+  {
+    id: 'mc-autopflege',
+    name: 'MC-Autopflege',
+    city: 'herford',
+    who: 'einen Autoaufbereiter',
+    branches: ['aufbereitung'],
+    proof: 'Für einen Autoaufbereiter in Herford hab ich gerade die alte Website komplett neu gebaut: Google bewertet die Ladezeit auf dem Handy jetzt mit 99 statt 68 von 100, und jede Leistung und zwölf Orte drumherum haben eine eigene Seite. (Die Seite ist neu, darum keine Zahlen zu Anfragen nennen.)',
+    url: 'kolac-digital.de/portfolio/mc-autopflege',
+  },
+  {
+    id: 'carhifi-herford',
+    name: 'CarHiFi Herford',
+    city: 'herford',
+    who: 'einen Car-HiFi-Spezialisten',
+    branches: ['kueche', 'bad', 'galabau', 'tischlerei', 'ausbau'],
+    match: /hifi|car audio|tuning/i,
+    proof: 'Für einen Car-HiFi-Spezialisten in Herford hab ich eine Website mit Anfrage gebaut, bei der Kunden vorher Fahrzeug und Wunsch angeben: 74 % mehr Anfragen, und die kommen schon vorsortiert rein.',
+    url: 'kolac-digital.de/case-studys/carhifi-herford',
+  },
+  {
+    id: 'paderpuls',
+    name: 'PaderPuls Krankenfahrdienst',
+    city: 'paderborn',
+    who: 'einen Krankenfahrdienst',
+    branches: [],
+    match: /kranken|fahrdienst|pflege|taxi|patienten/i,
+    proof: 'Für einen Krankenfahrdienst in Paderborn hab ich die alte Website neu aufgebaut, mit eigenen Seiten für jede Leistung und jeden Ort im Kreis, seitdem kommen spürbar mehr Anfragen und Anrufe über die Seite.',
+    url: 'kolac-digital.de/portfolio/paderpuls',
+  },
+  {
+    id: 'motorenfachmann',
+    name: 'Motorenfachmann',
+    city: 'lage',
+    who: 'einen Kfz-Meisterbetrieb',
+    branches: [],
+    match: /kfz|werkstatt|motor|autohaus|autoservice|reifen/i,
+    proof: 'Für einen Kfz-Meisterbetrieb in Lage hab ich die Website für Google aufgeräumt: Die Startseite steht im Onpage-Check jetzt bei 95 statt 60 Prozent.',
+    url: 'kolac-digital.de/portfolio/motorenfachmann',
+  },
+  {
+    id: 'fahrschule-kreuzer',
+    name: 'Fahrschule Kreuzer',
+    city: 'bielefeld',
+    who: 'eine Fahrschule',
+    branches: [],
+    match: /fahrschul/i,
+    proof: 'Für eine Fahrschule in Bielefeld-Brackwede hab ich die erste eigene Website gebaut, seitdem kommen Anmeldungen online rein statt nur per Anruf.',
+    url: 'kolac-digital.de/portfolio/fahrschule-kreuzer',
+  },
+  {
+    id: 'af-gebaeudeservice',
+    name: 'AF-Gebäudeservice',
+    city: 'owl',
+    who: 'einen Gebäudeservice',
+    branches: [],
+    match: /reinigung|gebäude|gebaeude|hausmeister/i,
+    proof: 'Für einen Gebäudeservice in OWL hab ich Website und Anfrageformular gebaut, seitdem kommen Anfragen auch außerhalb der Bürozeiten rein.',
+    url: 'kolac-digital.de/portfolio/af-gebaeudeservice',
+  },
+  {
+    id: 'pader-automobilzentrum',
+    name: 'Pader Automobilzentrum',
+    city: 'paderborn',
+    who: 'ein Automobilzentrum',
+    branches: [],
+    proof: 'Für ein neues Automobilzentrum in Paderborn hab ich Website und Google-Profil von null aufgebaut.',
+    url: 'kolac-digital.de/portfolio/pader-automobilzentrum',
+    localOnly: true,
+  },
+];
+
+const sameCity = (r: Reference, city?: string) => !!city && city.toLowerCase().includes(r.city);
+
+/**
+ * Bester Beweis fuer einen Betrieb: zuerst passende Branche, dann gleiche Stadt,
+ * sonst der staerkste (Bacara). Dazu optional eine andere Referenz aus derselben
+ * Stadt als lokaler Bezug ("in Paderborn hab ich auch …").
+ */
+export function referenceFor(
+  lead: Pick<OutreachLead, 'category' | 'query' | 'name' | 'city'>,
+  branch: Branch = branchOf(lead),
+): { main: Reference; local?: Reference } {
+  const text = `${lead.category ?? ''} ${lead.query ?? ''} ${lead.name}`;
+  const usable = REFERENCES.filter((r) => !r.localOnly);
+  const main =
+    usable.find((r) => r.branches.includes(branch) || r.match?.test(text)) ??
+    usable.find((r) => sameCity(r, lead.city)) ??
+    usable[0];
+  const local = REFERENCES.find((r) => r !== main && sameCity(r, lead.city));
+  return { main, local };
+}
+
+/** Zeilen fuer den Kontext der ersten Nachricht (ohne Link). */
+export function proofLines(lead: Pick<OutreachLead, 'category' | 'query' | 'name' | 'city'>, branch: Branch = branchOf(lead)): string[] {
+  const { main, local } = referenceFor(lead, branch);
+  return [
+    `Beweis (nur diesen, sinngemäß, ohne Namen und ohne Link): ${main.proof}`,
+    local
+      ? `Lokaler Bezug (optional, höchstens ein Halbsatz, ohne Namen): Yusuf hat in ${lead.city} auch schon für ${local.who} gearbeitet.`
+      : '',
+  ];
+}
+
+// --- Scan-Funde als Aufhaenger mit kostenlosem Angebot ---
+
+const FIX: [RegExp, string][] = [
+  [/Keine eigene Website/i, 'Der Entwurf wäre direkt die eigene Website, mit Bildern, Leistungen und Bewertungen'],
+  [/lädt nicht|bricht ab/i, 'Yusuf schaut kostenlos nach, woran es liegt, und der Entwurf lädt zuverlässig'],
+  [/nicht fürs Handy/i, 'Der Entwurf ist fürs Handy gebaut, kein Zoomen mehr'],
+  [/Nicht sicher|HTTPS/i, 'Yusuf stellt kostenlos auf eine sichere Verbindung um, dann verschwindet die Warnung im Browser'],
+  [/Online-Buchung/i, 'Yusuf baut kostenlos eine Online-Buchung oder Anfrage mit allen Infos in den Entwurf ein (je nach Branche)'],
+  [/Kontaktformular/i, 'Yusuf baut kostenlos eine anklickbare Telefonnummer und ein Anfrageformular ein'],
+  [/Instagram: kein Link/i, 'Yusuf baut kostenlos eine Seite für den Link in der Bio, über die man direkt bucht oder anfragt'],
+  [/Server braucht|langsam/i, 'Der Entwurf lädt schnell, auch auf dem Handy'],
+  [/Beschreibungstext/i, 'Yusuf schreibt die Beschreibung für Google kostenlos'],
+  [/Im Fuß steht noch/i, 'Im Entwurf ist alles auf dem aktuellen Stand'],
+];
+
+/**
+ * Funde der Pruefung, die in die Nachricht duerfen, je mit dem, was Yusuf
+ * kostenlos dafuer macht. Reihenfolge wie im Scan (wichtigster zuerst).
+ * Ohne eigene Website wird das selbst zum Fund.
+ */
+export function pitchFindings(lead: Pick<OutreachLead, 'website' | 'instagram' | 'scan'>): { finding: string; fix: string }[] {
+  const raw = [...(lead.scan?.findings ?? [])];
+  if (!lead.website && !raw.some((f) => /Keine eigene Website/i.test(f))) {
+    raw.unshift(lead.instagram ? 'Keine eigene Website, nur der Google-Eintrag und das Instagram-Profil' : 'Keine eigene Website, nur der Google-Eintrag');
+  }
+  const out: { finding: string; fix: string }[] = [];
+  for (const finding of raw) {
+    const fix = FIX.find(([re]) => re.test(finding))?.[1];
+    if (fix) out.push({ finding, fix });
+  }
+  return out;
+}
+
+export function findingLines(lead: Pick<OutreachLead, 'website' | 'instagram' | 'scan'>): string {
+  const f = pitchFindings(lead);
+  if (!f.length) return 'Funde des Scans: keine, also den Scan-Teil weglassen.';
+  return `Funde des Scans, wichtigster zuerst, mit dem, was Yusuf kostenlos dafür macht:\n${f.map((x) => `- ${x.finding} → ${x.fix}`).join('\n')}`;
+}
 
 /**
  * Systemprompt fuer die erste Nachricht und das Nachfassen. Fest, damit er gecacht
@@ -239,17 +414,19 @@ export const DRAFT_SYSTEM = `Du schreibst die erste Instagram-DM und eine Nachfa
 
 Aufbau der ersten Nachricht (nach einer bewährten LinkedIn-Vorlage, für Instagram lockerer und kürzer):
 1. "Hey <Vorname>," wenn ein Vorname bekannt ist, sonst "Hey ihr," oder "Hey," (bei Sie-Form "Hallo Frau/Herr <Nachname>," oder "Hallo,"). Nie einen Namen erfinden.
-2. Icebreaker, ein bis zwei Sätze, so persönlich wie möglich und nur aus den Daten. Vorrang: ein Beitrag oder die Bio, dann Spezialisierung aus Name und Kategorie (z. B. Keramikversiegelung, Massivholz, Scheunenhochzeit), Standorte, Jahre im Geschäft, erst zuletzt die Bewertungen. Ehrlich, konkret, kein Schleimen, keine Floskel wie "das gibt's nicht geschenkt".
-3. Brücke: ein Satz, der vom Icebreaker zum Thema führt, gern als kleines Zukunftsbild. Formulierung jedes Mal neu, nicht immer "bestimmt".
-4. "Ich bin Yusuf, ich bau <Branche> <das System in Kurzform>, komplett für euch." (Anrede anpassen.)
-5. Der Schmerz in ihren Worten: "Die meisten <Branche>, mit denen ich spreche, sagen mir: …" und dann EIN Problem aus der Liste, das zu diesem Betrieb passt, als wörtliches Zitat in „…“. Optional ein Fund aus der Prüfung, wenn er dazu passt (z. B. keine Online-Buchung, keine eigene Website). Als Wiedererkennen formulieren, nie als Kritik.
-6. Das Angebot: kostenlos einen Entwurf für <Name des Betriebs>, damit <Zielbild>. Gefällt er nicht: Link löschen, kein Stress.
-7. Beweis in einem Satz ohne Link, z. B. "Für eine Praxis in Bünde hab ich so ein System gebaut, da kamen über 800 Termine rein, ohne einen einzigen Anruf." Nur diesen Beweis, keine anderen Zahlen oder Kunden erfinden.
+2. Icebreaker, ein Satz, so persönlich wie möglich und nur aus den Daten. Vorrang: ein Beitrag oder die Bio, dann Spezialisierung aus Name und Kategorie (z. B. Keramikversiegelung, Massivholz, Scheunenhochzeit), Standorte, Jahre im Geschäft, erst zuletzt die Bewertungen. Ehrlich, konkret, kein Schleimen, keine Floskel wie "das gibt's nicht geschenkt".
+3. "Ich bin Yusuf, ich bau <Branche> <das System in Kurzform>, komplett für euch." (Anrede anpassen.)
+4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über eure Seite laufen lassen, dabei ist mir aufgefallen: …". Dann der wichtigste Fund in einfachen Worten, höchstens zwei. Ohne eigene Website: "Ich hab euch bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
+5. Der Schmerz in ihren Worten, als Brücke vom Fund: "Das hör ich oft, die meisten <Branche> sagen mir: „…“" mit EINEM Problem aus der Liste, das zum Fund und zum Betrieb passt, als wörtliches Zitat in „…“.
+6. Das Angebot: Den Fund behebt Yusuf kostenlos bzw. baut das fehlende Feature kostenlos ein (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, damit <Zielbild>. Gefällt er nicht: Link löschen, kein Stress.
+7. Beweis in einem Satz ohne Link: der Beweis aus der Nutzer-Nachricht, sinngemäß und in der gewählten Anrede. Nur diesen Beweis, keine anderen Zahlen oder Kunden erfinden, keinen Kundennamen nennen. Ist ein lokaler Bezug angegeben, darf er als Halbsatz dazu.
 8. "Ich liefer lieber erst, dann reden wir." und eine kurze Schlussfrage ("Wie sieht's aus?", "Lust drauf?", "Soll ich?").
 9. "LG Yusuf"
+Ohne Funde: Punkt 4 weglassen, nach Punkt 3 direkt der Schmerz ("Die meisten <Branche>, mit denen ich spreche, sagen mir: „…“"), dann der kostenlose Entwurf.
 
 Regeln:
-- 550 bis 740 Zeichen inklusive Grußformel. Kurze Absätze, Instagram-Ton: locker, ehrlich, wie ein Mensch, nicht wie Werbung.
+- 600 bis 820 Zeichen inklusive Grußformel. Kurze Absätze, Instagram-Ton: locker, ehrlich, wie ein Mensch, nicht wie Werbung.
+- Funde nur so stark formulieren, wie sie tragen: keine pauschalen Urteile über Baukästen (nicht "Wix ist langsam"), keine erfundenen Messwerte, keine Fachbegriffe ("HTTPS" nur in Klammern hinter "Browser zeigt ‚Nicht sicher‘").
 - Kein Link, keine Domain, keine E-Mail-Adresse, kein Preis, keine Emojis außer höchstens einem.
 - Keine Floskeln ("Ich hoffe, es geht dir gut", "kurze Frage", "Sehr geehrte"), keine Versprechen wie "garantiert" oder "100 %".
 - Eine Anrede durchhalten: du bei Einzelpersonen, ihr bei Teams, Sie bei förmlicher Bio oder Arztpraxis. Nicht mischen.
@@ -270,7 +447,7 @@ export function draftContext(lead: OutreachLead & { contact?: string }, branch =
     `Probleme der Branche in ihren Worten:\n${p.pains.map((x) => `- „${x}“`).join('\n')}`,
     `Zielbild: ${p.outcome}.`,
     `Der kostenlose Entwurf zeigt: ${p.freebie}.`,
-    `Beweis: ${PROOF.split('. Öffentliche')[0]}.`,
+    ...proofLines(lead, branch),
     '',
     `Betrieb: ${lead.name}${lead.city ? `, ${lead.city}` : ''}${lead.category ? ` (${lead.category})` : ''}`,
     lead.contact ? `Ansprechpartner: ${lead.contact}` : '',
@@ -280,7 +457,7 @@ export function draftContext(lead: OutreachLead & { contact?: string }, branch =
     lead.ig?.bio ? `Bio: ${lead.ig.bio.replace(/\n/g, ' / ')}` : '',
     typeof lead.ig?.followers === 'number' ? `Follower: ${lead.ig.followers}` : '',
     lead.website ? `Website: vorhanden` : 'Keine eigene Website',
-    lead.scan?.findings.length ? `Funde der Website-Prüfung: ${lead.scan.findings.join('; ')}` : '',
+    findingLines(lead),
     '',
     'Schreib die erste Nachricht und die Nachfass-Nachricht.',
   ];

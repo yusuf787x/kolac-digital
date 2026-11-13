@@ -13,6 +13,7 @@ import {
   OUTREACH_FOLLOWUP_DAYS,
   OUTREACH_STATUS_BADGES,
   OUTREACH_STATUS_LABELS,
+  DM_MAX,
   EMAIL_RE,
   instagramSearchUrl,
   instagramUrl,
@@ -321,7 +322,7 @@ function LeadCard({
   };
 
   const now = () => new Date().toISOString();
-  const warnings = text ? lintMessage(text, { first: !l.thread?.length, max: mail ? (followMode ? 500 : MAIL_MAX) : 750 }) : [];
+  const warnings = text ? lintMessage(text, { first: !l.thread?.length, max: mail ? (followMode ? 500 : MAIL_MAX) : followMode ? 750 : DM_MAX }) : [];
   const showReplies = !!l.sentAt || !!l.thread?.length;
   const igIdleDays = l.ig?.lastPostAt ? Math.floor(daysSince(l.ig.lastPostAt)) : null;
   const igInfo = l.ig
