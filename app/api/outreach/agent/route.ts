@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { FieldValue } from 'firebase-admin/firestore';
 import { adminDb } from '@/lib/firebase-admin';
 import { OUTREACH_MANUAL_FIELDS, type OutreachLead } from '@/lib/outreach';
 import { badRequest, safe } from '@/lib/seo/server/admin-route';
@@ -20,6 +21,9 @@ const MAX_BATCH = 400;
  *   { action: "push", leads: [...] }    → anlegen oder Recherche-Felder aktualisieren
  *   { action: "legacy" }                → alte Cold-Call-Leads (nur lesen)
  *   { action: "exclude", ids, reason }  → noch nicht angeschriebene Betriebe ausschliessen
+ *   { action: "instagram", updates: [{ id, instagram }] }
+ *                                       → geprueftes Profil setzen (von der Website des Betriebs),
+ *                                         instagram: null wie „Kein Instagram“ (Ansprache per Mail)
  *
  * Ein Push ueberschreibt nie Status, Versanddaten oder Notizen aus dem
  * Dashboard, und Texte nur, solange der Betrieb noch nicht angeschrieben ist.
@@ -90,6 +94,35 @@ async function handlePOST(req: Request) {
 
     await batch.commit();
     return NextResponse.json({ ok: true, created, updated });
+  }
+
+  // Instagram nach Pruefung korrigieren. Nur Status "neu" und nie, wenn Yusuf schon selbst
+  // entschieden hat (Kanal Mail oder Profil im Dashboard eingetragen, igSource "dashboard").
+  if (body?.action === 'instagram') {
+    const updates = (body as { updates?: unknown }).updates;
+    if (!Array.isArray(updates) || updates.length > MAX_BATCH) return badRequest('updates fehlt.');
+    const valid = updates.filter(
+      (u): u is { id: string; instagram: string | null } =>
+        !!u && typeof u.id === 'string' && /^[\w-]{3,120}$/.test(u.id) && (u.instagram === null || (typeof u.instagram === 'string' && /^[A-Za-z0-9_.]{2,30}$/.test(u.instagram))),
+    );
+    const refs = valid.map((u) => db.collection(COL).doc(u.id));
+    const snaps = refs.length ? await db.getAll(...refs) : [];
+    const batch = db.batch();
+    let changed = 0;
+    const now = new Date().toISOString();
+    snaps.forEach((snap, i) => {
+      const cur = snap.data() as (OutreachLead & { igSource?: string }) | undefined;
+      if (!cur || cur.status !== 'neu' || cur.channel === 'mail' || cur.igSource === 'dashboard') return;
+      const ig = valid[i].instagram;
+      if (ig === null) {
+        batch.set(refs[i], { channel: 'mail', instagram: '', igRejected: cur.instagram ?? '', updatedAt: now }, { merge: true });
+      } else if (ig.toLowerCase() !== (cur.instagram ?? '').toLowerCase()) {
+        batch.set(refs[i], { instagram: ig, igSource: 'website', ig: FieldValue.delete(), updatedAt: now }, { merge: true });
+      } else return;
+      changed++;
+    });
+    await batch.commit();
+    return NextResponse.json({ ok: true, changed });
   }
 
   // Nur Betriebe im Status "neu": was Yusuf schon angeschrieben oder bewertet hat, bleibt unberuehrt

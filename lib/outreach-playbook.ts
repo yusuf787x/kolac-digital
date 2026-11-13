@@ -433,6 +433,12 @@ const FIX: [RegExp, string][] = [
   [/Online-Buchung/i, 'Yusuf baut kostenlos eine Online-Buchung oder Anfrage mit allen Infos in den Entwurf ein (je nach Branche)'],
   [/Kontaktformular/i, 'Yusuf baut kostenlos eine anklickbare Telefonnummer und ein Anfrageformular ein'],
   [/Instagram: kein Link/i, 'Yusuf baut kostenlos eine Seite für den Link in der Bio, über die man direkt bucht oder anfragt'],
+  [/Ladezeit/i, 'Der Entwurf lädt schnell, Ziel ist eine Note über 90 von 100'],
+  [/Suchbegriff auf Seite 1/i, 'Yusuf baut die Seite so, dass Google versteht, was und wo, mit eigenen Seiten für die Leistungen'],
+  [/Ort steht nicht im Seitentitel/i, 'Yusuf schreibt Titel und Beschreibung für Google mit dem Ort kostenlos'],
+  [/anklickbare Telefonnummer/i, 'Yusuf macht die Nummer mit einem Tipp anrufbar'],
+  [/wenig Text/i, 'Der Entwurf erklärt jede Leistung mit eigenem Text'],
+  [/ins Leere/i, 'Yusuf repariert die Links kostenlos'],
   [/Server braucht|langsam/i, 'Der Entwurf lädt schnell, auch auf dem Handy'],
   [/Beschreibungstext/i, 'Yusuf schreibt die Beschreibung für Google kostenlos'],
   [/Im Fuß steht noch/i, 'Im Entwurf ist alles auf dem aktuellen Stand'],
@@ -458,9 +464,10 @@ export function pitchFindings(lead: Pick<OutreachLead, 'website' | 'instagram' |
 
 export function findingLines(lead: Pick<OutreachLead, 'website' | 'instagram' | 'scan'>): string {
   const f = pitchFindings(lead);
-  if (!f.length) return 'Funde des Scans: keine, also den Scan-Teil weglassen.';
+  const score = typeof lead.scan?.seoScore === 'number' ? `Ergebnis des SEO-Checks (in der Nachricht nennen): ${lead.scan.seoScore} von 100 Punkten.\n` : '';
+  if (!f.length) return `${score}Funde des Scans: keine, also die Liste weglassen.`;
   f.splice(4);
-  return `Funde des Scans, wichtigster zuerst, mit dem, was Yusuf kostenlos dafür macht:\n${f.map((x) => `- ${x.finding} → ${x.fix}`).join('\n')}`;
+  return `${score}Funde des Scans, wichtigster zuerst, mit dem, was Yusuf kostenlos dafür macht:\n${f.map((x) => `- ${x.finding} → ${x.fix}`).join('\n')}`;
 }
 
 /**
@@ -473,7 +480,7 @@ Aufbau der ersten Nachricht (nach einer bewährten LinkedIn-Vorlage, für Instag
 1. "Hey <Vorname>," wenn ein Vorname bekannt ist, sonst "Hey ihr," oder "Hey," (bei Sie-Form "Hallo Frau/Herr <Nachname>," oder "Hallo,"). Nie einen Namen erfinden.
 2. Icebreaker, ein Satz, so persönlich wie möglich und nur aus den Daten. Vorrang: ein Beitrag oder die Bio, dann Spezialisierung aus Name und Kategorie (z. B. Keramikversiegelung, Massivholz, Scheunenhochzeit), Standorte, Jahre im Geschäft, erst zuletzt die Bewertungen. Ehrlich, konkret, kein Schleimen, keine Floskel wie "das gibt's nicht geschenkt".
 3. "Ich bin Yusuf, ich bau <Branche> <das System in Kurzform>, komplett für euch." (Anrede anpassen.)
-4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über deine Seite laufen lassen, dabei ist mir aufgefallen:". Dann ALLE Funde aus der Nutzer-Nachricht als kurze Liste mit "- ", je Punkt ein kurzer Halbsatz in einfachen Worten, gern mit der Folge (z. B. "- Der Browser zeigt „Nicht sicher“ an, da springen viele direkt ab"). Ohne eigene Website: "Ich hab dich bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
+4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über deine Seite laufen lassen, dabei ist mir aufgefallen:". Gibt es ein Ergebnis des SEO-Checks, nenn es dabei: "Ich hab deine Seite durch meinen SEO-Check laufen lassen: 46 von 100 Punkten. Aufgefallen ist mir:". Dann ALLE Funde aus der Nutzer-Nachricht als kurze Liste mit "- ", je Punkt ein kurzer Halbsatz in einfachen Worten, gern mit der Folge (z. B. "- Der Browser zeigt „Nicht sicher“ an, da springen viele direkt ab"). Ohne eigene Website: "Ich hab dich bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
 5. Der Schmerz in ihren Worten, als Brücke vom Fund: "Das hör ich oft, die meisten <Branche> sagen mir: „…“" mit EINEM Problem aus der Liste, das zum Fund und zum Betrieb passt, als wörtliches Zitat in „…“.
 6. Das Angebot: Die Funde behebt Yusuf kostenlos bzw. baut das Fehlende kostenlos ein (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, damit <Zielbild>. In der Nähe (siehe "Nähe"): Yusuf kommt vorbei und zeigt den Entwurf vor Ort, dauert eine Viertelstunde. Sonst: Er schickt den Link. Gefällt er nicht: weg damit, kein Stress. Nie behaupten, der Entwurf sei schon fertig.
 7. Beweis in einem Satz ohne Link: der Beweis aus der Nutzer-Nachricht, sinngemäß und in der gewählten Anrede. Nur diesen Beweis, keine anderen Zahlen oder Kunden erfinden, keinen Kundennamen nennen. Ist ein lokaler Bezug angegeben, darf er als Halbsatz dazu.

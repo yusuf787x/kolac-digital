@@ -73,7 +73,15 @@ async function quickScan(lead: Lead): Promise<LeadScan> {
     };
   }
   try {
-    const res = await safeFetch(lead.website, { timeoutMs: 15_000, maxBytes: 2_000_000 });
+    // Google Maps nennt oft noch http://. Browser holen sich aber selbst die https-Version,
+    // wenn es sie gibt. "Nicht sicher" also nur, wenn https gar nicht erreichbar ist.
+    const httpsUrl = lead.website.replace(/^http:\/\//i, 'https://');
+    const res =
+      httpsUrl !== lead.website
+        ? await safeFetch(httpsUrl, { timeoutMs: 12_000, maxBytes: 2_000_000 })
+            .then((r) => (r.status < 400 ? r : Promise.reject(new Error(String(r.status)))))
+            .catch(() => safeFetch(lead.website!, { timeoutMs: 15_000, maxBytes: 2_000_000 }))
+        : await safeFetch(lead.website, { timeoutMs: 15_000, maxBytes: 2_000_000 });
     if (res.status >= 400) {
       // 403/429 heisst meist nur "keine automatischen Abrufe", ein 5xx kann voruebergehend sein.
       // In beiden Faellen nichts behaupten, Yusuf schaut selbst.

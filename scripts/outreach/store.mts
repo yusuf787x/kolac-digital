@@ -77,6 +77,10 @@ export interface Lead {
   scan?: LeadScan;
   dm?: string;
   followup?: string;
+  /** Aus dem Dashboard (pull): "mail" = Ansprache per Mail statt Instagram. */
+  channel?: 'mail' | 'instagram';
+  /** Verworfenes Instagram-Profil (Kein Instagram oder Pruefung in check.mts). */
+  igRejected?: string;
   /** Von promote.mts gesetzt: Bedarf geprueft und Instagram gefunden, darf angeschrieben werden. */
   bedarf?: boolean;
   status: LeadStatus;

@@ -411,7 +411,7 @@ function LeadCard({
             onSubmit={(e) => {
               e.preventDefault();
               const h = normalizeInstagram(handle);
-              if (h) run({ instagram: h });
+              if (h) run({ instagram: h, igSource: 'dashboard' });
             }}
           >
             <label className="sr-only" htmlFor={`ig-${l.id}`}>
@@ -578,7 +578,7 @@ function LeadCard({
                 </StatusLink>
               )}
               {l.status === 'neu' && mail && l.igRejected && (
-                <StatusLink busy={busy} onClick={() => run({ channel: 'instagram', instagram: l.igRejected })}>
+                <StatusLink busy={busy} onClick={() => run({ channel: 'instagram', instagram: l.igRejected, igSource: 'dashboard' })}>
                   Doch per Instagram
                 </StatusLink>
               )}

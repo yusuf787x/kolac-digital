@@ -54,6 +54,8 @@ export interface OutreachLead {
   contact?: string;
   /** Instagram-Name ohne @. Leer, wenn Yusuf „Kein Instagram“ gedrückt hat. */
   instagram?: string;
+  /** Woher das Profil stammt: von der Website des Betriebs, aus der Google-Suche (unsicher) oder von Yusuf eingetragen. */
+  igSource?: 'website' | 'suche' | 'dashboard';
   /** "mail": kein (passendes) Instagram, Ansprache per E-Mail mit Auswertung der Website. */
   channel?: 'mail' | 'instagram';
   /** Instagram-Name, den Yusuf mit „Kein Instagram“ verworfen hat (für „Doch per Instagram“). */
