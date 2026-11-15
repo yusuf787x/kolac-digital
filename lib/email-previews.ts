@@ -8,6 +8,8 @@ import {
 import { buildDunningEmail } from '@/lib/dunning-emails';
 import { buildLoginLinkEmail, buildReportReleasedEmail } from '@/lib/seo/server/emails';
 import type { DunningStage } from '@/lib/types';
+import { buildMeetingMail } from '@/lib/meetings/emails';
+import { MAIL_KINDS, type MailKind } from '@/lib/meetings/types';
 
 /**
  * Alle Mails, die an Kunden rausgehen, mit Beispieldaten. Grundlage für
@@ -165,4 +167,62 @@ export const EMAIL_PREVIEWS: EmailPreviewDef[] = [
           'Ihre Website wurde im Oktober deutlich öfter bei Google angezeigt als im Vormonat. Vor allem die neuen Leistungsseiten bringen erste Besucher.',
       }),
   },
+  ...MAIL_KINDS.map((kind) => ({
+    id: `meeting-${kind}`,
+    group: 'Termine',
+    label: meetingPreview(kind).label,
+    when: meetingPreview(kind).when,
+    build: () => meetingSample(kind),
+  })),
 ];
+
+/** Funktion statt Konstante: EMAIL_PREVIEWS oben greift schon beim Laden darauf zu. */
+function meetingPreview(kind: MailKind): { label: string; when: string; before: number } {
+  switch (kind) {
+    case 'confirm':
+      return {
+        label: 'Termin-Bestätigung',
+        when: 'Automatisch, sobald ein neuer Google-Meet-Termin mit externem Gast im Kalender steht.',
+        before: 0,
+      };
+    case 'fiveDays':
+      return {
+        label: 'Erinnerung 5 Tage vorher',
+        when: 'Automatisch 5 Tage vor dem Termin, nur wenn er mindestens 7 Tage vorher gebucht wurde.',
+        before: 5 * 86400000,
+      };
+    case 'dayBefore':
+      return {
+        label: 'Erinnerung am Vortag',
+        when: 'Automatisch 24 Stunden vor dem Termin. Mit deiner persönlichen Zeile, falls eingetragen.',
+        before: 86400000,
+      };
+    case 'hourBefore':
+      return {
+        label: 'Erinnerung 1 Stunde vorher',
+        when: 'Automatisch 1 Stunde vor dem Termin, mit dem Meet-Link.',
+        before: 3600000,
+      };
+  }
+}
+
+function meetingSample(kind: MailKind): PreviewEmail {
+  const start = new Date(Date.now() + 9 * 86400000);
+  start.setHours(15, 0, 0, 0);
+  const sendAt =
+    kind === 'confirm' ? new Date() : new Date(start.getTime() - meetingPreview(kind).before);
+  return buildMeetingMail({
+    kind,
+    anrede: 'du',
+    name: 'Max Mustermann',
+    company: 'Mustermann Haustechnik',
+    startAt: start,
+    endAt: new Date(start.getTime() + 30 * 60000),
+    sendAt,
+    meetUrl: 'https://meet.google.com/abc-defg-hij',
+    note:
+      kind === 'dayBefore'
+        ? 'Ich habe mir eure Website schon angeschaut und bringe zwei, drei konkrete Ideen mit.'
+        : undefined,
+  });
+}

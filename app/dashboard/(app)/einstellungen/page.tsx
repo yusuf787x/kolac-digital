@@ -347,7 +347,7 @@ function EinstellungenInner() {
           <p className="text-sm text-gray-500 mb-4">
             Verbindet das Dashboard via OAuth2 mit deinem Google Drive für
             automatisches Backup von Rechnungen, Belegen und der Buchhaltungs-
-            Tabelle.
+            Tabelle. Liest außerdem deinen Kalender für die Termin-Erinnerungen.
           </p>
 
           {googleAuth ? (
@@ -355,12 +355,29 @@ function EinstellungenInner() {
               <div className="text-sm text-gray-700">
                 ✓ Verbunden als <strong>{googleAuth.connectedEmail}</strong>
               </div>
-              <button
-                onClick={handleDisconnectDrive}
-                className="btn-secondary text-red-600 hover:bg-red-50"
-              >
-                Verbindung trennen
-              </button>
+              {!googleAuth.scopes?.includes(
+                'https://www.googleapis.com/auth/calendar.readonly',
+              ) && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  Für die Termin-Erinnerungen fehlt noch der Kalender-Zugriff.
+                  Einmal neu verbinden, Drive bleibt dabei verbunden.
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {!googleAuth.scopes?.includes(
+                  'https://www.googleapis.com/auth/calendar.readonly',
+                ) && (
+                  <button onClick={handleConnectDrive} className="btn-primary">
+                    Kalender-Zugriff erlauben
+                  </button>
+                )}
+                <button
+                  onClick={handleDisconnectDrive}
+                  className="btn-secondary text-red-600 hover:bg-red-50"
+                >
+                  Verbindung trennen
+                </button>
+              </div>
             </div>
           ) : (
             <button onClick={handleConnectDrive} className="btn-secondary">

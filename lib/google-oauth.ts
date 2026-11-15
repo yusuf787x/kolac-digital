@@ -4,6 +4,8 @@ export const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/drive.file',
   'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/userinfo.email',
+  // Termin-Erinnerungen: Google-Meet-Termine lesen (lib/meetings).
+  'https://www.googleapis.com/auth/calendar.readonly',
 ];
 
 export const PICKUP_COOKIE = 'kolac_g_pickup';

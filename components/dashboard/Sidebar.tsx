@@ -29,6 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard/kunden', label: 'Kunden', icon: '👥', group: 'Allgemein' },
   { href: '/dashboard/vertrieb', label: 'Vertrieb', icon: '🔄', group: 'Vertrieb' },
   { href: '/dashboard/vertrieb/outreach', label: 'Outreach', icon: '💬', group: 'Vertrieb' },
+  { href: '/dashboard/termine', label: 'Termine', icon: '📅', group: 'Vertrieb' },
   { href: '/dashboard/angebote', label: 'Angebote', icon: '📋', group: 'Buchhaltung' },
   { href: '/dashboard/vertraege', label: 'Verträge', icon: '✍️', group: 'Buchhaltung' },
   { href: '/dashboard/rechnungen', label: 'Rechnungen', icon: '📄', group: 'Buchhaltung' },
