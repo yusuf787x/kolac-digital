@@ -74,6 +74,25 @@ export function externalGuests(ev: calendar_v3.Schema$Event): RawGuest[] {
     }));
 }
 
+/**
+ * Über die Google-Buchungsseite gebucht oder selbst eingeladen? Die API
+ * hat dafür kein Feld. Wer bucht, steht sofort als "zugesagt" im Termin;
+ * wer eingeladen wird, steht zuerst auf "noch nicht geantwortet". Das
+ * gilt nur, wenn wir den Termin kurz nach dem Anlegen sehen (Webhook oder
+ * Seite geöffnet). Sehen wir ihn erst später, kann ein Eingeladener schon
+ * zugesagt haben: dann im Zweifel "selbst eingeladen", denn Google schickt
+ * bei Buchungen ohnehin eine eigene Bestätigung.
+ */
+export function looksBooked(ev: calendar_v3.Schema$Event, now: number): boolean {
+  if (/gebucht von|booked by/i.test(ev.description ?? '')) return true;
+  const created = ev.created ? Date.parse(ev.created) : 0;
+  if (!created || now - created > 30 * 60_000) return false;
+  const ext = (ev.attendees ?? []).filter(
+    (a) => !!a.email && !a.self && !a.resource && !a.email.toLowerCase().endsWith(OWN_DOMAIN),
+  );
+  return ext.length > 0 && ext.every((a) => a.responseStatus === 'accepted');
+}
+
 export function hasDeclinedOnly(ev: calendar_v3.Schema$Event): boolean {
   const ext = (ev.attendees ?? []).filter(
     (a) => !!a.email && !a.self && !a.resource && !a.email.toLowerCase().endsWith(OWN_DOMAIN),

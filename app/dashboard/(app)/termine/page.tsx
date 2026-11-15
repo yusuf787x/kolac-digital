@@ -456,6 +456,11 @@ function MeetingCard({
             {m.disabled && m.status === 'active' && <span className="ml-2 text-gray-500">Erinnerungen aus</span>}
           </div>
           {m.title && <div className="text-sm text-gray-600 mt-0.5 break-words">{m.title}</div>}
+          {m.selfInvited !== undefined && (
+            <div className="text-xs text-gray-500 mt-0.5">
+              {m.selfInvited ? 'Selbst eingeladen' : 'Über die Buchungsseite gebucht'}
+            </div>
+          )}
           <ul className="mt-2 space-y-1">
             {m.guests.map((g) => (
               <li key={g.email} className="text-sm text-gray-800 break-words">

@@ -72,6 +72,12 @@ export interface Meeting {
   calendarUrl: string;
   status: MeetingStatus;
   guests: MeetingGuest[];
+  /**
+   * Selbst angelegt und eingeladen (nicht über die Buchungsseite). Google
+   * hat dann schon eine Einladung geschickt, darum keine Bestätigung.
+   * Wird beim ersten Sehen festgelegt; fehlt bei älteren Terminen.
+   */
+  selfInvited?: boolean;
   /** Vom Dashboard: keine Erinnerungen für diesen Termin. */
   disabled?: boolean;
   /** Vom Dashboard: persönliche Zeile für die Mail am Vortag. */

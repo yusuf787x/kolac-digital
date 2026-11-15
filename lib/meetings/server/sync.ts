@@ -20,6 +20,7 @@ import {
   hasDeclinedOnly,
   isCandidate,
   listUpcomingEvents,
+  looksBooked,
   meetUrlOf,
   startWatch,
   stopWatch,
@@ -217,6 +218,7 @@ async function buildMeeting(
     calendarUrl: ev.htmlLink ?? '',
     status: hasDeclinedOnly(ev) ? 'declined' : 'active',
     guests,
+    selfInvited: prev ? prev.selfInvited : !looksBooked(ev, now),
     ...userFields,
     mails: { ...(prev?.mails ?? {}) },
     firstSeenAt: prev?.firstSeenAt ?? now,
@@ -291,6 +293,7 @@ function plan(kind: MailKind, m: Meeting, s: MeetingSettings, now: number): Plan
   let sendAt: number;
 
   if (kind === 'confirm') {
+    if (m.selfInvited) return { skip: 'Selbst eingeladen, Google hat die Einladung schon geschickt' };
     const since = s.meetingRemindersSince ?? Number.POSITIVE_INFINITY;
     if (m.bookedAt < since) return { skip: 'Vor dem Einschalten der Automatik gebucht' };
     if (m.startAt - now < 3 * HOUR) return { skip: 'Zu kurzfristig, die Mail 1 Stunde vorher reicht' };
