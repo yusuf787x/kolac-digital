@@ -86,10 +86,13 @@ export interface StoredCheck {
 
 export async function saveCheck(result: SeoCheckResult, owner: boolean, ip: string): Promise<string> {
   const id = randomBytes(12).toString('base64url');
+  // Firestore lehnt undefined-Werte ab (z. B. platform, wenn kein Baukasten
+  // erkannt wurde). Der JSON-Umweg entfernt sie, das Ergebnis ist reines JSON.
+  const clean = JSON.parse(JSON.stringify(result)) as SeoCheckResult;
   await adminDb()
     .collection(CHECKS)
     .doc(id)
-    .set({ result, owner, ip: truncateIp(ip), domain: result.domain, score: result.score, createdAt: Timestamp.now() });
+    .set({ result: clean, owner, ip: truncateIp(ip), domain: result.domain, score: result.score, createdAt: Timestamp.now() });
   return id;
 }
 
@@ -100,5 +103,6 @@ export async function loadCheck(id: string): Promise<StoredCheck | null> {
 }
 
 export async function saveLead(id: string, lead: StoredLead): Promise<void> {
-  await adminDb().collection(CHECKS).doc(id).update({ lead });
+  // Telefon und Firma sind optional und sonst undefined (Firestore lehnt das ab).
+  await adminDb().collection(CHECKS).doc(id).update({ lead: JSON.parse(JSON.stringify(lead)) });
 }
