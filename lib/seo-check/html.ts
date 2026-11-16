@@ -50,6 +50,8 @@ export interface ParsedPage {
   telLinks: string[];
   schemaTypes: string[];
   schemaHasOpeningHours: boolean;
+  /** Erste gueltige PostalAddress aus dem JSON-LD (auch verschachtelt). */
+  schemaAddress?: Address;
   ogTitle: boolean;
   ogImage: boolean;
   hasForm: boolean;
@@ -60,6 +62,41 @@ export interface ParsedPage {
 }
 
 const FILE_EXT = /\.(pdf|jpe?g|png|gif|webp|svg|zip|docx?|xlsx?|pptx?|mp4|mp3|ics|xml|txt)$/i;
+
+export interface Address {
+  zip: string;
+  city: string;
+}
+
+/** Deutsche PLZ liegen zwischen 01001 und 99998. */
+function plausibleZip(zip: string): boolean {
+  const n = Number(zip);
+  return /^\d{5}$/.test(zip) && n >= 1001 && n <= 99998;
+}
+
+/**
+ * Sucht im JSON-LD die erste Adresse mit PLZ und Ort: als PostalAddress,
+ * als "address" einer Firma (LocalBusiness, Organization ...) oder in @graph.
+ */
+function collectSchemaAddress(node: unknown): Address | undefined {
+  if (!node || typeof node !== 'object') return undefined;
+  if (Array.isArray(node)) {
+    for (const n of node) {
+      const a = collectSchemaAddress(n);
+      if (a) return a;
+    }
+    return undefined;
+  }
+  const obj = node as Record<string, unknown>;
+  const zip = typeof obj.postalCode === 'string' || typeof obj.postalCode === 'number' ? String(obj.postalCode).trim() : '';
+  const city = typeof obj.addressLocality === 'string' ? obj.addressLocality.trim() : '';
+  if (plausibleZip(zip) && city) return { zip, city };
+  for (const v of Object.values(obj)) {
+    const a = collectSchemaAddress(v);
+    if (a) return a;
+  }
+  return undefined;
+}
 
 function collectSchemaTypes(node: unknown, out: Set<string>, hours: { found: boolean }): void {
   if (!node || typeof node !== 'object') return;
@@ -145,9 +182,12 @@ export function parsePage(html: string, pageUrl: string): ParsedPage {
 
   const schemaTypes = new Set<string>();
   const hours = { found: false };
+  let schemaAddress: Address | undefined;
   for (const m of html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     try {
-      collectSchemaTypes(JSON.parse(m[1].trim()), schemaTypes, hours);
+      const data: unknown = JSON.parse(m[1].trim());
+      collectSchemaTypes(data, schemaTypes, hours);
+      schemaAddress ??= collectSchemaAddress(data);
     } catch {
       /* ungueltiges JSON-LD ignorieren */
     }
@@ -172,6 +212,7 @@ export function parsePage(html: string, pageUrl: string): ParsedPage {
     telLinks,
     schemaTypes: Array.from(schemaTypes),
     schemaHasOpeningHours: hours.found,
+    schemaAddress,
     ogTitle: !!meta('og:title', 'property'),
     ogImage: !!meta('og:image', 'property'),
     hasForm: /<form\b/i.test(bodyOnly) || /<iframe[^>]+(typeform|jotform|form)/i.test(bodyOnly),
@@ -201,17 +242,49 @@ export function detectPlatform(html: string, page: ParsedPage, headers: Headers)
   return page.generator || undefined;
 }
 
+/** Woerter aus Menue, Brotkrumen und Fusszeile, die nie ein Ort sind. */
+const NOT_A_CITY = new Set(
+  [
+    'Startseite', 'Start', 'Home', 'Kontakt', 'Impressum', 'Datenschutz', 'Datenschutzerklärung',
+    'Menü', 'Menu', 'Leistungen', 'Leistung', 'Blog', 'Über', 'Uber', 'Aktuelles', 'News', 'Team',
+    'Jobs', 'Karriere', 'Galerie', 'Anfahrt', 'Öffnungszeiten', 'Telefon', 'Tel', 'Fax', 'Mobil',
+    'Mail', 'E-Mail', 'Email', 'AGB', 'Cookies', 'Login', 'Shop', 'Preise', 'Angebote', 'Referenzen',
+    'Projekte', 'Zurück', 'Weiter', 'Mehr', 'Alle', 'Jetzt', 'Anrufen', 'Termin', 'Suche', 'FAQ',
+    'Kunden', 'Jahre', 'Mitarbeiter', 'Besucher', 'Euro', 'Stunden', 'Bewertungen',
+  ].map((w) => w.toLowerCase()),
+);
+
+/** "Koloniestr. 33," oder "Am Damm 4a" direkt vor der PLZ. */
+const STREET_BEFORE =
+  /(?:str\.|stra(?:ß|ss)e|weg|platz|allee|ring|damm)\s*\d{1,4}\s?[a-zA-Z]?(?:\s*[-/]\s*\d{1,4}\s?[a-zA-Z]?)?\s*,?\s*$/i;
+
+/** Ziffern direkt davor (auch mit Leerzeichen, / oder -): Teil einer Telefonnummer. */
+const DIGITS_BEFORE = /\d[\s/-]*$/;
+
 /**
- * Postleitzahl und Ort, z. B. "33611 Bielefeld". Ein zweites Wort nur bei
- * typischen Ortsvorsaetzen ("Bad Rappenau", "Sankt Augustin"), sonst
- * landet die naechste Fusszeilen-Angabe ("Herford Impressum") im Ort.
+ * Postleitzahl und Ort, z. B. "33611 Bielefeld". Zuerst gilt die Adresse
+ * aus den strukturierten Daten (JSON-LD), der Seitentext ist nur Notloesung.
+ * Im Text zaehlen keine Telefonnummern-Enden ("0151 449 01450") und keine
+ * Menuewoerter ("Startseite"); ein Treffer mit Strasse davor geht vor.
+ * Ein zweites Wort nur bei typischen Ortsvorsaetzen ("Bad Rappenau",
+ * "Sankt Augustin"), sonst landet die naechste Fusszeilen-Angabe
+ * ("Herford Impressum") im Ort.
  */
-export function findAddress(text: string): { zip: string; city: string } | undefined {
-  const m = text.match(
-    /\b(\d{5})\s+((?:(?:Bad|Sankt|St\.|Groß|Klein|Neu|Alt|Hohen|Ober|Unter)\s+)?[A-ZÄÖÜ][a-zäöüß]+(?:-[A-ZÄÖÜ][a-zäöüß]+)*)/,
-  );
-  if (!m) return undefined;
-  return { zip: m[1], city: m[2] };
+export function findAddress(text: string, schemaAddress?: Address): Address | undefined {
+  if (schemaAddress && plausibleZip(schemaAddress.zip) && schemaAddress.city) return schemaAddress;
+  let fallback: Address | undefined;
+  const re =
+    /\b(\d{5})\s+((?:(?:Bad|Sankt|St\.|Groß|Klein|Neu|Alt|Hohen|Ober|Unter)\s+)?[A-ZÄÖÜ][a-zäöüß]+(?:-[A-ZÄÖÜ][a-zäöüß]+)*)/g;
+  for (const m of text.matchAll(re)) {
+    const [, zip, city] = m;
+    const before = text.slice(Math.max(0, m.index - 80), m.index);
+    if (!plausibleZip(zip) || NOT_A_CITY.has(city.toLowerCase())) continue;
+    // Hausnummer vor der PLZ ist erlaubt, andere Ziffern davor nicht.
+    if (STREET_BEFORE.test(before)) return { zip, city };
+    if (DIGITS_BEFORE.test(before)) continue;
+    fallback ??= { zip, city };
+  }
+  return fallback;
 }
 
 export function findPhoneInText(text: string): boolean {

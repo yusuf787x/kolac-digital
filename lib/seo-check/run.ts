@@ -565,7 +565,11 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
 
   // ---------------- Lokal ----------------
   const allText = [page.text, ...samples.map((s) => s.page?.text ?? '')].join(' ');
-  const address = findAddress(page.text) ?? findAddress(allText);
+  // Strukturierte Daten zuerst (Startseite, dann Unterseiten), Text nur als Notloesung.
+  const schemaAddress = page.schemaAddress ?? samples.find((s) => s.page?.schemaAddress)?.page?.schemaAddress;
+  const textOnHome = findAddress(page.text);
+  const textAnywhere = textOnHome ?? findAddress(allText);
+  const address = schemaAddress ?? textAnywhere;
   const hasTel = page.telLinks.length > 0;
   const hasPhone = hasTel || findPhoneInText(page.text);
   add({
@@ -587,12 +591,14 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
     category: 'lokal',
     title: 'Adresse sichtbar',
     weight: 2,
-    status: findAddress(page.text) ? 'ok' : address ? 'warn' : 'fail',
-    detail: findAddress(page.text)
+    status: textOnHome ? 'ok' : textAnywhere ? 'warn' : 'fail',
+    detail: textOnHome
       ? `Die Adresse (${address?.zip} ${address?.city}) steht auf der Startseite.`
-      : address
+      : textAnywhere
         ? 'Die Adresse steht nur auf Unterseiten, nicht auf der Startseite.'
-        : 'Es wurde keine Adresse gefunden. Google kann die Firma keinem Ort zuordnen.',
+        : address
+          ? `Die Adresse (${address.zip} ${address.city}) steht nur in den Firmendaten für Google, nicht sichtbar auf der Seite.`
+          : 'Es wurde keine Adresse gefunden. Google kann die Firma keinem Ort zuordnen.',
     fix: 'Adresse mit Postleitzahl im Fußbereich jeder Seite angeben, genau wie im Google-Profil.',
   });
 
