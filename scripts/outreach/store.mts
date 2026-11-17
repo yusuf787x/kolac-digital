@@ -124,7 +124,7 @@ export function knownKeys(): Set<string> {
 }
 
 /** Bestandskunden und laufende Interessenten nie anschreiben. */
-export const EXCLUDE_NAMES = /bacara|paderpuls|pader\s*automobil|acko/i;
+export const EXCLUDE_NAMES = /bacara|paderpuls|pader\s*automobil|acko|mk[\s-]*automobile|mironi|car\s*-?hifi|hifi\.halim|mc[\s-]*autopflege|motorenfachmann|fahrschule kreuzer|af-geb(ae|ä)udeservice/i;
 
 /**
  * Hat der Betrieb echten Bedarf? Keine eigene Website zaehlt immer. Bei Terminbranchen
