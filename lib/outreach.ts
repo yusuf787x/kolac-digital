@@ -56,6 +56,12 @@ export interface OutreachLead {
   instagram?: string;
   /** Woher das Profil stammt: von der Website des Betriebs, aus der Google-Suche (unsicher) oder von Yusuf eingetragen. */
   igSource?: 'website' | 'suche' | 'dashboard';
+  /** TikTok-Name ohne @, wenn der Betrieb Yusufs TikTok kennt (folgt oder hat kommentiert). Dort zuerst schreiben. */
+  tiktok?: string;
+  /** Warmer Kontakt: woher der Betrieb Yusuf kennt, z. B. „Folgt dir auf TikTok und hat kommentiert: …“. Steht ganz oben. */
+  warm?: string;
+  /** 1 folgt, 2 hat kommentiert, 3 hat Interesse gezeigt (Reihenfolge unter den warmen Kontakten). */
+  warmScore?: number;
   /** "mail": kein (passendes) Instagram, Ansprache per E-Mail mit Auswertung der Website. */
   channel?: 'mail' | 'instagram';
   /** Instagram-Name, den Yusuf mit „Kein Instagram“ verworfen hat (für „Doch per Instagram“). */
@@ -142,7 +148,8 @@ export const mailtoUrl = (to: string, subject: string, body: string) =>
   `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
 export const instagramUrl = (handle: string) => `https://www.instagram.com/${encodeURIComponent(handle)}/`;
-export const instagramSearchUrl = (l: Pick<OutreachLead, 'name' | 'city'>) =>
+export const tiktokUrl = (handle: string) => `https://www.tiktok.com/@${encodeURIComponent(handle)}`;
+export const instagramSearchUrl =(l: Pick<OutreachLead, 'name' | 'city'>) =>
   `https://www.google.com/search?q=${encodeURIComponent(`site:instagram.com "${l.name}" ${l.city ?? ''}`.trim())}`;
 
 // --- Gespraechsverlauf ---

@@ -77,6 +77,10 @@ export interface Lead {
   scan?: LeadScan;
   dm?: string;
   followup?: string;
+  /** Warme Kontakte (folgen Yusuf oder haben kommentiert), siehe lib/outreach.ts. */
+  tiktok?: string;
+  warm?: string;
+  warmScore?: number;
   /** Aus dem Dashboard (pull): "mail" = Ansprache per Mail statt Instagram. */
   channel?: 'mail' | 'instagram';
   /** Verworfenes Instagram-Profil (Kein Instagram oder Pruefung in check.mts). */

@@ -17,6 +17,7 @@ import {
   EMAIL_RE,
   instagramSearchUrl,
   instagramUrl,
+  tiktokUrl,
   isMailLead,
   lintMessage,
   mailtoUrl,
@@ -62,8 +63,9 @@ function inView(l: OutreachLead, v: View): boolean {
 
 const HIGH_TICKET = new Set<Branch>(['kueche', 'bad', 'galabau', 'tischlerei', 'ausbau', 'hochzeitslocation', 'brautmode', 'aufbereitung', 'kfz', 'juwelier', 'aesthetik']);
 
-/** Mit Text zuerst, dann High-Ticket-Branchen (mehr Auftragswert), dann Instagram oder Mail-Adresse und Hebel. */
+/** Warme Kontakte (kennen Yusufs Content) ganz oben, dann mit Text, High-Ticket-Branchen (mehr Auftragswert), Instagram oder Mail-Adresse und Hebel. */
 const rank = (l: OutreachLead) =>
+  (l.warm ? 1000 + (l.warmScore ?? 1) * 100 : 0) +
   ((isMailLead(l) ? l.mailBody : l.dm) ? 100 : 0) +
   (HIGH_TICKET.has(branchOf(l)) ? 50 : 0) +
   ((isMailLead(l) ? l.email : l.instagram) ? 20 : 0) +
@@ -464,6 +466,12 @@ function LeadCard({
             {l.sentAt && <span className="whitespace-nowrap"> · gesendet {formatDate(l.sentAt)}</span>}
             {l.followedUpAt && <span className="whitespace-nowrap"> · nachgefasst {formatDate(l.followedUpAt)}</span>}
           </p>
+          {l.warm && (
+            <p className="mt-1.5 inline-flex rounded-md bg-emerald-50 px-2 py-1 text-xs text-emerald-800">
+              Kennt dich: {l.warm}
+              {l.tiktok && l.status === 'neu' ? '. Auf TikTok erst zurückfolgen, dann schreiben.' : ''}
+            </p>
+          )}
         </div>
         <span className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-xs ${OUTREACH_STATUS_BADGES[l.status]}`}>
           {OUTREACH_STATUS_LABELS[l.status]}
@@ -471,6 +479,16 @@ function LeadCard({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
+        {l.tiktok && !mail && (
+          <a
+            href={tiktokUrl(l.tiktok)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            TikTok @{l.tiktok}
+          </a>
+        )}
         {mail ? (
           l.email && !editEmail ? (
             <span className="inline-flex flex-wrap items-center gap-1 text-sm">
@@ -524,7 +542,7 @@ function LeadCard({
           >
             Instagram @{l.instagram}
           </a>
-        ) : (
+        ) : l.tiktok ? null : (
           <form
             className="flex flex-wrap items-center gap-2"
             onSubmit={(e) => {

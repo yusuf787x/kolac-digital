@@ -558,8 +558,12 @@ export function draftContext(lead: OutreachLead & { contact?: string }, branch =
     lead.ig?.fullName ? `Profilname: ${lead.ig.fullName}` : '',
     lead.ig?.bio ? `Bio: ${lead.ig.bio.replace(/\n/g, ' / ')}` : '',
     typeof lead.ig?.followers === 'number' ? `Follower: ${lead.ig.followers}` : '',
-    lead.website ? `Website: vorhanden` : 'Keine eigene Website',
-    findingLines(lead),
+    lead.tiktok ? `TikTok: @${lead.tiktok} (die Nachricht geht über TikTok raus)` : '',
+    lead.warm
+      ? `Warmer Kontakt, kennt Yusufs Content: ${lead.warm}. Darauf als Icebreaker eingehen (danke fürs Folgen bzw. auf den Kommentar antworten), nicht so tun, als wäre es eine Kaltakquise.`
+      : '',
+    lead.website ? `Website: vorhanden` : lead.warm ? 'Website: nicht geprüft, nichts über eine Website behaupten' : 'Keine eigene Website',
+    lead.website || !lead.warm ? findingLines(lead) : '',
     visitLine(lead),
     '',
     'Schreib die erste Nachricht und die Nachfass-Nachricht.',
