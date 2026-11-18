@@ -6,6 +6,16 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ---
 
+## 18.11.2026
+
+### Technik
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Sicherheitsupdate für das technische Grundgerüst der Website (Next.js) eingespielt. Vorher wurde eine vollständige Sicherung angelegt, danach wurden alle wichtigen Seiten, der SEO-Check und die Anmeldeseiten geprüft | Bekannt gewordene Sicherheitslücken sind geschlossen. Die Website läuft unverändert weiter | [Website ansehen](https://www.kolac-digital.de/), [SEO-Check](https://www.kolac-digital.de/seo-check) |
+
+---
+
 ## 13.11.2026
 
 ### Neue Seite
