@@ -471,24 +471,26 @@ export function findingLines(lead: Pick<OutreachLead, 'website' | 'instagram' | 
 }
 
 /**
- * Ton des Nachfassens (Yusufs Vorgabe 20.11.2026): aus dem Handgelenk, ein bis drei
- * Zeilen, ein kleiner Stachel statt "falls untergegangen". Gilt fuer DRAFT_SYSTEM und
- * FOLLOWUP_SYSTEM, gepruefte Laenge in FOLLOWUP_MAX (lib/outreach.ts).
+ * Ton des Nachfassens (Yusufs Vorgabe 20.11.2026, zweite Fassung): einfaches Deutsch,
+ * zeigt schlicht, was der Betrieb verliert, wenn er nichts tut. Kein Slang ("nix",
+ * "passt's", "Ey"), keine Werbe-Schlusssätze. Gilt fuer DRAFT_SYSTEM und FOLLOWUP_SYSTEM,
+ * Pruefung lintMessage(t, { followup: true }) in lib/outreach.ts.
  */
-const FOLLOWUP_STYLE = `So klingt das Nachfassen: wie eine schnelle DM unter Bekannten, aus dem Handgelenk getippt. Ein bis drei kurze Zeilen, 60 bis 200 Zeichen, ohne Grußformel und ohne "LG Yusuf".
-- Kein "Hey ihr", kein "Hallo", keine Anrede mit Namen. Direkt einsteigen, z. B. "Ey, was los?", "Und, was sagt ihr?", "Na, noch dabei?". Jedes Mal anders.
-- Nie "falls untergegangen", "wollte nochmal nachhaken", "kurze Erinnerung" oder Ähnliches. Keine Entschuldigung fürs Schreiben.
-- Ein kleiner Stachel, leicht provokant, aber nie beleidigend: Warten kostet. Z. B. "Warten macht's nicht besser.", "Bis dahin landen die Anfragen beim Nachbarn.", "Gerade lasst ihr da Geld liegen." Darf an einen Fund oder die Punktzahl aus der ersten Nachricht anknüpfen ("31 von 100 bei Google, da bleibt Geld liegen"), muss aber nicht. Nichts Neues behaupten, keine Zahlen erfinden.
-- Der Entwurf ist kostenlos, das darf kurz anklingen ("Entwurf kostet dich nix").
-- Locker raus: "Passt's, meld dich gern." oder "Wenn nicht, auch gut." Kein Druck, kein Betteln.
-- Eine Frage muss drin sein (meist schon der Einstieg).
-- Gleiche Anrede wie die erste Nachricht (du, ihr oder Sie), nicht mischen. Bei Sie-Form genauso kurz, nur höflicher ("Und, was sagen Sie?").
-- Kein Link, kein Preis, höchstens ein Emoji.
+const FOLLOWUP_STYLE = `So klingt das Nachfassen: einfaches, normales Deutsch, wie man es einem Bekannten schreibt. Drei kurze Sätze, 120 bis 240 Zeichen, ohne Begrüßung und ohne Grußformel.
+1. Was gerade passiert, konkret aus dem wichtigsten Fund oder der Punktzahl der ersten Nachricht (z. B. "Auf eurer Seite kann man nicht online buchen.", "Bei Google seid ihr nirgends auf Seite 1.").
+2. Was der Betrieb dadurch verliert, schlicht und ehrlich: Kunden, Termine, Aufträge gehen woanders hin (z. B. "Wer abends einen Termin will, geht dann zu einem anderen Friseur."). Bei High-Ticket gern, dass jede verlorene Anfrage ein ganzer Auftrag ist.
+3. Eine einfache Frage: in der Nähe "Soll ich kurz vorbeikommen und euch zeigen, wie das aussehen könnte?", sonst "Soll ich euch zeigen, wie es besser geht?". Bei Sie-Form "Darf ich Ihnen zeigen …?".
+Regeln:
+- Kein Slang und keine Werbesprache: nicht "nix", "passt's", "Ey", "halt", "Na,", "meldet euch gern", "kostet euch nix", "Warten macht's nicht besser". Keine Ausrufezeichen, keine Emojis.
+- Nie "falls untergegangen", "wollte nochmal nachhaken", "kurze Erinnerung". Keine Begrüßung ("Hey", "Hallo"), kein "LG Yusuf".
+- Fachwörter übersetzen: statt "Seitentitel" "die Stelle, die Google zuerst liest", statt "Meta-Beschreibung" "der kurze Text unter eurer Seite bei Google".
+- Nur Funde aus der ersten Nachricht, nichts Neues behaupten, keine Zahlen erfinden. Den Punkt "Nicht sicher" / HTTPS nie wiederholen.
+- Gleiche Anrede wie die erste Nachricht (du, ihr oder Sie), nicht mischen. Kein Link, kein Preis.
 
-Beispiele für den Ton (nicht wörtlich übernehmen):
-"Ey, was los? 😄 Warten macht's nicht besser. Passt's, meld dich gern."
-"Und, was sagt ihr? Mit 38 von 100 bei Google lasst ihr gerade Anfragen liegen. Entwurf kostet euch nix."
-"Na, noch Lust auf den Entwurf? Bis dahin bucht die Kundschaft halt woanders. Wenn nicht, auch gut."`;
+Beispiele (nicht wörtlich übernehmen):
+"Auf eurer Seite kann man nicht online buchen. Wer abends einen Termin will, geht dann zu einem anderen Friseur. Soll ich kurz vorbeikommen und euch zeigen, wie das aussehen könnte?"
+"Bei Google bist du nirgends auf Seite 1. Wer eine neue Heizung sucht, ruft dann zuerst bei anderen an. Soll ich dir zeigen, wie man das ändert?"
+"Paare können bei euch nur per Anruf anfragen. Wer abends Locations vergleicht, schreibt dann der nächsten. Jede verlorene Anfrage ist eine ganze Hochzeit. Soll ich vorbeikommen und es euch zeigen?"`;
 
 /**
  * Systemprompt fuer die erste Nachricht und das Nachfassen. Fest, damit er gecacht

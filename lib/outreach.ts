@@ -173,12 +173,14 @@ const BANNED: [RegExp, string][] = [
   [/\{\{|\}\}|\[name\]|\[studio\]|lorem/i, 'Platzhalter nicht ersetzt'],
 ];
 
-/** Instagram-Nachfassen: ein bis drei Zeilen aus dem Handgelenk (Yusufs Vorgabe 20.11.2026). */
-export const FOLLOWUP_MAX = 220;
+/** Instagram-Nachfassen: drei kurze Sätze in einfachem Deutsch (Yusufs Vorgabe 20.11.2026). */
+export const FOLLOWUP_MAX = 260;
 const FOLLOWUP_BANNED: [RegExp, string][] = [
   [/untergegangen|nachhaken|erinnern|erinnerung/i, 'Klingt nach Erinnerung („untergegangen“, „nachhaken“)'],
   [/^\s*(hey|hallo|hi)\b/i, 'Fängt mit einer Begrüßung an, lieber direkt einsteigen'],
   [/\b(LG|liebe grüße|viele grüße)\b/i, 'Grußformel weglassen'],
+  [/\bnix\b|passt'?s\b|^\s*(ey|na)\b|\bhalt\b|meldet? (euch|dich) gern|warten macht/i, 'Slang oder Werbesatz („nix“, „passt’s“, „meldet euch gern“), lieber einfaches Deutsch'],
+  [/!/, 'Ausrufezeichen weglassen'],
 ];
 
 /**

@@ -3,6 +3,7 @@
  * vorschreiben, passend zur DM, die laut Dashboard wirklich rausging.
  *
  *   npx tsx scripts/outreach/followups.mts [--ids a,b] [--probe]
+ *   npx tsx scripts/outreach/followups.mts --datei texte.json [--probe]   (von Hand geschrieben, ohne API)
  *
  * Ohne --alle nur Betriebe ohne Nachfass-Text oder mit einem, der vor dem Versand
  * zusammen mit der DM entstand (also alle, die noch nicht nachgefasst sind).
@@ -11,7 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { draftCost, generateFollowup } from '../../lib/outreach-draft.ts';
-import type { OutreachLead } from '../../lib/outreach.ts';
+import { lintMessage, type OutreachLead } from '../../lib/outreach.ts';
 import { loadEnv } from './store.mts';
 
 const probe = process.argv.includes('--probe');
@@ -29,6 +30,26 @@ async function call<T>(body: unknown): Promise<T> {
   const json = (await res.json().catch(() => ({}))) as T & { error?: string };
   if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
   return json;
+}
+
+// --datei texte.json: von Claude Code im Abo geschriebene Texte { "<lead-id>": "Text" }
+// pruefen und uebertragen, ohne API-Kosten
+const fileArg = process.argv.includes('--datei') ? process.argv[process.argv.indexOf('--datei') + 1] : null;
+if (fileArg) {
+  const texts = JSON.parse(readFileSync(fileArg, 'utf8')) as Record<string, string>;
+  const updates = Object.entries(texts).map(([id, followup]) => ({ id, followup: followup.trim() }));
+  let bad = 0;
+  for (const u of updates) {
+    const w = lintMessage(u.followup, { first: true, followup: true });
+    if (w.length) {
+      bad++;
+      console.log(`${u.id}: ${w.join(' | ')}`);
+    }
+  }
+  if (bad || probe) process.exit(bad ? 1 : 0);
+  const { changed } = await call<{ changed: number }>({ action: 'followups', updates });
+  console.log(`Im Dashboard gespeichert: ${changed} von ${updates.length} (nur Status „gesendet“).`);
+  process.exit(0);
 }
 
 const { leads } = await call<{ leads: OutreachLead[] }>({ action: 'pull' });
