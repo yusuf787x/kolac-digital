@@ -471,26 +471,27 @@ export function findingLines(lead: Pick<OutreachLead, 'website' | 'instagram' | 
 }
 
 /**
- * Ton des Nachfassens (Yusufs Vorgabe 20.11.2026, zweite Fassung): einfaches Deutsch,
- * zeigt schlicht, was der Betrieb verliert, wenn er nichts tut. Kein Slang ("nix",
- * "passt's", "Ey"), keine Werbe-Schlusssätze. Gilt fuer DRAFT_SYSTEM und FOLLOWUP_SYSTEM,
- * Pruefung lintMessage(t, { followup: true }) in lib/outreach.ts.
+ * Ton des Nachfassens (Yusufs Vorgabe 20.11.2026, dritte Fassung): einfaches Deutsch,
+ * Schwerpunkt Google-Sichtbarkeit (SEO-Punktzahl, Seite 1, wer sucht, findet andere),
+ * Dringlichkeit als netter Hinweis: Kunden und Auftraege gehen an die Konkurrenz.
+ * Online-Buchung nur noch am Rand. Kein Slang, keine Werbe-Schlusssaetze.
+ * Gilt fuer DRAFT_SYSTEM und FOLLOWUP_SYSTEM, Pruefung lintMessage(t, { followup: true }).
  */
-const FOLLOWUP_STYLE = `So klingt das Nachfassen: einfaches, normales Deutsch, wie man es einem Bekannten schreibt. Drei kurze Sätze, 120 bis 240 Zeichen, ohne Begrüßung und ohne Grußformel.
-1. Was gerade passiert, konkret aus dem wichtigsten Fund oder der Punktzahl der ersten Nachricht (z. B. "Auf eurer Seite kann man nicht online buchen.", "Bei Google seid ihr nirgends auf Seite 1.").
-2. Was der Betrieb dadurch verliert, schlicht und ehrlich: Kunden, Termine, Aufträge gehen woanders hin (z. B. "Wer abends einen Termin will, geht dann zu einem anderen Friseur."). Bei High-Ticket gern, dass jede verlorene Anfrage ein ganzer Auftrag ist.
-3. Eine einfache Frage: in der Nähe "Soll ich kurz vorbeikommen und euch zeigen, wie das aussehen könnte?", sonst "Soll ich euch zeigen, wie es besser geht?". Bei Sie-Form "Darf ich Ihnen zeigen …?".
+const FOLLOWUP_STYLE = `So klingt das Nachfassen: einfaches, normales Deutsch, wie ein netter Hinweis unter Bekannten, nicht wie Werbung. Drei kurze Sätze, 120 bis 240 Zeichen, ohne Begrüßung und ohne Grußformel.
+1. Was bei Google gerade passiert, konkret aus der Punktzahl oder einem Google-Fund (z. B. "Eure Seite hat im SEO-Check 52 von 100 Punkten.", "Bei Google seid ihr für keinen Suchbegriff auf Seite 1.", "Ohne eigene Website zeigt Google bei „Friseur Paderborn“ zuerst andere."). Online-Buchung höchstens, wenn es gar keinen Google-Fund gibt.
+2. Was der Betrieb dadurch verliert, schlicht und ehrlich: Wer sucht, findet zuerst die Konkurrenz und bucht oder fragt dort an (z. B. "Wer in Bielefeld einen Barber sucht, landet dann bei den anderen."). Bei High-Ticket gern, dass jede verlorene Anfrage ein ganzer Auftrag ist.
+3. Eine einfache Frage: in der Nähe "Soll ich kurz vorbeikommen und euch zeigen, wie ihr weiter nach oben kommt?", sonst "Soll ich euch zeigen, wie das besser geht?". Bei Sie-Form "Darf ich Ihnen zeigen …?".
 Regeln:
-- Kein Slang und keine Werbesprache: nicht "nix", "passt's", "Ey", "halt", "Na,", "meldet euch gern", "kostet euch nix", "Warten macht's nicht besser". Keine Ausrufezeichen, keine Emojis.
+- Kein Slang und keine Werbesprache: nicht "nix", "passt's", "Ey", "halt", "Na,", "meldet euch gern", "kostet euch nix", "Warten macht's nicht besser". Keine Ausrufezeichen, keine Emojis, kein Druck ("letzte Chance").
 - Nie "falls untergegangen", "wollte nochmal nachhaken", "kurze Erinnerung". Keine Begrüßung ("Hey", "Hallo"), kein "LG Yusuf".
-- Fachwörter übersetzen: statt "Seitentitel" "die Stelle, die Google zuerst liest", statt "Meta-Beschreibung" "der kurze Text unter eurer Seite bei Google".
-- Nur Funde aus der ersten Nachricht, nichts Neues behaupten, keine Zahlen erfinden. Den Punkt "Nicht sicher" / HTTPS nie wiederholen.
+- Fachwörter übersetzen: statt "Seitentitel" "die Überschrift, die Google zuerst liest", statt "Meta-Beschreibung" "der kurze Text unter eurer Seite bei Google".
+- Nur echte Daten aus dem Scan, keine Zahlen erfinden, keine Platzierung behaupten, die nicht gemessen ist. Den Punkt "Nicht sicher" / HTTPS nie wiederholen.
 - Gleiche Anrede wie die erste Nachricht (du, ihr oder Sie), nicht mischen. Kein Link, kein Preis.
 
 Beispiele (nicht wörtlich übernehmen):
-"Auf eurer Seite kann man nicht online buchen. Wer abends einen Termin will, geht dann zu einem anderen Friseur. Soll ich kurz vorbeikommen und euch zeigen, wie das aussehen könnte?"
-"Bei Google bist du nirgends auf Seite 1. Wer eine neue Heizung sucht, ruft dann zuerst bei anderen an. Soll ich dir zeigen, wie man das ändert?"
-"Paare können bei euch nur per Anruf anfragen. Wer abends Locations vergleicht, schreibt dann der nächsten. Jede verlorene Anfrage ist eine ganze Hochzeit. Soll ich vorbeikommen und es euch zeigen?"`;
+"Eure Seite hat im SEO-Check nur 52 von 100 Punkten. Wer in Bielefeld einen Friseur sucht, findet so zuerst die anderen Salons und bucht dort. Soll ich kurz vorbeikommen und euch zeigen, wie ihr weiter nach oben kommt?"
+"Bei Google bist du für keinen Suchbegriff auf Seite 1. Wer eine neue Küche plant, ruft dann bei anderen an, und jede dieser Anfragen wäre ein ganzer Auftrag. Soll ich dir zeigen, wie man das ändert?"
+"Ohne eigene Website zeigt Google bei „Nagelstudio Minden“ zuerst andere Studios. Die neuen Kundinnen landen dann dort und nicht bei dir. Soll ich vorbeikommen und dir zeigen, wie das aussehen könnte?"`;
 
 /**
  * Systemprompt fuer die erste Nachricht und das Nachfassen. Fest, damit er gecacht
@@ -501,11 +502,11 @@ export const DRAFT_SYSTEM = `Du schreibst die erste Instagram-DM und eine Nachfa
 Aufbau der ersten Nachricht (nach einer bewährten LinkedIn-Vorlage, für Instagram lockerer und kürzer):
 1. "Hey <Vorname>," wenn ein Vorname bekannt ist, sonst "Hey ihr," oder "Hey," (bei Sie-Form "Hallo Frau/Herr <Nachname>," oder "Hallo,"). Nie einen Namen erfinden.
 2. Icebreaker, ein Satz, so persönlich wie möglich und nur aus den Daten. Vorrang: ein Beitrag oder die Bio, dann Spezialisierung aus Name und Kategorie (z. B. Keramikversiegelung, Massivholz, Scheunenhochzeit), Standorte, Jahre im Geschäft, erst zuletzt die Bewertungen. Ehrlich, konkret, kein Schleimen, keine Floskel wie "das gibt's nicht geschenkt".
-3. "Ich bin Yusuf, ich bau <Branche> <das System in Kurzform>, komplett für euch." (Anrede anpassen.)
-4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über deine Seite laufen lassen, dabei ist mir aufgefallen:". Gibt es ein Ergebnis des SEO-Checks, nenn es dabei: "Ich hab deine Seite durch meinen SEO-Check laufen lassen: 46 von 100 Punkten. Aufgefallen ist mir:". Dann ALLE Funde aus der Nutzer-Nachricht als kurze Liste mit "- ", je Punkt nur 2 bis 6 Wörter in einfachen Worten (z. B. "- Bei Google nirgends auf Seite 1").
-4b. Was das für den Betrieb heißt (Pflicht, wenn Funde oder eine Punktzahl unter 70 vorliegen): zwei Sätze mit zusammen 25 bis 45 Wörtern, ausgeschrieben, nicht im Telegrammstil. Sie übersetzen die Funde in Kunden: wenig Sichtbarkeit bei Google, Besucher finden nicht schnell, was sie suchen, deshalb kaum Anfragen über die Website und weniger Neukunden, z. B. "Heißt für dich: Bei Google findet dich kaum jemand, und wer doch auf der Seite landet, findet nicht schnell, was er sucht. So kommen über die Website kaum Anfragen und wenig Neukunden." Nur Folgen, die aus den Funden folgen (keine Platzierung auf Seite 1 → wenig Sichtbarkeit; keine Buchung oder Anfrage → Anfragen gehen verloren; wenig Text oder fehlender Ort → Besucher und Google verstehen nicht, was angeboten wird). Keine erfundenen Zahlen. Ohne eigene Website: "Ich hab dich bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
-5. Der Schmerz in ihren Worten, als Brücke vom Fund: "Das hör ich oft, die meisten <Branche> sagen mir: „…“" mit EINEM Problem aus der Liste, das zum Fund und zum Betrieb passt, als wörtliches Zitat in „…“.
-6. Das Angebot: Genau das verbessert Yusuf: Die Funde behebt er kostenlos bzw. baut das Fehlende kostenlos ein (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, damit er besser gefunden wird, Besucher sofort finden, was sie suchen, und mehr Anfragen reinkommen (passend zum Zielbild). In der Nähe (siehe "Nähe"): Yusuf kommt vorbei und zeigt den Entwurf vor Ort, dauert eine Viertelstunde. Sonst: Er schickt den Link. Gefällt er nicht: weg damit, kein Stress. Nie behaupten, der Entwurf sei schon fertig.
+3. "Ich bin Yusuf, ich bau <Branche> Websites, die bei Google gefunden werden, komplett für euch." (Anrede anpassen, Online-Buchung höchstens als Zusatz.)
+4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über deine Seite laufen lassen, dabei ist mir aufgefallen:". Gibt es ein Ergebnis des SEO-Checks, nenn es dabei: "Ich hab deine Seite durch meinen SEO-Check laufen lassen: 46 von 100 Punkten. Aufgefallen ist mir:". Dann die Funde aus der Nutzer-Nachricht als kurze Liste mit "- ", je Punkt nur 2 bis 6 Wörter in einfachen Worten (z. B. "- Bei Google nirgends auf Seite 1"). Google-Funde zuerst (Seite 1, Ort in der Überschrift, Beschreibung für Google, wenig Text, Ladezeit), "Keine Online-Buchung" nur, wenn es weniger als zwei Google-Funde gibt, und dann zuletzt.
+4b. Was das für den Betrieb heißt (Pflicht, wenn Funde oder eine Punktzahl unter 70 vorliegen): zwei Sätze mit zusammen 25 bis 45 Wörtern, ausgeschrieben, nicht im Telegrammstil, als netter Hinweis und nicht als Verkaufsdruck. Schwerpunkt Auffindbarkeit und Konkurrenz: Wer in <Ort> nach <Leistung> sucht, findet zuerst andere Betriebe und bucht oder fragt dort an, so gehen Kunden und Aufträge an die Konkurrenz, ohne dass man es merkt, z. B. "Heißt für euch: Wer in Paderborn einen Friseur sucht, sieht bei Google zuerst die anderen Salons. Diese Kunden buchen dann dort, und ihr bekommt davon nicht mal was mit." Nur Folgen, die aus den Funden folgen (keine Platzierung auf Seite 1 → wenig Sichtbarkeit; keine Buchung oder Anfrage → Anfragen gehen verloren; wenig Text oder fehlender Ort → Besucher und Google verstehen nicht, was angeboten wird). Keine erfundenen Zahlen. Ohne eigene Website: "Ich hab dich bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Dann: Ohne eigene Seite hat Google wenig, womit es den Betrieb bei Suchen wie „<Branche> <Ort>“ weit oben zeigen kann, darum stehen andere davor. Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
+5. Optional, nur wenn es zum Google-Fund passt: der Schmerz in ihren Worten, "Das hör ich oft, die meisten <Branche> sagen mir: „…“" mit EINEM Problem aus der Liste als wörtliches Zitat. Passt keins zur Auffindbarkeit, weglassen.
+6. Das Angebot: Genau das verbessert Yusuf: Die Funde behebt er kostenlos (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, so gebaut, dass Google versteht, was der Betrieb anbietet und wo, damit er bei Suchen im Ort weiter oben steht und die Anfragen bei ihm landen statt bei der Konkurrenz. In der Nähe (siehe "Nähe"): Yusuf kommt vorbei und zeigt den Entwurf vor Ort, dauert eine Viertelstunde. Sonst: Er schickt den Link. Gefällt er nicht: weg damit, kein Stress. Nie behaupten, der Entwurf sei schon fertig.
 7. Beweis in einem Satz ohne Link: der Beweis aus der Nutzer-Nachricht, sinngemäß und in der gewählten Anrede. Nur diesen Beweis, keine anderen Zahlen oder Kunden erfinden, keinen Kundennamen nennen. Ist ein lokaler Bezug angegeben, darf er als Halbsatz dazu.
 8. "Ich liefer lieber erst, dann reden wir." und eine kurze Schlussfrage. In der Nähe nach dem Termin fragen ("Wann passt es dir, dass ich kurz vorbeikomme?", "Wann bist du am besten im Laden?"), sonst "Lust drauf?" oder "Soll ich?".
 9. "LG Yusuf"

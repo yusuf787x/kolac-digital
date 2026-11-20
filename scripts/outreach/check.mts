@@ -6,6 +6,7 @@
  *
  * --ungeprueft: nur Betriebe ohne SEO-Check (schon gepruefte ueberspringen)
  * --mit-text:   nur Betriebe, die schon einen Text haben
+ * --ohne-text:  nur pruefen, Texte nicht per API schreiben (Claude Code schreibt sie im Abo)
  *   node scripts/outreach/sync.mjs push && node scripts/outreach/sync.mjs pull
  *
  * Je Betrieb:
@@ -36,6 +37,7 @@ const from = Number(flag('--ab') ?? 0);
 const probe = args.includes('--probe');
 const onlyUnchecked = args.includes('--ungeprueft');
 const withText = args.includes('--mit-text');
+const noText = args.includes('--ohne-text');
 
 // Gleiche Reihenfolge wie die Ansicht „Schreiben“ im Dashboard
 const HIGH_TICKET = new Set<Branch>(['kueche', 'bad', 'galabau', 'tischlerei', 'ausbau', 'hochzeitslocation', 'brautmode', 'aufbereitung', 'kfz', 'juwelier', 'aesthetik']);
@@ -48,7 +50,7 @@ const todo = list.slice(from, from + top);
 console.log(`${todo.length} Betriebe: ${todo.map((l) => l.name).join(' · ')}`);
 if (probe) process.exit(0);
 
-loadEnv(['ANTHROPIC_API_KEY', 'DATAFORSEO_LOGIN', 'DATAFORSEO_PASSWORD', 'PAGESPEED_API_KEY', 'KOLAC_PORTAL_TOKEN']);
+loadEnv([...(noText ? [] : ['ANTHROPIC_API_KEY']), 'DATAFORSEO_LOGIN', 'DATAFORSEO_PASSWORD', 'PAGESPEED_API_KEY', 'KOLAC_PORTAL_TOKEN']);
 const { runSeoCheck } = await import('../../lib/seo-check/run.ts');
 
 // --- Instagram von der Website ---
@@ -180,7 +182,7 @@ async function one(lead: Lead) {
   }
 
   // 3. Text
-  if (lead.instagram) {
+  if (lead.instagram && !noText) {
     try {
       const d = await generateDraft(lead as unknown as OutreachLead);
       lead.dm = d.dm;
