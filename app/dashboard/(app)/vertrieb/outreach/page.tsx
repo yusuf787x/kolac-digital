@@ -43,6 +43,9 @@ const dayKey = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('sv-SE'
 const formatDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('de-DE') : '');
 
 function inView(l: OutreachLead, v: View): boolean {
+  // Kein Interesse ist erledigt: taucht in keiner Liste mehr auf. Der Eintrag bleibt
+  // gespeichert, damit der Betrieb bei neuen Suchen nie wieder angeschrieben wird.
+  if (l.status === 'kein-interesse') return false;
   switch (v) {
     case 'schreiben':
       // Ohne Text nur mit geprueftem Bedarf und Instagram, der Text laesst sich auf der Karte schreiben
@@ -74,7 +77,7 @@ const rank = (l: OutreachLead) =>
 const EMPTY: Record<View, string> = {
   schreiben: 'Alle Betriebe mit Text sind angeschrieben. Für neue in Claude Code sagen: „Outreach: Branche, Stadt“.',
   mail: 'Noch keine Betriebe per Mail. Passt das Instagram-Profil auf einer Karte nicht, dort „Kein Instagram“ drücken: Der Betrieb landet hier und bekommt eine Mail mit Auswertung seiner Website.',
-  nachfassen: `Gerade ist niemand dran. Nachgefasst wird einmal, ${OUTREACH_FOLLOWUP_DAYS} Tage nach der ersten Nachricht.`,
+  nachfassen: `Gerade ist niemand dran. Nachgefasst wird einmal, ${OUTREACH_FOLLOWUP_DAYS} Tage nach der ersten Nachricht. Kommt danach nichts, „Kein Interesse“ drücken: der Betrieb verschwindet und wird nie wieder angeschrieben.`,
   gesendet: 'Noch nichts gesendet.',
   antworten: 'Noch keine Antworten. Antwortet jemand, hier auf „Geantwortet“ setzen und die Antwort Claude zeigen.',
   alle: 'Noch keine Betriebe. In Claude Code sagen: „Outreach: Kosmetikstudios Bielefeld“.',
@@ -443,7 +446,9 @@ function LeadCard({
   };
 
   const now = () => new Date().toISOString();
-  const warnings = text ? lintMessage(text, { first: !l.thread?.length, max: mail ? (followMode ? 500 : MAIL_MAX) : followMode ? 750 : DM_MAX }) : [];
+  const warnings = text
+    ? lintMessage(text, mail ? { first: !l.thread?.length, max: followMode ? 500 : MAIL_MAX } : followMode ? { first: !l.thread?.length, followup: true } : { first: !l.thread?.length, max: DM_MAX })
+    : [];
   const showReplies = !!l.sentAt || !!l.thread?.length;
   const igIdleDays = l.ig?.lastPostAt ? Math.floor(daysSince(l.ig.lastPostAt)) : null;
   const igInfo = l.ig

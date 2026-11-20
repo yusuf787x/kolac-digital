@@ -171,6 +171,14 @@ const BANNED: [RegExp, string][] = [
   [/\{\{|\}\}|\[name\]|\[studio\]|lorem/i, 'Platzhalter nicht ersetzt'],
 ];
 
+/** Instagram-Nachfassen: ein bis drei Zeilen aus dem Handgelenk (Yusufs Vorgabe 20.11.2026). */
+export const FOLLOWUP_MAX = 220;
+const FOLLOWUP_BANNED: [RegExp, string][] = [
+  [/untergegangen|nachhaken|erinnern|erinnerung/i, 'Klingt nach Erinnerung („untergegangen“, „nachhaken“)'],
+  [/^\s*(hey|hallo|hi)\b/i, 'Fängt mit einer Begrüßung an, lieber direkt einsteigen'],
+  [/\b(LG|liebe grüße|viele grüße)\b/i, 'Grußformel weglassen'],
+];
+
 /**
  * Hinweise zu einer DM, bevor sie rausgeht. Nur Hinweise, nichts wird
  * blockiert: Yusuf entscheidet.
@@ -179,11 +187,12 @@ const BANNED: [RegExp, string][] = [
  * first: Erstnachricht oder Nachfassen, bevor das Studio geantwortet hat. Dann gar kein Link.
  * max: Zeichengrenze (Instagram 750, E-Mail mehr, weil die Auswertung drinsteht).
  */
-export function lintMessage(text: string, opts: { first?: boolean; max?: number } = {}): string[] {
+export function lintMessage(text: string, opts: { first?: boolean; max?: number; followup?: boolean } = {}): string[] {
   const t = text.trim();
   const out: string[] = [];
   if (!t) return out;
-  const max = opts.max ?? 750;
+  const max = opts.max ?? (opts.followup ? FOLLOWUP_MAX : 750);
+  if (opts.followup) for (const [re, label] of FOLLOWUP_BANNED) if (re.test(t)) out.push(label);
   if (t.length > max) out.push(`Mit ${t.length} Zeichen recht lang (Ziel unter ${max})`);
   // Erste Nachricht ohne Link (wirkt wie Werbung). In Antworten ist die eigene Case Study erlaubt, fremde Links nie.
   const links = t.match(/(https?:\/\/)?(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)*\.(de|com|net|io|ee|app|co)(\/[^\s]*)?/gi) ?? [];

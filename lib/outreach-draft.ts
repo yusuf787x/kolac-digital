@@ -91,7 +91,7 @@ export async function generateDraft(lead: OutreachLead & { contact?: string }, c
     DRAFT_SYSTEM,
     draftContext(lead, branch),
     (t) => parseDraft(t),
-    (p) => [...lintMessage(p.dm, { first: true, max: DM_MAX }), ...lintMessage(p.followup, { first: true }).map((w) => `Nachfassen: ${w}`)],
+    (p) => [...lintMessage(p.dm, { first: true, max: DM_MAX }), ...lintMessage(p.followup, { first: true, followup: true }).map((w) => `Nachfassen: ${w}`)],
     '{"dm": "…", "followup": "…"}',
   );
   return { ...r.result, branch, warnings: r.warnings, usage: r.usage };
@@ -131,7 +131,7 @@ export async function generateFollowup(lead: OutreachLead & { contact?: string }
         return null;
       }
     },
-    (p) => lintMessage(p.followup, { first: true, max: 400 }),
+    (p) => lintMessage(p.followup, { first: true, followup: true }),
     '{"followup": "…"}',
   );
   return { followup: r.result.followup, warnings: r.warnings, usage: r.usage };

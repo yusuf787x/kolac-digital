@@ -471,6 +471,26 @@ export function findingLines(lead: Pick<OutreachLead, 'website' | 'instagram' | 
 }
 
 /**
+ * Ton des Nachfassens (Yusufs Vorgabe 20.11.2026): aus dem Handgelenk, ein bis drei
+ * Zeilen, ein kleiner Stachel statt "falls untergegangen". Gilt fuer DRAFT_SYSTEM und
+ * FOLLOWUP_SYSTEM, gepruefte Laenge in FOLLOWUP_MAX (lib/outreach.ts).
+ */
+const FOLLOWUP_STYLE = `So klingt das Nachfassen: wie eine schnelle DM unter Bekannten, aus dem Handgelenk getippt. Ein bis drei kurze Zeilen, 60 bis 200 Zeichen, ohne Grußformel und ohne "LG Yusuf".
+- Kein "Hey ihr", kein "Hallo", keine Anrede mit Namen. Direkt einsteigen, z. B. "Ey, was los?", "Und, was sagt ihr?", "Na, noch dabei?". Jedes Mal anders.
+- Nie "falls untergegangen", "wollte nochmal nachhaken", "kurze Erinnerung" oder Ähnliches. Keine Entschuldigung fürs Schreiben.
+- Ein kleiner Stachel, leicht provokant, aber nie beleidigend: Warten kostet. Z. B. "Warten macht's nicht besser.", "Bis dahin landen die Anfragen beim Nachbarn.", "Gerade lasst ihr da Geld liegen." Darf an einen Fund oder die Punktzahl aus der ersten Nachricht anknüpfen ("31 von 100 bei Google, da bleibt Geld liegen"), muss aber nicht. Nichts Neues behaupten, keine Zahlen erfinden.
+- Der Entwurf ist kostenlos, das darf kurz anklingen ("Entwurf kostet dich nix").
+- Locker raus: "Passt's, meld dich gern." oder "Wenn nicht, auch gut." Kein Druck, kein Betteln.
+- Eine Frage muss drin sein (meist schon der Einstieg).
+- Gleiche Anrede wie die erste Nachricht (du, ihr oder Sie), nicht mischen. Bei Sie-Form genauso kurz, nur höflicher ("Und, was sagen Sie?").
+- Kein Link, kein Preis, höchstens ein Emoji.
+
+Beispiele für den Ton (nicht wörtlich übernehmen):
+"Ey, was los? 😄 Warten macht's nicht besser. Passt's, meld dich gern."
+"Und, was sagt ihr? Mit 38 von 100 bei Google lasst ihr gerade Anfragen liegen. Entwurf kostet euch nix."
+"Na, noch Lust auf den Entwurf? Bis dahin bucht die Kundschaft halt woanders. Wenn nicht, auch gut."`;
+
+/**
  * Systemprompt fuer die erste Nachricht und das Nachfassen. Fest, damit er gecacht
  * wird; alles Betriebsbezogene steht in der Nutzer-Nachricht (draftContext).
  */
@@ -499,7 +519,8 @@ Regeln:
 
 Nicht schreiben, wenn der Betrieb nicht passt: Einkaufszentrum, Kette oder Filiale eines Konzerns, Waschstraße statt Aufbereiter, keine Branche aus der Liste, oder die Daten widersprechen sich. Dann nur {"skip": "kurzer Grund für Yusuf"} ausgeben.
 
-Nachfass-Nachricht: höchstens 350 Zeichen, gleiche Anrede, "falls untergegangen", ein konkreter Punkt aus der ersten Nachricht (die Punktzahl des SEO-Checks oder der wichtigste Fund und was er für den Betrieb heißt), Entwurf kostenlos (in der Nähe: zeig ich dir vor Ort), eine Frage, und "wenn nicht, alles gut, dann meld ich mich nicht nochmal". Mit "LG Yusuf".
+Nachfass-Nachricht (geht nur raus, wenn keine Antwort kommt, und nur einmal):
+${FOLLOWUP_STYLE}
 
 Antworte ausschließlich mit einem JSON-Objekt, ohne Text davor oder danach:
 {"dm": "…", "followup": "…"} oder {"skip": "…"}`;
@@ -508,17 +529,9 @@ Antworte ausschließlich mit einem JSON-Objekt, ohne Text davor oder danach:
  * Systemprompt fuer das Nachfassen nach dem Versand: bezieht sich auf die
  * Nachricht, die wirklich rausging. Fest, damit er gecacht wird.
  */
-export const FOLLOWUP_SYSTEM = `Du schreibst die Nachfass-Nachricht auf Instagram für Yusuf Kolac (Kolac Digital, Bielefeld). Yusuf hat dem Betrieb vor ein paar Tagen eine erste DM geschickt (steht in der Nutzer-Nachricht) und keine Antwort bekommen. Er baut lokalen Betrieben Websites mit Anfrage oder Online-Buchung, komplett für sie, und bietet einen kostenlosen Entwurf an.
+export const FOLLOWUP_SYSTEM = `Du schreibst die Nachfass-Nachricht auf Instagram für Yusuf Kolac (Kolac Digital, Bielefeld). Yusuf hat dem Betrieb vor ein paar Tagen eine erste DM geschickt (steht in der Nutzer-Nachricht) und keine Antwort bekommen. Er bietet einen kostenlosen Website-Entwurf an. Es ist das einzige Nachfassen, danach schreibt er nie wieder.
 
-Aufbau:
-1. Gleiche Anrede wie in der ersten Nachricht ("Hey <Vorname>," / "Hey ihr," / "Hey,").
-2. Locker: "falls meine Nachricht untergegangen ist" oder ähnlich, jedes Mal anders formuliert.
-3. EIN konkreter Punkt aus der ersten Nachricht, damit es nicht wie eine Massen-Erinnerung wirkt: die Punktzahl des SEO-Checks oder der wichtigste Fund, und in einem Halbsatz, was er für den Betrieb heißt (z. B. "dein SEO-Check lag bei 31 von 100, gerade findet dich bei Google kaum jemand").
-4. Das Angebot noch einmal kurz: Entwurf kostenlos. Hat die erste Nachricht Vorbeikommen angeboten, wieder vor Ort anbieten und nach einem Termin fragen ("Hast du diese oder nächste Woche eine Viertelstunde?"), sonst fragen, ob er den Entwurf schicken soll.
-5. "Wenn nicht, alles gut, dann meld ich mich nicht nochmal."
-6. "LG Yusuf"
-
-Regeln: 200 bis 350 Zeichen. Kein Link, kein Preis, keine Emojis außer höchstens einem, keine Floskeln, nichts behaupten, was nicht in der ersten Nachricht oder den Daten steht. Nie behaupten, der Entwurf sei schon fertig. Gleiche Anrede durchhalten.
+${FOLLOWUP_STYLE}
 
 Antworte ausschließlich mit einem JSON-Objekt: {"followup": "…"}`;
 
