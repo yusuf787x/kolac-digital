@@ -209,8 +209,7 @@ export async function sendTaskReminderEmail(items: TaskReminderItem[]): Promise<
   const date = (iso: string) => iso.split('-').reverse().join('.');
   const groups: Array<[string, TaskReminderItem[]]> = [
     ['Überfällig', items.filter((i) => i.daysLeft < 0)],
-    ['Heute und morgen', items.filter((i) => i.daysLeft >= 0 && i.daysLeft <= 1)],
-    ['In den nächsten 7 Tagen', items.filter((i) => i.daysLeft > 1)],
+    ['Heute und morgen', items.filter((i) => i.daysLeft >= 0)],
   ];
   const html = groups
     .filter(([, list]) => list.length)
@@ -236,7 +235,7 @@ export async function sendTaskReminderEmail(items: TaskReminderItem[]): Promise<
       title: 'Deine Aufgaben aus den Kunden-Plänen',
       bodyHtml: `<p style="margin:0;">Diese Punkte stehen im Plan deiner Kunden. Wenn einer erledigt ist, im Admin auf „Umgesetzt“ stellen oder in der CHANGELOG.md abhaken, dann hören die Erinnerungen auf.</p>${html}`,
       button: { label: 'Zur SEO-Übersicht', href: `${portalBaseUrl()}/dashboard/seo` },
-      footnote: 'Erinnerung 7 Tage vorher, am Vortag und am Tag selbst. Überfällige Punkte kommen jeden Montag wieder.',
+      footnote: 'Erinnerung am Vortag. Überfällige Punkte kommen jeden Montag wieder.',
     }),
     text: items.map((i) => `${i.displayName}: ${i.change} (bis ${date(i.dueDate)}, ${when(i.daysLeft)}) ${i.adminLink}`).join('\n'),
   });

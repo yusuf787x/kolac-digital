@@ -379,8 +379,8 @@ function ActivityModal({
               />
             </div>
             <p className="text-xs text-gray-500 sm:col-span-2">
-              Der Kunde sieht den Monat („Geplant für November 2026“), nach dem Termin „In Arbeit“. Du bekommst 7 Tage vorher, am Vortag und am
-              Tag selbst eine Mail, danach montags, bis der Punkt erledigt ist.
+              Der Kunde sieht den Monat („Geplant für November 2026“), nach dem Termin „In Arbeit“. Du bekommst am Vortag eine Mail, danach
+              montags, bis der Punkt erledigt ist.
             </p>
           </div>
         )}

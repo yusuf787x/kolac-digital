@@ -18,12 +18,12 @@ export function daysBetween(fromIso: string, toIso: string): number {
 }
 
 /**
- * Soll heute erinnert werden? 7 Tage vorher, am Vortag, am Tag selbst und
- * danach jeden Montag, bis der Punkt erledigt ist. So kommt keine Mail
- * jeden Tag, aber nichts geraet in Vergessenheit.
+ * Soll heute erinnert werden? Nur am Vortag (Yusuf will nicht eine Woche
+ * vorher erinnert werden, das war zu viel, 20.11.2026) und danach jeden
+ * Montag, bis der Punkt erledigt ist. So geraet nichts in Vergessenheit.
  */
 export function shouldRemind(daysLeft: number, weekday: number): boolean {
-  if (daysLeft === 7 || daysLeft === 1 || daysLeft === 0) return true;
+  if (daysLeft === 1) return true;
   return daysLeft < 0 && weekday === 1;
 }
 
@@ -50,10 +50,10 @@ export async function listOpenTasks(today = todayIso()): Promise<TaskReminderIte
 
 /**
  * Was heute in die Mail gehoert: Gibt es mindestens einen Anlass (siehe
- * shouldRemind), gehen alle ueberfaelligen und alle in 7 Tagen faelligen
+ * shouldRemind), gehen alle ueberfaelligen und alle bis morgen faelligen
  * Punkte mit, damit die Mail den ganzen Stand zeigt.
  */
 export function pickReminders(tasks: TaskReminderItem[], weekday: number): TaskReminderItem[] {
   if (!tasks.some((t) => shouldRemind(t.daysLeft, weekday))) return [];
-  return tasks.filter((t) => t.daysLeft <= 7);
+  return tasks.filter((t) => t.daysLeft <= 1);
 }
