@@ -130,6 +130,8 @@ export const DM_MAX = 1000;
 export const OUTREACH_DAILY_LIMIT = 25;
 /** Nachgefasst wird einmal, so viele Tage nach der ersten Nachricht. */
 export const OUTREACH_FOLLOWUP_DAYS = 3;
+/** Nach dem Nachfassen so viele Tage ohne Antwort: erledigt, verschwindet aus allen Listen (Yusuf, 20.11.2026). */
+export const OUTREACH_GIVE_UP_DAYS = 7;
 
 export function normalizeInstagram(raw: string): string {
   return raw

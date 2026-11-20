@@ -11,6 +11,7 @@ import { MAIL_MAX } from '@/lib/outreach-mail';
 import {
   OUTREACH_DAILY_LIMIT,
   OUTREACH_FOLLOWUP_DAYS,
+  OUTREACH_GIVE_UP_DAYS,
   OUTREACH_STATUS_BADGES,
   OUTREACH_STATUS_LABELS,
   DM_MAX,
@@ -46,6 +47,8 @@ function inView(l: OutreachLead, v: View): boolean {
   // Kein Interesse ist erledigt: taucht in keiner Liste mehr auf. Der Eintrag bleibt
   // gespeichert, damit der Betrieb bei neuen Suchen nie wieder angeschrieben wird.
   if (l.status === 'kein-interesse') return false;
+  // Auf zwei Nachrichten keine Antwort: genauso erledigt, ohne dass Yusuf klicken muss
+  if (l.status === 'nachgefasst' && daysSince(l.followedUpAt) >= OUTREACH_GIVE_UP_DAYS) return false;
   switch (v) {
     case 'schreiben':
       // Ohne Text nur mit geprueftem Bedarf und Instagram, der Text laesst sich auf der Karte schreiben
@@ -77,7 +80,7 @@ const rank = (l: OutreachLead) =>
 const EMPTY: Record<View, string> = {
   schreiben: 'Alle Betriebe mit Text sind angeschrieben. Für neue in Claude Code sagen: „Outreach: Branche, Stadt“.',
   mail: 'Noch keine Betriebe per Mail. Passt das Instagram-Profil auf einer Karte nicht, dort „Kein Instagram“ drücken: Der Betrieb landet hier und bekommt eine Mail mit Auswertung seiner Website.',
-  nachfassen: `Gerade ist niemand dran. Nachgefasst wird einmal, ${OUTREACH_FOLLOWUP_DAYS} Tage nach der ersten Nachricht. Kommt danach nichts, „Kein Interesse“ drücken: der Betrieb verschwindet und wird nie wieder angeschrieben.`,
+  nachfassen: `Gerade ist niemand dran. Nachgefasst wird einmal, ${OUTREACH_FOLLOWUP_DAYS} Tage nach der ersten Nachricht. Kommt danach ${OUTREACH_GIVE_UP_DAYS} Tage nichts, verschwindet der Betrieb von selbst und wird nie wieder angeschrieben.`,
   gesendet: 'Noch nichts gesendet.',
   antworten: 'Noch keine Antworten. Antwortet jemand, hier auf „Geantwortet“ setzen und die Antwort Claude zeigen.',
   alle: 'Noch keine Betriebe. In Claude Code sagen: „Outreach: Kosmetikstudios Bielefeld“.',
