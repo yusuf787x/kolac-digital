@@ -197,3 +197,25 @@ Quelle: Search-Console-Daten aller 6 Kundenportale (Namen hier bewusst weggelass
 - **Darum im Funnel:** Search Console direkt nach dem Erstgespräch einrichten (5 Minuten, Kunde gibt Zugang oder bestätigt per DNS). Ab da läuft der echte Startwert. Kostet uns nichts und ist ein weiterer kleiner Schritt, den der Kunde mit uns geht.
 - **Vorher-Verlauf im Portal (Vorschlag, noch nicht gebaut):** Geschätzte Google-Besucher pro Monat zurück bis Oktober 2020 von DataForSEO (Historical Rank Overview, Schätzung aus Suchbegriffen und Platzierungen, ein paar Cent pro Abruf). Im Portal deutlich als „Schätzung vor Messbeginn“ getrennt von echten Zahlen, **nicht** für die Garantie. Hilft auch bei bestehenden Kunden ohne alte Daten. Grenze: Bei sehr kleinen lokalen Seiten ist die Schätzung oft 0 oder grob.
 - **Weitere echte Quellen, falls vorhanden:** Google-Profil (Aufrufe, Anrufe, Website-Klicks der letzten Monate im Inhaberbereich; per API erst nach Freischaltung durch Google), Google Analytics, Statistik von Wix oder WordPress. Einmal ablesen und im Portal als Startnotiz festhalten.
+
+## 16. Programm, Bausteine und Name (Stand 21.11.)
+
+**Name:** Favorit von Yusuf „Gefunden-Garantie-Paket“ (Alliteration, Garantie steckt im Namen). „Werkstatt-Website-Wende“ verworfen (Zungenbrecher). Endgültige Wahl offen.
+
+**Ablauf als Programm** (Yusuf: „der Kunde soll immer wissen, was er als Nächstes bekommt“). Jeder Schritt endet mit einer Nachricht „Als Nächstes bekommst du …“ und steht als Plan mit Termin im Kundenportal.
+
+| # | Baustein | Wann | Was der Kunde bekommt | Als Nächstes |
+|---|---|---|---|---|
+| 1 | Startwert-Scan | Tag 0 | Search Console eingerichtet, Konkurrenz angesehen, Startwert schriftlich | Entwurf in 7 Tagen |
+| 2 | Erst-sehen-Entwurf | bis Tag 7 | Entwurf der neuen Startseite, 0 € wenn er nicht gefällt | Neubau startet nach Freigabe |
+| 3 | Neubau ohne Nachteile | Woche 2 bis 4 | eine Seite je Leistung und Ort, alle alten Adressen mitgenommen, Texte schreiben wir nach 30 Minuten Gespräch | Livegang |
+| 4 | Maps-Makeover | Woche 1 bis 4 | Google-Profil komplett, Verzeichnisse, Bewertungs-Aufsteller (NFC) | erste Zahlen im Portal |
+| 5 | Themen-Turbo | Tag 1 bis 90 nach Livegang | 10 bis 20 neue Seiten zu dem, was Kunden suchen | Garantie-Prüfung an Tag 90 |
+| 6 | Zahlen-Zentrale | monatlich | Bericht im Portal in einfacher Sprache | nächster Monatsplan |
+
+**Boni:**
+- **Texte inklusive** (vorher „Text-Talk“, Name war unklar): Du redest 30 Minuten mit uns, wir schreiben alle Texte.
+- **NFC-Bewertungs-Aufsteller** für Theke oder Empfang, physisch zum Mitnehmen. **Echte Knappheit:** noch 20 Stück auf Lager (Stand 21.11.). Darf so in Anzeige und Video: „Die ersten 20 Betriebe bekommen …“, danach ersetzen oder nachbestellen.
+- Konkurrenz-Report, 12 Vorlagen für Google-Beiträge (wie oben).
+
+**Garantien:** Erst-sehen-Garantie und Doppelt-gefunden-Garantie (Yusuf: „super“).
