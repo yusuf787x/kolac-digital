@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import type { FunnelVariant } from '@/lib/seo-check/funnel';
-import { VSL_VIDEO_URL } from '@/lib/seo-check/funnel';
+import { NFC_AUFSTELLER_VORRAT, VSL_VIDEO_URL } from '@/lib/seo-check/funnel';
 import { BELEG_SCREENSHOTS, FUNNEL_REVIEWS, PRAXIS_MASSNAHMEN, PRAXIS_WEEKS } from '@/lib/seo-check/proof-data';
 import { site } from '@/lib/site-config';
 
@@ -184,6 +184,123 @@ const STEPS: Array<[string, string]> = [
   ['Vollen Bericht freischalten', 'Mit allen Befunden und Lösungen. Auf Wunsch gehen wir ihn gemeinsam durch.'],
 ];
 
+/** Bausteine des Gefunden-Garantie-Pakets: Nummer, Name, Zeitpunkt, was man bekommt, was danach kommt. */
+const PAKET_BAUSTEINE: Array<[string, string, string, string]> = [
+  ['Startwert-Scan', 'Tag 0', 'Wir richten die Search Console ein, schauen uns deine Konkurrenz an und schreiben deinen Startwert auf.', 'Entwurf deiner Startseite'],
+  ['Erst-sehen-Entwurf', 'bis Tag 7', 'Du siehst den Entwurf deiner neuen Startseite. Gefällt er dir nicht, kostet es dich nichts.', 'Neubau nach deiner Freigabe'],
+  ['Neubau ohne Nachteile', 'Woche 2 bis 4', 'Eine eigene Seite für jede Leistung und jeden Ort. Alles, was deine alte Seite bei Google schon hat, nehmen wir mit.', 'Livegang'],
+  ['Maps-Makeover', 'Woche 1 bis 4', 'Dein Google-Profil machen wir komplett fertig, dazu einheitliche Firmendaten und ein einfacher Weg zu mehr Bewertungen.', 'Erste Zahlen im Kundenportal'],
+  ['Themen-Turbo', '90 Tage nach Livegang', '10 bis 20 neue Seiten zu genau dem, was deine Kunden bei Google suchen.', 'Prüfung der Garantie an Tag 90'],
+  ['Zahlen-Zentrale', 'jeden Monat', 'Dein Kundenportal mit allen Zahlen und jeder Maßnahme. Der Bericht kommt in normalem Deutsch.', 'Plan für den nächsten Monat'],
+];
+
+const GARANTIE_REGELN = [
+  'Gemessen werden die Klicks aus der Google-Suche ohne Suchen mit deinem Firmennamen, in der Google Search Console. Die Zahlen siehst du auch in deinem Kundenportal.',
+  'Startwert sind deine Klicks in den 28 Tagen vor dem Livegang. Gibt es schon ältere Daten, zählt der Schnitt der letzten 3 Monate.',
+  'Ziel: in den Tagen 63 bis 90 nach dem Livegang mindestens doppelt so viele Klicks. Liegt der Startwert unter 10, gelten 20 Klicks als Ziel.',
+  'Du machst mit: Zugänge innerhalb von 7 Tagen, Freigaben innerhalb von 5 Werktagen, Kunden um Bewertungen bitten und nichts ohne Absprache ändern.',
+  'Nach dem Check sagen wir dir, ob die Garantie für deine Website gilt. Ist eine Seite schon sehr stark, vereinbaren wir ein kleineres Ziel.',
+  'Keine Garantie auf Platzierungen oder auf eine bestimmte Zahl an Anfragen.',
+];
+
+function PaketSection() {
+  return (
+    <section className="bg-[var(--color-offwhite)] py-16 md:py-24">
+      <div className="mx-auto max-w-[1100px] px-4 md:px-6">
+        <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Was du bekommst</p>
+        <h2 className={`${H2} mt-2`}>Das Gefunden-Garantie-Paket</h2>
+        <p className="mt-3 max-w-[620px] text-[17px] text-[var(--color-gray)]">
+          Ein fester Ablauf. Du weißt bei jedem Schritt, was als Nächstes kommt.
+        </p>
+
+        {/* Fahrplan: auf dem Handy senkrecht mit Linie, ab md als Raster */}
+        <ol className="mt-10 grid gap-0 md:grid-cols-3 md:gap-4">
+          {PAKET_BAUSTEINE.map(([title, when, text, next], i) => (
+            <li key={title} className="flex gap-4 md:block">
+              <div className="flex flex-col items-center md:hidden">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-blue)] text-[15px] font-bold text-white">
+                  {i + 1}
+                </span>
+                {i < PAKET_BAUSTEINE.length - 1 && <span aria-hidden className="w-px flex-1 bg-[var(--color-blue)] opacity-25" />}
+              </div>
+              <div className="mb-4 flex-1 rounded-[18px] bg-white p-5 shadow-[var(--shadow-sm)] md:mb-0 md:h-full md:p-6">
+                <div className="flex items-center gap-3">
+                  <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-blue)] text-[15px] font-bold text-white md:flex">
+                    {i + 1}
+                  </span>
+                  <span className="rounded-full bg-[var(--color-blue-light)] px-3 py-1 text-[13px] font-semibold text-[var(--color-blue)]">{when}</span>
+                </div>
+                <h3 className="mt-3 text-[17px] font-semibold text-[var(--color-black)]">{title}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-[var(--color-gray)]">{text}</p>
+                <p className="mt-3 text-[13px] text-[var(--color-gray)]">
+                  <span className="font-semibold text-[var(--color-black)]">Als Nächstes:</span> {next}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        {/* Garantien */}
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
+          {[
+            ['Erst-sehen-Garantie', 'Du siehst den Entwurf deiner neuen Startseite, bevor du zahlst. Gefällt er dir nicht, kostet es dich 0 €.'],
+            [
+              'Doppelt-gefunden-Garantie',
+              'Finden dich 90 Tage nach dem Livegang nicht doppelt so viele neue Leute über Google wie vorher, arbeiten wir ohne Monatsbeitrag weiter, bis es so ist.',
+            ],
+          ].map(([title, text]) => (
+            <div key={title} className="rounded-[18px] border-2 border-[var(--color-blue)] bg-white p-6">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Garantie</p>
+              <h3 className="mt-1 text-[20px] font-bold text-[var(--color-black)]">{title}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-[var(--color-black)]">{text}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-[15px] text-[var(--color-gray)]">Die genauen Regeln bekommst du schriftlich im Angebot.</p>
+        <details className="group mt-2 rounded-[12px] bg-white px-4 py-3 shadow-[var(--shadow-sm)]">
+          <summary className="cursor-pointer list-none text-[15px] font-semibold text-[var(--color-black)] [&::-webkit-details-marker]:hidden">
+            <span className="inline-block transition-transform group-open:rotate-90" aria-hidden>
+              ›
+            </span>{' '}
+            Die Spielregeln der Doppelt-gefunden-Garantie kurz
+          </summary>
+          <ul className="mt-3 space-y-2 pb-1">
+            {GARANTIE_REGELN.map((r) => (
+              <li key={r} className="flex gap-3 text-[14px] leading-relaxed text-[var(--color-gray)]">
+                <span aria-hidden className="mt-[1px] text-[var(--color-blue)]">•</span>
+                {r}
+              </li>
+            ))}
+          </ul>
+        </details>
+
+        {/* Boni */}
+        <ul className="mt-8 grid gap-3 md:grid-cols-2">
+          <li className="flex gap-3 rounded-[12px] bg-white px-4 py-3 text-[15px] leading-snug text-[var(--color-black)]">
+            <span aria-hidden className="font-bold text-[var(--color-blue)]">+</span>
+            <span>
+              <span className="font-semibold">Texte inklusive:</span> Du redest 30 Minuten mit uns, wir schreiben alle Texte.
+            </span>
+          </li>
+          {NFC_AUFSTELLER_VORRAT > 0 && (
+            <li className="flex gap-3 rounded-[12px] bg-white px-4 py-3 text-[15px] leading-snug text-[var(--color-black)]">
+              <span aria-hidden className="font-bold text-[var(--color-blue)]">+</span>
+              <span>
+                <span className="font-semibold">Bewertungs-Aufsteller:</span> Die ersten {NFC_AUFSTELLER_VORRAT} Betriebe bekommen einen NFC-Aufsteller für
+                die Theke. Kunde hält das Handy dran und landet direkt bei deinen Google-Bewertungen.
+              </span>
+            </li>
+          )}
+        </ul>
+
+        <a href="#seo-url" className="btn btn-outline mt-8 justify-center">
+          Erst Website prüfen
+        </a>
+      </div>
+    </section>
+  );
+}
+
 export default function FunnelSections({ variant }: { variant: FunnelVariant }) {
   return (
     <>
@@ -319,13 +436,16 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
         </div>
       </section>
 
+      {/* Das Paket: erst Beweis, dann was man bekommt, dann wie man startet */}
+      <PaketSection />
+
       {/* Ablauf */}
-      <section className="bg-[var(--color-offwhite)] py-16 md:py-24">
+      <section className="bg-white py-16 md:py-24">
         <div className="mx-auto max-w-[1100px] px-4 md:px-6">
           <h2 className={H2}>So läuft der Check</h2>
           <ol className="mt-10 grid gap-4 md:grid-cols-3">
             {STEPS.map(([title, text], i) => (
-              <li key={title} className="rounded-[18px] bg-white p-6 shadow-[var(--shadow-sm)]">
+              <li key={title} className="rounded-[18px] bg-[var(--color-offwhite)] p-6">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-blue-light)] text-[15px] font-bold text-[var(--color-blue)]">
                   {i + 1}
                 </span>
@@ -338,9 +458,9 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
       </section>
 
       {/* Über mich */}
-      <section className="bg-white py-16 md:py-24">
+      <section className="bg-[var(--color-offwhite)] py-16 md:py-24">
         <div className="mx-auto grid max-w-[900px] items-center gap-8 px-4 md:grid-cols-[auto_1fr] md:gap-12 md:px-6">
-          <div className="relative mx-auto h-40 w-40 overflow-hidden rounded-full bg-[var(--color-offwhite)] shadow-[var(--shadow-md)] md:h-52 md:w-52">
+          <div className="relative mx-auto h-40 w-40 overflow-hidden rounded-full bg-white shadow-[var(--shadow-md)] md:h-52 md:w-52">
             <Image
               src="/images/yk-portrait.webp"
               alt="Yusuf Kolac, Webdesigner aus Bielefeld"
@@ -365,7 +485,7 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
       </section>
 
       {/* Zweiter Einstieg */}
-      <section className="bg-[var(--color-offwhite)] py-16 md:py-20">
+      <section className="bg-white py-16 md:py-20">
         <div className="mx-auto max-w-[700px] px-4 text-center md:px-6">
           <h2 className={H2}>Wie steht deine Website da?</h2>
           <p className="mx-auto mt-3 max-w-[520px] text-[17px] text-[var(--color-gray)]">Kostenlos, ohne Anmeldung, in rund 30 Sekunden.</p>

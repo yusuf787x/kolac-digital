@@ -36,6 +36,13 @@ export function websiteAlterLabel(v?: string): string {
  */
 export const VSL_VIDEO_URL = '';
 
+/**
+ * NFC-Bewertungs-Aufsteller, die Yusuf noch auf Lager hat (echte Knappheit,
+ * Stand 21.11.2026). Auf den Branchen-Seiten steht „Die ersten X Betriebe
+ * bekommen …“. Bei 0 wird der Satz ausgeblendet.
+ */
+export const NFC_AUFSTELLER_VORRAT = 20;
+
 /*
  * Das Häkchen „Erfolgsmessung an Meta“ erscheint nur, wenn Pixel-ID und
  * Conversions-API-Schlüssel gesetzt sind (lib/seo-check/meta-server.ts,

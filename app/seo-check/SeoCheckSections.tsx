@@ -73,7 +73,7 @@ export default function SeoCheckSections({ faq, showChecked = true }: { faq: { q
       </section>
       )}
 
-      <section className={`${showChecked ? 'bg-[var(--color-offwhite)]' : 'bg-white'} py-16 md:py-24`}>
+      <section className="bg-[var(--color-offwhite)] py-16 md:py-24">
         <div className="mx-auto max-w-[800px] px-4 md:px-6">
           <h2 className="text-[28px] md:text-[36px] font-bold tracking-tight text-[var(--color-black)]">Häufige Fragen</h2>
           <div className="mt-8 space-y-3">

@@ -376,7 +376,7 @@ function Report({
       <div className="mx-auto max-w-[1000px] px-4 md:px-6 space-y-6">
         {data.unlocked && !data.owner && (
           <div ref={bookingRef} className="scroll-mt-[calc(var(--nav-height)+16px)]">
-            <BookingBlock />
+            <BookingBlock variant={variant} />
           </div>
         )}
 
@@ -686,7 +686,7 @@ function LockedTeaser({ result }: { result: SeoCheckResponse['result'] }) {
   );
 }
 
-function BookingBlock() {
+function BookingBlock({ variant }: { variant?: FunnelVariant }) {
   return (
     <div className="rounded-[24px] bg-[var(--color-blue-light)] p-6 md:p-8">
       <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Dein Bericht ist freigeschaltet</p>
@@ -694,7 +694,8 @@ function BookingBlock() {
         Sollen wir dein Ergebnis gemeinsam durchgehen?
       </h2>
       <p className="mt-2 max-w-[640px] text-[17px] leading-relaxed text-[var(--color-gray)]">
-        In einem kurzen Gespräch zeige ich dir, was dir bei Google am meisten bringt. Kostenlos und unverbindlich.
+        In einem kurzen Gespräch zeige ich dir, was dir bei Google am meisten bringt.
+        {variant ? ' Und wie das Gefunden-Garantie-Paket bei dir aussehen würde.' : ''} Kostenlos und unverbindlich.
       </p>
       {VSL_VIDEO_URL && (
         <video
