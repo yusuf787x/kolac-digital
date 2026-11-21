@@ -2,23 +2,41 @@ VSL: Das Gefunden-Garantie-Paket (Bildschirmvideo, ca. 4 Minuten)
 Stand 21.11.2026. Aufbau 1:1 nach Hormozis Scaling-Workshop-VSL (18 Bausteine, siehe Skill hormozi-wissen/references/vsl.md), Ton nach kolac-content/vibe: ehrlich, locker, Sprache der Zielgruppe.
 Alle Zahlen echt: Outreach-Prüfungen OWL (122 voll geprüft, 48 mit höchstens 2 Begriffen auf Seite 1, 24 mit keinem), Praxis-Referenz (19.414 auf 59.666 Einblendungen in 28 Tagen), eigene Seite (rund 3 auf 15 bis 18 Besucher pro Woche über Google).
 Aufnahme: Bildschirm mit einem echten Check-Ergebnis bzw. den Belegen von der Landingpage, du klein im Eck.
-Die Einstiege nimmst du je Branche auf (ca. 40 Sek.). Alles ab „Der Rest“ ist für beide gleich.
+Die Einstiege nimmst du je Branche auf (ca. 40 Sek., vier Branchen in der Vorrunde). Alles ab „Der Rest“ ist für beide gleich.
 
-=== EINSTIEG KFZ ===
+=== EINSTIEG TREPPENLIFT ===
 Kurze Frage an dich.
-Deine Website hat damals irgendwer gemacht. Der Neffe, ein Kumpel oder eine Agentur. Und seitdem hat da keiner mehr reingeschaut?
-Montags ist die Werkstatt voll. Aber eigentlich nur mit Stammkunden?
-Du hast vielleicht schon mal für SEO bezahlt. Und keiner konnte dir sagen, was es gebracht hat?
-Und manchmal fragst du dich, warum die Werkstatt um die Ecke, die ehrlich gesagt schlechter arbeitet, bei Google ganz oben steht?
-Wenn du da ein paar Mal genickt hast, bleib kurz dran.
-
-=== EINSTIEG MAKLER ===
-Kurze Frage an dich.
+Du kaufst Anfragen bei einem Portal. Und wenn du zurückrufst, haben schon zwei andere Firmen angerufen?
 Deine Website hat damals irgendwer gemacht. Und seitdem hat da keiner mehr reingeschaut?
-Deine Eigentümer kommen eigentlich fast nur über Empfehlung?
-Du zahlst jeden Monat für die Portale, und trotzdem landet der Verkaufsauftrag beim Kollegen?
-Und wenn jemand in deiner Stadt „Haus verkaufen“ sucht, findet er alle möglichen. Nur dich nicht?
+Die Kinder suchen für ihre Eltern bei Google nach einem Treppenlift. Und finden alle möglichen, nur dich nicht?
+Und jeden Monat fragst du dich, was dich eine Anfrage eigentlich wirklich kostet?
 Wenn du da ein paar Mal genickt hast, bleib kurz dran.
+
+=== EINSTIEG GEBÄUDEREINIGUNG ===
+Kurze Frage an dich.
+Du könntest locker noch zwei, drei Objekte mehr machen. Aber die Aufträge fehlen?
+Neue Kunden kommen eigentlich nur, wenn du selbst rumtelefonierst oder einer dich empfiehlt?
+Wenn eine Firma in deiner Stadt eine neue Reinigung sucht, googelt sie. Findet sie dich?
+Und den großen Dauerauftrag bekommt am Ende der, der bei Google oben steht. Nicht der, der am saubersten arbeitet?
+Wenn du da ein paar Mal genickt hast, bleib kurz dran.
+
+=== EINSTIEG HÖRAKUSTIK ===
+Kurze Frage an dich.
+Du nimmst dir Zeit für jeden Kunden und berätst persönlich. Und trotzdem stehen bei Google die großen Ketten vorne?
+Wenn jemand in deiner Stadt nach Hörgeräten sucht, landet er bei einer Kette oder in einem Onlineshop. Nicht bei dir?
+Deine Website hat damals irgendwer gemacht. Und seitdem hat da keiner mehr reingeschaut?
+Neue Kunden kommen vor allem über Empfehlung. Und wenn die mal ausbleibt, wird es ruhig im Laden?
+Wenn du da ein paar Mal genickt hast, bleib kurz dran.
+
+=== EINSTIEG AUTOHAUS ===
+Kurze Frage an dich.
+Wer in deiner Stadt „Auto verkaufen“ googelt, landet bei den großen Ankaufportalen. Nicht bei dir?
+Die Herstellerseite habt ihr. Aber wenn jemand einen Gebrauchten oder eine Werkstatt in der Nähe sucht, tauchst du nicht auf?
+Du zahlst jeden Monat für die Börsen, und trotzdem kommen zu wenig eigene Anfragen?
+Und die guten Autos kauft am Ende ein Portal, obwohl sie bei dir auf dem Hof stehen könnten?
+Wenn du da ein paar Mal genickt hast, bleib kurz dran.
+
+(Einstiege Kfz-Werkstatt und Makler vom 21.11. vormittags: siehe Git-Verlauf, werden nicht mehr beworben.)
 
 === DER REST (GLEICH FÜR BEIDE) ===
 
@@ -50,7 +68,7 @@ Heute sind es ungefähr fünfmal so viele.
 Und bei einer Praxis aus OWL haben wir das Gleiche gemacht. Danach wurde sie dreimal so oft bei Google angezeigt. In 28 Tagen.
 
 [8 Ein Betrieb wie deiner]
-Ob Werkstatt, Autohaus, Aufbereiter oder Makler: Deine Kunden suchen alle gleich.
+Ob Treppenlift, Reinigung, Hörgeräte oder Auto: Deine Kunden suchen alle gleich.
 Handy raus, Google auf, einen der ersten drei anrufen.
 
 [9 Diagnose in drei Bereichen]

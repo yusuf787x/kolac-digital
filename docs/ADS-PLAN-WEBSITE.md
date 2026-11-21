@@ -1,4 +1,4 @@
-# Werbeplan: Website-Neustart (Kfz-Betriebe und Makler in OWL)
+# Werbeplan: Gefunden-Garantie-Paket (Vorrunde mit vier Branchen, deutschlandweit)
 
 Stand: 21.11.2026. Baut auf `docs/OFFER-WEBSITE.md` auf, Regeln aus Skill `hormozi-wissen` (references/paid-ads.md, lead-magnet.md). Der ältere Plan `docs/ADS-PLAN.md` gehört zum SEO-Paket und bleibt als Fundus für Motive. Kosten-Richtwerte sind Schätzungen; das Werbekonto gilt als **neu** (kein Pixel, keine Kontakte aus Anzeigen), deshalb keine Vergleichswerte von eingespielten Konten.
 
@@ -25,7 +25,7 @@ Hormozi: dort anfangen, wo die Konkurrenz wirbt. **Vor dem Start** in der Meta-W
 
 Sabri: Bei kleinem Budget nicht direkt auf „Termin buchen“ schicken (Termine werden zu teuer), sondern auf ein kostenloses Lockmittel und danach verkaufen. Hormozi: Bestes Lockmittel deckt das Problem auf. Darum ist der **SEO-Check** der Einstieg.
 
-1. **Anzeige** (Callout + Wert + CTA) → **Branchen-SEO-Check** (z. B. /seo-check/werkstatt, /seo-check/makler; gleiche Überschrift wie die Anzeige, nicht bei Google gelistet).
+1. **Anzeige** (Callout + Wert + CTA) → **Branchen-SEO-Check** (z. B. /seo-check/treppenlift, /seo-check/gebaeudereinigung; gleiche Überschrift wie die Anzeige, nicht bei Google gelistet).
 2. Besucher gibt die Website ein, sieht Gesamtnote und 1 bis 2 Befunde. Für den vollen Bericht: Name, E-Mail, **Telefon (Pflicht)**, Branche, Website-Alter (optional), Häkchen „für ein Unternehmen“. Herkunft (UTM, Klick-ID) wird mitgespeichert.
 3. **Ergebnis-Seite:** voller Bericht, darüber „Gespräch buchen“ (bestehende Terminbuchung) und das VSL (Bildschirmvideo von Yusuf, sobald aufgenommen). Kein Preis.
 4. **Wer nicht bucht, wird angerufen,** in der Geschäftszeit innerhalb von 15 Minuten, sonst am Morgen: „Ich habe gesehen, du hast deine Website geprüft. Darf ich dir kurz zeigen, was mir aufgefallen ist?“ Ergebnis liegt vor. Am Telefon die Worte der Kunden notieren und in Anzeige, Seite und Video übernehmen (Sabri).
@@ -34,26 +34,27 @@ Sabri: Bei kleinem Budget nicht direkt auf „Termin buchen“ schicken (Termine
 
 Unqualifizierte (Website unter 1 Jahr, keine Mitarbeiter): auf das SEO-Paket aus `docs/OFFER.md` verweisen.
 
-## 4. Kampagnenaufbau (Meta, nach Sabri)
+## 4. Kampagnenaufbau (Stand 21.11. abends: Vorrunde, dann Fokus)
 
-- **1 Kampagne, Ziel „Leads“** (Optimierung auf das Freischalten des Berichts, dafür Meta-Pixel auf den Check-Seiten, siehe Abschnitt 9).
-- **2 Anzeigengruppen mit eigenem Budget (ABO):** Kfz-Betriebe und Makler, je 15 € am Tag. Die Branche ist der erste Blickwinkel.
-- **Je Anzeigengruppe 2 Bildanzeigen:** ein echtes Handyfoto von Yusuf („Raw Native“) und ein Screenshot (Check-Ergebnis oder Google-Maps-Ausschnitt). Mehr Anzeigen bekommen bei diesem Budget nicht genug Geld.
-- **Gebiet:** OWL, 40 km um Bielefeld, Paderborn und Gütersloh, „wohnt dort“. **Zielgruppe breit:** nur Alter 28 bis 65, keine Interessen stapeln. Der Callout filtert.
-- **Keine Sonderkategorie** „Wohnen“ (wir bewerben eine Dienstleistung an Makler). Falls Meta markiert: Einspruch.
-- **Keine „Breaking News“-Optik** (Irreführung, getarnte Werbung).
+Branchenwahl aus `docs/BRANCHEN-ANALYSE.md`: Treppenlift, Gebäudereinigung, Hörakustik, große Autohäuser. Kanzleien raus. Werkstatt- und Makler-Seite bleiben online, werden nicht beworben. **Gebiet: ganz Deutschland** (Yusuf), Gespräche per Video.
+
+- **1 Kampagne, Ziel „Leads“** (Optimierung auf das Freischalten des Berichts, Pixel und Conversions API laufen).
+- **Vorrunde (Tag 1 bis 5): 4 Anzeigengruppen mit eigenem Budget (ABO), je 7,50 € pro Tag**, je Branche 1 bis 2 Bildanzeigen (echtes Foto von Yusuf, Screenshot Check-Ergebnis bzw. Beleg). Ziel: Landingpage der Branche (/seo-check/treppenlift, /gebaeudereinigung, /hoerakustik, /autohaus).
+- **Zielgruppe:** Deutschland, Alter 28 bis 65, sonst breit. Der Callout filtert (Beruf in der ersten Zeile).
+- **Bewertung der Vorrunde** nach frühen Zeichen, weil Kontakte bei 7,50 € zu selten sind: Klickrate, Kosten pro Klick, Anteil gestarteter Checks, erste Freischaltungen. Die 2 besten gehen weiter.
+- **Hauptrunde (Tag 6 bis 30): 2 Anzeigengruppen je 15 € pro Tag** (Sabri: 2 Blickwinkel bei 30 € pro Tag), je 2 Bildanzeigen. Die 3. Branche aus der Vorrunde ist Ersatz, falls eine nach ca. 3 Wochen keine Gespräche bringt.
+- **Keine „Breaking News“-Optik**, keine Markennamen von Ketten oder Portalen in Anzeigen.
+- **Hörakustik:** Heilmittelwerberecht beachten, nur über Sichtbarkeit und Anfragen des Betriebs sprechen, keine Aussagen über Hörgeräte oder Gesundheit.
 
 ## 5. Budget, Testregeln, Abbruch
 
-- **30 € pro Tag, ca. 30 Tage, ca. 900 €** (Yusuf am 21.11.: „ich traue mich einfach mal“). Zweck: Daten kaufen, nicht sofort Gewinn.
-- **Vorab-Test ohne Werbegeld:** Den Branchen-Check 10 bis 20 Leuten aus dem Umfeld und der Kaltakquise schicken. Wie viele starten, wie viele schalten frei? Erst bei mindestens 2 bis 3 Freischaltungen Geld ausgeben.
-- **Woche 1: nichts anfassen** (7 Tage), **außer bei Frühwarnung:** nach ca. 150 € Klickrate unter 0,8 % oder kein einziger gestarteter Check → Motive tauschen. Nach ca. 300 € kein einziger Kontakt → stoppen und das Meta-Sofortformular als Gegenprobe testen.
-- **Danach** alle 5 Tage entscheiden: Ziel **25 € pro Kontakt**. Anzeige aus bei **über 50 € pro Kontakt** oder **Klickrate unter 1 %**.
-- **Gewinner skalieren:** 80 % des Budgets in eine Kampagne mit Gesamtbudget (CBO) nur mit den Gewinnern, 20 % in eine Testkampagne. Alle 2 Wochen 2 neue Blickwinkel oder Varianten (z. B. Schmerz „nur Empfehlungen“, „Konkurrenz steht vorne“, „Portale kosten jeden Monat“).
-- **Verkaufsproblem erkennen:** Kontakte und Gespräche da, aber keine Abschlüsse → am Gespräch arbeiten, nicht an den Anzeigen (Hormozi).
-- **Schätzung (21.11., noch ohne eigene Daten):** Klick ca. 1,20 bis 2,50 €, vom Klick zum freigeschalteten Bericht 4 bis 12 % → **ca. 10 bis 60 € pro Kontakt**. Für 900 € schlecht ca. 15 Kontakte (0 bis 1 Kunde), mittel ca. 30 bis 35 (1 bis 2), gut 50 bis 60 (2 bis 3). Mehr ist kaum möglich, weil es in OWL nur wenige tausend passende Inhaber gibt.
-- **Erwartung (Sabri-Rechnung, deutsche Kosten):** 900 € ÷ ca. 30 € = 30 Kontakte → ca. 15 % buchen, plus Anrufe → 4 bis 6 Gespräche → 1 Abschluss = 3.740 € in 30 Tagen.
-- **Nach dem ersten Kunden:** Einsatz herausnehmen, der Rest geht zurück in die Werbung (Sabri).
+- **ca. 900 € in 30 Tagen:** Vorrunde ca. 150 €, Hauptrunde ca. 750 €.
+- **Vorab-Test ohne Werbegeld:** Check-Link an 10 bis 20 Leute schicken, erst bei 2 bis 3 Freischaltungen Geld ausgeben.
+- **Hauptrunde:** 7 Tage nicht anfassen außer bei Frühwarnung (nach ca. 150 € Klickrate unter 0,8 % oder kein gestarteter Check → Bild tauschen). Danach alle 5 Tage: Ziel 25 € pro Kontakt, Anzeige aus über 50 € oder Klickrate unter 1 %.
+- **Notbremse:** nach ca. 300 € in der Hauptrunde kein einziger Kontakt → stoppen und Meta-Sofortformular als Gegenprobe.
+- **Gewinner skalieren:** 80 % in eine CBO nur mit Gewinnern, 20 % Tests, alle 2 Wochen 2 neue Varianten.
+- **Verkaufsproblem erkennen:** Kontakte und Gespräche, aber keine Abschlüsse → am Gespräch arbeiten.
+- **Nach dem ersten Kunden:** Einsatz herausnehmen, Rest zurück in die Werbung.
 
 ## 6. Callouts (die ersten Sekunden, Hormozi: 80 % der Wirkung)
 
@@ -61,21 +62,29 @@ Unqualifizierte (Website unter 1 Jahr, keine Mitarbeiter): auf das SEO-Paket aus
 
 Ton: Du, sehr einfache Sätze, SEO im Nebensatz erklären („bei Google gefunden werden“), wechselnde Referenzen mit Zahlen, keine Gedankenstriche.
 
-**Kfz-Betriebe**
-1. „Werkstätten in OWL: Eure Website ist älter als ein Jahr und bringt kaum Anrufe?“
-2. „Autohaus in Bielefeld, Herford oder Gütersloh? Dann schau mal, wer bei Google vor dir steht.“
-3. „Wenn jemand in deiner Stadt ‚Werkstatt in der Nähe‘ sucht: Taucht ihr auf?“
-4. „Deine Kunden kommen nur über Empfehlung? Dann verschenkst du die Google-Suche an die Konkurrenz.“
-5. „Aufbereiter in OWL: Wer bei Google oben steht, bekommt die Aufträge. Nicht der Beste.“
+**Treppenlift-Händler**
+1. „Treppenlift-Händler: Du kaufst Anfragen, und beim Rückruf haben schon zwei andere angerufen?“
+2. „Die Kinder suchen für ihre Eltern bei Google nach einem Treppenlift. Finden sie dich?“
+3. „Gekaufte Anfragen bekommen drei Firmen. Über deine eigene Website fragt man nur dich an.“
 
-**Makler**
-1. „Makler in OWL: Woher kommen eure Eigentümer-Anfragen? Von Google oder nur über Empfehlung?“
-2. „Wenn jemand ‚Haus verkaufen Bielefeld‘ sucht: Findet er dich oder nur die großen Portale?“
-3. „Eure Website gibt es seit Jahren, aber kein Eigentümer hat darüber angefragt?“
-4. „Makler aus Paderborn: Ein einziger Verkaufsauftrag mehr im Jahr bezahlt deine neue Website mehrfach.“
-5. „Portale kosten jeden Monat. Eine Website, die gefunden wird, arbeitet für dich.“
+**Gebäudereinigung**
+1. „Gebäudereinigung: Du könntest noch mehr Objekte betreuen, aber die Aufträge fehlen?“
+2. „Wenn eine Firma eine neue Reinigung sucht, googelt sie. Findet sie dich?“
+3. „Den Dauerauftrag bekommt, wer bei Google oben steht. Nicht, wer am saubersten arbeitet.“
 
-(5 bis 6 sind Hormozis „Wenn-dann“ und „Ja-Frage“. Nach dem ersten Test die besten Einstiege auf alle Motive übertragen.)
+**Hörakustik**
+1. „Hörakustiker: Du berätst persönlich, und bei Google stehen trotzdem die Ketten vorne?“
+2. „Wer in deiner Stadt nach Hörgeräten sucht, landet bei einer Kette. Muss nicht sein.“
+3. „Neue Kunden nur über Empfehlung? Dann verschenkst du die Google-Suche.“
+
+**Autohäuser**
+1. „Autohäuser: Wer ‚Auto verkaufen‘ in deiner Stadt googelt, landet bei den Ankaufportalen?“
+2. „Die Herstellerseite reicht nicht, wenn jemand einen Gebrauchten in der Nähe sucht.“
+3. „Du zahlst jeden Monat für die Börsen. Eine Website, die gefunden wird, arbeitet für dich.“
+
+Weitere Ideen je Branche in `docs/BRANCHEN-ANALYSE.md`. Bildüberschrift als Anapher, z. B. „Mehr gefunden. Mehr angefragt.“ (keine Zahlenversprechen).
+
+(Nach der Vorrunde die besten Einstiege auf alle Motive übertragen.)
 
 ## 7. Motive (Start: je Branche B oder C als Screenshot plus ein echtes Foto von Yusuf; A wird das VSL)
 
