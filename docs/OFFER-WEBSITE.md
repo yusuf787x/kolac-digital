@@ -200,7 +200,7 @@ Quelle: Search-Console-Daten aller 6 Kundenportale (Namen hier bewusst weggelass
 
 ## 16. Programm, Bausteine und Name (Stand 21.11.)
 
-**Name:** Favorit von Yusuf „Gefunden-Garantie-Paket“ (Alliteration, Garantie steckt im Namen). „Werkstatt-Website-Wende“ verworfen (Zungenbrecher). Endgültige Wahl offen.
+**Name (entschieden 21.11.): „Gefunden-Garantie-Paket“** (Alliteration, Garantie steckt im Namen). „Werkstatt-Website-Wende“ verworfen (Zungenbrecher).
 
 **Ablauf als Programm** (Yusuf: „der Kunde soll immer wissen, was er als Nächstes bekommt“). Jeder Schritt endet mit einer Nachricht „Als Nächstes bekommst du …“ und steht als Plan mit Termin im Kundenportal.
 

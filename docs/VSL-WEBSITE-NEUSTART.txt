@@ -1,67 +1,108 @@
-VSL Website-Neustart (Bildschirmvideo, ca. 3,5 Minuten)
-Stand 21.11.2026. Aufbau nach Hormozis VSL, Ton nach kolac-content/vibe.
-Aufnahme: Bildschirm mit einem echten Check-Ergebnis (Beispielseite oder eigene Seite, keine fremde Firma ohne Erlaubnis), du klein im Eck oder nur Stimme.
-Zahlen in [eckigen Klammern] erst eintragen, wenn sie echt erhoben sind (Check von je 20 Websites aus OWL).
-Nur die ersten 30 Sekunden zweimal aufnehmen: einmal Kfz, einmal Makler. Der Rest ist gleich.
+VSL: Das Gefunden-Garantie-Paket (Bildschirmvideo, ca. 4 Minuten)
+Stand 21.11.2026. Aufbau 1:1 nach Hormozis Scaling-Workshop-VSL (18 Bausteine, siehe Skill hormozi-wissen/references/vsl.md), Ton nach kolac-content/vibe: ehrlich, locker, Sprache der Zielgruppe.
+Alle Zahlen echt: Outreach-Prüfungen OWL (122 voll geprüft, 48 mit höchstens 2 Begriffen auf Seite 1, 24 mit keinem), Praxis-Referenz (19.414 auf 59.666 Einblendungen in 28 Tagen), eigene Seite (rund 3 auf 15 bis 18 Besucher pro Woche über Google).
+Aufnahme: Bildschirm mit einem echten Check-Ergebnis bzw. den Belegen von der Landingpage, du klein im Eck.
+Die Einstiege nimmst du je Branche auf (ca. 40 Sek.). Alles ab „Der Rest“ ist für beide gleich.
 
-=== EINSTIEG KFZ (ca. 30 Sek.) ===
+=== EINSTIEG KFZ ===
 Kurze Frage an dich.
-Kommen neue Kunden bei dir fast nur über Empfehlung?
-Steht bei Google eine Werkstatt vor dir, die ehrlich gesagt schlechter arbeitet?
-Und deine Website gibt es seit Jahren, aber angerufen hat darüber noch kaum jemand?
-Dann bleib mal kurz dran.
+Deine Website hat damals irgendwer gemacht. Der Neffe, ein Kumpel oder eine Agentur. Und seitdem hat da keiner mehr reingeschaut?
+Montags ist die Werkstatt voll. Aber eigentlich nur mit Stammkunden?
+Du hast vielleicht schon mal für SEO bezahlt. Und keiner konnte dir sagen, was es gebracht hat?
+Und manchmal fragst du dich, warum die Werkstatt um die Ecke, die ehrlich gesagt schlechter arbeitet, bei Google ganz oben steht?
+Wenn du da ein paar Mal genickt hast, bleib kurz dran.
 
-=== EINSTIEG MAKLER (ca. 30 Sek.) ===
+=== EINSTIEG MAKLER ===
 Kurze Frage an dich.
-Woher kommen deine Eigentümer eigentlich? Über Empfehlung oder über Google?
-Wenn jemand in deiner Stadt „Haus verkaufen“ sucht, landet er dann bei dir oder bei den großen Portalen?
-Und deine Website gibt es seit Jahren, aber ein Verkaufsauftrag kam darüber noch nicht rein?
-Dann bleib mal kurz dran.
+Deine Website hat damals irgendwer gemacht. Und seitdem hat da keiner mehr reingeschaut?
+Deine Eigentümer kommen eigentlich fast nur über Empfehlung?
+Du zahlst jeden Monat für die Portale, und trotzdem landet der Verkaufsauftrag beim Kollegen?
+Und wenn jemand in deiner Stadt „Haus verkaufen“ sucht, findet er alle möglichen. Nur dich nicht?
+Wenn du da ein paar Mal genickt hast, bleib kurz dran.
 
-=== AB HIER GLEICH FÜR BEIDE ===
+=== DER REST (GLEICH FÜR BEIDE) ===
 
-1. Das Problem hat einen Namen
-Das Ding ist: Deine Website ist da. Aber Google zeigt sie halt nicht.
-Ich nenne das eine unsichtbare Website. Sie kostet jedes Jahr Geld und bringt keine Anrufe.
+[2 Problem bekommt einen Namen]
+Das Ding ist: Du hast eine Website. Aber Google zeigt sie halt nicht.
+Ich nenn das eine unsichtbare Website.
 
-2. Was ich gesehen habe
-Ich hab mir [20] Websites von Betrieben aus OWL angeschaut.
-[14] davon stehen bei keinem einzigen wichtigen Suchbegriff auf Seite 1.
-Technisch waren die meisten okay. Daran liegt es also meistens nicht.
+[3 Drei Folgen]
+Die kostet dich jedes Jahr Geld.
+Die neuen Kunden rufen bei der Konkurrenz an.
+Und du hängst komplett an Empfehlungen. Solange die laufen, ist alles gut. Wenn nicht, wird es eng.
 
-3. Warum das so ist (am Bildschirm zeigen)
-Meistens sind es drei Sachen.
+[4 Beobachtung aus großer Zahl + Umdeutung]
+Ich hab für meine Akquise über 120 Websites von Betrieben aus OWL genau geprüft.
+Bei fast vier von zehn stehen höchstens zwei Suchbegriffe auf Seite 1 bei Google.
+Jede fünfte taucht bei gar keinem auf.
+Die meisten denken, sie haben eine Website. In Wahrheit haben sie eine Visitenkarte, die keiner sieht.
+
+[5 Wann es wehtut]
+Und meistens merkst du das erst, wenn es ruhiger wird. Empfehlungen bleiben aus. Ein großer Kunde geht. Oder einer macht direkt bei dir in der Nähe auf.
+
+[6 Bild]
+Stell dir vor, du hast den besten Laden der Stadt. Aber in einer Seitenstraße, ohne Schild.
+So ist eine unsichtbare Website.
+
+[7 Eigene Geschichte, echte Zahlen]
+Bei meiner eigenen Seite war das genauso. Im Sommer kamen da vielleicht drei Leute die Woche über Google.
+Heute sind es ungefähr fünfmal so viele.
+Und bei einer Praxis aus OWL haben wir das Gleiche gemacht. Danach wurde sie dreimal so oft bei Google angezeigt. In 28 Tagen.
+
+[8 Ein Betrieb wie deiner]
+Ob Werkstatt, Autohaus, Aufbereiter oder Makler: Deine Kunden suchen alle gleich.
+Handy raus, Google auf, einen der ersten drei anrufen.
+
+[9 Diagnose in drei Bereichen]
+Woran es fast immer liegt, sind drei Sachen.
 Erstens: Es gibt eine Seite für alles. Google weiß gar nicht, wofür du eigentlich gefunden werden willst.
 Zweitens: Dein Google-Profil ist halb ausgefüllt. Und wer bei Google Maps oben steht, bekommt die Anrufe.
 Drittens: Seit Jahren kommt nichts Neues dazu. Für Google sieht das aus wie ein Laden, der zu hat.
 
-4. Dass es anders geht
-Bei einer Praxis aus OWL haben wir genau das gemacht.
-Danach wurde sie dreimal so oft bei Google angezeigt. In 28 Tagen.
-Bei meiner eigenen Seite hat es länger gedauert. Aber heute kommen da ungefähr fünfmal so viele Leute über Google wie im Sommer.
-Naja, und genau das mach ich mit deiner Seite auch.
+[10 Paradox]
+Und das Verrückte ist: Je länger deine Seite schon online ist, desto mehr verschenkst du.
+Google kennt deine Adresse seit Jahren. Du nutzt es nur nicht.
 
-5. Was ich anders mache
-Ich nenne das den Website-Neustart.
-Du bekommst eine neue Seite, die auf die Suchen in deiner Region gebaut ist.
-Dein Google-Profil machen wir komplett fertig.
-Und in den ersten Monaten kommen neue Seiten dazu, genau zu dem, was deine Kunden suchen.
-Du musst dafür eigentlich nur eine halbe Stunde mit mir reden. Die Texte schreiben wir.
-Alles, was deine alte Seite bei Google schon hat, nehmen wir mit.
+[11 Hoffnung]
+Die gute Nachricht: Das lässt sich ändern. In ein paar Wochen. Mit einem festen Ablauf.
 
-6. Das Risiko liegt bei mir
-Du siehst den Entwurf deiner neuen Startseite, bevor du irgendwas zahlst.
-Gefällt er dir nicht, kostet dich das null Euro.
-Und wenn dich nach 90 Tagen nicht doppelt so viele neue Leute über Google finden wie vorher, arbeite ich ohne Monatsbeitrag weiter, bis es so ist.
-Die genauen Regeln dazu bekommst du schriftlich.
+[12 Angebot als Antwort auf ihre Frage]
+Die Frage, die ich am häufigsten höre, ist: Wie komm ich bei Google nach vorne, ohne mich selbst darum kümmern zu müssen?
+Genau dafür gibt es das Gefunden-Garantie-Paket. Und du weißt bei jedem Schritt, was als Nächstes kommt.
+Tag null: Wir messen, wo du gerade stehst, und schreiben den Wert auf.
+Nach sieben Tagen: Du siehst den Entwurf deiner neuen Startseite.
+In den Wochen danach: die neue Website. Eine Seite für jede Leistung und jeden Ort. Alles, was deine alte Seite bei Google schon hat, nehmen wir mit.
+Parallel: Dein Google-Profil machen wir komplett fertig.
+Und in den ersten 90 Tagen kommen neue Seiten dazu, genau zu dem, was deine Kunden suchen.
+Jeden Monat siehst du die Zahlen in deinem Kundenportal. In normalem Deutsch.
+Die Texte schreiben wir. Du redest eine halbe Stunde mit mir, das war's.
 
-7. Was Warten kostet
-Ich sag mal so: Jeden Monat, in dem du nicht auftauchst, rufen die Leute halt bei der Konkurrenz an.
-Das wird nicht von allein besser. Eher im Gegenteil.
+[13 Was es nicht ist + ehrliche Knappheit]
+Das ist kein Baukasten. Und keine Agentur, die jeden Monat abbucht und dir einmal im Quartal ein PDF schickt, das keiner versteht.
+Ich mach das selbst. Darum nehm ich auch nur drei neue Betriebe im Monat an.
+Und die ersten 20 bekommen von mir einen Bewertungs-Aufsteller für die Theke. Kunde hält das Handy dran, und schon ist er bei deinen Google-Bewertungen.
 
-8. Was du jetzt machst
-Buch dir oben einfach ein kurzes Gespräch.
-Ich schau mir dein Ergebnis vorher genau an.
-Und dann schauen wir zusammen, ob ich dir helfen kann. Wenn nicht, sag ich dir das auch ehrlich.
-Ich nehm pro Monat nur drei neue Betriebe an, weil ich das selbst mache.
+[14 Zukunftsbild]
+Stell dir vor: Jemand sucht in deiner Stadt genau das, was du machst. Und ganz oben stehst du. Mit Bewertungen, mit echten Fotos, mit einem Knopf zum Anrufen.
+
+[15 Ehrliches Eingeständnis]
+Ich kann dir nicht versprechen, dass ab morgen das Telefon glüht. Google braucht ein paar Wochen.
+Und ein bisschen musst du mitmachen: Zugänge geben, Sachen freigeben, Kunden um Bewertungen bitten.
+
+[16 Garantien, Risiko liegt bei mir]
+Dafür liegt das Risiko bei mir.
+Erstens: Du siehst den Entwurf, bevor du irgendwas zahlst. Gefällt er dir nicht, kostet dich das null Euro.
+Zweitens: Wenn dich nach 90 Tagen nicht doppelt so viele neue Leute über Google finden wie vorher, arbeite ich ohne Monatsbeitrag weiter. So lange, bis es so ist.
+Die genauen Regeln bekommst du schriftlich.
+
+[17 Kosten des Wartens, Freiheit, Zeitpunkt-Einwand]
+Jeden Monat, in dem du nicht auftauchst, ruft jemand bei der Konkurrenz an. Und das wird nicht von allein besser.
+Viele sagen mir: Gerade ist zu viel los, ich mach das, wenn es ruhiger wird.
+Das Problem ist: Wenn es ruhiger wird, brauchst du die Anrufe schon. Dann ist es zu spät.
+Und wenn du sagst, läuft auch so: völlig okay. Dann ist das hier nichts für dich.
+
+[18 CTA, qualifizieren statt drücken]
+Wenn doch: Buch dir oben ein kurzes Gespräch. Den Termin suchst du dir selbst aus.
+Ich schau mir dein Ergebnis vorher genau an. Und dann schauen wir zusammen, ob es für beide passt.
+Wenn ich dir nicht helfen kann, sag ich dir das auch ehrlich.
 Bis gleich.
