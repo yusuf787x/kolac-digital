@@ -97,6 +97,13 @@ Ton: Du, sehr einfache Sätze, SEO im Nebensatz erklären („bei Google gefunde
 
 ## 8. Messung
 
+**Entschieden 21.11.:** Meta-Pixel **nur auf den Check-Seiten** (/seo-check und Branchen-Varianten), Rest der Website bleibt ohne Banner.
+- **Banner:** zwei gleich große Knöpfe auf gleicher Ebene. „Akzeptieren“ in der Aktionsfarbe, „Ablehnen“ als gut lesbarer weißer Knopf mit Rahmen (kein grauer Mini-Link, nicht versteckt). Kurzer Grund: „Hilft uns, unsere Werbung zu verbessern.“ Einfärben ist üblich, unzulässig wird es, wenn Ablehnen schwer zu finden oder zu lesen ist.
+- **Conversions API:** beim Freischalten optionales, nicht vorausgewähltes Häkchen „Ich bin einverstanden, dass meine Anfrage zur Erfolgsmessung unserer Werbung an Meta übermittelt wird.“ Gesetzt → Lead-Ereignis vom Server an Meta.
+- **Herkunft ohne Cookie:** UTM und Klick-ID aus der Adresse werden bei jedem Kontakt gespeichert.
+- **Freier Teil des Checks:** nur Gesamtnote, Kategorienoten und der wichtigste Befund ohne Lösung. Alle Prüfpunkte, Lösungen, Suchbegriffe und Mitbewerber erst gegen Kontaktdaten (Yusuf: „sonst verschenktes Geld“).
+
+
 - In Meta: Ausgaben, Kontakte, Kosten pro Kontakt je Motiv.
 - Selbst je Kontakt: qualifiziert ja/nein, Gespräch ja/nein, Angebot, Abschluss. Am einfachsten Kontakte aus dem Meta-Leadcenter täglich ins Dashboard (Vertrieb) übertragen. Automatik (Meta-Webhook ins Dashboard) erst, wenn der Test trägt.
 - **Entschieden wird nach Kosten pro Gespräch und pro Abschluss**, nicht nach Klicks.
