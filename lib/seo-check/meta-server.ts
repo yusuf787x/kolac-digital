@@ -1,7 +1,7 @@
 import 'server-only';
 import { createHash } from 'crypto';
 import { site } from '@/lib/site-config';
-import { leadEventId } from './meta';
+import { leadEventId, META_PIXEL_ID_DEFAULT } from './meta';
 import type { StoredLead } from './store';
 
 /**
@@ -9,14 +9,14 @@ import type { StoredLead } from './store';
  * Besucher im Formular das Häkchen „Erfolgsmessung an Meta“ gesetzt hat.
  *
  * Konfiguration (Vercel):
- *   NEXT_PUBLIC_META_PIXEL_ID  Pixel-ID (Datensatz-ID) aus dem Events Manager
+ *   NEXT_PUBLIC_META_PIXEL_ID  Pixel-ID (optional, Standard steht in ./meta.ts)
  *   META_CAPI_TOKEN            Zugriffsschlüssel der Conversions API (geheim)
  *   META_TEST_EVENT_CODE       optional, nur zum Testen im Events Manager
  *   META_GRAPH_VERSION         optional, Standard v25.0
  */
 
 export function metaPixelId(): string {
-  return (process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || '').trim();
+  return (process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || META_PIXEL_ID_DEFAULT).trim();
 }
 
 /** Häkchen und Server-Meldung gibt es nur, wenn Pixel-ID und Schlüssel gesetzt sind. */

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import SeoCheckClient from '../SeoCheckClient';
 import SeoCheckSections, { FAQ_FUNNEL } from '../SeoCheckSections';
+import FunnelSections from '../FunnelSections';
 import { FUNNEL_VARIANTS } from '@/lib/seo-check/funnel';
 import { metaCapiEnabled } from '@/lib/seo-check/meta-server';
 
@@ -45,7 +46,8 @@ export default async function SeoCheckBranchePage({ params, searchParams }: Prop
   return (
     <>
       <SeoCheckClient key={initialId ?? 'neu'} initialId={initialId} variant={variant} measureEnabled={metaCapiEnabled()} />
-      <SeoCheckSections faq={FAQ_FUNNEL} />
+      <FunnelSections variant={variant} />
+      <SeoCheckSections faq={FAQ_FUNNEL} showChecked={false} />
     </>
   );
 }

@@ -1,4 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
+import { Resend } from 'resend';
+import { checkNotificationEmail } from '@/lib/seo-check/emails';
 import { CheckFailedError, normalizeInputUrl, redactResult, runSeoCheck } from '@/lib/seo-check/run';
 import { checkLimits, clientIp, isOwnerRequest, recordUsage, saveCheck } from '@/lib/seo-check/store';
 import type { SeoCheckResponse } from '@/lib/seo-check/types';
@@ -58,8 +60,23 @@ export async function POST(req: Request) {
         { status: 503 },
       );
     }
-    const id = await saveCheck(result, owner, ip, cleanSource(body.source));
+    const source = cleanSource(body.source);
+    const id = await saveCheck(result, owner, ip, source);
     if (!owner) await recordUsage(ip, id);
+    // Mail an Yusuf bei jedem Check eines Besuchers, nie im Inhaber-Modus.
+    if (!owner && process.env.RESEND_API_KEY) {
+      after(async () => {
+        try {
+          const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
+            ...checkNotificationEmail(id, result, source),
+            to: process.env.CONTACT_TO_EMAIL || 'yusuf@kolac-digital.de',
+          });
+          if (error) console.error('SEO-Check Check-Mail:', error);
+        } catch (err) {
+          console.error('SEO-Check Check-Mail:', err);
+        }
+      });
+    }
     const response: SeoCheckResponse = {
       id,
       owner,

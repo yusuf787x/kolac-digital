@@ -6,6 +6,16 @@
  * der Website (public/js/cookie-consent.js), im Feld „marketing“.
  */
 
+/**
+ * Pixel-ID (Datensatz-ID) aus dem Meta Events Manager. Öffentlich, steht ohnehin
+ * im Seitenquelltext. Die Umgebungsvariable NEXT_PUBLIC_META_PIXEL_ID hat Vorrang.
+ */
+export const META_PIXEL_ID_DEFAULT = '29565092019789364';
+
+export function metaPixelId(): string {
+  return (process.env.NEXT_PUBLIC_META_PIXEL_ID || META_PIXEL_ID_DEFAULT).trim();
+}
+
 /** Gleicher Schlüssel wie public/js/cookie-consent.js. */
 export const CONSENT_KEY = 'kolac_cookie_consent';
 

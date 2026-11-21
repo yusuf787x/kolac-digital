@@ -77,6 +77,10 @@ export interface FunnelVariant {
   metaDescription: string;
   closingTitle: string;
   closingText: string;
+  /** Ja-Fragen im Abschnitt „Kommt dir das bekannt vor?“. */
+  symptoms: string[];
+  /** Kurzer Satz im Über-mich-Abschnitt, auf die Branche gemünzt. */
+  aboutLine: string;
 }
 
 const SUBLINE =
@@ -95,6 +99,14 @@ export const FUNNEL_VARIANTS: Record<string, FunnelVariant> = {
     metaDescription: 'Findet Google deine Werkstatt? Kostenloser Website-Check in rund 30 Sekunden.',
     closingTitle: 'Soll ich mir das mit dir ansehen?',
     closingText: CLOSING_TEXT,
+    symptoms: [
+      'Neue Kunden kommen fast nur über Empfehlung.',
+      'Eine Werkstatt, die schlechter arbeitet, steht bei Google vor dir.',
+      'Deine Website gibt es seit Jahren, aber angerufen hat darüber kaum jemand.',
+      'Bei Google Maps bist du nicht unter den ersten drei.',
+      'Du weißt eigentlich nicht, ob deine Website überhaupt etwas bringt.',
+    ],
+    aboutLine: 'Mehrere meiner Kunden sind Kfz-Betriebe aus OWL. Ich weiß also ziemlich genau, wonach eure Kunden suchen.',
   },
   makler: {
     slug: 'makler',
@@ -106,5 +118,12 @@ export const FUNNEL_VARIANTS: Record<string, FunnelVariant> = {
     metaDescription: 'Findet ein Eigentümer dich bei Google? Kostenloser Website-Check in rund 30 Sekunden.',
     closingTitle: 'Soll ich mir das mit dir ansehen?',
     closingText: CLOSING_TEXT,
+    symptoms: [
+      'Eigentümer kommen fast nur über Empfehlung.',
+      'Wer „Haus verkaufen“ in deiner Stadt sucht, landet bei den großen Portalen.',
+      'Deine Website gibt es seit Jahren, aber ein Verkaufsauftrag kam darüber noch nicht rein.',
+      'Für Portale zahlst du jeden Monat, und die Anfragen gehören dir trotzdem nicht.',
+    ],
+    aboutLine: 'Ein einziger Verkaufsauftrag mehr im Jahr ist für einen Makler viel wert. Genau dafür muss dich ein Eigentümer bei Google finden.',
   },
 };

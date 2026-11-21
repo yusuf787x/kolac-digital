@@ -83,6 +83,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const firstUnlock = !stored.lead;
   await saveLead(id, lead);
 
+  if (firstUnlock && !process.env.RESEND_API_KEY) console.error('SEO-Check: RESEND_API_KEY fehlt, keine Kontakt-Mail an Yusuf.');
   if (firstUnlock && process.env.RESEND_API_KEY) {
     after(async () => {
       const resend = new Resend(process.env.RESEND_API_KEY);
@@ -92,7 +93,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         resend.emails.send({ ...notify, to: process.env.CONTACT_TO_EMAIL || 'yusuf@kolac-digital.de' }),
         resend.emails.send({ ...report, to: email }),
       ]);
-      for (const r of results) if (r.status === 'rejected') console.error('SEO-Check Mail:', r.reason);
+      // Resend meldet Fehler meist als Rückgabewert, nicht als Ausnahme.
+      results.forEach((r, i) => {
+        const what = i === 0 ? 'Kontakt-Mail an Yusuf' : 'Bericht-Mail an Besucher';
+        if (r.status === 'rejected') console.error(`SEO-Check ${what}:`, r.reason);
+        else if (r.value?.error) console.error(`SEO-Check ${what}:`, r.value.error);
+      });
     });
   }
   if (firstUnlock) {

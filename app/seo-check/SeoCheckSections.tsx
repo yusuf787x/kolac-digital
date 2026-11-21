@@ -50,9 +50,10 @@ export const FAQ_FUNNEL: { q: string; a: string }[] = [
   },
 ];
 
-export default function SeoCheckSections({ faq }: { faq: { q: string; a: string }[] }) {
+export default function SeoCheckSections({ faq, showChecked = true }: { faq: { q: string; a: string }[]; showChecked?: boolean }) {
   return (
     <>
+      {showChecked && (
       <section className="bg-white py-16 md:py-24">
         <div className="mx-auto max-w-[1100px] px-4 md:px-6">
           <h2 className="text-[28px] md:text-[36px] font-bold tracking-tight text-[var(--color-black)]">Was der Check prüft</h2>
@@ -70,8 +71,9 @@ export default function SeoCheckSections({ faq }: { faq: { q: string; a: string 
           </div>
         </div>
       </section>
+      )}
 
-      <section className="bg-[var(--color-offwhite)] py-16 md:py-24">
+      <section className={`${showChecked ? 'bg-[var(--color-offwhite)]' : 'bg-white'} py-16 md:py-24`}>
         <div className="mx-auto max-w-[800px] px-4 md:px-6">
           <h2 className="text-[28px] md:text-[36px] font-bold tracking-tight text-[var(--color-black)]">Häufige Fragen</h2>
           <div className="mt-8 space-y-3">

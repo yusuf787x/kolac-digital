@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { FunnelByline, FunnelHeroVisual } from './FunnelSections';
 import { site } from '@/lib/site-config';
 import {
   CATEGORY_LABELS,
@@ -172,20 +173,29 @@ export default function SeoCheckClient({
 
   return (
     <>
-      <section className="bg-[var(--color-offwhite)] pt-[calc(var(--nav-height)+48px)] pb-16 md:pb-20">
-        <div className="mx-auto max-w-[800px] px-4 md:px-6 text-center">
+      <section
+        className={`bg-[var(--color-offwhite)] pb-16 md:pb-20 ${variant ? 'pt-8 md:pt-14' : 'pt-[calc(var(--nav-height)+48px)]'}`}
+      >
+        <div
+          className={
+            variant
+              ? 'mx-auto grid max-w-[1100px] items-center gap-10 px-4 md:grid-cols-[1.05fr_0.95fr] md:gap-14 md:px-6'
+              : 'mx-auto max-w-[800px] px-4 md:px-6 text-center'
+          }
+        >
+          <div className={variant ? 'text-left' : undefined}>
           <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">
             {variant?.eyebrow ?? 'Kostenloser SEO-Check'}
           </p>
-          <h1 className="mt-3 text-[32px] md:text-[48px] font-extrabold leading-[1.1] tracking-tight text-[var(--color-black)]">
+          <h1 className={`mt-3 font-extrabold leading-[1.1] tracking-tight text-[var(--color-black)] ${variant ? 'text-[32px] md:text-[44px]' : 'text-[32px] md:text-[48px]'}`}>
             {variant?.title ?? 'Wird deine Website bei Google gefunden?'}
           </h1>
-          <p className="mx-auto mt-4 max-w-[600px] text-[17px] leading-relaxed text-[var(--color-gray)]">
+          <p className={`mt-4 max-w-[600px] text-[17px] leading-relaxed text-[var(--color-gray)] ${variant ? '' : 'mx-auto'}`}>
             {variant?.subline ??
               'Gib deine Adresse ein. In rund 30 Sekunden siehst du, wie gut deine Seite gebaut ist, für welche Suchbegriffe sie angezeigt wird und was die fünf wichtigsten Schritte sind.'}
           </p>
 
-          <form onSubmit={start} className="mx-auto mt-8 max-w-[620px] text-left" noValidate>
+          <form onSubmit={start} className={`mt-8 max-w-[620px] text-left ${variant ? '' : 'mx-auto'}`} noValidate>
             <label htmlFor="seo-url" className="block text-[13px] font-semibold text-[var(--color-black)] mb-2">
               Deine Website
             </label>
@@ -201,7 +211,7 @@ export default function SeoCheckClient({
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 disabled={running}
-                className="min-w-0 flex-1 rounded-[12px] border border-[#d1d1d6] bg-white px-4 py-[14px] text-[17px] text-[var(--color-black)] outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-[var(--color-blue)]/30 disabled:opacity-50"
+                className="min-w-0 flex-1 scroll-mt-[calc(var(--nav-height)+96px)] rounded-[12px] border border-[#d1d1d6] bg-white px-4 py-[14px] text-[17px] text-[var(--color-black)] outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-[var(--color-blue)]/30 disabled:opacity-50"
               />
               <button
                 type="submit"
@@ -217,13 +227,20 @@ export default function SeoCheckClient({
             </p>
           </form>
 
-          <div aria-live="polite" className="mx-auto max-w-[620px] text-left">
+          <div aria-live="polite" className={`max-w-[620px] text-left ${variant ? '' : 'mx-auto'}`}>
             {running && <RunningCard url={phase.url} />}
             {phase.kind === 'loading-report' && (
               <p className="mt-8 text-center text-[15px] text-[var(--color-gray)]">Bericht wird geladen …</p>
             )}
             {phase.kind === 'error' && <ErrorCard phase={phase} onRetry={reset} />}
           </div>
+          {variant && <FunnelByline />}
+          </div>
+          {variant && (
+            <div className="w-full max-w-[460px] justify-self-center md:justify-self-end">
+              <FunnelHeroVisual />
+            </div>
+          )}
         </div>
       </section>
 

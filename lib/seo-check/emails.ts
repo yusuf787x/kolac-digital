@@ -4,6 +4,7 @@ import type { StoredLead } from './store';
 import { CATEGORY_LABELS, type SeoCheckResult } from './types';
 import { brancheLabel, websiteAlterLabel, type LeadSource } from './funnel';
 import { site } from '@/lib/site-config';
+import { topFindingId } from './run';
 
 const FROM = 'Kolac Digital <yusuf@kolac-digital.de>';
 const REPLY_TO = 'yusuf@kolac-digital.de';
@@ -29,6 +30,49 @@ function sourceLines(src?: LeadSource): Array<[string, string]> {
   if (src.utm_content) rows.push(['Anzeige (utm_content)', src.utm_content]);
   if (src.fbclid) rows.push(['Meta-Klick (fbclid)', 'ja']);
   return rows.length ? rows : [['Herkunft', 'direkt (keine Anzeige erkannt)']];
+}
+
+/** Kurzer Name der Einstiegsseite für Betreff und Mail. */
+function landingLabel(src?: LeadSource): string {
+  const l = src?.landing ?? '';
+  if (l.includes('/seo-check/werkstatt')) return 'Werkstatt-Seite';
+  if (l.includes('/seo-check/makler')) return 'Makler-Seite';
+  return 'SEO-Check-Seite';
+}
+
+/**
+ * Benachrichtigung an Yusuf bei jedem Check eines Besuchers (nicht im
+ * Inhaber-Modus). Noch ohne Kontaktdaten, die kommen erst beim Freischalten.
+ */
+export function checkNotificationEmail(id: string, r: SeoCheckResult, src?: LeadSource) {
+  const topId = topFindingId(r);
+  const top = topId ? r.checks.find((c) => c.id === topId) : undefined;
+  const rows: Array<[string, string]> = [
+    ['Website', r.finalUrl],
+    ['Gesamtpunktzahl', `${r.score} / 100`],
+    ...categoryLines(r),
+    ['Wichtigster Befund', top ? `${top.title}: ${top.detail}` : 'keiner'],
+    ['Google-Daten', r.rankings.available ? `ja (${r.rankings.top10} Begriffe auf Seite 1, ${r.rankings.total} gesamt)` : 'nein'],
+    ['Einstieg', landingLabel(src)],
+    ...sourceLines(src),
+    ['Kontaktdaten', 'noch nicht, kommen erst beim Freischalten'],
+  ];
+  const html = emailLayout({
+    sender: 'none',
+    preheader: `${r.domain}: ${r.score} Punkte, ${landingLabel(src)}`,
+    title: 'SEO-Check genutzt',
+    bodyHtml: emailDataRows(rows),
+    button: { label: 'Bericht öffnen', href: reportUrl(id) },
+    footnote: 'Gesendet bei jedem Check eines Besuchers. Deine eigenen Checks im Inhaber-Modus lösen keine Mail aus.',
+  });
+  const text = ['SEO-Check genutzt.', ...rows.map(([k, v]) => `${k}: ${v}`), '', `Bericht: ${reportUrl(id)}`].join('\n');
+  return {
+    from: FROM,
+    replyTo: REPLY_TO,
+    subject: `SEO-Check: ${r.domain}, ${r.score}/100 (${landingLabel(src)})`,
+    html,
+    text,
+  };
 }
 
 /** Benachrichtigung an Yusuf: neuer Lead aus dem SEO-Check. */
@@ -71,7 +115,7 @@ export function leadNotificationEmail(id: string, lead: StoredLead, r: SeoCheckR
   return {
     from: FROM,
     replyTo: lead.email,
-    subject: `SEO-Check: ${lead.name} (${r.domain}, ${r.score} Punkte)${lead.wantsCall ? ' Rückruf' : ''}`,
+    subject: `Neuer Kontakt aus dem SEO-Check: ${lead.name}${lead.company ? `, ${lead.company}` : ''}, ${lead.phone || r.domain}${lead.wantsCall ? ' (Rückruf gewünscht)' : ''}`,
     html,
     text,
   };
