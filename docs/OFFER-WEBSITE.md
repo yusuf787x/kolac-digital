@@ -1,6 +1,6 @@
 # OFFER-WEBSITE.md: Website-Neustart mit Doppel-Garantie
 
-Stand: 21.11.2026. **Von Yusuf entschieden:** 3.490 € + 249 €/Monat, zwei Garantien (nicht drei), Garantie 2 ohne zeitliche Grenze und gemessen an Klicks in der Search Console. **Am 21.11. mit echten Zahlen geprüft (Abschnitt 13):** Garantie gemessen an Klicks **ohne Firmennamen**. Ästhetik fällt als Branche weg (persönlicher Grund). **Offen:** Startbranche Kfz oder Makler. Nach Hormozi ($100M Offers), Wissen im Skill `hormozi-wissen`. Baut auf `docs/OFFER.md` (Sichtbar in 90 Tagen) auf: gleiche Bausteine, neu gebündelt rund um die neue Website.
+Stand: 21.11.2026. **Von Yusuf entschieden:** 3.490 € + 249 €/Monat, zwei Garantien (nicht drei), Garantie 2 ohne zeitliche Grenze und gemessen an Klicks in der Search Console. **Am 21.11. mit echten Zahlen geprüft (Abschnitt 13):** Garantie gemessen an Klicks **ohne Firmennamen**. Ästhetik fällt als Branche weg (persönlicher Grund). **Branchen entschieden:** Kfz-Betriebe und Makler. **Offen:** Vertragsvariante bei ruhender Pauschale (Abschnitt 14), Vorher-Schätzung im Portal bauen (Abschnitt 15). Nach Hormozi ($100M Offers), Wissen im Skill `hormozi-wissen`. Baut auf `docs/OFFER.md` (Sichtbar in 90 Tagen) auf: gleiche Bausteine, neu gebündelt rund um die neue Website.
 
 ## 1. Für wen (Nische)
 
@@ -63,7 +63,7 @@ Spielregeln (so in Angebot und Vertrag):
 
 1. **Messgröße:** Klicks aus der Google-Suche laut Google Search Console **ohne Suchen mit dem Firmennamen**, berechnet als Gesamtklicks minus Klicks auf Suchen mit Firmennamen (Markenbegriffe im Portal). Nicht „Summe der Suchen ohne Firmennamen“, weil Google seltene Suchen anonymisiert: bei der Ästhetik-Referenz fehlten so 57 % der Klicks in der Aufstellung nach Suchbegriffen. Im Portal für beide Seiten sichtbar.
    - Warum ohne Firmennamen: Diese Klicks sind die neuen Kunden. Klicks mit Firmennamen steigen kaum (Ästhetik-Referenz: 247 pro 28 Tage im September und genauso im Oktober) und würden das Verdoppeln unnötig schwer machen.
-2. **Startwert:** Klicks pro 28 Tage vor dem Livegang. Hat der Betrieb schon eine Search Console mit mindestens 3 Monaten Daten, der Schnitt dieser 3 Monate. Sonst richten wir sie direkt nach dem Check ein, und es zählen die 28 Tage danach, während die alte Seite noch läuft. Der Startwert wird als Zahl ins Angebot bzw. vor dem Livegang schriftlich festgehalten.
+2. **Startwert:** Klicks pro 28 Tage vor dem Livegang. Hat der Betrieb schon eine Search Console mit mindestens 3 Monaten Daten, der Schnitt dieser 3 Monate. Sonst richten wir sie direkt nach dem Erstgespräch ein (Google füllt keine alten Daten nach), und es zählen die 28 Tage danach, während die alte Seite noch läuft. **Livegang frühestens 28 Tage nach Einrichtung;** Entwurf und Bau dauern ohnehin 3 bis 4 Wochen, die Zeit nutzen wir für die ersten Inhalte. Der Startwert wird als Zahl ins Angebot bzw. vor dem Livegang schriftlich festgehalten.
 3. **Ziel:** In den 28 Tagen von Tag 63 bis Tag 90 nach Livegang mindestens das Doppelte des Startwerts.
 4. **Wenn das Ziel verfehlt ist:** Ab Tag 91 ruht die Monatspauschale. Die Betreuung läuft voll weiter. Wir prüfen jeden Monat die jeweils letzten 28 Tage. Sobald ein 28-Tage-Zeitraum das Doppelte erreicht, läuft die Pauschale ab dem Folgemonat wieder.
 5. **Voraussetzungen, damit die Garantie gilt:**
@@ -150,7 +150,8 @@ Ausgeschlossen: Friseure, Nagelstudios (zu niedriger Kundenwert), Handwerker (ei
 **Empfehlung (21.11., Ästhetik gestrichen):**
 - **Ästhetik nicht bewerben.** Persönlicher Grund (Yusuf). Die Zahlen der Referenz bleiben anonym nutzbar.
 - **Start: Kfz-Betriebe in OWL** (Autohäuser, freie Werkstätten, Aufbereiter). Dort gibt es die meisten Referenzen (4 Kfz-Kunden) und warme Kontakte über wagenpuls. Anfrageproblem meist bei Werkstatt, Ankauf, Aufbereitung, weniger beim Fahrzeugverkauf (der läuft über mobile.de).
-- **Test 2: Immobilienmakler.** Sehr hoher Kundenwert, klares Anfrageproblem (Eigentümer, die verkaufen wollen), aber noch keine Referenz.
+- **Gleichzeitig: Immobilienmakler** (von Yusuf bestätigt). Sehr hoher Kundenwert, klares Anfrageproblem (Eigentümer, die verkaufen wollen), aber noch keine Referenz.
+- **Nur Betriebe mit Geld und sichtbarem Bedarf** (Yusuf: niemand soll beim Preis erschrecken, niemand muss mühsam überzeugt werden). Filter: Kfz-Betrieb mit Werkstatt und Angestellten bzw. Makler mit eigenen Objekten; im Formular nach Mitarbeiterzahl und Website-Alter fragen; Preisrahmen „ab 3.490 €“ früh nennen, damit nur Passende anrufen.
 - **Nicht mehr als zwei gleichzeitig.** Bei kleinem Budget bekommt sonst keine Anzeige genug Daten. Hormozi: in einer Nische bleiben, bis man weiß, ob das Angebot dort zieht.
 
 ## 13. Prüfung mit echten Zahlen (21.11.2026)
@@ -171,3 +172,28 @@ Quelle: Search-Console-Daten aller 6 Kundenportale (Namen hier bewusst weggelass
 - Die Garantie ist also **immer haltbar** (wir arbeiten weiter), das Risiko ist rein wirtschaftlich und begrenzt.
 - Sicherungen, die wir eingebaut haben: Messung ohne Firmennamen (Muster der Referenz), Startwert-Grenze 300 Klicks, Mitwirkungspflichten, Inhaltsplan für die ersten 90 Tage.
 - **Pflicht für die Lieferung:** In den ersten 90 Tagen nach Livegang mindestens ca. 10 bis 20 neue Inhalte (Leistungs-, Orts- und Ratgeberseiten nach den Suchen der Region). Das ist bei der Ästhetik-Referenz der Hebel gewesen.
+
+## 14. Wenn die Monatspauschale ruht (Ablauf und Vertrag)
+
+**GoCardless (so läuft es praktisch):**
+- Rechnungen entstehen im Dashboard erst, wenn GoCardless eine Zahlung meldet. Ruht das Abo, entsteht also auch keine Rechnung. Nichts extra stornieren.
+- Tag 91: Wert im Portal prüfen. Verfehlt → in GoCardless beim Kunden das Abo öffnen → **Pausieren, unbefristet**. Danach kontrollieren, dass der Status wirklich „pausiert“ zeigt (GoCardless meldet laut Hilfe nicht immer, wenn das Pausieren scheitert).
+- Achtung Vorlauf: GoCardless legt die Zahlung einige Werktage vor dem Einzug an. Ist sie schon angelegt, diese eine Zahlung zusätzlich abbrechen.
+- Jeden Monat die letzten 28 Tage prüfen. Erreicht → **Fortsetzen**. Der nächste Einzug muss mindestens die Vorlauffrist in der Zukunft liegen.
+- Kurze Info an den Kunden von buchhaltung@ („Ihre Garantie ist aktiv, der Monatsbeitrag ruht“), im Portal sichtbar vermerken.
+- Abos, die über eine Partner-Anbindung angelegt sind, lassen sich im GoCardless-Dashboard nicht pausieren. Beim ersten Kunden einmal prüfen.
+
+**Vertrag (Vorschlag):**
+- **Mindestlaufzeit läuft weiter, ruhende Monate zählen mit** (6 Kalendermonate ab Livegang). Die Garantie soll Risiko abnehmen, nicht die Bindung verlängern. Eine versteckte Verlängerung wirkt wie eine Falle und könnte als überraschende Klausel angreifbar sein.
+- Folge: Ein Kunde kann nach 6 Monaten kündigen, auch wenn er wegen der Garantie weniger gezahlt hat. Kündigt er, endet die Garantie. Schlimmster Fall bleibt: einige ausgefallene Pauschalen, die Einmalzahlung deckt Gewinnung und Arbeit.
+- Formulierung als **Verzicht** („Die Monatspauschale entfällt, solange …“), nicht als Erstattung. Ohne Zahlung gibt es keine Rechnung und keine Umsatzsteuer.
+- Angebot nur an Unternehmer (Häkchen im Formular und im Vertrag). Zwischen Firmen gilt weitgehend Vertragsfreiheit, die Klausel muss aber klar und vollständig im Angebot stehen.
+- In der Werbung die Bedingungen nicht verstecken: Kurzfassung auf der Landingpage, ausführlich im Angebot (Irreführungsverbot im UWG).
+- Nach bestem Wissen formuliert, kein Anwalt hat geprüft.
+
+## 15. Startwert und Vorher-Verlauf
+
+- **Google füllt keine alten Search-Console-Daten nach.** Die Sammlung beginnt, sobald die Property angelegt ist.
+- **Darum im Funnel:** Search Console direkt nach dem Erstgespräch einrichten (5 Minuten, Kunde gibt Zugang oder bestätigt per DNS). Ab da läuft der echte Startwert. Kostet uns nichts und ist ein weiterer kleiner Schritt, den der Kunde mit uns geht.
+- **Vorher-Verlauf im Portal (Vorschlag, noch nicht gebaut):** Geschätzte Google-Besucher pro Monat zurück bis Oktober 2020 von DataForSEO (Historical Rank Overview, Schätzung aus Suchbegriffen und Platzierungen, ein paar Cent pro Abruf). Im Portal deutlich als „Schätzung vor Messbeginn“ getrennt von echten Zahlen, **nicht** für die Garantie. Hilft auch bei bestehenden Kunden ohne alte Daten. Grenze: Bei sehr kleinen lokalen Seiten ist die Schätzung oft 0 oder grob.
+- **Weitere echte Quellen, falls vorhanden:** Google-Profil (Aufrufe, Anrufe, Website-Klicks der letzten Monate im Inhaberbereich; per API erst nach Freischaltung durch Google), Google Analytics, Statistik von Wix oder WordPress. Einmal ablesen und im Portal als Startnotiz festhalten.
