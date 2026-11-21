@@ -11,7 +11,6 @@ import {
 } from '@/lib/seo-check/types';
 import {
   BRANCHEN,
-  SHOW_MEASURE_CONSENT,
   VSL_VIDEO_URL,
   WEBSITE_ALTER,
   type Branche,
@@ -105,7 +104,16 @@ function readSource(landing: string): LeadSource {
   return src;
 }
 
-export default function SeoCheckClient({ initialId, variant }: { initialId?: string; variant?: FunnelVariant }) {
+export default function SeoCheckClient({
+  initialId,
+  variant,
+  measureEnabled = false,
+}: {
+  initialId?: string;
+  variant?: FunnelVariant;
+  /** Häkchen „Erfolgsmessung an Meta“ zeigen (nur wenn Pixel-ID und Schlüssel gesetzt sind). */
+  measureEnabled?: boolean;
+}) {
   const basePath = variant ? `/seo-check/${variant.slug}` : '/seo-check';
   const sourceRef = useRef<LeadSource | null>(null);
   const [url, setUrl] = useState('');
@@ -221,7 +229,7 @@ export default function SeoCheckClient({ initialId, variant }: { initialId?: str
 
       {phase.kind === 'done' && (
         <div ref={resultRef} className="scroll-mt-[var(--nav-height)]">
-          <Report data={phase.data} variant={variant} onUpdate={(data) => setPhase({ kind: 'done', data })} onNew={reset} />
+          <Report data={phase.data} variant={variant} measureEnabled={measureEnabled} onUpdate={(data) => setPhase({ kind: 'done', data })} onNew={reset} />
         </div>
       )}
     </>
@@ -324,11 +332,13 @@ function ScoreRing({ score }: { score: number }) {
 function Report({
   data,
   variant,
+  measureEnabled,
   onUpdate,
   onNew,
 }: {
   data: SeoCheckResponse;
   variant?: FunnelVariant;
+  measureEnabled: boolean;
   onUpdate: (d: SeoCheckResponse) => void;
   onNew: () => void;
 }) {
@@ -452,6 +462,7 @@ function Report({
               measureCount={r.measures.length}
               defaultBranche={variant?.defaultBranche}
               landing={variant ? `/seo-check/${variant.slug}` : '/seo-check'}
+              measureEnabled={measureEnabled}
               onUnlocked={(d) => {
                 setJustUnlocked(true);
                 onUpdate(d);
@@ -739,12 +750,14 @@ function UnlockForm({
   measureCount,
   defaultBranche,
   landing,
+  measureEnabled,
   onUnlocked,
 }: {
   id: string;
   measureCount: number;
   defaultBranche?: Branche;
   landing: string;
+  measureEnabled: boolean;
   onUnlocked: (d: SeoCheckResponse) => void;
 }) {
   const [name, setName] = useState('');
@@ -795,7 +808,7 @@ function UnlockForm({
           websiteAlter: websiteAlter || undefined,
           business,
           wantsCall,
-          measureConsent: SHOW_MEASURE_CONSENT ? measureConsent : undefined,
+          measureConsent: measureEnabled ? measureConsent : undefined,
           website,
         }),
       });
@@ -948,7 +961,7 @@ function UnlockForm({
         <input type="checkbox" checked={wantsCall} onChange={(e) => setWantsCall(e.target.checked)} className="mt-1 h-4 w-4 accent-[var(--color-blue)]" />
         Ruf mich an und geh das Ergebnis 15 Minuten mit mir durch (kostenlos).
       </label>
-      {SHOW_MEASURE_CONSENT && (
+      {measureEnabled && (
         <label className="mt-3 flex cursor-pointer items-start gap-3 text-[15px] text-[var(--color-black)]">
           <input
             type="checkbox"
@@ -956,8 +969,13 @@ function UnlockForm({
             onChange={(e) => setMeasureConsent(e.target.checked)}
             className="mt-1 h-4 w-4 accent-[var(--color-blue)]"
           />
-          {/* Text wird mit der Datenschutzerklärung abgestimmt, sobald die Erfolgsmessung kommt. */}
-          Erfolgsmessung an Meta erlauben (optional).
+          <span>
+            Ich bin einverstanden, dass meine Anfrage zur Erfolgsmessung unserer Werbung an Meta übermittelt wird
+            (freiwillig, jederzeit widerrufbar).{' '}
+            <a href="/datenschutz.html#meta" className="underline">
+              Mehr dazu
+            </a>
+          </span>
         </label>
       )}
       <div className="hidden" aria-hidden="true">

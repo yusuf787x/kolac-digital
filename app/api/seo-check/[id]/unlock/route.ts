@@ -29,7 +29,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     branche?: string;
     websiteAlter?: string;
     business?: boolean;
-    /** Optionales Häkchen „Erfolgsmessung an Meta“ (im Formular noch ausgeblendet). */
+    /** Optionales Häkchen „Erfolgsmessung an Meta“ (nur sichtbar, wenn Pixel-ID und Schlüssel gesetzt sind). */
     measureConsent?: boolean;
   };
 
@@ -96,7 +96,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     });
   }
   if (firstUnlock) {
-    after(() => onLeadCaptured(id, lead).catch((err) => console.error('SEO-Check Lead-Hook:', err)));
+    const ctx = {
+      ip: clientIp(req) || undefined,
+      userAgent: req.headers.get('user-agent') ?? undefined,
+      clickSeenAtMs: typeof stored.createdAt?.toMillis === 'function' ? stored.createdAt.toMillis() : undefined,
+    };
+    after(() => onLeadCaptured(id, lead, ctx).catch((err) => console.error('SEO-Check Lead-Hook:', err)));
   }
 
   const response: SeoCheckResponse = { id, owner: false, unlocked: true, result: stored.result };

@@ -2,8 +2,11 @@
    Einwilligungs-Banner
    Die Seite setzt keine Cookies. Gespeichert wird nur die Auswahl selbst
    (localStorage, Schluessel kolac_cookie_consent). Einwilligungspflichtig
-   ist allein YouTube ("functional"), auch genutzt von
-   components/case-studies/VideoTestimonial.tsx. Die Ratgeber-Zaehlung
+   ist YouTube ("functional"), auch genutzt von
+   components/case-studies/VideoTestimonial.tsx, und der Meta-Pixel auf den
+   SEO-Check-Seiten ("marketing", Banner in app/seo-check/MetaConsent.tsx).
+   Dieses Banner setzt "marketing" nie auf true, nur der Check-Banner.
+   Die Ratgeber-Zaehlung
    (lib/blog-tracking.ts) laeuft ohne Speicherung auf dem Geraet.
    ========================================================================== */
 (function () {
@@ -22,7 +25,11 @@
 
   function saveConsent(consent) {
     try {
-      consent.timestamp = new Date().toISOString();
+      // Bestehende Felder behalten (z. B. "marketing" vom SEO-Check-Banner).
+      var merged = getConsent() || {};
+      for (var k in consent) merged[k] = consent[k];
+      merged.timestamp = new Date().toISOString();
+      consent = merged;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(consent));
     } catch (e) { /* silent */ }
   }
@@ -81,6 +88,16 @@
         '</div>' +
         '<div class="cookie-category">' +
           '<div class="cookie-category-header">' +
+            '<span class="cookie-category-name">Werbemessung auf den SEO-Check-Seiten (Meta)</span>' +
+            '<label class="cookie-toggle">' +
+              '<input type="checkbox" id="cookie-toggle-marketing">' +
+              '<span class="cookie-toggle-slider"></span>' +
+            '</label>' +
+          '</div>' +
+          '<p class="cookie-category-desc">Nur auf den Seiten des kostenlosen SEO-Checks: Der Meta-Pixel misst, über welche Anzeige du gekommen bist. Dabei setzt Meta Cookies und erhält Daten wie deine IP-Adresse. <a href="/datenschutz.html#meta">Mehr dazu</a></p>' +
+        '</div>' +
+        '<div class="cookie-category">' +
+          '<div class="cookie-category-header">' +
             '<span class="cookie-category-name">Reichweitenmessung im Ratgeber</span>' +
           '</div>' +
           '<p class="cookie-category-desc">Wir zählen Aufrufe und Klicks im Ratgeber ohne Cookies, ohne Speicherung auf deinem Gerät und ohne IP-Adresse. Es entstehen nur Summen, daher ist keine Einwilligung nötig. Details in der <a href="/datenschutz.html#reichweitenmessung">Datenschutzerklärung</a>.</p>' +
@@ -126,6 +143,8 @@
     if (toggle && consent) {
       toggle.checked = !!consent.functional;
     }
+    var mToggle = document.getElementById('cookie-toggle-marketing');
+    if (mToggle) mToggle.checked = !!(consent && consent.marketing === true);
     modalEl.classList.add('visible');
   }
 
@@ -150,7 +169,7 @@
       applyConsent({ essential: true, functional: true });
     };
     if (essentialBtn) essentialBtn.onclick = function () {
-      applyConsent({ essential: true, functional: false });
+      applyConsent({ essential: true, functional: false, marketing: false });
     };
     if (settingsBtn) settingsBtn.onclick = function () {
       showModal();
@@ -163,7 +182,19 @@
 
     if (saveBtn) saveBtn.onclick = function () {
       var toggle = document.getElementById('cookie-toggle-functional');
-      applyConsent({ essential: true, functional: toggle ? toggle.checked : false });
+      var mToggle = document.getElementById('cookie-toggle-marketing');
+      var before = getConsent() || {};
+      var marketing = mToggle ? mToggle.checked : false;
+      applyConsent({ essential: true, functional: toggle ? toggle.checked : false, marketing: marketing });
+      // Widerruf: Meta-Cookies entfernen (sie entstehen nur auf den Check-Seiten).
+      if (before.marketing === true && !marketing) {
+        var host = location.hostname;
+        ['_fbp', '_fbc'].forEach(function (n) {
+          ['', host, '.' + host, '.' + host.replace(/^www\./, '')].forEach(function (d) {
+            document.cookie = n + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + (d ? '; domain=' + d : '');
+          });
+        });
+      }
     };
     if (cancelBtn) cancelBtn.onclick = function () {
       hideModal();

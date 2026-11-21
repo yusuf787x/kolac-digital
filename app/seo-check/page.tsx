@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import SeoCheckClient from './SeoCheckClient';
 import SeoCheckSections, { FAQ } from './SeoCheckSections';
+import { metaCapiEnabled } from '@/lib/seo-check/meta-server';
 
 type PageProps = { searchParams: Promise<{ id?: string | string[] }> };
 
@@ -34,7 +35,7 @@ export default async function SeoCheckPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <SeoCheckClient key={initialId ?? 'neu'} initialId={initialId} />
+      <SeoCheckClient key={initialId ?? 'neu'} initialId={initialId} measureEnabled={metaCapiEnabled()} />
 
       <SeoCheckSections faq={FAQ} />
 

@@ -36,12 +36,11 @@ export function websiteAlterLabel(v?: string): string {
  */
 export const VSL_VIDEO_URL = '';
 
-/**
- * Optionales Häkchen „Erfolgsmessung an Meta“ im Freischalt-Formular.
- * Vorbereitet, aber aus, bis Pixel bzw. Conversions API und Rechtslage
- * geklärt sind. Die Unlock-Route speichert den Wert bereits (measureConsent).
+/*
+ * Das Häkchen „Erfolgsmessung an Meta“ erscheint nur, wenn Pixel-ID und
+ * Conversions-API-Schlüssel gesetzt sind (lib/seo-check/meta-server.ts,
+ * Prop measureEnabled an SeoCheckClient).
  */
-export const SHOW_MEASURE_CONSENT = false;
 
 /** Herkunft eines Besuchers aus einer Anzeige (aus der URL, kein Cookie). */
 export interface LeadSource {
