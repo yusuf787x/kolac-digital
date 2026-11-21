@@ -2,7 +2,7 @@ import 'server-only';
 import { emailBox, emailDataRows, emailLayout, esc } from '@/lib/email-layout';
 import type { StoredLead } from './store';
 import { CATEGORY_LABELS, type SeoCheckResult } from './types';
-import { brancheLabel, websiteAlterLabel, type LeadSource } from './funnel';
+import { brancheLabel, landingPageLabel, websiteAlterLabel, type LeadSource } from './funnel';
 import { site } from '@/lib/site-config';
 import { topFindingId } from './run';
 
@@ -34,10 +34,7 @@ function sourceLines(src?: LeadSource): Array<[string, string]> {
 
 /** Kurzer Name der Einstiegsseite für Betreff und Mail. */
 function landingLabel(src?: LeadSource): string {
-  const l = src?.landing ?? '';
-  if (l.includes('/seo-check/werkstatt')) return 'Werkstatt-Seite';
-  if (l.includes('/seo-check/makler')) return 'Makler-Seite';
-  return 'SEO-Check-Seite';
+  return landingPageLabel(src?.landing);
 }
 
 /**
@@ -115,7 +112,7 @@ export function leadNotificationEmail(id: string, lead: StoredLead, r: SeoCheckR
   return {
     from: FROM,
     replyTo: lead.email,
-    subject: `Neuer Kontakt aus dem SEO-Check: ${lead.name}${lead.company ? `, ${lead.company}` : ''}, ${lead.phone || r.domain}${lead.wantsCall ? ' (Rückruf gewünscht)' : ''}`,
+    subject: `Neuer Kontakt aus dem SEO-Check (${landingLabel(lead.source)}): ${lead.name}${lead.company ? `, ${lead.company}` : ''}, ${lead.phone || r.domain}${lead.wantsCall ? ' (Rückruf gewünscht)' : ''}`,
     html,
     text,
   };

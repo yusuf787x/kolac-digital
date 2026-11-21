@@ -4,7 +4,15 @@
  * Verkaufsvideo auf der Ergebnis-Seite. Von Server und Client genutzt.
  */
 
-export type Branche = 'autohaus' | 'werkstatt' | 'aufbereitung' | 'makler' | 'andere';
+export type Branche =
+  | 'autohaus'
+  | 'werkstatt'
+  | 'aufbereitung'
+  | 'makler'
+  | 'treppenlift'
+  | 'gebaeudereinigung'
+  | 'hoerakustik'
+  | 'andere';
 export type WebsiteAlter = 'unter-1' | '1-3' | 'laenger';
 
 export const BRANCHEN: { value: Branche; label: string }[] = [
@@ -12,6 +20,9 @@ export const BRANCHEN: { value: Branche; label: string }[] = [
   { value: 'werkstatt', label: 'Werkstatt' },
   { value: 'aufbereitung', label: 'Fahrzeugaufbereitung' },
   { value: 'makler', label: 'Immobilienmakler' },
+  { value: 'treppenlift', label: 'Treppenlift' },
+  { value: 'gebaeudereinigung', label: 'Gebäudereinigung' },
+  { value: 'hoerakustik', label: 'Hörakustik' },
   { value: 'andere', label: 'Andere Branche' },
 ];
 
@@ -88,7 +99,31 @@ export interface FunnelVariant {
   symptoms: string[];
   /** Kurzer Satz im Über-mich-Abschnitt, auf die Branche gemünzt. */
   aboutLine: string;
+  /** Kurzname für Mail-Betreffs an Yusuf, z. B. „Werkstatt-Seite“. */
+  pageLabel: string;
+  /** Fazit unter den Ja-Fragen. Leer = Standardsatz. */
+  symptomsFazit?: string;
+  /** Eigene drei Gründe-Karten. Leer = Standardkarten. */
+  reasons?: Array<[string, string, string]>;
+  /** Zusätzlicher Branchen-Beleg im Abschnitt „Dass es anders geht“. */
+  proof?: 'kfz';
+  /** Eigener Text zum NFC-Aufsteller nach „Die ersten X Betriebe bekommen“. Leer = Text mit Theke. */
+  nfcText?: string;
+  /** Seite wird deutschlandweit beworben: kein OWL im Über-mich-Text, Hinweis auf Gespräche per Video. */
+  nationwide?: boolean;
 }
+
+/** Kurzname der Einstiegsseite aus dem Pfad, z. B. /seo-check/treppenlift → „Treppenlift-Seite“. */
+export function landingPageLabel(landing?: string): string {
+  const slug = (landing ?? '').split('?')[0].match(/\/seo-check\/([a-z-]+)/)?.[1];
+  return (slug && FUNNEL_VARIANTS[slug]?.pageLabel) || 'SEO-Check-Seite';
+}
+
+const PROFIL_KARTE: [string, string, string] = [
+  '02',
+  'Google-Profil halb ausgefüllt',
+  'Wer bei Google Maps oben steht, bekommt die Anrufe. Fehlen Kategorien, Fotos und Bewertungen, stehen andere vor dir.',
+];
 
 const SUBLINE =
   'Gib deine Adresse ein. In rund 30 Sekunden siehst du, für welche Suchbegriffe Google deine Website zeigt und was du als Erstes verbessern solltest.';
@@ -114,6 +149,8 @@ export const FUNNEL_VARIANTS: Record<string, FunnelVariant> = {
       'Du weißt eigentlich nicht, ob deine Website überhaupt etwas bringt.',
     ],
     aboutLine: 'Mehrere meiner Kunden sind Kfz-Betriebe aus OWL. Ich weiß also ziemlich genau, wonach eure Kunden suchen.',
+    pageLabel: 'Werkstatt-Seite',
+    proof: 'kfz',
   },
   makler: {
     slug: 'makler',
@@ -132,5 +169,117 @@ export const FUNNEL_VARIANTS: Record<string, FunnelVariant> = {
       'Für Portale zahlst du jeden Monat, und die Anfragen gehören dir trotzdem nicht.',
     ],
     aboutLine: 'Ein einziger Verkaufsauftrag mehr im Jahr ist für einen Makler viel wert. Genau dafür muss dich ein Eigentümer bei Google finden.',
+    pageLabel: 'Makler-Seite',
+  },
+  treppenlift: {
+    slug: 'treppenlift',
+    eyebrow: 'Kostenloser Website-Check für Treppenlift-Händler',
+    title: 'Treppenlift-Händler: Fragen Kunden bei dir an oder beim Portal?',
+    subline: SUBLINE,
+    defaultBranche: 'treppenlift',
+    metaTitle: 'Kostenloser Website-Check für Treppenlift-Händler | Kolac Digital',
+    metaDescription: 'Fragen Kunden bei dir an oder beim Portal? Kostenloser Website-Check in rund 30 Sekunden.',
+    closingTitle: 'Soll ich mir das mit dir ansehen?',
+    closingText: CLOSING_TEXT,
+    symptoms: [
+      'Gekaufte Anfragen landen gleichzeitig auch bei anderen Firmen.',
+      'Wer „Treppenlift“ in deiner Stadt sucht, findet zuerst Vergleichsportale.',
+      'Die Kinder suchen für ihre Eltern bei Google und landen nicht bei dir.',
+      'Deine Website gibt es seit Jahren, aber Anfragen kommen darüber kaum.',
+      'Ohne gekaufte Anfragen wäre der Kalender ziemlich leer.',
+    ],
+    symptomsFazit: 'Das sind keine einzelnen Probleme. Google zeigt deine Website nicht, also landen die Anfragen woanders.',
+    reasons: [
+      ['01', 'Eine Seite für alles', 'Sitzlift, Plattformlift, Kurvenlift, Zuschüsse: alles auf einer Seite. Google weiß dann nicht, wofür du gefunden werden willst.'],
+      PROFIL_KARTE,
+      ['03', 'Keine Antworten auf die Fragen der Familien', 'Was kostet das, gibt es Zuschüsse, wie schnell geht der Einbau? Wer diese Fragen nicht beantwortet, wird bei Google nicht gefunden.'],
+    ],
+    aboutLine: 'Treppenlift-Anfragen kommen oft von den Kindern, die für ihre Eltern suchen. Genau die müssen dich bei Google finden, nicht das nächste Portal.',
+    pageLabel: 'Treppenlift-Seite',
+    nfcText: 'einen NFC-Bewertungs-Aufsteller, mit dem deine Kunden dich mit einem Handgriff bei Google bewerten.',
+    nationwide: true,
+  },
+  gebaeudereinigung: {
+    slug: 'gebaeudereinigung',
+    eyebrow: 'Kostenloser Website-Check für Gebäudereinigungen',
+    title: 'Gebäudereinigung: Findet dich eine Firma, die eine neue Reinigung sucht?',
+    subline: SUBLINE,
+    defaultBranche: 'gebaeudereinigung',
+    metaTitle: 'Kostenloser Website-Check für Gebäudereinigungen | Kolac Digital',
+    metaDescription: 'Findet dich eine Firma, die eine neue Reinigung sucht? Kostenloser Website-Check in rund 30 Sekunden.',
+    closingTitle: 'Soll ich mir das mit dir ansehen?',
+    closingText: CLOSING_TEXT,
+    symptoms: [
+      'Neue Aufträge kommen fast nur über Empfehlung oder Kaltakquise.',
+      'Wer „Büroreinigung“ in deiner Stadt sucht, findet die Konkurrenz.',
+      'Du hättest Platz für weitere Objekte, aber es fehlen die Anfragen.',
+      'Deine Website gibt es seit Jahren, aber ein Dauerauftrag kam darüber noch nicht.',
+      'Anrufe gehen verloren, wenn du gerade selbst im Objekt bist.',
+    ],
+    symptomsFazit: 'Das sind keine einzelnen Probleme. Firmen suchen ihre Reinigung bei Google, und dort tauchst du nicht auf.',
+    reasons: [
+      ['01', 'Eine Seite für alles', 'Unterhaltsreinigung, Glasreinigung, Treppenhaus: alles auf einer Seite. Google weiß dann nicht, wofür du gefunden werden willst.'],
+      PROFIL_KARTE,
+      ['03', 'Kein einfacher Weg zur Anfrage', 'Wer ein Angebot will, muss anrufen. Bist du gerade im Objekt, ruft er beim Nächsten an.'],
+    ],
+    aboutLine: 'Ein einziger Dauerauftrag läuft oft über Jahre. Genau deshalb muss dich eine Firma finden, die gerade eine neue Reinigung sucht.',
+    pageLabel: 'Gebäudereinigung-Seite',
+    nfcText: 'einen NFC-Bewertungs-Aufsteller, mit dem deine Kunden dich mit einem Handgriff bei Google bewerten.',
+    nationwide: true,
+  },
+  hoerakustik: {
+    slug: 'hoerakustik',
+    eyebrow: 'Kostenloser Website-Check für Hörakustiker',
+    title: 'Hörakustiker: Wer „Hörgeräte“ in deiner Stadt googelt, landet bei den Ketten?',
+    subline: SUBLINE,
+    defaultBranche: 'hoerakustik',
+    metaTitle: 'Kostenloser Website-Check für Hörakustiker | Kolac Digital',
+    metaDescription: 'Findet man deinen Laden bei Google oder nur die Ketten? Kostenloser Website-Check in rund 30 Sekunden.',
+    closingTitle: 'Soll ich mir das mit dir ansehen?',
+    closingText: CLOSING_TEXT,
+    symptoms: [
+      'Bei Google stehen die großen Ketten vor dir, obwohl du persönlich berätst.',
+      'Onlinehändler werben mit niedrigen Preisen und tauchen überall auf.',
+      'Neue Kunden kommen fast nur über Ärzte oder Empfehlung.',
+      'Deine Website gibt es seit Jahren, aber Termine kommen darüber kaum.',
+      'Bei Google Maps bist du nicht unter den ersten drei.',
+    ],
+    symptomsFazit: 'Das sind keine einzelnen Probleme. Google zeigt deinen Laden einfach nicht, und die Kunden gehen zu den Großen.',
+    reasons: [
+      ['01', 'Eine Seite für alles', 'Beratung, Hörtest, Gehörschutz, Zubehör: alles auf einer Seite. Google weiß dann nicht, wofür du gefunden werden willst.'],
+      PROFIL_KARTE,
+      ['03', 'Seit Jahren nichts Neues', 'Kommt nie etwas dazu, wirkt deine Seite für Google wie ein Laden, der zu hat.'],
+    ],
+    aboutLine: 'Gegen die Werbebudgets der Ketten gewinnst du nicht mit mehr Geld, sondern damit, dass man dich vor Ort bei Google findet.',
+    pageLabel: 'Hörakustik-Seite',
+    nationwide: true,
+  },
+  autohaus: {
+    slug: 'autohaus',
+    eyebrow: 'Kostenloser Website-Check für Autohäuser',
+    title: 'Autohäuser: Wer „Auto verkaufen“ in deiner Stadt googelt, landet bei den Ankaufportalen?',
+    subline: SUBLINE,
+    defaultBranche: 'autohaus',
+    metaTitle: 'Kostenloser Website-Check für Autohäuser | Kolac Digital',
+    metaDescription: 'Landen deine Kunden bei den Ankaufportalen statt bei dir? Kostenloser Website-Check in rund 30 Sekunden.',
+    closingTitle: 'Soll ich mir das mit dir ansehen?',
+    closingText: CLOSING_TEXT,
+    symptoms: [
+      'Wer sein Auto verkaufen will, landet bei den großen Ankaufportalen statt bei dir.',
+      'Die Herstellerseite ist schick, aber bei Suchen in deiner Stadt taucht ihr kaum auf.',
+      'Werkstatt- und Service-Anfragen gehen an Ketten und andere Werkstätten.',
+      'Jede Anfrage über die Fahrzeugbörsen kostet dich extra.',
+      'Du weißt nicht, wie viele Anfragen eure Website im Monat wirklich bringt.',
+    ],
+    symptomsFazit: 'Das sind keine einzelnen Probleme. Bei Suchen in deiner Stadt zeigt Google euer Autohaus einfach nicht vorne.',
+    reasons: [
+      ['01', 'Eine Seite für alles', 'Neuwagen, Gebrauchtwagen, Ankauf, Werkstatt: alles auf einer Seite. Google weiß dann nicht, wofür ihr gefunden werden wollt.'],
+      PROFIL_KARTE,
+      ['03', 'Nur die Herstellerseite', 'Die Herstellerseite ist für die Marke gebaut, nicht für Suchen wie „Auto verkaufen“ oder „Inspektion“ in deiner Stadt.'],
+    ],
+    aboutLine: 'Mehrere meiner Kunden kommen aus dem Kfz-Bereich, vom Autoankauf bis zur Motoreninstandsetzung. Ich weiß also ziemlich genau, wonach eure Kunden suchen.',
+    pageLabel: 'Autohaus-Seite',
+    proof: 'kfz',
+    nationwide: true,
   },
 };

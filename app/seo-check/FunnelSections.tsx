@@ -5,7 +5,7 @@ import { BELEG_SCREENSHOTS, FUNNEL_REVIEWS, PRAXIS_MASSNAHMEN, PRAXIS_WEEKS } fr
 import { site } from '@/lib/site-config';
 
 /**
- * Bausteine der Branchen-Landingpages (/seo-check/werkstatt, /seo-check/makler).
+ * Bausteine der Branchen-Landingpages (/seo-check/<branche>, siehe FUNNEL_VARIANTS).
  * Aufbau angelehnt an Hormozis Workshop-Seite, aber kurz: Symptome, drei
  * Gründe, Belege, Ablauf, Über mich, zweiter Einstieg. Nur echte Zahlen,
  * keine Kundennamen, kein Preis.
@@ -203,7 +203,7 @@ const GARANTIE_REGELN = [
   'Keine Garantie auf Platzierungen oder auf eine bestimmte Zahl an Anfragen.',
 ];
 
-function PaketSection() {
+function PaketSection({ variant }: { variant: FunnelVariant }) {
   return (
     <section className="bg-[var(--color-offwhite)] py-16 md:py-24">
       <div className="mx-auto max-w-[1100px] px-4 md:px-6">
@@ -286,8 +286,9 @@ function PaketSection() {
             <li className="flex gap-3 rounded-[12px] bg-white px-4 py-3 text-[15px] leading-snug text-[var(--color-black)]">
               <span aria-hidden className="font-bold text-[var(--color-blue)]">+</span>
               <span>
-                <span className="font-semibold">Bewertungs-Aufsteller:</span> Die ersten {NFC_AUFSTELLER_VORRAT} Betriebe bekommen einen NFC-Aufsteller für
-                die Theke. Kunde hält das Handy dran und landet direkt bei deinen Google-Bewertungen.
+                <span className="font-semibold">Bewertungs-Aufsteller:</span> Die ersten {NFC_AUFSTELLER_VORRAT} Betriebe bekommen{' '}
+                {variant.nfcText ??
+                  'einen NFC-Aufsteller für die Theke. Kunde hält das Handy dran und landet direkt bei deinen Google-Bewertungen.'}
               </span>
             </li>
           )}
@@ -318,7 +319,7 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
               ))}
             </ul>
             <p className="mt-6 text-[17px] font-semibold leading-snug text-[var(--color-black)]">
-              Das sind keine einzelnen Probleme. Google zeigt deine Website einfach nicht.
+              {variant.symptomsFazit ?? 'Das sind keine einzelnen Probleme. Google zeigt deine Website einfach nicht.'}
             </p>
           </div>
         </div>
@@ -332,7 +333,7 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
             Technisch sind die meisten Seiten in Ordnung. Woran es meistens liegt:
           </p>
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {REASONS.map(([n, title, text]) => (
+            {(variant.reasons ?? REASONS).map(([n, title, text]) => (
               <div key={n} className="rounded-[18px] bg-white p-6 shadow-[var(--shadow-sm)]">
                 <p className="text-[20px] font-extrabold text-[var(--color-blue)]">{n}</p>
                 <h3 className="mt-2 text-[17px] font-semibold text-[var(--color-black)]">{title}</h3>
@@ -371,7 +372,7 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
             </div>
           </div>
 
-          {variant.slug === 'werkstatt' && (
+          {variant.proof === 'kfz' && (
             <div className="mt-6 rounded-[24px] bg-[var(--color-offwhite)] p-6 md:p-10">
               <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Kfz-Meisterbetrieb aus Lage</p>
               <h3 className="mt-2 text-[22px] font-bold leading-snug text-[var(--color-black)] md:text-[26px]">
@@ -437,7 +438,7 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
       </section>
 
       {/* Das Paket: erst Beweis, dann was man bekommt, dann wie man startet */}
-      <PaketSection />
+      <PaketSection variant={variant} />
 
       {/* Ablauf */}
       <section className="bg-white py-16 md:py-24">
@@ -472,7 +473,11 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
           <div>
             <h2 className={H2}>Moin, ich bin Yusuf.</h2>
             <div className="mt-4 space-y-3 text-[17px] leading-relaxed text-[var(--color-gray)]">
-              <p>Ich baue Websites für Betriebe aus OWL und kümmere mich darum, dass Google sie auch zeigt. Das mache ich selbst.</p>
+              <p>
+                {variant.nationwide
+                  ? 'Ich baue Websites für Betriebe in ganz Deutschland und kümmere mich darum, dass Google sie auch zeigt. Das mache ich selbst. Die Gespräche laufen per Video.'
+                  : 'Ich baue Websites für Betriebe aus OWL und kümmere mich darum, dass Google sie auch zeigt. Das mache ich selbst.'}
+              </p>
               <p>{variant.aboutLine}</p>
               <p>
                 Bevor wir sprechen, schaue ich mir dein Ergebnis genau an. Wenn ich dir nicht helfen kann, sag ich dir das ehrlich. Darum nehme ich
