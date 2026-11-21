@@ -57,6 +57,8 @@ Unqualifizierte (Website unter 1 Jahr, keine Mitarbeiter): auf das SEO-Paket aus
 
 ## 6. Callouts (die ersten Sekunden, Hormozi: 80 % der Wirkung)
 
+**Aus der Konkurrenzanalyse (`docs/ADS-KONKURRENZ.md`, 21.11.):** Erste Zeile = Beruf + Ort + Schmerz in Du-Form. Bildüberschrift als Anapher. Echter Kundenfall mit Zahl. Paketname mit Garantie offen nennen (Details auf der Landingpage). Freie Werkstätten und Aufbereiter wirbt kaum jemand an: dort zuerst. Makler: Gegensatz „gemietete Leads, die fünf Makler bekommen, gegen eigene Anfragen über deine Website“. Keine Konkurrenz bietet Garantie oder „erst sehen, dann zahlen“.
+
 Ton: Du, sehr einfache Sätze, SEO im Nebensatz erklären („bei Google gefunden werden“), wechselnde Referenzen mit Zahlen, keine Gedankenstriche.
 
 **Kfz-Betriebe**
