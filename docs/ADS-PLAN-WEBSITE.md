@@ -21,42 +21,37 @@ Stand: 21.11.2026. Baut auf `docs/OFFER-WEBSITE.md` auf, Regeln aus Skill `hormo
 
 Hormozi: dort anfangen, wo die Konkurrenz wirbt. **Vor dem Start** in der Meta-Werbebibliothek (facebook.com/ads/library, Land Deutschland) nach „Website Werkstatt“, „Webdesign Makler“, „Immobilienmakler Leads“ suchen. Anzeigen, die über einen Monat laufen, gelten als profitabel: Callout, Wert und CTA notieren.
 
-## 3. Weg vom Klick zum Abschluss
+## 3. Weg vom Klick zum Abschluss (Mittelweg Hormozi + Sabri, entschieden 21.11.)
 
-1. **Anzeige** (Callout + Wert + CTA) → **Formular in der App** (Meta Instant Form, Typ „Höhere Absicht“ mit Bestätigungsschritt).
-2. **Formularfragen** (filtern Geld und Bedarf, ohne Preis):
-   - Name, Telefon, Firma, Website
-   - Branche: Autohaus / Werkstatt / Aufbereitung / Makler / andere
-   - Wie lange gibt es eure Website schon? (unter 1 Jahr / 1 bis 3 Jahre / länger)
-   - Wie viele Mitarbeiter? (nur ich / 2 bis 5 / 6 bis 20 / mehr)
-   - Woher kommen heute die meisten neuen Kunden? (Empfehlung / Google / Portale wie mobile.de oder ImmoScout / Werbung)
-   - Häkchen: „Ich frage für ein Unternehmen an.“ Link zur Datenschutzerklärung.
-3. **Lead-Magnet:** „Ich prüfe deine Website kostenlos und zeige dir in 15 Minuten am Telefon, warum sie keine Anfragen bringt und was die Konkurrenz anders macht.“ Yusuf macht den SEO-Check (unbegrenzt) und den Konkurrenzblick bei Google Maps.
-4. **Schnell anrufen:** innerhalb von 1 Stunde in der Geschäftszeit, Termin für das Gespräch, Erinnerung 1 Stunde vorher (Hormozis erste Anzeige: genau so). Meet-Erinnerungen sind schon live.
-5. **Vorbereitung mit Claude:** Zahlen der Seite, Startwert-Schätzung, Konkurrenz, ob wir helfen können.
-6. **Verkaufsgespräch:** Problem zeigen, Wertstapel, dann Preis, dann die Doppel-Garantie, dann Boni zu den genannten Einwänden.
-7. **Sofort nach Zusage:** Search Console einrichten (Startwert läuft), Entwurf in 7 Tagen.
+Sabri: Bei kleinem Budget nicht direkt auf „Termin buchen“ schicken (Termine werden zu teuer), sondern auf ein kostenloses Lockmittel und danach verkaufen. Hormozi: Bestes Lockmittel deckt das Problem auf. Darum ist der **SEO-Check** der Einstieg.
 
-Unqualifizierte (Website unter 1 Jahr, keine Mitarbeiter): freundlich absagen oder auf das SEO-Paket aus `docs/OFFER.md` verweisen.
+1. **Anzeige** (Callout + Wert + CTA) → **Branchen-SEO-Check** (z. B. /seo-check/werkstatt, /seo-check/makler; gleiche Überschrift wie die Anzeige, nicht bei Google gelistet).
+2. Besucher gibt die Website ein, sieht Gesamtnote und 1 bis 2 Befunde. Für den vollen Bericht: Name, E-Mail, **Telefon (Pflicht)**, Branche, Website-Alter (optional), Häkchen „für ein Unternehmen“. Herkunft (UTM, Klick-ID) wird mitgespeichert.
+3. **Ergebnis-Seite:** voller Bericht, darüber „Gespräch buchen“ (bestehende Terminbuchung) und das VSL (Bildschirmvideo von Yusuf, sobald aufgenommen). Kein Preis.
+4. **Wer nicht bucht, wird angerufen,** in der Geschäftszeit innerhalb von 15 Minuten, sonst am Morgen: „Ich habe gesehen, du hast deine Website geprüft. Darf ich dir kurz zeigen, was mir aufgefallen ist?“ Ergebnis liegt vor. Am Telefon die Worte der Kunden notieren und in Anzeige, Seite und Video übernehmen (Sabri).
+5. **Vorbereitung mit Claude**, **Verkaufsgespräch** (Problem, Wertstapel, Preis, Doppel-Garantie, Boni zu Einwänden), nach Zusage sofort Search Console einrichten.
+6. Erinnerung 1 Stunde vor jedem Termin (läuft schon).
 
-## 4. Kampagnenaufbau (Meta)
+Unqualifizierte (Website unter 1 Jahr, keine Mitarbeiter): auf das SEO-Paket aus `docs/OFFER.md` verweisen.
 
-- **1 Kampagne**, Ziel „Leads“, Formular in der App.
-- **2 Anzeigengruppen**: Kfz-Betriebe und Makler. Jede mit eigenem Callout, gleiches Gebiet.
-- **Gebiet:** OWL, Umkreis 40 km um Bielefeld, Paderborn und Gütersloh, nur „Personen, die dort wohnen“.
-- **Zielgruppe:** Alter 28 bis 65, sonst offen (Advantage+). Die Anzeige filtert über den Callout, nicht die Einstellung (Hormozi: lokal kaum weitere Filter). Optional Interessen wie „Kfz-Werkstatt“, „Immobilienmakler“ als Vorschlag.
-- **Pro Anzeigengruppe 3 Motive**, alle gleichzeitig.
-- **Keine Sonderkategorie** „Wohnen“: Wir bewerben eine Dienstleistung an Makler, keine Wohnungen. Falls Meta trotzdem markiert, Einspruch.
-- **Kein Pixel, kein Retargeting** im Test (kein Cookie-Banner nötig).
+## 4. Kampagnenaufbau (Meta, nach Sabri)
+
+- **1 Kampagne, Ziel „Leads“** (Optimierung auf das Freischalten des Berichts, dafür Meta-Pixel auf den Check-Seiten, siehe Abschnitt 9).
+- **2 Anzeigengruppen mit eigenem Budget (ABO):** Kfz-Betriebe und Makler, je 15 € am Tag. Die Branche ist der erste Blickwinkel.
+- **Je Anzeigengruppe 2 Bildanzeigen:** ein echtes Handyfoto von Yusuf („Raw Native“) und ein Screenshot (Check-Ergebnis oder Google-Maps-Ausschnitt). Mehr Anzeigen bekommen bei diesem Budget nicht genug Geld.
+- **Gebiet:** OWL, 40 km um Bielefeld, Paderborn und Gütersloh, „wohnt dort“. **Zielgruppe breit:** nur Alter 28 bis 65, keine Interessen stapeln. Der Callout filtert.
+- **Keine Sonderkategorie** „Wohnen“ (wir bewerben eine Dienstleistung an Makler). Falls Meta markiert: Einspruch.
+- **Keine „Breaking News“-Optik** (Irreführung, getarnte Werbung).
 
 ## 5. Budget, Testregeln, Abbruch
 
-- **Test: 4 Wochen, 20 € pro Tag gesamt** (je 10 € pro Branche) = ca. **560 €**.
-- **Regel pro Motiv** (Hormozi, auf unser Sparziel verkleinert): Kein einziger Kontakt nach 60 € Ausgaben → Motiv aus. Kontakt dauerhaft über 125 € → Motiv aus.
-- **Regel pro Branche:** Nach 250 € kein einziges Gespräch → Anzeigengruppe pausieren, Callout und Angebot prüfen. Kontakte da, aber keine Abschlüsse → Verkaufsproblem, nicht Anzeigenproblem (Hormozi).
-- **Gesamtgrenze:** Nach 560 € ohne einen einzigen Abschluss → Stopp, gemeinsam auswerten.
-- **Ausbauen (ab Woche 5):** Budget in das Motiv mit den günstigsten **Gesprächen** schieben, nicht den günstigsten Kontakten. Erhöhen in Schritten von höchstens 20 bis 30 % alle paar Tage. Budget rückwärts aus der Kapazität: 3 Kunden × Kosten pro Kunde × 1,2.
-- **Jede Woche neu:** 3 bis 5 neue Einstiege (erste Sekunden) aufnehmen und gegen den Sieger testen.
+- **30 € pro Tag, ca. 30 Tage, ca. 900 €** (Yusuf am 21.11.: „ich traue mich einfach mal“). Zweck: Daten kaufen, nicht sofort Gewinn.
+- **Woche 1: nichts anfassen** (7 Tage).
+- **Danach** alle 5 Tage entscheiden: Ziel **25 € pro Kontakt**. Anzeige aus bei **über 50 € pro Kontakt** oder **Klickrate unter 1 %**.
+- **Gewinner skalieren:** 80 % des Budgets in eine Kampagne mit Gesamtbudget (CBO) nur mit den Gewinnern, 20 % in eine Testkampagne. Alle 2 Wochen 2 neue Blickwinkel oder Varianten (z. B. Schmerz „nur Empfehlungen“, „Konkurrenz steht vorne“, „Portale kosten jeden Monat“).
+- **Verkaufsproblem erkennen:** Kontakte und Gespräche da, aber keine Abschlüsse → am Gespräch arbeiten, nicht an den Anzeigen (Hormozi).
+- **Erwartung (Sabri-Rechnung, deutsche Kosten):** 900 € ÷ ca. 30 € = 30 Kontakte → ca. 15 % buchen, plus Anrufe → 4 bis 6 Gespräche → 1 Abschluss = 3.740 € in 30 Tagen.
+- **Nach dem ersten Kunden:** Einsatz herausnehmen, der Rest geht zurück in die Werbung (Sabri).
 
 ## 6. Callouts (die ersten Sekunden, Hormozi: 80 % der Wirkung)
 
@@ -78,7 +73,7 @@ Ton: Du, sehr einfache Sätze, SEO im Nebensatz erklären („bei Google gefunde
 
 (5 bis 6 sind Hormozis „Wenn-dann“ und „Ja-Frage“. Nach dem ersten Test die besten Einstiege auf alle Motive übertragen.)
 
-## 7. Motive (je Branche 3)
+## 7. Motive (Start: je Branche B oder C als Screenshot plus ein echtes Foto von Yusuf; A wird das VSL)
 
 | # | Motiv | Inhalt | Format |
 |---|---|---|---|
@@ -105,7 +100,7 @@ Ton: Du, sehr einfache Sätze, SEO im Nebensatz erklären („bei Google gefunde
 - In Meta: Ausgaben, Kontakte, Kosten pro Kontakt je Motiv.
 - Selbst je Kontakt: qualifiziert ja/nein, Gespräch ja/nein, Angebot, Abschluss. Am einfachsten Kontakte aus dem Meta-Leadcenter täglich ins Dashboard (Vertrieb) übertragen. Automatik (Meta-Webhook ins Dashboard) erst, wenn der Test trägt.
 - **Entschieden wird nach Kosten pro Gespräch und pro Abschluss**, nicht nach Klicks.
-- Wöchentliche Auswertung mit Claude (Skill `claude-ads:ads-optimize` mit den Meta-Zahlen).
+- Auswertung mit Claude nach Woche 1 und dann alle 5 Tage (Skill `claude-ads:ads-optimize`, Meta-Export oder Screenshots).
 
 ## 9. Voraussetzungen vor dem Start
 
@@ -119,13 +114,16 @@ Ton: Du, sehr einfache Sätze, SEO im Nebensatz erklären („bei Google gefunde
 | Bilder für Motiv B und C | Claude | offen |
 | Selfie-Video Motiv A je Branche | Yusuf | offen |
 | Ablauf „Kontakt in 1 Stunde anrufen“ + Gesprächsvorbereitung | Yusuf + Claude | offen |
-| Vorher-Kurve im Portal (für Gesprächsvorbereitung) | Claude | in Arbeit |
+| Vorher-Kurve im Portal (für Gesprächsvorbereitung) | Claude | erledigt 21.11. |
+| SEO-Check umbauen: Telefon Pflicht, Branchen-Varianten, Herkunft, Terminbuchung und VSL auf der Ergebnis-Seite | Claude | in Arbeit |
+| Meta-Pixel mit Einwilligung auf den Check-Seiten, Lead-Ereignis | Claude | wartet auf Entscheidung (Abschnitt 9) |
+| VSL aufnehmen (Bildschirmvideo, 3 bis 4 Min.) | Yusuf, Stichpunkte von Claude | offen |
 
 ## 10. Zeitplan
 
 | Woche | Was |
 |---|---|
 | 1 | Voraussetzungen, Werbebibliothek, Check von 40 Websites, Motive bauen, warme Kontakte und eigene Kfz-Kunden um Empfehlung bitten |
-| 2 bis 5 | Test 20 € pro Tag, Abbruchregeln anwenden, wöchentlich neue Einstiege |
+| 2 bis 5 | Test 30 € pro Tag, Woche 1 nichts anfassen, dann alle 5 Tage Regeln anwenden |
 | Ende Woche 3 | Erste Auswertung: Kosten pro Gespräch je Branche |
 | ab 6 | Sieger ausbauen bis 3 Kunden im Monat, Verlierer-Branche ersetzen oder neu verpacken |
