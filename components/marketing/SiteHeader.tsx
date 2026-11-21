@@ -24,12 +24,18 @@ interface Props {
    * Homepage-Section aufruft.
    */
   crossPage?: boolean;
+  /**
+   * Nur Logo, ohne Menue und CTA. Fuer Werbe-Landingpages (z. B.
+   * /seo-check/werkstatt), damit nichts vom Formular ablenkt.
+   */
+  minimal?: boolean;
 }
 
 export default function SiteHeader({
   ctaHref = '/webseiten',
   ctaLabel = 'Webseite mit System',
   crossPage = true,
+  minimal = false,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -89,6 +95,8 @@ export default function SiteHeader({
             />
           </a>
 
+          {!minimal && (
+          <>
           <div className="nav-links">
             <a href={`${prefix}#leistungen`}>Leistungen</a>
             <a href={`${prefix}#about`}>Über uns</a>
@@ -122,9 +130,12 @@ export default function SiteHeader({
             <span />
             <span />
           </div>
+          </>
+          )}
         </div>
       </nav>
 
+      {!minimal && (
       <div
         className={`mobile-menu${menuOpen ? ' open' : ''}`}
         role="dialog"
@@ -155,6 +166,7 @@ export default function SiteHeader({
           {ctaLabel}
         </a>
       </div>
+      )}
     </>
   );
 }

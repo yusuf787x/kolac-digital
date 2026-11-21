@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { CheckFailedError, normalizeInputUrl, redactResult, runSeoCheck } from '@/lib/seo-check/run';
 import { checkLimits, clientIp, isOwnerRequest, recordUsage, saveCheck } from '@/lib/seo-check/store';
 import type { SeoCheckResponse } from '@/lib/seo-check/types';
+import { cleanSource } from '@/lib/seo-check/funnel';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,7 @@ export const maxDuration = 60;
  * dem Freischalten (/api/seo-check/[id]/unlock), der Inhaber sofort.
  */
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as { url?: string };
+  const body = (await req.json().catch(() => ({}))) as { url?: string; source?: unknown };
   const url = normalizeInputUrl(body.url ?? '');
   if (!url) {
     return NextResponse.json({ error: 'Bitte gib eine gültige Adresse ein, z. B. meinefirma.de.' }, { status: 400 });
@@ -57,7 +58,7 @@ export async function POST(req: Request) {
         { status: 503 },
       );
     }
-    const id = await saveCheck(result, owner, ip);
+    const id = await saveCheck(result, owner, ip, cleanSource(body.source));
     if (!owner) await recordUsage(ip, id);
     const response: SeoCheckResponse = {
       id,

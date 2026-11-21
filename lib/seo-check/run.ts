@@ -898,11 +898,23 @@ const EVERGREEN_MEASURES: Measure[] = [
 ];
 
 /** Entfernt die Loesungen, solange der Bericht nicht freigeschaltet ist. */
+/** Wie viele Maßnahmen Besucher vor dem Freischalten vollständig sehen. */
+export const TEASER_MEASURES = 2;
+
+/**
+ * Öffentliche Ansicht vor dem Freischalten: Gesamtnote, Kategorien und
+ * Kennzahlen bleiben, dazu die ersten Maßnahmen (ohne Anleitung). Weitere
+ * Maßnahmen, alle Prüfpunkte im Detail und die Suchbegriffe gibt es erst
+ * gegen Kontaktdaten. Gesperrte Einträge bleiben als leere Hüllen erhalten,
+ * damit die Seite zeigen kann, wie viel noch kommt.
+ */
 export function redactResult(result: SeoCheckResult): SeoCheckResult {
   return {
     ...result,
-    checks: result.checks.map(({ fix: _fix, ...rest }) => rest),
-    measures: result.measures.map((m) => ({ ...m, how: '' })),
+    checks: result.checks.map(({ fix: _fix, ...rest }) => ({ ...rest, title: '', detail: '' })),
+    measures: result.measures.map((m, i) =>
+      i < TEASER_MEASURES ? { ...m, how: '' } : { ...m, title: '', why: '', how: '' },
+    ),
     rankings: {
       ...result.rankings,
       error: undefined,

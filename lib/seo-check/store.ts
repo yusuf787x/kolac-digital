@@ -5,6 +5,7 @@ import { adminDb } from '@/lib/firebase-admin';
 import { clientIp, sha256, truncateIp } from '@/lib/portal/access';
 import { authenticate } from '@/lib/server-auth';
 import type { SeoCheckResult } from './types';
+import type { Branche, LeadSource, WebsiteAlter } from './funnel';
 
 /**
  * Speicherung und Begrenzung des SEO-Checks.
@@ -74,6 +75,13 @@ export interface StoredLead {
   company?: string;
   wantsCall: boolean;
   at: string;
+  /** Branche aus dem Freischalt-Formular (seit Funnel-Umbau Pflicht). */
+  branche?: Branche;
+  websiteAlter?: WebsiteAlter;
+  /** Besucher hat bestätigt, für ein Unternehmen anzufragen. */
+  business?: boolean;
+  /** Herkunft aus Anzeigen, vom Check übernommen. */
+  source?: LeadSource;
 }
 
 export interface StoredCheck {
@@ -82,9 +90,10 @@ export interface StoredCheck {
   ip: string;
   createdAt: Timestamp;
   lead?: StoredLead;
+  source?: LeadSource;
 }
 
-export async function saveCheck(result: SeoCheckResult, owner: boolean, ip: string): Promise<string> {
+export async function saveCheck(result: SeoCheckResult, owner: boolean, ip: string, source?: LeadSource): Promise<string> {
   const id = randomBytes(12).toString('base64url');
   // Firestore lehnt undefined-Werte ab (z. B. platform, wenn kein Baukasten
   // erkannt wurde). Der JSON-Umweg entfernt sie, das Ergebnis ist reines JSON.
@@ -92,7 +101,15 @@ export async function saveCheck(result: SeoCheckResult, owner: boolean, ip: stri
   await adminDb()
     .collection(CHECKS)
     .doc(id)
-    .set({ result: clean, owner, ip: truncateIp(ip), domain: result.domain, score: result.score, createdAt: Timestamp.now() });
+    .set({
+      result: clean,
+      owner,
+      ip: truncateIp(ip),
+      domain: result.domain,
+      score: result.score,
+      createdAt: Timestamp.now(),
+      ...(source ? { source: JSON.parse(JSON.stringify(source)) } : {}),
+    });
   return id;
 }
 

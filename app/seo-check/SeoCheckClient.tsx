@@ -9,6 +9,16 @@ import {
   type CheckStatus,
   type SeoCheckResponse,
 } from '@/lib/seo-check/types';
+import {
+  BRANCHEN,
+  VSL_VIDEO_URL,
+  WEBSITE_ALTER,
+  type Branche,
+  type FunnelVariant,
+  type LeadSource,
+  type WebsiteAlter,
+} from '@/lib/seo-check/funnel';
+import { emitLeadCaptured } from '@/lib/seo-check/lead-event';
 
 type Phase =
   | { kind: 'idle' }
@@ -83,10 +93,28 @@ async function apiFetch(path: string, init: RequestInit = {}): Promise<Response>
   });
 }
 
-export default function SeoCheckClient({ initialId }: { initialId?: string }) {
+/** Herkunft aus der Adresszeile lesen (utm_*, fbclid). Kein Cookie. */
+function readSource(landing: string): LeadSource {
+  const q = new URLSearchParams(window.location.search);
+  const src: LeadSource = { landing };
+  for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'fbclid'] as const) {
+    const v = q.get(k);
+    if (v) src[k] = v.slice(0, 200);
+  }
+  return src;
+}
+
+export default function SeoCheckClient({ initialId, variant }: { initialId?: string; variant?: FunnelVariant }) {
+  const basePath = variant ? `/seo-check/${variant.slug}` : '/seo-check';
+  const sourceRef = useRef<LeadSource | null>(null);
   const [url, setUrl] = useState('');
   const [phase, setPhase] = useState<Phase>(initialId ? { kind: 'loading-report' } : { kind: 'idle' });
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // Herkunft einmal beim Laden merken, bevor die Adresszeile ersetzt wird.
+  useEffect(() => {
+    sourceRef.current = readSource(basePath);
+  }, [basePath]);
 
   // Gespeicherten Bericht laden, wenn die Seite mit ?id=... geoeffnet wird.
   useEffect(() => {
@@ -110,14 +138,14 @@ export default function SeoCheckClient({ initialId }: { initialId?: string }) {
     if (!value) return;
     setPhase({ kind: 'running', url: value });
     try {
-      const res = await apiFetch('/api/seo-check', { method: 'POST', body: JSON.stringify({ url: value }) });
+      const res = await apiFetch('/api/seo-check', { method: 'POST', body: JSON.stringify({ url: value, source: sourceRef.current ?? readSource(basePath) }) });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         setPhase({ kind: 'error', message: json.error ?? 'Der Check ist fehlgeschlagen.', code: json.code, lastCheckId: json.lastCheckId });
         return;
       }
       const data = json as SeoCheckResponse;
-      window.history.replaceState(null, '', `/seo-check?id=${data.id}`);
+      window.history.replaceState(null, '', `${basePath}?id=${data.id}`);
       setPhase({ kind: 'done', data });
     } catch {
       setPhase({ kind: 'error', message: 'Keine Verbindung. Bitte prüf dein Internet und versuch es noch einmal.' });
@@ -125,7 +153,7 @@ export default function SeoCheckClient({ initialId }: { initialId?: string }) {
   }
 
   function reset() {
-    window.history.replaceState(null, '', '/seo-check');
+    window.history.replaceState(null, '', basePath);
     setUrl('');
     setPhase({ kind: 'idle' });
   }
@@ -137,13 +165,15 @@ export default function SeoCheckClient({ initialId }: { initialId?: string }) {
     <>
       <section className="bg-[var(--color-offwhite)] pt-[calc(var(--nav-height)+48px)] pb-16 md:pb-20">
         <div className="mx-auto max-w-[800px] px-4 md:px-6 text-center">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Kostenloser SEO-Check</p>
+          <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">
+            {variant?.eyebrow ?? 'Kostenloser SEO-Check'}
+          </p>
           <h1 className="mt-3 text-[32px] md:text-[48px] font-extrabold leading-[1.1] tracking-tight text-[var(--color-black)]">
-            Wird deine Website bei Google gefunden?
+            {variant?.title ?? 'Wird deine Website bei Google gefunden?'}
           </h1>
           <p className="mx-auto mt-4 max-w-[600px] text-[17px] leading-relaxed text-[var(--color-gray)]">
-            Gib deine Adresse ein. In rund 30 Sekunden siehst du, wie gut deine Seite gebaut ist, für welche Suchbegriffe sie
-            angezeigt wird und was die fünf wichtigsten Schritte sind.
+            {variant?.subline ??
+              'Gib deine Adresse ein. In rund 30 Sekunden siehst du, wie gut deine Seite gebaut ist, für welche Suchbegriffe sie angezeigt wird und was die fünf wichtigsten Schritte sind.'}
           </p>
 
           <form onSubmit={start} className="mx-auto mt-8 max-w-[620px] text-left" noValidate>
@@ -190,7 +220,7 @@ export default function SeoCheckClient({ initialId }: { initialId?: string }) {
 
       {phase.kind === 'done' && (
         <div ref={resultRef} className="scroll-mt-[var(--nav-height)]">
-          <Report data={phase.data} onUpdate={(data) => setPhase({ kind: 'done', data })} onNew={reset} />
+          <Report data={phase.data} variant={variant} onUpdate={(data) => setPhase({ kind: 'done', data })} onNew={reset} />
         </div>
       )}
     </>
@@ -292,10 +322,12 @@ function ScoreRing({ score }: { score: number }) {
 
 function Report({
   data,
+  variant,
   onUpdate,
   onNew,
 }: {
   data: SeoCheckResponse;
+  variant?: FunnelVariant;
   onUpdate: (d: SeoCheckResponse) => void;
   onNew: () => void;
 }) {
@@ -303,10 +335,24 @@ function Report({
   const tone = scoreTone(r.score);
   const checkedAt = new Date(r.checkedAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const [copied, setCopied] = useState(false);
+  const [justUnlocked, setJustUnlocked] = useState(false);
+  const bookingRef = useRef<HTMLDivElement>(null);
+  const lockedMeasures = r.measures.filter((m) => !m.title).length;
+
+  // Nach dem Freischalten direkt zum Termin-Block springen.
+  useEffect(() => {
+    if (justUnlocked) bookingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [justUnlocked]);
 
   return (
     <section className="bg-white py-12 md:py-16">
       <div className="mx-auto max-w-[1000px] px-4 md:px-6 space-y-6">
+        {data.unlocked && !data.owner && (
+          <div ref={bookingRef} className="scroll-mt-[calc(var(--nav-height)+16px)]">
+            <BookingBlock />
+          </div>
+        )}
+
         {/* Kopf mit Gesamtergebnis */}
         <div className="rounded-[24px] bg-[var(--color-offwhite)] p-6 md:p-8">
           <div className="flex flex-col items-center gap-6 md:flex-row md:items-center md:gap-10">
@@ -378,7 +424,18 @@ function Report({
           <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-[var(--color-black)]">Deine 5 wichtigsten Maßnahmen</h2>
           <p className="mt-1 text-[15px] text-[var(--color-gray)]">Sortiert nach dem, was dir bei Google am meisten bringt.</p>
           <ol className="mt-6 space-y-4">
-            {r.measures.map((m, i) => (
+            {r.measures.map((m, i) =>
+              !m.title ? (
+                <li key={`gesperrt-${i}`} className="flex gap-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-offwhite)] text-[15px] font-bold text-[var(--color-gray)]">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[17px] font-semibold text-[var(--color-gray)]">Maßnahme {i + 1}</p>
+                    <p className="mt-1 text-[15px] text-[var(--color-gray)]">Wird nach dem Freischalten angezeigt.</p>
+                  </div>
+                </li>
+              ) : (
               <li key={m.title} className="flex gap-4">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-blue)] text-[15px] font-bold text-white">
                   {i + 1}
@@ -394,9 +451,21 @@ function Report({
                   )}
                 </div>
               </li>
-            ))}
+              ),
+            )}
           </ol>
-          {!data.unlocked && <UnlockForm id={data.id} onUnlocked={onUpdate} />}
+          {!data.unlocked && (
+            <UnlockForm
+              id={data.id}
+              lockedMeasures={lockedMeasures}
+              defaultBranche={variant?.defaultBranche}
+              landing={variant ? `/seo-check/${variant.slug}` : '/seo-check'}
+              onUnlocked={(d) => {
+                setJustUnlocked(true);
+                onUpdate(d);
+              }}
+            />
+          )}
         </div>
 
         {/* Suchbegriffe (nur freigeschaltet) */}
@@ -418,6 +487,9 @@ function Report({
         {/* Alle Pruefpunkte */}
         <div>
           <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-[var(--color-black)]">Alle Prüfpunkte</h2>
+          {!data.unlocked && (
+            <p className="mt-1 text-[15px] text-[var(--color-gray)]">Was genau wir gefunden haben, siehst du nach dem Freischalten oben.</p>
+          )}
           <div className="mt-4 space-y-3">
             {CATEGORY_ORDER.map((cat) => {
               const items = r.checks.filter((c) => c.category === cat);
@@ -429,10 +501,10 @@ function Report({
 
         {/* Abschluss */}
         <div className="rounded-[24px] bg-[var(--color-black)] p-6 md:p-10 text-white">
-          <h2 className="text-[24px] md:text-[30px] font-bold tracking-tight">Soll ich das für dich umsetzen?</h2>
+          <h2 className="text-[24px] md:text-[30px] font-bold tracking-tight">{variant?.closingTitle ?? 'Soll ich das für dich umsetzen?'}</h2>
           <p className="mt-3 max-w-[620px] text-[17px] leading-relaxed text-white/80">
-            Mit „Sichtbar in 90 Tagen“ richten wir dein Google-Profil ein, optimieren deine Website auf die zehn wichtigsten
-            Suchbegriffe und du siehst jeden Monat die Zahlen in deinem eigenen Kundenportal. Mit doppelter Garantie.
+            {variant?.closingText ??
+              'Mit „Sichtbar in 90 Tagen“ richten wir dein Google-Profil ein, optimieren deine Website auf die zehn wichtigsten Suchbegriffe und du siehst jeden Monat die Zahlen in deinem eigenen Kundenportal. Mit doppelter Garantie.'}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a href={site.meetingUrl} target="_blank" rel="noopener" className="btn btn-primary">
@@ -504,6 +576,22 @@ function KeywordTable({ title, hint, rows }: { title: string; hint: string; rows
 
 function CheckGroup({ cat, items, unlocked, score }: { cat: CheckCategory; items: CheckItem[]; unlocked: boolean; score: number | null }) {
   const problems = items.filter((c) => c.status === 'fail' || c.status === 'warn').length;
+  if (!unlocked) {
+    // Vor dem Freischalten nur die Anzahl, die Details kommen gegen Kontaktdaten.
+    const fails = items.filter((c) => c.status === 'fail').length;
+    const warns = items.filter((c) => c.status === 'warn').length;
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[#e5e7eb] bg-white p-5">
+        <span className="text-[17px] font-semibold text-[var(--color-black)]">{CATEGORY_LABELS[cat]}</span>
+        <span className="flex flex-wrap items-center gap-2 text-[13px]">
+          {fails > 0 && <span className={`rounded-full px-2.5 py-0.5 font-semibold ${STATUS_STYLE.fail.cls}`}>{fails} {fails === 1 ? 'Problem' : 'Probleme'}</span>}
+          {warns > 0 && <span className={`rounded-full px-2.5 py-0.5 font-semibold ${STATUS_STYLE.warn.cls}`}>{warns} verbesserbar</span>}
+          {problems === 0 && <span className="text-[var(--color-gray)]">Alles in Ordnung</span>}
+          {score !== null && <span className="font-semibold text-[var(--color-black)]">{score}/100</span>}
+        </span>
+      </div>
+    );
+  }
   return (
     <details className="group rounded-[18px] border border-[#e5e7eb] bg-white" open={problems > 0 && cat !== 'technik'}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5">
@@ -537,76 +625,284 @@ function CheckGroup({ cat, items, unlocked, score }: { cat: CheckCategory; items
   );
 }
 
-function UnlockForm({ id, onUnlocked }: { id: string; onUnlocked: (d: SeoCheckResponse) => void }) {
+type FieldKey = 'name' | 'email' | 'phone' | 'branche' | 'business';
+
+function BookingBlock() {
+  return (
+    <div className="rounded-[24px] bg-[var(--color-blue-light)] p-6 md:p-8">
+      <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Dein Bericht ist freigeschaltet</p>
+      <h2 className="mt-2 text-[24px] md:text-[30px] font-bold tracking-tight text-[var(--color-black)]">
+        Sollen wir dein Ergebnis gemeinsam durchgehen?
+      </h2>
+      <p className="mt-2 max-w-[640px] text-[17px] leading-relaxed text-[var(--color-gray)]">
+        In einem kurzen Gespräch zeige ich dir, was dir bei Google am meisten bringt. Kostenlos und unverbindlich.
+      </p>
+      {VSL_VIDEO_URL && (
+        <video
+          className="mt-6 w-full rounded-[18px] bg-black"
+          src={VSL_VIDEO_URL}
+          controls
+          preload="metadata"
+          playsInline
+        />
+      )}
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <a href={site.meetingUrl} target="_blank" rel="noopener" className="btn btn-primary justify-center">
+          Kostenloses Gespräch buchen
+        </a>
+        <a href={`tel:${site.phoneE164}`} className="btn btn-outline justify-center">
+          {site.phone} anrufen
+        </a>
+      </div>
+      <p className="mt-3 text-[15px] text-[var(--color-black)]">
+        Ich schaue mir dein Ergebnis vor dem Gespräch an. Wir prüfen gemeinsam, ob wir dir helfen können.
+      </p>
+    </div>
+  );
+}
+
+function Choice<T extends string>({
+  name,
+  options,
+  value,
+  onChange,
+  invalid,
+}: {
+  name: string;
+  options: { value: T; label: string }[];
+  value: T | '';
+  onChange: (v: T) => void;
+  invalid?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((o) => {
+        const active = value === o.value;
+        return (
+          <label
+            key={o.value}
+            className={`cursor-pointer rounded-full border px-4 py-2 text-[15px] transition-colors focus-within:ring-2 focus-within:ring-[var(--color-blue)]/30 ${
+              active
+                ? 'border-[var(--color-blue)] bg-[var(--color-blue)] text-white'
+                : `bg-white text-[var(--color-black)] ${invalid ? 'border-[var(--color-fail)]' : 'border-[#d1d1d6] hover:border-[var(--color-blue)]'}`
+            }`}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={o.value}
+              checked={active}
+              onChange={() => onChange(o.value)}
+              className="sr-only"
+            />
+            {o.label}
+          </label>
+        );
+      })}
+    </div>
+  );
+}
+
+function UnlockForm({
+  id,
+  lockedMeasures,
+  defaultBranche,
+  landing,
+  onUnlocked,
+}: {
+  id: string;
+  lockedMeasures: number;
+  defaultBranche?: Branche;
+  landing: string;
+  onUnlocked: (d: SeoCheckResponse) => void;
+}) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [branche, setBranche] = useState<Branche | ''>(defaultBranche ?? '');
+  const [websiteAlter, setWebsiteAlter] = useState<WebsiteAlter | ''>('');
+  const [business, setBusiness] = useState(false);
   const [wantsCall, setWantsCall] = useState(false);
   const [website, setWebsite] = useState('');
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ field?: FieldKey; message: string } | null>(null);
+  const clearErr = (field: FieldKey) => setError((e) => (e?.field === field ? null : e));
+
+  function check(): { field: FieldKey; message: string } | null {
+    if (!name.trim()) return { field: 'name', message: 'Bitte gib deinen Namen an.' };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      return { field: 'email', message: 'Die E-Mail-Adresse sieht nicht vollständig aus. Bitte prüf sie noch einmal.' };
+    if (!phone.trim())
+      return { field: 'phone', message: 'Bitte gib deine Telefonnummer an. Wir rufen nur an, um dein Ergebnis mit dir durchzugehen.' };
+    if (!/^[+\d][\d\s/()-]{5,}$/.test(phone.trim()))
+      return { field: 'phone', message: 'Die Telefonnummer sieht nicht vollständig aus. Bitte prüf sie noch einmal.' };
+    if (!branche) return { field: 'branche', message: 'Bitte wähl deine Branche aus.' };
+    if (!business)
+      return { field: 'business', message: 'Der Check ist für Unternehmen. Bitte bestätige, dass du für ein Unternehmen anfragst.' };
+    return null;
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    setError(null);
-    if (!name.trim()) return setError('Bitte gib deinen Namen an.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError('Bitte gib eine gültige E-Mail-Adresse an.');
-    if (wantsCall && !phone.trim()) return setError('Für den Rückruf brauchen wir deine Telefonnummer.');
+    const problem = check();
+    setError(problem);
+    if (problem) {
+      document.getElementById(`ul-${problem.field}`)?.focus();
+      return;
+    }
     setSending(true);
     try {
       const res = await fetch(`/api/seo-check/${encodeURIComponent(id)}/unlock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, wantsCall, website }),
+        body: JSON.stringify({ name, email, phone, branche, websiteAlter: websiteAlter || undefined, business, wantsCall, website }),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error ?? 'Das hat nicht geklappt.');
+      if (!res.ok) {
+        setError({
+          field: json.field as FieldKey | undefined,
+          message: json.error ?? 'Das Freischalten hat nicht geklappt. Bitte prüf deine Verbindung und versuch es noch einmal.',
+        });
+        return;
+      }
+      emitLeadCaptured({ checkId: id, branche: branche || undefined, landing });
       onUnlocked(json as SeoCheckResponse);
-    } catch (err) {
-      setError((err as Error).message);
+    } catch {
+      setError({ message: 'Keine Verbindung. Bitte prüf dein Internet und versuch es noch einmal. Deine Angaben bleiben stehen.' });
     } finally {
       setSending(false);
     }
   }
 
-  const input =
-    'w-full rounded-[12px] border border-[#d1d1d6] bg-white px-4 py-3 text-[16px] text-[var(--color-black)] outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-[var(--color-blue)]/30';
+  const input = (field: FieldKey) =>
+    `w-full rounded-[12px] border bg-white px-4 py-3 text-[16px] text-[var(--color-black)] outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-[var(--color-blue)]/30 ${
+      error?.field === field ? 'border-[var(--color-fail)]' : 'border-[#d1d1d6]'
+    }`;
+  const label = 'mb-1 block text-[13px] font-semibold text-[var(--color-black)]';
+  const fieldError = (field: FieldKey) =>
+    error?.field === field ? (
+      <p id={`ul-${field}-error`} className="mt-1 text-[13px] text-[var(--color-fail)]">
+        {error.message}
+      </p>
+    ) : null;
 
   return (
     <form onSubmit={submit} noValidate className="mt-8 rounded-[18px] bg-[var(--color-blue-light)] p-4 md:p-6">
-      <p className="text-[17px] font-semibold text-[var(--color-black)]">So setzt du die Maßnahmen um</p>
-      <p className="mt-1 text-[15px] text-[var(--color-gray)]">
-        Schalte deinen vollständigen Bericht frei: Anleitung zu jeder Maßnahme, Tipps zu allen Prüfpunkten und deine Suchbegriffe
-        bei Google. Wir schicken dir den Link zusätzlich per Mail.
+      <p className="text-[17px] font-semibold text-[var(--color-black)]">
+        {lockedMeasures > 0 ? `Die nächsten ${lockedMeasures} Maßnahmen und alle Details freischalten` : 'So setzt du die Maßnahmen um'}
       </p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div>
-          <label htmlFor="ul-name" className="mb-1 block text-[13px] font-semibold text-[var(--color-black)]">
-            Name
-          </label>
-          <input id="ul-name" className={input} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+      <p className="mt-1 text-[15px] text-[var(--color-gray)]">
+        Du bekommst den vollständigen Bericht: alle Maßnahmen mit Anleitung, was wir bei jedem Prüfpunkt gefunden haben, und deine
+        Suchbegriffe bei Google. Den Link schicken wir dir zusätzlich per Mail.
+      </p>
+
+      <fieldset className="mt-5">
+        <legend className="text-[15px] font-semibold text-[var(--color-black)]">So erreichen wir dich</legend>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <label htmlFor="ul-name" className={label}>
+              Name
+            </label>
+            <input
+              id="ul-name"
+              className={input('name')}
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                clearErr('name');
+              }}
+              autoComplete="name"
+              aria-invalid={error?.field === 'name'}
+              aria-describedby={error?.field === 'name' ? 'ul-name-error' : undefined}
+            />
+            {fieldError('name')}
+          </div>
+          <div>
+            <label htmlFor="ul-email" className={label}>
+              E-Mail
+            </label>
+            <input
+              id="ul-email"
+              type="email"
+              inputMode="email"
+              className={input('email')}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearErr('email');
+              }}
+              autoComplete="email"
+              aria-invalid={error?.field === 'email'}
+              aria-describedby={error?.field === 'email' ? 'ul-email-error' : undefined}
+            />
+            {fieldError('email')}
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="ul-phone" className={label}>
+              Telefon
+            </label>
+            <input
+              id="ul-phone"
+              type="tel"
+              inputMode="tel"
+              className={input('phone')}
+              value={phone}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                clearErr('phone');
+              }}
+              autoComplete="tel"
+              aria-invalid={error?.field === 'phone'}
+              aria-describedby={error?.field === 'phone' ? 'ul-phone-error' : undefined}
+            />
+            {fieldError('phone')}
+          </div>
         </div>
-        <div>
-          <label htmlFor="ul-email" className="mb-1 block text-[13px] font-semibold text-[var(--color-black)]">
-            E-Mail
-          </label>
-          <input
-            id="ul-email"
-            type="email"
-            className={input}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-          />
+      </fieldset>
+
+      <fieldset className="mt-5">
+        <legend className="text-[15px] font-semibold text-[var(--color-black)]">Zu deinem Betrieb</legend>
+        <div className="mt-3 space-y-4">
+          <div id="ul-branche" tabIndex={-1} className="outline-none">
+            <p className={label}>Branche</p>
+            <Choice
+              name="branche"
+              options={BRANCHEN}
+              value={branche}
+              onChange={(v) => {
+                setBranche(v);
+                clearErr('branche');
+              }}
+              invalid={error?.field === 'branche'}
+            />
+            {fieldError('branche')}
+          </div>
+          <div>
+            <p className={label}>
+              Seit wann gibt es eure Website? <span className="font-normal text-[var(--color-gray)]">(optional)</span>
+            </p>
+            <Choice name="websiteAlter" options={WEBSITE_ALTER} value={websiteAlter} onChange={setWebsiteAlter} />
+          </div>
         </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="ul-phone" className="mb-1 block text-[13px] font-semibold text-[var(--color-black)]">
-            Telefon <span className="font-normal text-[var(--color-gray)]">(optional, für den Rückruf)</span>
-          </label>
-          <input id="ul-phone" type="tel" className={input} value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
-        </div>
-      </div>
-      <label className="mt-4 flex cursor-pointer items-start gap-3 text-[15px] text-[var(--color-black)]">
+      </fieldset>
+
+      <label className="mt-5 flex cursor-pointer items-start gap-3 text-[15px] text-[var(--color-black)]">
+        <input
+          id="ul-business"
+          type="checkbox"
+          checked={business}
+          onChange={(e) => {
+            setBusiness(e.target.checked);
+            clearErr('business');
+          }}
+          className="mt-1 h-4 w-4 accent-[var(--color-blue)]"
+          aria-invalid={error?.field === 'business'}
+          aria-describedby={error?.field === 'business' ? 'ul-business-error' : undefined}
+        />
+        Ich frage für ein Unternehmen an.
+      </label>
+      {fieldError('business')}
+      <label className="mt-3 flex cursor-pointer items-start gap-3 text-[15px] text-[var(--color-black)]">
         <input type="checkbox" checked={wantsCall} onChange={(e) => setWantsCall(e.target.checked)} className="mt-1 h-4 w-4 accent-[var(--color-blue)]" />
         Ruf mich an und geh das Ergebnis 15 Minuten mit mir durch (kostenlos).
       </label>
@@ -616,15 +912,15 @@ function UnlockForm({ id, onUnlocked }: { id: string; onUnlocked: (d: SeoCheckRe
           <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
         </label>
       </div>
-      {error && (
+      {error && !error.field && (
         <p role="alert" className="mt-3 rounded-[12px] bg-[var(--color-fail-bg)] px-3 py-2 text-[15px] text-[var(--color-fail)]">
-          {error}
+          {error.message}
         </p>
       )}
       <button
         type="submit"
         disabled={sending}
-        className="btn btn-primary mt-4 w-full justify-center whitespace-normal! px-5! text-center disabled:opacity-50 sm:w-auto"
+        className="btn btn-primary mt-5 w-full justify-center whitespace-normal! px-5! text-center disabled:opacity-50 sm:w-auto"
       >
         {sending ? 'Wird freigeschaltet …' : 'Vollständigen Bericht freischalten'}
       </button>

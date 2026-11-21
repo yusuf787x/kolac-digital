@@ -2,6 +2,8 @@ import 'server-only';
 import { emailBox, emailDataRows, emailLayout, esc } from '@/lib/email-layout';
 import type { StoredLead } from './store';
 import { CATEGORY_LABELS, type SeoCheckResult } from './types';
+import { brancheLabel, websiteAlterLabel, type LeadSource } from './funnel';
+import { site } from '@/lib/site-config';
 
 const FROM = 'Kolac Digital <yusuf@kolac-digital.de>';
 const REPLY_TO = 'yusuf@kolac-digital.de';
@@ -17,6 +19,18 @@ function categoryLines(r: SeoCheckResult): Array<[string, string]> {
   });
 }
 
+function sourceLines(src?: LeadSource): Array<[string, string]> {
+  if (!src) return [['Herkunft', 'direkt (keine Anzeige erkannt)']];
+  const rows: Array<[string, string]> = [];
+  if (src.landing) rows.push(['Seite', src.landing]);
+  if (src.utm_source) rows.push(['Quelle (utm_source)', src.utm_source]);
+  if (src.utm_medium) rows.push(['Medium (utm_medium)', src.utm_medium]);
+  if (src.utm_campaign) rows.push(['Kampagne (utm_campaign)', src.utm_campaign]);
+  if (src.utm_content) rows.push(['Anzeige (utm_content)', src.utm_content]);
+  if (src.fbclid) rows.push(['Meta-Klick (fbclid)', 'ja']);
+  return rows.length ? rows : [['Herkunft', 'direkt (keine Anzeige erkannt)']];
+}
+
 /** Benachrichtigung an Yusuf: neuer Lead aus dem SEO-Check. */
 export function leadNotificationEmail(id: string, lead: StoredLead, r: SeoCheckResult) {
   const rows: Array<[string, string]> = [
@@ -25,6 +39,8 @@ export function leadNotificationEmail(id: string, lead: StoredLead, r: SeoCheckR
     ['Telefon', lead.phone || 'nicht angegeben'],
     ...(lead.company ? ([['Firma', lead.company]] as Array<[string, string]>) : []),
     ['Rückruf gewünscht', lead.wantsCall ? 'Ja' : 'Nein'],
+    ['Branche', brancheLabel(lead.branche)],
+    ['Website seit', websiteAlterLabel(lead.websiteAlter)],
     ['Website', r.finalUrl],
     ['Gesamtpunktzahl', `${r.score} / 100`],
     ...categoryLines(r),
@@ -35,6 +51,7 @@ export function leadNotificationEmail(id: string, lead: StoredLead, r: SeoCheckR
         ] as Array<[string, string]>)
       : []),
     ...(r.platform ? ([['System', r.platform]] as Array<[string, string]>) : []),
+    ...sourceLines(lead.source),
   ];
   const measures = r.measures.map((m, i) => `${i + 1}. ${esc(m.title)}`).join('<br/>');
   const html = emailLayout({
@@ -71,7 +88,7 @@ export function reportEmail(id: string, lead: StoredLead, r: SeoCheckResult) {
     bodyHtml: `<p>Hallo ${esc(firstName)},</p>
 <p>hier ist dein Ergebnis für <strong>${esc(r.domain)}</strong>: <strong>${r.score} von 100 Punkten</strong>. Den vollständigen Bericht mit allen Prüfpunkten und deinen fünf wichtigsten Maßnahmen findest du jederzeit unter dem Link unten.</p>
 ${top ? emailBox(`<strong>Deine wichtigsten Maßnahmen</strong><br/>${top}`) : ''}
-<p>${lead.wantsCall ? 'Ich melde mich in den nächsten Tagen kurz telefonisch, damit wir das Ergebnis gemeinsam durchgehen.' : 'Wenn du möchtest, gehen wir das Ergebnis in einem kurzen Gespräch gemeinsam durch. Antworte einfach auf diese Mail.'}</p>`,
+<p>Ich melde mich kurz telefonisch, damit wir das Ergebnis gemeinsam durchgehen. Wenn du lieber direkt einen Termin festmachen willst: <a href="${site.meetingUrl}">hier ein kostenloses Gespräch buchen</a>.</p>`,
     button: { label: 'Bericht ansehen', href: reportUrl(id) },
   });
   const text = [
@@ -79,6 +96,9 @@ ${top ? emailBox(`<strong>Deine wichtigsten Maßnahmen</strong><br/>${top}`) : '
     '',
     `dein SEO-Check für ${r.domain}: ${r.score} von 100 Punkten.`,
     `Vollständiger Bericht: ${reportUrl(id)}`,
+    '',
+    'Ich melde mich kurz telefonisch, damit wir das Ergebnis gemeinsam durchgehen.',
+    `Lieber direkt einen Termin? ${site.meetingUrl}`,
     '',
     'Viele Grüße',
     'Yusuf Kolac, Kolac Digital',
