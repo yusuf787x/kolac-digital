@@ -125,6 +125,8 @@ export const OUTREACH_STATUS_BADGES: Record<OutreachStatus, string> = {
 
 /** Zeichengrenze der ersten Instagram-DM (mit Scan-Fund etwas laenger als eine Antwort). */
 export const DM_MAX = 1000;
+/** Ziel fuer die erste Instagram-Nachricht seit 21.11.2026: kurz, weil der Leser in Eile ist. */
+export const DM_TARGET = 750;
 
 /** Hoechstens so viele Erst-Nachrichten und Nachfass-Nachrichten pro Tag (Sperr- und Spam-Schutz). */
 export const OUTREACH_DAILY_LIMIT = 25;
@@ -175,6 +177,7 @@ const BANNED: [RegExp, string][] = [
 
 /** Instagram-Nachfassen: drei kurze Sätze in einfachem Deutsch (Yusufs Vorgabe 20.11.2026). */
 export const FOLLOWUP_MAX = 260;
+const PLAIN_MAX_WORDS = 18;
 const FOLLOWUP_BANNED: [RegExp, string][] = [
   [/untergegangen|nachhaken|erinnern|erinnerung/i, 'Klingt nach Erinnerung („untergegangen“, „nachhaken“)'],
   [/^\s*(hey|hallo|hi)\b/i, 'Fängt mit einer Begrüßung an, lieber direkt einsteigen'],
@@ -191,7 +194,7 @@ const FOLLOWUP_BANNED: [RegExp, string][] = [
  * first: Erstnachricht oder Nachfassen, bevor das Studio geantwortet hat. Dann gar kein Link.
  * max: Zeichengrenze (Instagram 750, E-Mail mehr, weil die Auswertung drinsteht).
  */
-export function lintMessage(text: string, opts: { first?: boolean; max?: number; followup?: boolean } = {}): string[] {
+export function lintMessage(text: string, opts: { first?: boolean; max?: number; followup?: boolean; plain?: boolean } = {}): string[] {
   const t = text.trim();
   const out: string[] = [];
   if (!t) return out;
@@ -212,6 +215,15 @@ export function lintMessage(text: string, opts: { first?: boolean; max?: number;
   const forms = [du && 'du', ihr && 'ihr', sie && 'Sie'].filter(Boolean);
   if (forms.length > 1) out.push(`Mischt ${forms.join(' und ')}`);
   if (!t.includes('?')) out.push('Enthält keine Frage, auf die man antworten kann');
+  // Instagram (Yusuf 21.11.2026): Leser ist in Eile, also kurze Saetze und SEO erklaert
+  if (opts.plain || opts.followup) {
+    const long = t
+      .split(/(?<=[.?!:])\s+|\n+/)
+      .filter((s) => s.replace(/^- /, '').split(/\s+/).filter(Boolean).length > PLAIN_MAX_WORDS);
+    if (long.length) out.push(`${long.length === 1 ? 'Ein Satz hat' : `${long.length} Sätze haben`} über ${PLAIN_MAX_WORDS} Wörter, lieber kürzer`);
+    if (/\bSEO\b/.test(t) && !/\bSEO\b[^.?\n]{0,40}\b(also|heißt|das heißt|damit)\b/i.test(t))
+      out.push('„SEO“ nicht erklärt, z. B. „SEO, also dass man euch bei Google findet“');
+  }
   return out;
 }
 

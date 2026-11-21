@@ -450,7 +450,7 @@ function LeadCard({
 
   const now = () => new Date().toISOString();
   const warnings = text
-    ? lintMessage(text, mail ? { first: !l.thread?.length, max: followMode ? 500 : MAIL_MAX } : followMode ? { first: !l.thread?.length, followup: true } : { first: !l.thread?.length, max: DM_MAX })
+    ? lintMessage(text, mail ? { first: !l.thread?.length, max: followMode ? 500 : MAIL_MAX } : followMode ? { first: !l.thread?.length, followup: true } : { first: !l.thread?.length, max: DM_MAX, plain: !l.thread?.length })
     : [];
   const showReplies = !!l.sentAt || !!l.thread?.length;
   const igIdleDays = l.ig?.lastPostAt ? Math.floor(daysSince(l.ig.lastPostAt)) : null;

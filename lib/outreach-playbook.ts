@@ -36,6 +36,11 @@ export interface Playbook {
   outcome: string;
   /** Was der kostenlose Entwurf zeigt. */
   freebie: string;
+  /**
+   * Was sich spaeter je nach Wunsch dazubauen laesst, weil die Seite wie eine
+   * Software mitwaechst (Yusuf, 21.11.2026). In einfachen Worten.
+   */
+  extras: string;
 }
 
 export const PLAYBOOKS: Record<Branch, Playbook> = {
@@ -53,6 +58,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'in Ruhe arbeiten, abends Feierabend, und die Termine kommen trotzdem rein',
     freebie: 'eine Vorschau ihrer Seite mit eigenen Bildern, Behandlungen und Online-Buchung',
+    extras: 'Online-Termine, Erinnerung am Vortag, Anamnese am Handy, Gutscheine',
   },
   friseur: {
     label: 'Friseur, Barbier',
@@ -66,6 +72,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'kein Telefon mehr am Stuhl, weniger leere Plätze, und der Kalender füllt sich auch nachts',
     freebie: 'eine Vorschau ihrer Seite mit Leistungen, Preisen und Online-Buchung',
+    extras: 'Online-Termine, Erinnerung am Vortag, Gutscheine',
   },
   aesthetik: {
     label: 'Ästhetische Medizin',
@@ -79,6 +86,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'ein Team, das behandelt statt tippt, und Patientinnen, die vorbereitet kommen',
     freebie: 'eine Vorschau ihrer Seite mit Behandlungen und Online-Terminbuchung',
+    extras: 'Online-Termine, Aufklärung und Einwilligung am Handy, Rechnungen automatisch',
   },
   kueche: {
     label: 'Küchenstudio',
@@ -92,6 +100,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'Beratungen nur noch mit Leuten, die wirklich kaufen wollen, und die Planer wissen vorher, worum es geht',
     freebie: 'eine Vorschau ihrer Seite mit eigenen Küchen und der Beratungsanfrage',
+    extras: 'Beratungstermine online, Anfrage mit Grundriss und Budget, Prospekt zum Herunterladen',
   },
   bad: {
     label: 'Badsanierung',
@@ -105,6 +114,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'weniger Besichtigungen für die Tonne, mehr Aufträge pro Angebot',
     freebie: 'eine Vorschau ihrer Seite mit eigenen Bädern und der Anfrage mit Foto-Upload',
+    extras: 'Anfrage mit Fotos vom alten Bad, Besichtigungstermine online',
   },
   galabau: {
     label: 'Garten- und Landschaftsbau',
@@ -118,6 +128,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'Besichtigungen nur bei ernsthaften Anfragen, und die Kolonne bleibt auf der Baustelle',
     freebie: 'eine Vorschau ihrer Seite mit eigenen Projekten und der Anfrage mit Fotos',
+    extras: 'Anfrage mit Fotos vom Garten, Besichtigungstermine online',
   },
   tischlerei: {
     label: 'Tischlerei, Schreinerei',
@@ -131,6 +142,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'Anfragen, die schon alles enthalten, und mehr Zeit in der Werkstatt',
     freebie: 'eine Vorschau ihrer Seite mit eigenen Projekten und der Anfrage mit Maßen und Fotos',
+    extras: 'Anfrage mit Maßen und Fotos, Galerie mit euren Möbeln',
   },
   ausbau: {
     label: 'Überdachung, Wintergarten, Pool, Kamin',
@@ -144,6 +156,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'Termine nur bei Leuten, die wirklich bauen wollen, und Kunden, die vorher wissen, was sie erwartet',
     freebie: 'eine Vorschau ihrer Seite mit eigenen Projekten und der Anfrage',
+    extras: 'Anfrage mit Fotos und Maßen, Vor-Ort-Termine online, Prospekt zum Herunterladen',
   },
   hochzeitslocation: {
     label: 'Hochzeits- und Eventlocation',
@@ -157,6 +170,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'weniger Hin und Her, Besichtigungen nur mit passenden Paaren, und ihr seid die, die zuerst antworten',
     freebie: 'eine Vorschau ihrer Seite mit Bildern, Verfügbarkeitsanfrage und Besichtigungsbuchung',
+    extras: 'Anfrage, ob das Datum frei ist, Besichtigungstermine online, Infomappe zum Herunterladen',
   },
   brautmode: {
     label: 'Brautmode',
@@ -170,6 +184,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'volle Anprobetermine mit vorbereiteten Bräuten und kaum noch Ausfälle',
     freebie: 'eine Vorschau ihrer Seite mit Kollektion und Anprobe-Buchung',
+    extras: 'Anprobe-Termine online, Erinnerung am Vortag',
   },
   aufbereitung: {
     label: 'Fahrzeugaufbereitung, Folierung',
@@ -183,6 +198,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'Anfragen mit allen Infos, feste Termine statt Chat-Ping-Pong, und mehr Kunden über Google',
     freebie: 'eine Vorschau seiner Seite mit Vorher-Nachher-Bildern und Terminanfrage',
+    extras: 'Termine online, Anfrage mit Fotos vom Auto',
   },
   kfz: {
     label: 'Kfz-Betrieb: Werkstatt, Smart-Repair, Ausbeulen, Lackierer',
@@ -196,6 +212,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'Anfragen mit Fotos und Fahrzeugdaten, weniger Telefon in der Werkstatt und mehr Kunden über Google',
     freebie: 'eine Vorschau seiner Seite mit Leistungen, Vorher-Nachher-Bildern und Anfrage mit Foto-Upload',
+    extras: 'Termine online, Anfrage mit Fotos vom Schaden',
   },
   juwelier: {
     label: 'Juwelier, Trauringe',
@@ -209,6 +226,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     ],
     outcome: 'mehr Paare im Laden, Beratungen mit Termin und Ruhe, und bei Google vor den Online-Shops',
     freebie: 'eine Vorschau ihrer Seite mit Trauringen und Beratungsbuchung',
+    extras: 'Beratungstermine online, Trauring-Galerie',
   },
   sonstiges: {
     label: 'Sonstige',
@@ -218,6 +236,7 @@ export const PLAYBOOKS: Record<Branch, Playbook> = {
     pains: ['Anfragen kommen über Telefon, Mail und Insta und gehen unter', 'Viel Hin und Her, bevor überhaupt ein Termin steht'],
     outcome: 'weniger Zeit am Handy, mehr Zeit für die Arbeit',
     freebie: 'eine Vorschau ihrer Seite mit Online-Anfrage',
+    extras: 'Online-Termine oder Anfragen, Rechnungen automatisch',
   },
 };
 
@@ -299,7 +318,8 @@ export const REFERENCES: Reference[] = [
     city: 'bünde',
     who: 'eine Ästhetik-Praxis',
     branches: ['aesthetik', 'kosmetik', 'friseur', 'brautmode', 'hochzeitslocation', 'juwelier'],
-    proof: 'Für eine Praxis in Bünde hab ich so ein System gebaut, da kamen über 800 Termine online rein, ohne einen einzigen Anruf.',
+    // Search Console im Kundenportal: 09/2026 114 Klicks, 10/2026 947 Klicks (erster Messmonat 09/2026)
+    proof: 'Für eine Praxis in Bünde hab ich das gemacht: Im September kamen 114 Besucher über Google, im Oktober schon 947. Und über die Seite wurden über 800 Termine gebucht.',
     url: 'kolac-digital.de/case-studys/bacara-aesthetik',
   },
   {
@@ -471,54 +491,66 @@ export function findingLines(lead: Pick<OutreachLead, 'website' | 'instagram' | 
 }
 
 /**
- * Ton des Nachfassens (Yusufs Vorgabe 20.11.2026, dritte Fassung): einfaches Deutsch,
- * Schwerpunkt Google-Sichtbarkeit (SEO-Punktzahl, Seite 1, wer sucht, findet andere),
- * Dringlichkeit als netter Hinweis: Kunden und Auftraege gehen an die Konkurrenz.
- * Online-Buchung nur noch am Rand. Kein Slang, keine Werbe-Schlusssaetze.
- * Gilt fuer DRAFT_SYSTEM und FOLLOWUP_SYSTEM, Pruefung lintMessage(t, { followup: true }).
+ * Beweis fuer "die Seite waechst mit wie eine Software" (lib/portfolio.ts, Bacara:
+ * ueber 800 Termine online, Rechnungen laufen automatisch). Ohne Namen, ohne Link.
  */
-const FOLLOWUP_STYLE = `So klingt das Nachfassen: einfaches, normales Deutsch, wie ein netter Hinweis unter Bekannten, nicht wie Werbung. Drei kurze Sätze, 120 bis 240 Zeichen, ohne Begrüßung und ohne Grußformel.
-1. Was bei Google gerade passiert, konkret aus der Punktzahl oder einem Google-Fund (z. B. "Eure Seite hat im SEO-Check 52 von 100 Punkten.", "Bei Google seid ihr für keinen Suchbegriff auf Seite 1.", "Ohne eigene Website zeigt Google bei „Friseur Paderborn“ zuerst andere."). Online-Buchung höchstens, wenn es gar keinen Google-Fund gibt.
-2. Was der Betrieb dadurch verliert, schlicht und ehrlich: Wer sucht, findet zuerst die Konkurrenz und bucht oder fragt dort an (z. B. "Wer in Bielefeld einen Barber sucht, landet dann bei den anderen."). Bei High-Ticket gern, dass jede verlorene Anfrage ein ganzer Auftrag ist.
-3. Eine einfache Frage: in der Nähe "Soll ich kurz vorbeikommen und euch zeigen, wie ihr weiter nach oben kommt?", sonst "Soll ich euch zeigen, wie das besser geht?". Bei Sie-Form "Darf ich Ihnen zeigen …?".
+export const GROWTH_PROOF = 'Bei einer Praxis in Bünde kamen so über 800 Termine online rein, und die Rechnungen laufen von allein. Das spart Zeit in der Buchhaltung.';
+
+/**
+ * Ton fuer Erstnachricht und Nachfassen (Yusufs Vorgabe 21.11.2026, vierte Fassung):
+ * Der Leser ist gestresst, in Eile und liest wie ein Drittklaessler. Kurze Saetze,
+ * einfache Woerter, SEO in einem Nebensatz erklaert. Schwerpunkt Auffindbarkeit:
+ * Wer sucht, findet die anderen und geht dorthin, ohne dass der Betrieb es merkt.
+ * Termine und Online-Buchung nicht als Aufhaenger, nur als "spaeter dazubauen".
+ * Pruefung lintMessage(t, { first: true }) bzw. { followup: true }.
+ */
+const PLAIN_STYLE = `Wer das liest: Inhaber eines kleinen Betriebs, gerade gestresst, keine Zeit, liest die Nachricht zwischen zwei Kunden am Handy. Schreib so, dass ein Kind aus der dritten Klasse alles versteht:
+- Kurze Sätze, höchstens 15 Wörter, lieber 8. Ein Gedanke pro Satz.
+- Einfache Alltagswörter. Kein Fachwort ohne Erklärung. "SEO" immer in einem Nebensatz erklären ("SEO, also dass man euch bei Google findet"). Statt "Seitentitel" "die Überschrift, die Google zuerst liest", statt "Meta-Beschreibung" "der kurze Text unter eurem Namen bei Google", statt "Ranking" "wie weit oben ihr steht".
+- Normales, freundliches Deutsch, kein Slang ("nix", "passt's", "Ey", "halt", "krass"), keine Werbesätze, keine Ausrufezeichen, kein Druck.`;
+
+const FOLLOWUP_STYLE = `So klingt das Nachfassen: drei bis vier kurze Sätze, 150 bis 260 Zeichen, ohne Begrüßung und ohne Grußformel, wie ein netter Hinweis.
+1. Was bei Google los ist, konkret aus der Punktzahl oder einem Google-Fund, mit kurzer Erklärung (z. B. "Eure Seite hat im SEO-Check, also wie gut Google euch findet, nur 52 von 100 Punkten.", "Ohne eigene Website zeigt Google bei „Friseur Paderborn“ zuerst andere Salons."). Ohne Punktzahl und ohne Google-Fund: dass Google ohne Text über Leistung und Ort wenig hat, womit es den Betrieb zeigen kann.
+2. Der Schmerz, schlicht und ehrlich: Wer sucht, findet die anderen und geht dorthin, und der Betrieb merkt es nicht mal, weil diese Leute nie anrufen. Bei High-Ticket gern: jede dieser Anfragen wäre ein ganzer Auftrag.
+3. Ein ganz kurzer Beweis mit echter Zahl, möglichst eine andere Referenz als in der ersten Nachricht (z. B. "Bei einer Praxis in Bünde kamen so 947 statt 114 Besucher im Monat.", "Einen Kfz-Meister hab ich so von 60 auf 95 Punkte gebracht.", "Bei einem Fahrdienst in Paderborn kommen so spürbar mehr Anfragen."). Passt keiner in die Länge, weglassen.
+4. Eine einfache Frage: in der Nähe "Soll ich kurz vorbeikommen?", sonst "Soll ich euch zeigen, wie das besser geht?". Bei Sie-Form "Darf ich Ihnen zeigen …?".
 Regeln:
-- Kein Slang und keine Werbesprache: nicht "nix", "passt's", "Ey", "halt", "Na,", "meldet euch gern", "kostet euch nix", "Warten macht's nicht besser". Keine Ausrufezeichen, keine Emojis, kein Druck ("letzte Chance").
-- Nie "falls untergegangen", "wollte nochmal nachhaken", "kurze Erinnerung". Keine Begrüßung ("Hey", "Hallo"), kein "LG Yusuf".
-- Fachwörter übersetzen: statt "Seitentitel" "die Überschrift, die Google zuerst liest", statt "Meta-Beschreibung" "der kurze Text unter eurer Seite bei Google".
+- Nie "falls untergegangen", "wollte nochmal nachhaken", "kurze Erinnerung". Kein "Hey", kein "LG Yusuf".
+- Nicht über Termine oder Online-Buchung schreiben, nur über Gefunden-werden. Ausnahme: Punktzahl ab 75 und kein Google-Fund, dann ehrlich sagen, dass die Seite gut dasteht, und dass man abends nur anrufen kann.
 - Nur echte Daten aus dem Scan, keine Zahlen erfinden, keine Platzierung behaupten, die nicht gemessen ist. Den Punkt "Nicht sicher" / HTTPS nie wiederholen.
 - Gleiche Anrede wie die erste Nachricht (du, ihr oder Sie), nicht mischen. Kein Link, kein Preis.
 
 Beispiele (nicht wörtlich übernehmen):
-"Eure Seite hat im SEO-Check nur 52 von 100 Punkten. Wer in Bielefeld einen Friseur sucht, findet so zuerst die anderen Salons und bucht dort. Soll ich kurz vorbeikommen und euch zeigen, wie ihr weiter nach oben kommt?"
-"Bei Google bist du für keinen Suchbegriff auf Seite 1. Wer eine neue Küche plant, ruft dann bei anderen an, und jede dieser Anfragen wäre ein ganzer Auftrag. Soll ich dir zeigen, wie man das ändert?"
-"Ohne eigene Website zeigt Google bei „Nagelstudio Minden“ zuerst andere Studios. Die neuen Kundinnen landen dann dort und nicht bei dir. Soll ich vorbeikommen und dir zeigen, wie das aussehen könnte?"`;
+"Im Google-Check hat eure Seite nur 31 von 100 Punkten. Bei Google seid ihr für keinen Suchbegriff auf Seite 1, also gehen die Leute zu den anderen. Einen Kfz-Meister hab ich so von 60 auf 95 Punkte gebracht. Soll ich kurz vorbeikommen?"
+"Ohne eigene Website zeigt Google bei „Friseur Bielefeld“ zuerst andere Salons. Die Leute gehen dann dahin, und du merkst es nicht mal. Soll ich kurz vorbeikommen und dir zeigen, wie man dich findet?"`;
 
 /**
  * Systemprompt fuer die erste Nachricht und das Nachfassen. Fest, damit er gecacht
  * wird; alles Betriebsbezogene steht in der Nutzer-Nachricht (draftContext).
  */
-export const DRAFT_SYSTEM = `Du schreibst die erste Instagram-DM und eine Nachfass-Nachricht für Yusuf Kolac (Kolac Digital, Bielefeld). Yusuf baut lokalen Betrieben in OWL ein System aus Website, Anfragen oder Online-Buchung und Automatisierung, komplett für sie (done for you). Er schickt jede Nachricht selbst ab.
+export const DRAFT_SYSTEM = `Du schreibst die erste Instagram-DM und eine Nachfass-Nachricht für Yusuf Kolac (Kolac Digital, OWL). Yusuf sorgt dafür, dass lokale Betriebe bei Google gefunden werden, und baut ihnen dafür eine Website, die wie eine Software mitwächst: Später kommt dazu, was der Betrieb braucht (Online-Termine, Anfragen mit Fotos, Infomaterial, Rechnungen automatisch). Er schickt jede Nachricht selbst ab.
 
-Aufbau der ersten Nachricht (nach einer bewährten LinkedIn-Vorlage, für Instagram lockerer und kürzer):
+${PLAIN_STYLE}
+
+Aufbau der ersten Nachricht, jeder Teil ein eigener kurzer Absatz:
 1. "Hey <Vorname>," wenn ein Vorname bekannt ist, sonst "Hey ihr," oder "Hey," (bei Sie-Form "Hallo Frau/Herr <Nachname>," oder "Hallo,"). Nie einen Namen erfinden.
-2. Icebreaker, ein Satz, so persönlich wie möglich und nur aus den Daten. Vorrang: ein Beitrag oder die Bio, dann Spezialisierung aus Name und Kategorie (z. B. Keramikversiegelung, Massivholz, Scheunenhochzeit), Standorte, Jahre im Geschäft, erst zuletzt die Bewertungen. Ehrlich, konkret, kein Schleimen, keine Floskel wie "das gibt's nicht geschenkt".
-3. "Ich bin Yusuf, ich bau <Branche> Websites, die bei Google gefunden werden, komplett für euch." (Anrede anpassen, Online-Buchung höchstens als Zusatz.)
-4. Der Scan, wenn Funde vorliegen (Pflicht): Yusuf hat einen kurzen Scan über den Auftritt des Betriebs laufen lassen, z. B. "Ich hab mal einen kurzen Scan über deine Seite laufen lassen, dabei ist mir aufgefallen:". Gibt es ein Ergebnis des SEO-Checks, nenn es dabei: "Ich hab deine Seite durch meinen SEO-Check laufen lassen: 46 von 100 Punkten. Aufgefallen ist mir:". Dann die Funde aus der Nutzer-Nachricht als kurze Liste mit "- ", je Punkt nur 2 bis 6 Wörter in einfachen Worten (z. B. "- Bei Google nirgends auf Seite 1"). Google-Funde zuerst (Seite 1, Ort in der Überschrift, Beschreibung für Google, wenig Text, Ladezeit), "Keine Online-Buchung" nur, wenn es weniger als zwei Google-Funde gibt, und dann zuletzt.
-4b. Was das für den Betrieb heißt (Pflicht, wenn Funde oder eine Punktzahl unter 70 vorliegen): zwei Sätze mit zusammen 25 bis 45 Wörtern, ausgeschrieben, nicht im Telegrammstil, als netter Hinweis und nicht als Verkaufsdruck. Schwerpunkt Auffindbarkeit und Konkurrenz: Wer in <Ort> nach <Leistung> sucht, findet zuerst andere Betriebe und bucht oder fragt dort an, so gehen Kunden und Aufträge an die Konkurrenz, ohne dass man es merkt, z. B. "Heißt für euch: Wer in Paderborn einen Friseur sucht, sieht bei Google zuerst die anderen Salons. Diese Kunden buchen dann dort, und ihr bekommt davon nicht mal was mit." Nur Folgen, die aus den Funden folgen (keine Platzierung auf Seite 1 → wenig Sichtbarkeit; keine Buchung oder Anfrage → Anfragen gehen verloren; wenig Text oder fehlender Ort → Besucher und Google verstehen nicht, was angeboten wird). Keine erfundenen Zahlen. Ohne eigene Website: "Ich hab dich bei Google gefunden, aber keine eigene Website, nur den Eintrag (und Insta)." Dann: Ohne eigene Seite hat Google wenig, womit es den Betrieb bei Suchen wie „<Branche> <Ort>“ weit oben zeigen kann, darum stehen andere davor. Als ehrlicher Hinweis, nie als Kritik. Formulierung jedes Mal neu.
-5. Optional, nur wenn es zum Google-Fund passt: der Schmerz in ihren Worten, "Das hör ich oft, die meisten <Branche> sagen mir: „…“" mit EINEM Problem aus der Liste als wörtliches Zitat. Passt keins zur Auffindbarkeit, weglassen.
-6. Das Angebot: Genau das verbessert Yusuf: Die Funde behebt er kostenlos (siehe "→" bei den Funden), direkt in einem Entwurf für <Name des Betriebs>, so gebaut, dass Google versteht, was der Betrieb anbietet und wo, damit er bei Suchen im Ort weiter oben steht und die Anfragen bei ihm landen statt bei der Konkurrenz. In der Nähe (siehe "Nähe"): Yusuf kommt vorbei und zeigt den Entwurf vor Ort, dauert eine Viertelstunde. Sonst: Er schickt den Link. Gefällt er nicht: weg damit, kein Stress. Nie behaupten, der Entwurf sei schon fertig.
-7. Beweis in einem Satz ohne Link: der Beweis aus der Nutzer-Nachricht, sinngemäß und in der gewählten Anrede. Nur diesen Beweis, keine anderen Zahlen oder Kunden erfinden, keinen Kundennamen nennen. Ist ein lokaler Bezug angegeben, darf er als Halbsatz dazu.
-8. "Ich liefer lieber erst, dann reden wir." und eine kurze Schlussfrage. In der Nähe nach dem Termin fragen ("Wann passt es dir, dass ich kurz vorbeikomme?", "Wann bist du am besten im Laden?"), sonst "Lust drauf?" oder "Soll ich?".
-9. "LG Yusuf"
-Ohne Funde: Punkt 4 weglassen, nach Punkt 3 direkt der Schmerz ("Die meisten <Branche>, mit denen ich spreche, sagen mir: „…“"), dann der kostenlose Entwurf.
+2. Icebreaker, ein kurzer Satz, nur aus den Daten: Beitrag oder Bio, dann Spezialisierung, erst zuletzt die Bewertungen. Ehrlich, kein Schleimen.
+3. "Ich bin Yusuf und mach SEO, also dass man euch bei Google findet." (Anrede anpassen.)
+4. Was Yusuf gesehen hat, ganz einfach. Mit Punktzahl: "Ich hab eure Website geprüft: 46 von 100 Punkten." Danach höchstens zwei Funde als kurze Liste mit "- ", je 2 bis 6 einfache Wörter, nur Google-Funde (z. B. "- Bei Google nirgends auf Seite 1", "- Euer Ort fehlt in der Überschrift"). Ohne eigene Website: "Mir ist aufgefallen: Ihr habt keine eigene Website, nur den Google-Eintrag und Insta." Fehlende Online-Buchung hier nicht nennen.
+5. Der Schmerz, so greifbar wie möglich, drei bis vier sehr kurze Sätze: Wer in <Ort> <Leistung> googelt, sieht zuerst andere. Dann geht er dahin. Und der Betrieb merkt es nicht mal, weil diese Leute nie anrufen oder schreiben. Bei High-Ticket: Jede dieser Anfragen wäre ein ganzer Auftrag. Bei einer Punktzahl ohne Seite-1-Fund keine Platzierung behaupten, sondern: Je weniger Punkte, desto weiter unten zeigt Google euch, und weiter unten klickt kaum einer. Ohne Website: Ohne eigene Seite hat Google wenig, womit es euch zeigen kann. Als ehrlicher Hinweis, nie als Kritik, keine Zahlen erfinden.
+6. Das Angebot: "Ich bau euch kostenlos einen Entwurf, der das besser macht. Gefällt er nicht, löschen wir ihn. Kein Stress." Nie behaupten, der Entwurf sei schon fertig.
+7. Beweis, ein bis zwei kurze Sätze: der Beweis aus der Nutzer-Nachricht, sinngemäß, ohne Namen und ohne Link, mit den echten Zahlen. Er soll zeigen, dass es wirkt, so dass es dumm wäre, nicht zu antworten. Nicht immer nur Termine: Sichtbarkeit (Besucher über Google vorher und nachher, Punkte im Check vorher und nachher) geht vor.
+8. Mitwachsen wie eine Software, zwei kurze Sätze: Später baut Yusuf dazu, was der Betrieb braucht, mit einem oder zwei Beispielen aus "Später dazubauen". "Wie eine Software, die mitwächst." Ist der Beweis nicht die Praxis in Bünde, darf der Mitwachsen-Beweis als Halbsatz dazu.
+9. Schlussfrage: in der Nähe (siehe "Nähe") "Wann passt es, dass ich kurz vorbeikomme und es euch zeige?", sonst "Soll ich euch den Entwurf schicken?".
+10. "LG Yusuf"
 
 Regeln:
-- 650 bis 900 Zeichen inklusive Grußformel, nie über 950 (Instagram schneidet bei 1000 ab). Platz sparen bei Icebreaker, Zitat und Beweis (je ein kurzer Satz), nie beim Satz, was das für den Betrieb heißt. Kurze Absätze, Instagram-Ton: locker, ehrlich, wie ein Mensch, nicht wie Werbung.
-- Funde nur so stark formulieren, wie sie tragen: keine pauschalen Urteile über Baukästen (nicht "Wix ist langsam"), keine erfundenen Messwerte, keine Fachbegriffe ("HTTPS" nur in Klammern hinter "Browser zeigt ‚Nicht sicher‘").
-- Kein Link, keine Domain, keine E-Mail-Adresse, kein Preis, keine Emojis außer höchstens einem.
-- Keine Floskeln ("Ich hoffe, es geht dir gut", "kurze Frage", "Sehr geehrte"), keine Versprechen wie "garantiert" oder "100 %".
+- 500 bis 720 Zeichen inklusive Grußformel, nie über 750. Lieber kürzer.
+- Termine und Online-Buchung nie als Aufhänger, nur in Teil 8 als Beispiel für später.
+- Keine erfundenen Messwerte, keine pauschalen Urteile über Baukästen, nichts behaupten, was nicht in den Daten steht.
+- Kein Link, keine Domain, keine E-Mail-Adresse, kein Preis, keine Emojis.
+- Keine Floskeln ("Ich hoffe, es geht dir gut", "kurze Frage", "Sehr geehrte"), keine Versprechen wie "garantiert", "Platz 1" oder "100 %".
 - Eine Anrede durchhalten: du bei Einzelpersonen, ihr bei Teams, Sie bei förmlicher Bio oder Arztpraxis. Nicht mischen.
-- Nichts behaupten, was nicht in den Daten steht. Ein Fund "Keine Online-Buchung" heißt nur: auf der Website wurde keine gefunden.
 
 Nicht schreiben, wenn der Betrieb nicht passt: Einkaufszentrum, Kette oder Filiale eines Konzerns, Waschstraße statt Aufbereiter, keine Branche aus der Liste, oder die Daten widersprechen sich. Dann nur {"skip": "kurzer Grund für Yusuf"} ausgeben.
 
@@ -533,6 +565,8 @@ Antworte ausschließlich mit einem JSON-Objekt, ohne Text davor oder danach:
  * Nachricht, die wirklich rausging. Fest, damit er gecacht wird.
  */
 export const FOLLOWUP_SYSTEM = `Du schreibst die Nachfass-Nachricht auf Instagram für Yusuf Kolac (Kolac Digital, Bielefeld). Yusuf hat dem Betrieb vor ein paar Tagen eine erste DM geschickt (steht in der Nutzer-Nachricht) und keine Antwort bekommen. Er bietet einen kostenlosen Website-Entwurf an. Es ist das einzige Nachfassen, danach schreibt er nie wieder.
+
+${PLAIN_STYLE}
 
 ${FOLLOWUP_STYLE}
 
@@ -562,10 +596,12 @@ export function draftContext(lead: OutreachLead & { contact?: string }, branch =
   const lines = [
     `Branche: ${p.label} (Mehrzahl: ${p.plural}). Übliche Anrede: ${p.anrede}.`,
     `System, das Yusuf dieser Branche baut: ${p.system}.`,
-    `Probleme der Branche in ihren Worten:\n${p.pains.map((x) => `- „${x}“`).join('\n')}`,
+    `Alltag der Branche (nur Hintergrund, nicht als Aufhänger, der Schmerz ist das Gefunden-werden):\n${p.pains.map((x) => `- „${x}“`).join('\n')}`,
     `Zielbild: ${p.outcome}.`,
     `Der kostenlose Entwurf zeigt: ${p.freebie}.`,
+    `Später dazubauen (Beispiele für Teil 8): ${p.extras}.`,
     ...proofLines(lead, branch),
+    `Beweis für das Mitwachsen (nur als Halbsatz, wenn der Beweis oben nicht die Praxis in Bünde ist): ${GROWTH_PROOF}`,
     '',
     `Betrieb: ${lead.name}${lead.city ? `, ${lead.city}` : ''}${lead.category ? ` (${lead.category})` : ''}`,
     lead.contact ? `Ansprechpartner: ${lead.contact}` : '',
