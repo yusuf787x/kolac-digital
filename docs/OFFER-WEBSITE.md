@@ -1,6 +1,6 @@
 # OFFER-WEBSITE.md: Website-Neustart mit Doppel-Garantie
 
-Stand: 21.11.2026. **Von Yusuf entschieden:** 3.490 € + 249 €/Monat, zwei Garantien (nicht drei), Garantie 2 ohne zeitliche Grenze und gemessen an Klicks in der Search Console. **Am 21.11. mit echten Zahlen geprüft (Abschnitt 13):** Garantie gemessen an Klicks **ohne Firmennamen**. Ästhetik fällt als Branche weg (persönlicher Grund). **Branchen entschieden:** Kfz-Betriebe und Makler. **Offen:** Vertragsvariante bei ruhender Pauschale (Abschnitt 14), Vorher-Schätzung im Portal bauen (Abschnitt 15). Nach Hormozi ($100M Offers), Wissen im Skill `hormozi-wissen`. Baut auf `docs/OFFER.md` (Sichtbar in 90 Tagen) auf: gleiche Bausteine, neu gebündelt rund um die neue Website.
+Stand: 21.11.2026. **Von Yusuf entschieden:** 3.490 € + 249 €/Monat, zwei Garantien (nicht drei), Garantie 2 ohne zeitliche Grenze und gemessen an Klicks in der Search Console. **Am 21.11. mit echten Zahlen geprüft (Abschnitt 13):** Garantie gemessen an Klicks **ohne Firmennamen**. Ästhetik fällt als Branche weg (persönlicher Grund). **Branchen entschieden:** Kfz-Betriebe und Makler. **Entschieden:** Mindestlaufzeit verlängert sich nicht, ruhende Monate zählen mit. Preis nicht auf der Landingpage, erst im Gespräch. Vorher-Schätzung im Portal wird gebaut. Nach Hormozi ($100M Offers), Wissen im Skill `hormozi-wissen`. Baut auf `docs/OFFER.md` (Sichtbar in 90 Tagen) auf: gleiche Bausteine, neu gebündelt rund um die neue Website.
 
 ## 1. Für wen (Nische)
 
@@ -151,7 +151,7 @@ Ausgeschlossen: Friseure, Nagelstudios (zu niedriger Kundenwert), Handwerker (ei
 - **Ästhetik nicht bewerben.** Persönlicher Grund (Yusuf). Die Zahlen der Referenz bleiben anonym nutzbar.
 - **Start: Kfz-Betriebe in OWL** (Autohäuser, freie Werkstätten, Aufbereiter). Dort gibt es die meisten Referenzen (4 Kfz-Kunden) und warme Kontakte über wagenpuls. Anfrageproblem meist bei Werkstatt, Ankauf, Aufbereitung, weniger beim Fahrzeugverkauf (der läuft über mobile.de).
 - **Gleichzeitig: Immobilienmakler** (von Yusuf bestätigt). Sehr hoher Kundenwert, klares Anfrageproblem (Eigentümer, die verkaufen wollen), aber noch keine Referenz.
-- **Nur Betriebe mit Geld und sichtbarem Bedarf** (Yusuf: niemand soll beim Preis erschrecken, niemand muss mühsam überzeugt werden). Filter: Kfz-Betrieb mit Werkstatt und Angestellten bzw. Makler mit eigenen Objekten; im Formular nach Mitarbeiterzahl und Website-Alter fragen; Preisrahmen „ab 3.490 €“ früh nennen, damit nur Passende anrufen.
+- **Nur Betriebe mit Geld und sichtbarem Bedarf** (Yusuf: niemand soll beim Preis erschrecken, niemand muss mühsam überzeugt werden). Filter: Kfz-Betrieb mit Werkstatt und Angestellten bzw. Makler mit eigenen Objekten; im Formular nach Mitarbeiterzahl und Website-Alter fragen. **Preis nicht auf Landingpage oder in Anzeigen** (Yusuf, 21.11.): erst im Gespräch, nachdem Yusuf mit Claude die Zahlen des Betriebs vorbereitet hat und klar ist, ob wir helfen können (Hormozi: Wert zuerst stapeln, dann Preis). Filter stattdessen über die Qualifizierungsfragen.
 - **Nicht mehr als zwei gleichzeitig.** Bei kleinem Budget bekommt sonst keine Anzeige genug Daten. Hormozi: in einer Nische bleiben, bis man weiß, ob das Angebot dort zieht.
 
 ## 13. Prüfung mit echten Zahlen (21.11.2026)
@@ -183,7 +183,7 @@ Quelle: Search-Console-Daten aller 6 Kundenportale (Namen hier bewusst weggelass
 - Kurze Info an den Kunden von buchhaltung@ („Ihre Garantie ist aktiv, der Monatsbeitrag ruht“), im Portal sichtbar vermerken.
 - Abos, die über eine Partner-Anbindung angelegt sind, lassen sich im GoCardless-Dashboard nicht pausieren. Beim ersten Kunden einmal prüfen.
 
-**Vertrag (Vorschlag):**
+**Vertrag (entschieden 21.11.):**
 - **Mindestlaufzeit läuft weiter, ruhende Monate zählen mit** (6 Kalendermonate ab Livegang). Die Garantie soll Risiko abnehmen, nicht die Bindung verlängern. Eine versteckte Verlängerung wirkt wie eine Falle und könnte als überraschende Klausel angreifbar sein.
 - Folge: Ein Kunde kann nach 6 Monaten kündigen, auch wenn er wegen der Garantie weniger gezahlt hat. Kündigt er, endet die Garantie. Schlimmster Fall bleibt: einige ausgefallene Pauschalen, die Einmalzahlung deckt Gewinnung und Arbeit.
 - Formulierung als **Verzicht** („Die Monatspauschale entfällt, solange …“), nicht als Erstattung. Ohne Zahlung gibt es keine Rechnung und keine Umsatzsteuer.
