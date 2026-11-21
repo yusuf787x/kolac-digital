@@ -59,11 +59,31 @@ export interface SeoClient {
   changelogTokenHash?: string;
   /** Letzte vier Zeichen, damit man den Schluessel wiedererkennt. */
   changelogTokenHint?: string;
+  /**
+   * Geschaetzte Google-Besucher pro Monat (DataForSEO), einmal abgerufen.
+   * Nur fuer die Zeit VOR Messbeginn sichtbar, nie in Kennzahlen, Berichten oder Garantie.
+   */
+  estimate?: SeoEstimate | null;
   lastFetchAt?: TsLike;
   lastFetchMonth?: SeoMonth | null;
   lastFetchError?: string | null;
   createdAt?: TsLike;
   updatedAt?: TsLike;
+}
+
+export interface SeoEstimatePoint {
+  month: SeoMonth;
+  /** Geschaetzte Besucher aus der Google-Suche (organic etv, gerundet). */
+  visitors: number;
+  /** Suchbegriffe auf Seite 1 (Platz 1 bis 10). */
+  top10: number;
+}
+
+export interface SeoEstimate {
+  source: 'dataforseo';
+  fetchedAt?: TsLike;
+  /** Aelteste zuerst. */
+  points: SeoEstimatePoint[];
 }
 
 export interface SeoMetrics {

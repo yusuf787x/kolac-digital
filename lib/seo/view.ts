@@ -151,6 +151,48 @@ export interface PortalData {
   latestChecks: PortalCheck[];
   /** Pruefungen im angezeigten Monat (fuer das PDF). */
   checksThisMonth: PortalCheck[];
+  /**
+   * Geschaetzte Besucher VOR Messbeginn (DataForSEO). Nur Anzeige im Portal,
+   * nie in Kennzahlen, Berichten, PDF oder Garantie. null = nichts zeigen.
+   */
+  estimate: PortalEstimate | null;
+}
+
+export interface PortalEstimate {
+  /** Aelteste zuerst, nur Monate vor dem ersten Monat mit echten Zahlen. */
+  points: Array<{ month: SeoMonth; visitors: number }>;
+  /** Erster Monat mit echten Zahlen (Messbeginn). */
+  until: SeoMonth;
+  /** Ein Monat mit Schaetzung und echter Messung, damit man die Hoehe einordnen kann. */
+  compare: { month: SeoMonth; estimated: number; measured: number } | null;
+}
+
+/** Hoechstens so viele Monate vor Messbeginn zeigen. */
+export const ESTIMATE_MONTHS = 24;
+
+export function buildEstimate(
+  estimate: SeoClient['estimate'],
+  withData: Set<SeoMonth>,
+  totalsByMonth: Map<SeoMonth, SeoMetrics>,
+): PortalEstimate | null {
+  const pts = [...(estimate?.points ?? [])].sort((a, b) => a.month.localeCompare(b.month));
+  const until = [...withData].sort()[0];
+  if (!pts.length || !until) return null;
+  let before = pts.filter((p) => p.month < until).slice(-ESTIMATE_MONTHS);
+  // Fuehrende Nullen weglassen: dort kennt das Verfahren die Seite noch nicht
+  const firstNonZero = before.findIndex((p) => p.visitors > 0);
+  before = firstNonZero === -1 ? [] : before.slice(firstNonZero);
+  if (!before.length) return null;
+  const overlap = pts
+    .filter((p) => withData.has(p.month) && p.visitors > 0 && (totalsByMonth.get(p.month)?.clicks ?? 0) > 0)
+    .sort((a, b) => b.month.localeCompare(a.month))[0];
+  return {
+    points: before.map((p) => ({ month: p.month, visitors: p.visitors })),
+    until,
+    compare: overlap
+      ? { month: overlap.month, estimated: overlap.visitors, measured: totalsByMonth.get(overlap.month)!.clicks }
+      : null,
+  };
 }
 
 export interface MonthInput {
@@ -173,7 +215,7 @@ export interface ReportInput {
 export interface BuildInput {
   client: Pick<
     SeoClient,
-    'customerId' | 'displayName' | 'domain' | 'brandTerms' | 'keywordGroups' | 'demo' | 'dataStart'
+    'customerId' | 'displayName' | 'domain' | 'brandTerms' | 'keywordGroups' | 'demo' | 'dataStart' | 'estimate'
   >;
   months: MonthInput[];
   requestedMonth: SeoMonth | null;
@@ -358,6 +400,11 @@ export function buildPortalData(input: BuildInput): PortalData {
     reports: releasedReports,
     latestChecks: latestPerKind(checkTimeline),
     checksThisMonth: [],
+    estimate: buildEstimate(
+      client.estimate,
+      withData,
+      new Map(input.months.filter((m) => withData.has(m.month)).map((m) => [m.month, m.totals])),
+    ),
   };
 
   if (!month) return base;

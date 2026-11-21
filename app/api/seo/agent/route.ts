@@ -9,6 +9,8 @@ import { formatMonthDE, isMonthKey, lastCompleteMonths } from '@/lib/seo/months'
 import { badRequest, safe } from '@/lib/seo/server/admin-route';
 import { portalBaseUrl } from '@/lib/seo/server/config';
 import { fetchMonth, measureMonth } from '@/lib/seo/server/fetch';
+import { estimateConfigured, fetchEstimate, saveEstimate } from '@/lib/seo/server/estimate';
+import { buildEstimate, monthsWithData } from '@/lib/seo/view';
 import {
   COL,
   getReport,
@@ -50,6 +52,8 @@ export const maxDuration = 300;
  *                                  Bericht und PDF loeschen, Zahlen bleiben
  *   plan      { id?, area?, change?, goal?, dueDate?, published?, status? }
  *                                  Plan-Punkt anlegen/aendern (Erinnerung an Yusuf)
+ *   estimate  { force? }           Vorher-Schaetzung (DataForSEO, ca. 0,15 $) abrufen und
+ *                                  speichern. Ohne force nur, wenn keine juenger als 30 Tage ist.
  *
  * Massnahmen und Pruefungen anlegen: /api/seo/changelog.
  * Bewusst NICHT moeglich: Portal-Zugaenge einladen oder entziehen,
@@ -137,6 +141,9 @@ async function handlePOST(req: Request) {
     case 'plan':
       return planItem(id, body);
 
+    case 'estimate':
+      return estimateAction(client, body.force === true);
+
     case 'visibility':
     case 'delete': {
       const col = body.type === 'activity' ? COL.activities : body.type === 'check' ? COL.checks : null;
@@ -151,7 +158,7 @@ async function handlePOST(req: Request) {
     }
 
     default:
-      return badRequest('Unbekannte action. Erlaubt: status, data, fetch, report, release, deleteReport, settings, items, plan, visibility, delete.');
+      return badRequest('Unbekannte action. Erlaubt: status, data, fetch, report, release, deleteReport, settings, items, plan, estimate, visibility, delete.');
   }
 }
 
@@ -220,6 +227,48 @@ async function planItem(customerId: string, body: Record<string, unknown>) {
   return NextResponse.json({ ok: true, id: ref.id, held: sensitive });
 }
 
+/**
+ * Vorher-Schaetzung abrufen (kostet bei DataForSEO), speichern und kurz
+ * zusammenfassen: was der Kunde davon im Portal sieht.
+ */
+async function estimateAction(client: SeoClient, force: boolean) {
+  if (client.demo) return badRequest('Testkunde: keine Schätzung.');
+  if (!estimateConfigured()) return badRequest('DataForSEO ist auf dem Server nicht eingerichtet.', 503);
+  const fetchedAt = client.estimate?.fetchedAt?.toMillis?.() ?? 0;
+  let cost: number | null = null;
+  let points = client.estimate?.points ?? [];
+  let reused = true;
+  if (force || !points.length || Date.now() - fetchedAt > 30 * 86_400_000) {
+    try {
+      const r = await fetchEstimate(client.domain);
+      points = r.points;
+      cost = r.cost;
+      reused = false;
+      await saveEstimate(client.customerId, points);
+    } catch (err) {
+      return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : String(err) }, { status: 502 });
+    }
+  }
+  const monthDocs = await listMonthDocs(client.customerId);
+  const withData = new Set(monthsWithData(monthDocs, client.dataStart));
+  const shown = buildEstimate(
+    { source: 'dataforseo', points },
+    withData,
+    new Map(monthDocs.filter((m) => withData.has(m.month)).map((m) => [m.month, m.totals])),
+  );
+  return NextResponse.json({
+    ok: true,
+    reused,
+    cost,
+    domain: client.domain,
+    monthsFetched: points.length,
+    points,
+    portal: shown
+      ? { shownMonths: shown.points.length, from: shown.points[0].month, until: shown.until, compare: shown.compare }
+      : { shownMonths: 0, note: 'Nichts sichtbar: keine Schätzung vor Messbeginn oder noch keine echten Zahlen.' },
+  });
+}
+
 async function status(client: SeoClient) {
   const id = client.customerId;
   const [months, reports, recipients] = await Promise.all([listMonthDocs(id), listReports(id), listActiveAccessEmails(id)]);
@@ -243,6 +292,9 @@ async function status(client: SeoClient) {
       dataStart: client.dataStart ?? null,
     },
     lastFetchError: client.lastFetchError ?? null,
+    estimate: client.estimate?.points?.length
+      ? { months: client.estimate.points.length, fetchedAt: client.estimate.fetchedAt?.toMillis?.() ?? null }
+      : null,
     monthsWithData: [...have].sort().reverse(),
     /** Monate ohne Tageswerte (vor Einfuehrung abgerufen). Erneut fetch aufrufen, solange Google sie noch liefert (16 Monate). */
     monthsWithoutDaily: months.filter((m) => !m.daily?.length && m.totals.impressions > 0).map((m) => m.month),

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { BUCKET_LABELS, type PositionBuckets } from '@/lib/seo/analysis';
 import { formatMonthDE, formatMonthShortDE } from '@/lib/seo/months';
 import { fmtInt } from '@/lib/seo/view';
-import { AXIS_TEXT, BUCKET_COLORS, BUCKET_ORDER, SERIES_COLOR } from './palette';
+import { AXIS_TEXT, BUCKET_COLORS, BUCKET_ORDER, SERIES_COLOR, SERIES_WASH } from './palette';
 
 /**
  * Saeulendiagramme ohne Bibliothek (kein externes Skript, gleiche Optik
@@ -87,10 +87,13 @@ export function SingleColumnChart({
   points,
   current,
   unit,
+  estimated = false,
 }: {
   points: Array<{ month: string; value: number }>;
   current?: string;
   unit: string;
+  /** Geschaetzte Werte: gestrichelt und blass, klar von echten Zahlen getrennt. */
+  estimated?: boolean;
 }) {
   const [active, setActive] = useState<string | null>(null);
   const max = niceMax(Math.max(...points.map((p) => p.value), 0));
@@ -116,12 +119,21 @@ export function SingleColumnChart({
                 aria-label={`${formatMonthDE(p.month)}: ${fmtInt(p.value)} ${unit}`}
               >
                 <span
-                  className="block w-full max-w-6 rounded-t"
-                  style={{
-                    height: `${Math.max(p.value > 0 ? 1 : 0, (p.value / max) * 100)}%`,
-                    backgroundColor: SERIES_COLOR,
-                    opacity: p.month === current || isActive ? 1 : 0.45,
-                  }}
+                  className={`block w-full max-w-6 rounded-t ${estimated ? 'border border-b-0 border-dashed' : ''}`}
+                  style={
+                    estimated
+                      ? {
+                          height: `${Math.max(p.value > 0 ? 1 : 0, (p.value / max) * 100)}%`,
+                          backgroundColor: SERIES_WASH,
+                          borderColor: SERIES_COLOR,
+                          opacity: isActive ? 1 : 0.8,
+                        }
+                      : {
+                          height: `${Math.max(p.value > 0 ? 1 : 0, (p.value / max) * 100)}%`,
+                          backgroundColor: SERIES_COLOR,
+                          opacity: p.month === current || isActive ? 1 : 0.45,
+                        }
+                  }
                 />
                 {isActive && <Tooltip title={formatMonthDE(p.month)} lines={[`${fmtInt(p.value)} ${unit}`]} />}
               </button>

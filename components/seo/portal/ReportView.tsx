@@ -23,6 +23,7 @@ import CheckCard from './CheckCard';
 import KeywordsBlock from './KeywordsBlock';
 import MoversPanel from './MoversPanel';
 import TrendChart from './TrendChart';
+import EstimateHistory from './EstimateHistory';
 import ActivityPreview from './ActivityPreview';
 import { Delta, PlannedList, Section } from './parts';
 
@@ -201,6 +202,7 @@ export default function ReportView({
         intro="Wie viele Menschen über die Google-Suche auf Ihre Website gekommen sind, Tag für Tag. Steigt die Linie, werden Sie häufiger gefunden."
       >
         <TrendChart daily={data.daily} history={data.history} current={m} milestones={data.milestones} />
+        {data.estimate && <EstimateHistory estimate={data.estimate} />}
       </Section>
 
       <Section id="massnahmen" title={`Was wir im ${monthNameDE(m)} gemacht haben`}>
