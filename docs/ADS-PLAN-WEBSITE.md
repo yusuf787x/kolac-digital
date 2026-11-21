@@ -46,10 +46,12 @@ Unqualifizierte (Website unter 1 Jahr, keine Mitarbeiter): auf das SEO-Paket aus
 ## 5. Budget, Testregeln, Abbruch
 
 - **30 € pro Tag, ca. 30 Tage, ca. 900 €** (Yusuf am 21.11.: „ich traue mich einfach mal“). Zweck: Daten kaufen, nicht sofort Gewinn.
-- **Woche 1: nichts anfassen** (7 Tage).
+- **Vorab-Test ohne Werbegeld:** Den Branchen-Check 10 bis 20 Leuten aus dem Umfeld und der Kaltakquise schicken. Wie viele starten, wie viele schalten frei? Erst bei mindestens 2 bis 3 Freischaltungen Geld ausgeben.
+- **Woche 1: nichts anfassen** (7 Tage), **außer bei Frühwarnung:** nach ca. 150 € Klickrate unter 0,8 % oder kein einziger gestarteter Check → Motive tauschen. Nach ca. 300 € kein einziger Kontakt → stoppen und das Meta-Sofortformular als Gegenprobe testen.
 - **Danach** alle 5 Tage entscheiden: Ziel **25 € pro Kontakt**. Anzeige aus bei **über 50 € pro Kontakt** oder **Klickrate unter 1 %**.
 - **Gewinner skalieren:** 80 % des Budgets in eine Kampagne mit Gesamtbudget (CBO) nur mit den Gewinnern, 20 % in eine Testkampagne. Alle 2 Wochen 2 neue Blickwinkel oder Varianten (z. B. Schmerz „nur Empfehlungen“, „Konkurrenz steht vorne“, „Portale kosten jeden Monat“).
 - **Verkaufsproblem erkennen:** Kontakte und Gespräche da, aber keine Abschlüsse → am Gespräch arbeiten, nicht an den Anzeigen (Hormozi).
+- **Schätzung (21.11., noch ohne eigene Daten):** Klick ca. 1,20 bis 2,50 €, vom Klick zum freigeschalteten Bericht 4 bis 12 % → **ca. 10 bis 60 € pro Kontakt**. Für 900 € schlecht ca. 15 Kontakte (0 bis 1 Kunde), mittel ca. 30 bis 35 (1 bis 2), gut 50 bis 60 (2 bis 3). Mehr ist kaum möglich, weil es in OWL nur wenige tausend passende Inhaber gibt.
 - **Erwartung (Sabri-Rechnung, deutsche Kosten):** 900 € ÷ ca. 30 € = 30 Kontakte → ca. 15 % buchen, plus Anrufe → 4 bis 6 Gespräche → 1 Abschluss = 3.740 € in 30 Tagen.
 - **Nach dem ersten Kunden:** Einsatz herausnehmen, der Rest geht zurück in die Werbung (Sabri).
 
