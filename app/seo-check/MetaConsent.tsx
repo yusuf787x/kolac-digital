@@ -108,7 +108,7 @@ export default function MetaConsent({ pixelId }: { pixelId?: string }) {
       role="dialog"
       aria-modal="false"
       aria-labelledby="meta-consent-title"
-      className="fixed inset-x-2 bottom-2 z-50 rounded-[18px] border border-[#e5e7eb] bg-white p-3 shadow-[0_8px_40px_rgba(0,0,0,0.12)] sm:inset-x-auto sm:left-6 sm:bottom-6 sm:max-w-[440px] sm:p-5"
+      className="fixed inset-x-2 bottom-2 z-50 mx-auto max-w-[600px] rounded-[18px] border border-[#e5e7eb] bg-white p-3 shadow-[0_8px_40px_rgba(0,0,0,0.12)] sm:inset-x-6 sm:bottom-6 sm:p-5"
     >
       <p className="text-[13px] leading-snug text-[var(--color-gray)] sm:text-[14px]">
         <span id="meta-consent-title" className="font-semibold text-[var(--color-black)] sm:block sm:text-[15px]">
@@ -128,17 +128,17 @@ export default function MetaConsent({ pixelId }: { pixelId?: string }) {
       <div className="mt-2 grid grid-cols-2 gap-2 sm:mt-3">
         <button
           type="button"
-          onClick={() => decide(true)}
-          className="btn btn-primary min-h-[44px] w-full justify-center !px-4 !py-2 text-[15px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-blue)]"
-        >
-          Akzeptieren
-        </button>
-        <button
-          type="button"
           onClick={() => decide(false)}
           className="btn btn-outline min-h-[44px] w-full justify-center !bg-white !px-4 !py-2 text-[15px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-blue)]"
         >
           Ablehnen
+        </button>
+        <button
+          type="button"
+          onClick={() => decide(true)}
+          className="btn btn-primary min-h-[44px] w-full justify-center !px-4 !py-2 text-[15px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-blue)]"
+        >
+          Akzeptieren
         </button>
       </div>
     </div>
