@@ -16,6 +16,12 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 | ✅ | Nach dem Freischalten steht oben ein Block, um direkt ein kostenloses Gespräch zu buchen oder anzurufen | Interessenten kommen ohne Umweg zum Termin | [SEO-Check](https://www.kolac-digital.de/seo-check) |
 | ✅ | Eigene Check-Seiten für Werkstätten und für Makler in OWL, gedacht für Anzeigen und nicht bei Google gelistet | Anzeigen führen auf eine Seite, die genau zur Branche passt | [Werkstätten](https://www.kolac-digital.de/seo-check/werkstatt) [Makler](https://www.kolac-digital.de/seo-check/makler) |
 
+### Rechtliches
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Datenschutzerklärung um einen Abschnitt zum kostenlosen SEO-Check ergänzt: welche Angaben verarbeitet werden, wie die Herkunft aus eigener Werbung ausgewertet wird und wie eine Werbemessung von Meta nur nach Einwilligung abläuft | Besucher sehen vorab genau, was mit ihren Daten passiert, die Website bleibt rechtlich sauber | [Datenschutzerklärung](https://www.kolac-digital.de/datenschutz.html#meta) |
+
 ---
 
 ## 18.11.2026
