@@ -1,13 +1,13 @@
 # OFFER-WEBSITE.md: Website-Neustart mit Doppel-Garantie
 
-Stand: 21.11.2026. **Von Yusuf entschieden:** 3.490 € + 249 €/Monat, zwei Garantien (nicht drei), Garantie 2 ohne zeitliche Grenze und gemessen an Klicks in der Search Console. **Offen:** Klicks gesamt oder ohne Firmennamen (Abschnitt 5), Startbranche (Abschnitt 12). Nach Hormozi ($100M Offers), Wissen im Skill `hormozi-wissen`. Baut auf `docs/OFFER.md` (Sichtbar in 90 Tagen) auf: gleiche Bausteine, neu gebündelt rund um die neue Website.
+Stand: 21.11.2026. **Von Yusuf entschieden:** 3.490 € + 249 €/Monat, zwei Garantien (nicht drei), Garantie 2 ohne zeitliche Grenze und gemessen an Klicks in der Search Console. **Am 21.11. mit echten Zahlen geprüft (Abschnitt 13):** Garantie gemessen an Klicks **ohne Firmennamen**. Ästhetik fällt als Branche weg (persönlicher Grund). **Offen:** Startbranche Kfz oder Makler. Nach Hormozi ($100M Offers), Wissen im Skill `hormozi-wissen`. Baut auf `docs/OFFER.md` (Sichtbar in 90 Tagen) auf: gleiche Bausteine, neu gebündelt rund um die neue Website.
 
 ## 1. Für wen (Nische)
 
 - **Avatar:** Inhaber eines lokalen Betriebs in OWL mit Angestellten, dessen **Website seit mindestens 12 Monaten online ist** und kaum Anfragen bringt.
 - **Warum genau diese Einschränkung:**
   1. Die Domain hat Geschichte. Google vertraut ihr schneller als einer neuen.
-  2. Die Search Console zeigt in der Regel auch Daten von vor der Einrichtung. Es gibt also einen echten, fairen Startwert. Ohne Startwert wäre „verdoppeln“ keine ehrliche Garantie.
+  2. ~~Die Search Console zeigt auch Daten von vor der Einrichtung.~~ **Falsch, am 21.11. geprüft:** Bei allen 6 Portalkunden gibt Google erst Daten ab dem Tag der Einrichtung. Der Startwert wird darum in den ersten 28 Tagen nach Einrichtung gemessen, während die alte Seite noch läuft (siehe Garantie).
   3. Der Schmerz ist stärker: Er hat schon einmal bezahlt und es bringt nichts. Hormozi: frühere Misserfolge erklären, dann glaubt man dem neuen Weg eher.
   4. Klarer Callout für Anzeigen: „Deine Website ist älter als ein Jahr und bringt keine Anfragen?“
 - **Nicht dafür:** Betriebe ohne Website (später eigenes, einfacheres Angebot, Hormozi: Unqualifizierte zu etwas Passendem schicken), Online-Shops, ausgebuchte Betriebe, wer keine 30 Minuten für ein Gespräch hat.
@@ -61,15 +61,17 @@ Bekommst du 90 Tage nach dem Livegang nicht doppelt so viele Klicks aus der Goog
 
 Spielregeln (so in Angebot und Vertrag):
 
-1. **Messgröße:** Klicks aus der Google-Suche laut Google Search Console, für die Domain des Kunden. Im Portal für beide Seiten sichtbar.
-   - **Offen, Vorschlag:** nur Klicks auf Suchen **ohne Firmennamen**. Grund: Wer den Firmennamen eintippt, kennt den Betrieb schon. Diese Klicks lassen sich kaum steigern und machen das Verdoppeln unnötig schwer. Klicks ohne Firmennamen sind genau die neuen Kunden, um die es geht. Nachteil: etwas mehr Erklärung im Gespräch. Achtung: Unsere beste Referenz hatte bei den Gesamtklicks 467 auf 888, also 1,9-fach, knapp unter dem Doppelten.
-2. **Startwert:** Durchschnitt der Klicks pro 28 Tage aus den 3 vollen Monaten vor Projektstart. Drei Monate statt einem, damit ein zufällig schwacher oder starker Monat das Ergebnis nicht verzerrt. Wird beim Projektstart als Zahl ins Angebot geschrieben.
+1. **Messgröße:** Klicks aus der Google-Suche laut Google Search Console **ohne Suchen mit dem Firmennamen**, berechnet als Gesamtklicks minus Klicks auf Suchen mit Firmennamen (Markenbegriffe im Portal). Nicht „Summe der Suchen ohne Firmennamen“, weil Google seltene Suchen anonymisiert: bei der Ästhetik-Referenz fehlten so 57 % der Klicks in der Aufstellung nach Suchbegriffen. Im Portal für beide Seiten sichtbar.
+   - Warum ohne Firmennamen: Diese Klicks sind die neuen Kunden. Klicks mit Firmennamen steigen kaum (Ästhetik-Referenz: 247 pro 28 Tage im September und genauso im Oktober) und würden das Verdoppeln unnötig schwer machen.
+2. **Startwert:** Klicks pro 28 Tage vor dem Livegang. Hat der Betrieb schon eine Search Console mit mindestens 3 Monaten Daten, der Schnitt dieser 3 Monate. Sonst richten wir sie direkt nach dem Check ein, und es zählen die 28 Tage danach, während die alte Seite noch läuft. Der Startwert wird als Zahl ins Angebot bzw. vor dem Livegang schriftlich festgehalten.
 3. **Ziel:** In den 28 Tagen von Tag 63 bis Tag 90 nach Livegang mindestens das Doppelte des Startwerts.
 4. **Wenn das Ziel verfehlt ist:** Ab Tag 91 ruht die Monatspauschale. Die Betreuung läuft voll weiter. Wir prüfen jeden Monat die jeweils letzten 28 Tage. Sobald ein 28-Tage-Zeitraum das Doppelte erreicht, läuft die Pauschale ab dem Folgemonat wieder.
 5. **Voraussetzungen, damit die Garantie gilt:**
-   - Website seit mindestens 12 Monaten online, Search Console mit Daten der letzten 3 Monate (wir richten sie ein, falls nötig).
+   - Website seit mindestens 12 Monaten online.
+   - Startwert höchstens 300 Klicks ohne Firmennamen pro 28 Tage (darüber wird Verdoppeln in 90 Tagen unsicher, dann Ziel 50 %).
    - Wir sagen die Garantie nach dem kostenlosen Check **schriftlich mit Startwert** zu. Ist eine Seite schon stark, ist Verdoppeln nicht seriös. Dann gibt es den Neustart ohne diese Garantie oder mit Ziel 50 % wie in `docs/OFFER.md`.
-   - Betriebe mit starker Saison (Winterloch o. Ä.) nur mit Vorjahresvergleich.
+   - Betriebe mit starker Saison (Winterloch o. Ä.) ohne Verdopplungs-Garantie, ein Vorjahresvergleich ist ohne alte Daten nicht möglich.
+   - Liegt der Startwert unter 10 Klicks, gilt als Ziel 20 Klicks pro 28 Tage (doppelt von fast nichts wäre für den Kunden wertlos).
 6. **Mitwirkung (sonst erlischt die Garantie):** Zugänge innerhalb von 7 Tagen, Freigaben innerhalb von 5 Werktagen, aktiv um Bewertungen bitten (Bewertungs-Booster nutzen), keine eigenen Änderungen an Website und Google-Profil ohne Absprache, Domain und Betrieb bleiben gleich.
 7. **Ende:** Kündigt der Kunde, endet auch die Garantie. Keine Garantie auf Platzierungen oder Anzahl Anfragen.
 
@@ -140,12 +142,32 @@ Ausgeschlossen: Friseure, Nagelstudios (zu niedriger Kundenwert), Handwerker (ei
 | **Ästhetik** (ästhetische Praxen, medizinische Kosmetik, Laser, Kosmetikinstitute mit Selbstzahler-Behandlungen) | hoch, Behandlungen wiederholen sich alle paar Monate | ja, starker Wettbewerb, viele neue Anbieter | ja („Faltenbehandlung Bielefeld“, „Laser Haarentfernung …“) | **beste Referenz** (467 auf 888 Klicks, 3× Einblendungen) | HWG beachten: keine Werbung für verschreibungspflichtige Mittel, keine Vorher-Nachher-Bilder, keine Ergebnisgarantien. Kennen wir schon. | **Start-Branche** |
 | **Zahnärzte mit Selbstzahler-Leistungen** (Implantate, Aligner, Bleaching) | sehr hoch | ja für Selbstzahler, nein für Kassenpatienten | ja | keine | HWG und Berufsrecht | Test 2, nur wenn sie Selbstzahler suchen |
 | **Immobilienmakler** | sehr hoch (Provision je Verkauf) | ja, Eigentümer-Anfragen sind knapp | ja („Haus verkaufen Bielefeld“, „Makler …“) | keine | unkritisch | Test 2, stark |
-| **Autohäuser und freie Kfz-Werkstätten** | hoch | oft ja (Werkstatt, Ankauf) | ja | Pader Automobilzentrum, wagenpuls-Kontakte (warm) | unkritisch | Test 2, warm erreichbar |
-| **Gebäudereinigung und Facility-Dienste** | hoch (Daueraufträge) | ja, Firmenkunden fehlen | ja (B2B) | acko (Interessent) | unkritisch | eher LinkedIn |
+| **Autohäuser und freie Kfz-Werkstätten** | hoch | oft ja (Werkstatt, Ankauf) | ja | Kfz-Kunden, wagenpuls-Kontakte (warm) | unkritisch | Test 2, warm erreichbar |
+| **Gebäudereinigung und Facility-Dienste** | hoch (Daueraufträge) | ja, Firmenkunden fehlen | ja (B2B) | ein Interessent | unkritisch | eher LinkedIn |
 | **Rechtsanwälte** (Familien-, Arbeits-, Verkehrsrecht) | hoch | je nach Kanzlei | ja | keine | Berufsrecht, eher sachlich | später |
 | **Hörakustiker, Augenlaser, Privatpraxen** | hoch | gemischt | ja | keine | HWG | später |
 
-**Empfehlung:**
-- **Start: Ästhetik.** Dort haben wir den stärksten Beweis, und Beweis ist Hormozis Hebel „Erfolgswahrscheinlichkeit“. Callout: „Ästhetik-Praxen in OWL: Eure Website ist älter als ein Jahr und bringt kaum neue Patientinnen?“
-- **Parallel eine zweite Branche als kleiner Test,** mit eigener Anzeige und eigenem Callout. Vorschlag: Immobilienmakler (sehr hoher Kundenwert, klares Anfrageproblem) oder Autohäuser/Werkstätten (warme Kontakte vorhanden).
+**Empfehlung (21.11., Ästhetik gestrichen):**
+- **Ästhetik nicht bewerben.** Persönlicher Grund (Yusuf). Die Zahlen der Referenz bleiben anonym nutzbar.
+- **Start: Kfz-Betriebe in OWL** (Autohäuser, freie Werkstätten, Aufbereiter). Dort gibt es die meisten Referenzen (4 Kfz-Kunden) und warme Kontakte über wagenpuls. Anfrageproblem meist bei Werkstatt, Ankauf, Aufbereitung, weniger beim Fahrzeugverkauf (der läuft über mobile.de).
+- **Test 2: Immobilienmakler.** Sehr hoher Kundenwert, klares Anfrageproblem (Eigentümer, die verkaufen wollen), aber noch keine Referenz.
 - **Nicht mehr als zwei gleichzeitig.** Bei kleinem Budget bekommt sonst keine Anzeige genug Daten. Hormozi: in einer Nische bleiben, bis man weiß, ob das Angebot dort zieht.
+
+## 13. Prüfung mit echten Zahlen (21.11.2026)
+
+Quelle: Search-Console-Daten aller 6 Kundenportale (Namen hier bewusst weggelassen), ausgewertet nach Tagen und Wochen. Bei keinem Kunden gibt es Daten von vor der Einrichtung.
+
+| Kunde | Daten seit | Was die Zahlen zeigen | Für die Garantie |
+|---|---|---|---|
+| Ästhetik-Praxis (Referenz) | 25.09.2026 (Relaunch schon im Juli) | Klicks ohne Firmennamen von ca. 285 auf ca. 609 pro 28 Tage in 5 Wochen = **2,1-fach**, nach 21 Ratgeber-Beiträgen Anfang Oktober. Gesamtklicks nur 1,6-fach, weil Klicks mit Firmennamen gleich blieben. | **Geschafft**, sogar schneller als 90 Tage |
+| Krankenfahrdienst | 13.09.2026 (Relaunch 09.07.) | Ca. 50 Klicks pro Woche, September bis Oktober flach (ohne Firmennamen 1,05-fach), letzte Oktoberwoche 108 | **Nicht messbar** (kein Wert vor Relaunch), danach ohne Inhaltsarbeit kein Wachstum |
+| Kolac Digital selbst | 29.04.2026 (SEO ab 01.05.) | Nach 90 Tagen (Juli) **nicht** verdoppelt, eher weniger. Ab August und deutlich ab Mitte Oktober 5-fach (3 auf 15 bis 18 Klicks pro Woche) | **Nach 90 Tagen verfehlt**, nach ca. 5 bis 6 Monaten weit übertroffen |
+| Kfz-Spezialbetrieb | 27.10.2026 | erst 5 Tage Daten | noch keine Aussage |
+| zwei weitere Kfz-Betriebe | keine Daten bzw. Neugründung | | keine Aussage |
+
+**Einschätzung:**
+- Verdoppeln ist machbar, aber **nicht von selbst**. Es kam bei der Ästhetik-Referenz durch gezielte Inhalte (Ratgeber, Behandlungs- und Ortsseiten). Eine neue Website allein (Krankenfahrdienst) reicht nicht. Die Betreuung muss in den ersten 90 Tagen Inhalte liefern, nicht nur pflegen.
+- 90 Tage sind eng. Bei Kolac selbst hätte die Garantie gegriffen. Das kostet dann aber nur ausgefallene Monatspauschalen, keine Rückzahlung: bei 2 bis 3 Monaten Verzug ca. 500 bis 750 €. Der Kunde bringt in 6 Monaten trotzdem ca. 4.200 bis 5.000 €.
+- Die Garantie ist also **immer haltbar** (wir arbeiten weiter), das Risiko ist rein wirtschaftlich und begrenzt.
+- Sicherungen, die wir eingebaut haben: Messung ohne Firmennamen (Muster der Referenz), Startwert-Grenze 300 Klicks, Mitwirkungspflichten, Inhaltsplan für die ersten 90 Tage.
+- **Pflicht für die Lieferung:** In den ersten 90 Tagen nach Livegang mindestens ca. 10 bis 20 neue Inhalte (Leistungs-, Orts- und Ratgeberseiten nach den Suchen der Region). Das ist bei der Ästhetik-Referenz der Hebel gewesen.
