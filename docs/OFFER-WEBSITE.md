@@ -1,6 +1,6 @@
 # OFFER-WEBSITE.md: Website-Neustart mit Doppel-Garantie
 
-Stand: 21.11.2026, **Entwurf, Preise und Garantie-Details noch nicht von Yusuf freigegeben.** Nach Hormozi ($100M Offers), Wissen im Skill `hormozi-wissen`. Baut auf `docs/OFFER.md` (Sichtbar in 90 Tagen) auf: gleiche Bausteine, neu gebündelt rund um die neue Website.
+Stand: 21.11.2026. **Von Yusuf entschieden:** 3.490 € + 249 €/Monat, zwei Garantien (nicht drei), Garantie 2 ohne zeitliche Grenze und gemessen an Klicks in der Search Console. **Offen:** Klicks gesamt oder ohne Firmennamen (Abschnitt 5), Startbranche (Abschnitt 12). Nach Hormozi ($100M Offers), Wissen im Skill `hormozi-wissen`. Baut auf `docs/OFFER.md` (Sichtbar in 90 Tagen) auf: gleiche Bausteine, neu gebündelt rund um die neue Website.
 
 ## 1. Für wen (Nische)
 
@@ -11,7 +11,7 @@ Stand: 21.11.2026, **Entwurf, Preise und Garantie-Details noch nicht von Yusuf f
   3. Der Schmerz ist stärker: Er hat schon einmal bezahlt und es bringt nichts. Hormozi: frühere Misserfolge erklären, dann glaubt man dem neuen Weg eher.
   4. Klarer Callout für Anzeigen: „Deine Website ist älter als ein Jahr und bringt keine Anfragen?“
 - **Nicht dafür:** Betriebe ohne Website (später eigenes, einfacheres Angebot, Hormozi: Unqualifizierte zu etwas Passendem schicken), Online-Shops, ausgebuchte Betriebe, wer keine 30 Minuten für ein Gespräch hat.
-- **Offen:** eine Branche zuerst? Hormozi würde eine wählen (Preis und Antwortquote steigen mit der Nische). Vorschlag: die Branche der besten Referenz.
+- **Branche:** nur Betriebe mit hohem Kundenwert und echtem Anfrageproblem. Vorschläge in Abschnitt 12.
 
 ## 2. Value Equation: heute vs. Neustart
 
@@ -56,15 +56,24 @@ Nach dem Gespräch bekommst du innerhalb von 7 Tagen den Entwurf deiner neuen St
 - Warum: senkt Risiko, Zeitverzug und Aufwand auf einmal. Der Kunde hat nach einer Woche etwas in der Hand (schneller emotionaler Erfolg).
 - Unser Risiko: einige Stunden für einen Entwurf. Schutz: nur nach Gespräch, nur für Betriebe, die zum Avatar passen.
 
-**Garantie 2, „Doppelt-gefunden-Garantie“ (Service-Garantie nach Hormozi):**
-Wirst du 90 Tage nach dem Livegang nicht doppelt so oft bei Google angezeigt wie vor dem Start, arbeiten wir ohne Monatspauschale weiter, bis es so ist.
-- Gemessen: Einblendungen in der Google-Suche (Search Console) plus Aufrufe des Google-Profils. Startwert: die 28 Tage vor Projektstart. Vergleich: Tag 63 bis 90 nach Livegang. Beides im Portal sichtbar.
-- Ab Livegang gerechnet, nicht ab Vertrag, weil Google eine umgezogene Seite erst neu einlesen muss.
-- Bedingungen (an den Erfolg gekoppelt, wie Hormozi empfiehlt): Zugänge innerhalb von 7 Tagen, Freigaben innerhalb von 5 Werktagen, aktiv um Bewertungen bitten, keine eigenen Änderungen an Website und Profil ohne Absprache.
-- Gilt nur, wenn wir sie nach dem kostenlosen Check schriftlich zusagen. Ist eine Seite schon stark, ist „verdoppeln“ nicht seriös, dann gibt es Garantie-Variante 50 % wie in `docs/OFFER.md`.
-- Keine Garantie auf Platzierungen oder Anzahl Anfragen.
+**Garantie 2, „Doppelt-gefunden-Garantie“ (Service-Garantie nach Hormozi, ohne zeitliche Grenze):**
+Bekommst du 90 Tage nach dem Livegang nicht doppelt so viele Klicks aus der Google-Suche wie vor dem Start, zahlst du keine Monatspauschale, und wir arbeiten weiter, bis es so ist.
 
-**Optional Garantie 3, Livegang-Garantie:** Live innerhalb von 30 Tagen nach Entwurfsfreigabe, sonst erster Monat Betreuung frei. (Nur nehmen, wenn 3 Garantien nicht zu viel wirken.)
+Spielregeln (so in Angebot und Vertrag):
+
+1. **Messgröße:** Klicks aus der Google-Suche laut Google Search Console, für die Domain des Kunden. Im Portal für beide Seiten sichtbar.
+   - **Offen, Vorschlag:** nur Klicks auf Suchen **ohne Firmennamen**. Grund: Wer den Firmennamen eintippt, kennt den Betrieb schon. Diese Klicks lassen sich kaum steigern und machen das Verdoppeln unnötig schwer. Klicks ohne Firmennamen sind genau die neuen Kunden, um die es geht. Nachteil: etwas mehr Erklärung im Gespräch. Achtung: Unsere beste Referenz hatte bei den Gesamtklicks 467 auf 888, also 1,9-fach, knapp unter dem Doppelten.
+2. **Startwert:** Durchschnitt der Klicks pro 28 Tage aus den 3 vollen Monaten vor Projektstart. Drei Monate statt einem, damit ein zufällig schwacher oder starker Monat das Ergebnis nicht verzerrt. Wird beim Projektstart als Zahl ins Angebot geschrieben.
+3. **Ziel:** In den 28 Tagen von Tag 63 bis Tag 90 nach Livegang mindestens das Doppelte des Startwerts.
+4. **Wenn das Ziel verfehlt ist:** Ab Tag 91 ruht die Monatspauschale. Die Betreuung läuft voll weiter. Wir prüfen jeden Monat die jeweils letzten 28 Tage. Sobald ein 28-Tage-Zeitraum das Doppelte erreicht, läuft die Pauschale ab dem Folgemonat wieder.
+5. **Voraussetzungen, damit die Garantie gilt:**
+   - Website seit mindestens 12 Monaten online, Search Console mit Daten der letzten 3 Monate (wir richten sie ein, falls nötig).
+   - Wir sagen die Garantie nach dem kostenlosen Check **schriftlich mit Startwert** zu. Ist eine Seite schon stark, ist Verdoppeln nicht seriös. Dann gibt es den Neustart ohne diese Garantie oder mit Ziel 50 % wie in `docs/OFFER.md`.
+   - Betriebe mit starker Saison (Winterloch o. Ä.) nur mit Vorjahresvergleich.
+6. **Mitwirkung (sonst erlischt die Garantie):** Zugänge innerhalb von 7 Tagen, Freigaben innerhalb von 5 Werktagen, aktiv um Bewertungen bitten (Bewertungs-Booster nutzen), keine eigenen Änderungen an Website und Google-Profil ohne Absprache, Domain und Betrieb bleiben gleich.
+7. **Ende:** Kündigt der Kunde, endet auch die Garantie. Keine Garantie auf Platzierungen oder Anzahl Anfragen.
+
+Ab Livegang gerechnet, nicht ab Vertrag, weil Google eine umgezogene Seite erst neu einlesen muss.
 
 Hinweis: Die genaue Formulierung muss in Angebot und Vertrag. Nach bestem Wissen formuliert, kein Anwalt hat geprüft.
 
@@ -78,7 +87,7 @@ Hinweis: Die genaue Formulierung muss in Angebot und Vertrag. Nach bestem Wissen
 | NFC-Bewertungsaufsteller für Theke oder Empfang | „Kaum Bewertungen“ | 79 € |
 | 12 Vorlagen für Google-Beiträge deiner Branche | „Was soll ich posten?“ | 120 € |
 
-## 7. Wertstapel und Preis (zur Entscheidung)
+## 7. Wertstapel und Preis (entschieden)
 
 | Baustein | Einzelwert |
 |---|---|
@@ -88,10 +97,9 @@ Hinweis: Die genaue Formulierung muss in Angebot und Vertrag. Nach bestem Wissen
 | Boni | 1.369 € |
 | **Gesamtwert** | **ca. 7.500 €** |
 
-**Preis-Vorschlag A (Empfehlung):** 2.990 € netto einmalig + 249 € netto im Monat, 6 Monate Mindestlaufzeit.
-**Preis-Vorschlag B (Hormozi: teuer sein):** 3.490 € + 249 €.
+**Preis:** 3.490 € netto einmalig + 249 € netto im Monat, 6 Monate Mindestlaufzeit ab Livegang. Kein Rabatt für Referenzen (Hormozi: Preis nie senken, lieber Wert dazulegen).
 
-**Zahlung (kundenfinanzierte Gewinnung):** 50 % bei Freigabe des Entwurfs, 50 % bei Livegang, Betreuung ab Livegang. Bei A kommen so ca. 3.240 € in den ersten rund 30 Tagen rein. Damit sind die Werbekosten pro Kunde mehrfach gedeckt, bevor die Monatsbeiträge laufen.
+**Zahlung (kundenfinanzierte Gewinnung):** 50 % (1.745 €) bei Freigabe des Entwurfs, 50 % bei Livegang, Betreuung ab Livegang. So kommen ca. 3.740 € in den ersten rund 30 Tagen rein. Damit sind die Werbekosten pro Kunde mehrfach gedeckt, bevor die Monatsbeiträge laufen.
 
 Rechnung für Anzeigen (Hormozi): Rohertrag der ersten 30 Tage × 2 wäre das Testbudget pro Anzeige. Das ist weit mehr, als nötig ist. Für den sparsamen Start legen wir eine viel engere Grenze fest (kommt im Werbeplan).
 
@@ -116,7 +124,28 @@ Rechnung für Anzeigen (Hormozi): Rohertrag der ersten 30 Tage × 2 wäre das Te
 
 ## 11. Ehrliche Risiken
 
-- Garantie 2 „bis erreicht“ ist unbegrenzt. Absicherung: nur nach Check zusagen, oder auf höchstens 6 weitere Monate begrenzen (Hormozis „modifizierte Service-Garantie“).
+- Garantie 2 ist bewusst unbegrenzt (Entscheidung Yusuf). Absicherung: nur nach Check mit Startwert schriftlich zusagen, klare Mitwirkungspflichten.
 - Ein Umzug kann kurzfristig Einblendungen kosten. Darum Umzugs-Schutz und Messung ab Livegang.
 - Saison: Betriebe mit starkem Winterloch (z. B. Gartenbau) verzerren den 28-Tage-Vergleich. Für sie Vorjahresvergleich oder keine Verdopplungs-Garantie.
 - 149 Instagram-Nachrichten brachten bisher 0 Antworten. Das spricht eher gegen den Kanal oder den Einstieg als gegen das Angebot, sollte aber bei den Anzeigen mitgedacht werden.
+
+## 12. Branchen (Vorschläge, Entscheidung offen)
+
+Prüffragen nach Hormozi (hungrige Menge): **1. Schmerz:** Fehlen wirklich Kunden oder Anfragen? **2. Kaufkraft:** Ist ein Neukunde mehrere hundert bis tausend Euro wert? **3. Erreichbar:** per Meta oder LinkedIn mit Ort und Branche ansprechbar? **4. Suchen Kunden bei Google lokal danach?** Dazu: Gibt es eine Referenz, und wie heikel ist das Werberecht?
+
+Ausgeschlossen: Friseure, Nagelstudios (zu niedriger Kundenwert), Handwerker (eigene Kategorie), Kassenpraxen, Steuerberater, Tierärzte, Physio (meist ausgebucht, also kein Anfrageproblem).
+
+| Branche | Wert eines Neukunden | Anfrageproblem? | Google-Suche lokal | Referenz / warmer Kontakt | Werberecht | Einschätzung |
+|---|---|---|---|---|---|---|
+| **Ästhetik** (ästhetische Praxen, medizinische Kosmetik, Laser, Kosmetikinstitute mit Selbstzahler-Behandlungen) | hoch, Behandlungen wiederholen sich alle paar Monate | ja, starker Wettbewerb, viele neue Anbieter | ja („Faltenbehandlung Bielefeld“, „Laser Haarentfernung …“) | **beste Referenz** (467 auf 888 Klicks, 3× Einblendungen) | HWG beachten: keine Werbung für verschreibungspflichtige Mittel, keine Vorher-Nachher-Bilder, keine Ergebnisgarantien. Kennen wir schon. | **Start-Branche** |
+| **Zahnärzte mit Selbstzahler-Leistungen** (Implantate, Aligner, Bleaching) | sehr hoch | ja für Selbstzahler, nein für Kassenpatienten | ja | keine | HWG und Berufsrecht | Test 2, nur wenn sie Selbstzahler suchen |
+| **Immobilienmakler** | sehr hoch (Provision je Verkauf) | ja, Eigentümer-Anfragen sind knapp | ja („Haus verkaufen Bielefeld“, „Makler …“) | keine | unkritisch | Test 2, stark |
+| **Autohäuser und freie Kfz-Werkstätten** | hoch | oft ja (Werkstatt, Ankauf) | ja | Pader Automobilzentrum, wagenpuls-Kontakte (warm) | unkritisch | Test 2, warm erreichbar |
+| **Gebäudereinigung und Facility-Dienste** | hoch (Daueraufträge) | ja, Firmenkunden fehlen | ja (B2B) | acko (Interessent) | unkritisch | eher LinkedIn |
+| **Rechtsanwälte** (Familien-, Arbeits-, Verkehrsrecht) | hoch | je nach Kanzlei | ja | keine | Berufsrecht, eher sachlich | später |
+| **Hörakustiker, Augenlaser, Privatpraxen** | hoch | gemischt | ja | keine | HWG | später |
+
+**Empfehlung:**
+- **Start: Ästhetik.** Dort haben wir den stärksten Beweis, und Beweis ist Hormozis Hebel „Erfolgswahrscheinlichkeit“. Callout: „Ästhetik-Praxen in OWL: Eure Website ist älter als ein Jahr und bringt kaum neue Patientinnen?“
+- **Parallel eine zweite Branche als kleiner Test,** mit eigener Anzeige und eigenem Callout. Vorschlag: Immobilienmakler (sehr hoher Kundenwert, klares Anfrageproblem) oder Autohäuser/Werkstätten (warme Kontakte vorhanden).
+- **Nicht mehr als zwei gleichzeitig.** Bei kleinem Budget bekommt sonst keine Anzeige genug Daten. Hormozi: in einer Nische bleiben, bis man weiß, ob das Angebot dort zieht.
