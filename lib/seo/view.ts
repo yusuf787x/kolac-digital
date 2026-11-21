@@ -174,6 +174,8 @@ export function buildEstimate(
   estimate: SeoClient['estimate'],
   withData: Set<SeoMonth>,
   totalsByMonth: Map<SeoMonth, SeoMetrics>,
+  /** Tage mit Tageswerten je Monat, um angebrochene Messmonate zu erkennen. */
+  daysByMonth: Map<SeoMonth, number> = new Map(),
 ): PortalEstimate | null {
   const pts = [...(estimate?.points ?? [])].sort((a, b) => a.month.localeCompare(b.month));
   const until = [...withData].sort()[0];
@@ -183,8 +185,11 @@ export function buildEstimate(
   const firstNonZero = before.findIndex((p) => p.visitors > 0);
   before = firstNonZero === -1 ? [] : before.slice(firstNonZero);
   if (!before.length) return null;
+  // Vergleich nur mit vollen Messmonaten: nicht der erste (Messung beginnt meist mitten im
+  // Monat) und keiner mit weniger als 25 Tageswerten, falls Tageswerte vorliegen.
+  const fullMonth = (m: SeoMonth) => m !== until && (daysByMonth.get(m) ?? 31) >= 25;
   const overlap = pts
-    .filter((p) => withData.has(p.month) && p.visitors > 0 && (totalsByMonth.get(p.month)?.clicks ?? 0) > 0)
+    .filter((p) => withData.has(p.month) && fullMonth(p.month) && p.visitors > 0 && (totalsByMonth.get(p.month)?.clicks ?? 0) > 0)
     .sort((a, b) => b.month.localeCompare(a.month))[0];
   return {
     points: before.map((p) => ({ month: p.month, visitors: p.visitors })),
@@ -404,6 +409,7 @@ export function buildPortalData(input: BuildInput): PortalData {
       client.estimate,
       withData,
       new Map(input.months.filter((m) => withData.has(m.month)).map((m) => [m.month, m.totals])),
+      new Map(input.months.filter((m) => m.daily?.length).map((m) => [m.month, m.daily!.length])),
     ),
   };
 

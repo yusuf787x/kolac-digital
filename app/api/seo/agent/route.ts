@@ -255,6 +255,7 @@ async function estimateAction(client: SeoClient, force: boolean) {
     { source: 'dataforseo', points },
     withData,
     new Map(monthDocs.filter((m) => withData.has(m.month)).map((m) => [m.month, m.totals])),
+    new Map(monthDocs.filter((m) => m.daily?.length).map((m) => [m.month, m.daily!.length])),
   );
   return NextResponse.json({
     ok: true,
