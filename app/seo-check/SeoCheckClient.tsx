@@ -11,6 +11,7 @@ import {
 } from '@/lib/seo-check/types';
 import {
   BRANCHEN,
+  SHOW_MEASURE_CONSENT,
   VSL_VIDEO_URL,
   WEBSITE_ALTER,
   type Branche,
@@ -337,7 +338,6 @@ function Report({
   const [copied, setCopied] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState(false);
   const bookingRef = useRef<HTMLDivElement>(null);
-  const lockedMeasures = r.measures.filter((m) => !m.title).length;
 
   // Nach dem Freischalten direkt zum Termin-Block springen.
   useEffect(() => {
@@ -404,7 +404,7 @@ function Report({
         </div>
 
         {/* Kennzahlen */}
-        {(r.rankings.available || r.pagespeed.available) && (
+        {data.unlocked && (r.rankings.available || r.pagespeed.available) && (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {r.rankings.available && (
               <>
@@ -419,45 +419,37 @@ function Report({
           </div>
         )}
 
-        {/* Massnahmen */}
-        <div className="rounded-[24px] border border-[#e5e7eb] p-4 sm:p-6 md:p-8">
-          <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-[var(--color-black)]">Deine 5 wichtigsten Maßnahmen</h2>
-          <p className="mt-1 text-[15px] text-[var(--color-gray)]">Sortiert nach dem, was dir bei Google am meisten bringt.</p>
-          <ol className="mt-6 space-y-4">
-            {r.measures.map((m, i) =>
-              !m.title ? (
-                <li key={`gesperrt-${i}`} className="flex gap-4">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-offwhite)] text-[15px] font-bold text-[var(--color-gray)]">
+        {/* Massnahmen (freigeschaltet) bzw. Vorschau mit Formular (gesperrt) */}
+        {data.unlocked ? (
+          <div className="rounded-[24px] border border-[#e5e7eb] p-4 sm:p-6 md:p-8">
+            <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-[var(--color-black)]">Deine 5 wichtigsten Maßnahmen</h2>
+            <p className="mt-1 text-[15px] text-[var(--color-gray)]">Sortiert nach dem, was dir bei Google am meisten bringt.</p>
+            <ol className="mt-6 space-y-4">
+              {r.measures.map((m, i) => (
+                <li key={m.title || i} className="flex gap-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-blue)] text-[15px] font-bold text-white">
                     {i + 1}
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[17px] font-semibold text-[var(--color-gray)]">Maßnahme {i + 1}</p>
-                    <p className="mt-1 text-[15px] text-[var(--color-gray)]">Wird nach dem Freischalten angezeigt.</p>
+                  <div className="min-w-0">
+                    <p className="text-[17px] font-semibold text-[var(--color-black)]">{m.title}</p>
+                    <p className="mt-1 text-[15px] leading-relaxed text-[var(--color-gray)]">{m.why}</p>
+                    {m.how && (
+                      <p className="mt-2 rounded-[12px] bg-[var(--color-offwhite)] px-3 py-2 text-[15px] text-[var(--color-black)]">
+                        <span className="font-semibold">So geht&apos;s: </span>
+                        {m.how}
+                      </p>
+                    )}
                   </div>
                 </li>
-              ) : (
-              <li key={m.title} className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-blue)] text-[15px] font-bold text-white">
-                  {i + 1}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[17px] font-semibold text-[var(--color-black)]">{m.title}</p>
-                  <p className="mt-1 text-[15px] leading-relaxed text-[var(--color-gray)]">{m.why}</p>
-                  {data.unlocked && m.how && (
-                    <p className="mt-2 rounded-[12px] bg-[var(--color-offwhite)] px-3 py-2 text-[15px] text-[var(--color-black)]">
-                      <span className="font-semibold">So geht&apos;s: </span>
-                      {m.how}
-                    </p>
-                  )}
-                </div>
-              </li>
-              ),
-            )}
-          </ol>
-          {!data.unlocked && (
+              ))}
+            </ol>
+          </div>
+        ) : (
+          <div className="rounded-[24px] border border-[#e5e7eb] p-4 sm:p-6 md:p-8">
+            <LockedTeaser result={r} />
             <UnlockForm
               id={data.id}
-              lockedMeasures={lockedMeasures}
+              measureCount={r.measures.length}
               defaultBranche={variant?.defaultBranche}
               landing={variant ? `/seo-check/${variant.slug}` : '/seo-check'}
               onUnlocked={(d) => {
@@ -465,8 +457,8 @@ function Report({
                 onUpdate(d);
               }}
             />
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Suchbegriffe (nur freigeschaltet) */}
         {data.unlocked && r.rankings.available && (r.rankings.top.length > 0 || r.rankings.potentials.length > 0) && (
@@ -484,12 +476,10 @@ function Report({
           </div>
         )}
 
-        {/* Alle Pruefpunkte */}
+        {/* Alle Pruefpunkte (nur freigeschaltet) */}
+        {data.unlocked && (
         <div>
           <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-[var(--color-black)]">Alle Prüfpunkte</h2>
-          {!data.unlocked && (
-            <p className="mt-1 text-[15px] text-[var(--color-gray)]">Was genau wir gefunden haben, siehst du nach dem Freischalten oben.</p>
-          )}
           <div className="mt-4 space-y-3">
             {CATEGORY_ORDER.map((cat) => {
               const items = r.checks.filter((c) => c.category === cat);
@@ -498,6 +488,7 @@ function Report({
             })}
           </div>
         </div>
+        )}
 
         {/* Abschluss */}
         <div className="rounded-[24px] bg-[var(--color-black)] p-6 md:p-10 text-white">
@@ -576,22 +567,6 @@ function KeywordTable({ title, hint, rows }: { title: string; hint: string; rows
 
 function CheckGroup({ cat, items, unlocked, score }: { cat: CheckCategory; items: CheckItem[]; unlocked: boolean; score: number | null }) {
   const problems = items.filter((c) => c.status === 'fail' || c.status === 'warn').length;
-  if (!unlocked) {
-    // Vor dem Freischalten nur die Anzahl, die Details kommen gegen Kontaktdaten.
-    const fails = items.filter((c) => c.status === 'fail').length;
-    const warns = items.filter((c) => c.status === 'warn').length;
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[#e5e7eb] bg-white p-5">
-        <span className="text-[17px] font-semibold text-[var(--color-black)]">{CATEGORY_LABELS[cat]}</span>
-        <span className="flex flex-wrap items-center gap-2 text-[13px]">
-          {fails > 0 && <span className={`rounded-full px-2.5 py-0.5 font-semibold ${STATUS_STYLE.fail.cls}`}>{fails} {fails === 1 ? 'Problem' : 'Probleme'}</span>}
-          {warns > 0 && <span className={`rounded-full px-2.5 py-0.5 font-semibold ${STATUS_STYLE.warn.cls}`}>{warns} verbesserbar</span>}
-          {problems === 0 && <span className="text-[var(--color-gray)]">Alles in Ordnung</span>}
-          {score !== null && <span className="font-semibold text-[var(--color-black)]">{score}/100</span>}
-        </span>
-      </div>
-    );
-  }
   return (
     <details className="group rounded-[18px] border border-[#e5e7eb] bg-white" open={problems > 0 && cat !== 'technik'}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5">
@@ -626,6 +601,62 @@ function CheckGroup({ cat, items, unlocked, score }: { cat: CheckCategory; items
 }
 
 type FieldKey = 'name' | 'email' | 'phone' | 'branche' | 'business';
+
+function LockedTeaser({ result }: { result: SeoCheckResponse['result'] }) {
+  const top = result.checks.find((c) => c.title);
+  const others = result.checks.filter((c) => c !== top && (c.status === 'fail' || c.status === 'warn'));
+  const urgent = others.filter((c) => c.status === 'fail').length;
+  const measures = result.measures.length;
+  return (
+    <div>
+      <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-[var(--color-black)]">Der wichtigste Befund</h2>
+      {top ? (
+        <div className="mt-4 flex gap-3 rounded-[18px] bg-[var(--color-offwhite)] p-4 md:p-5">
+          <span className={`mt-0.5 h-fit shrink-0 rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${STATUS_STYLE[top.status].cls}`}>
+            {STATUS_STYLE[top.status].label}
+          </span>
+          <div className="min-w-0">
+            <p className="text-[17px] font-semibold text-[var(--color-black)]">{top.title}</p>
+            <p className="mt-1 break-words text-[15px] leading-relaxed text-[var(--color-gray)]">{top.detail}</p>
+          </div>
+        </div>
+      ) : (
+        <p className="mt-3 text-[15px] text-[var(--color-gray)]">Wir haben keine großen Probleme gefunden. Die Details stehen im vollständigen Bericht.</p>
+      )}
+
+      {(others.length > 0 || measures > 0) && (
+        <div className="mt-6">
+          <p className="text-[17px] font-semibold text-[var(--color-black)]">
+            {others.length > 0
+              ? `${others.length} weitere ${others.length === 1 ? 'Befund' : 'Befunde'}${urgent > 0 ? `, davon ${urgent} dringend` : ''}`
+              : 'Dein vollständiger Bericht'}
+          </p>
+          <p className="mt-1 text-[15px] text-[var(--color-gray)]">
+            {measures > 0 ? `Dazu deine ${measures} wichtigsten Maßnahmen mit Anleitung und deine Suchbegriffe bei Google.` : 'Dazu deine Suchbegriffe bei Google.'}
+          </p>
+          <div className="relative mt-4 overflow-hidden rounded-[18px] border border-[#e5e7eb]" aria-hidden="true">
+            <ul className="select-none blur-[5px]">
+              {Array.from({ length: Math.min(Math.max(others.length, 3), 4) }).map((_, i) => (
+                <li key={i} className="flex gap-3 border-b border-[#f0f0f2] px-5 py-4 last:border-b-0">
+                  <span className={`h-5 w-16 shrink-0 rounded-full ${i < urgent ? 'bg-[var(--color-fail-bg)]' : 'bg-[var(--color-warn-bg)]'}`} />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 w-2/5 rounded bg-[#d9dbe0]" />
+                    <div className="h-3 w-4/5 rounded bg-[#e8e9ed]" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="absolute inset-0 flex items-center justify-center bg-white/40">
+              <span className="rounded-full bg-white px-4 py-2 text-[13px] font-semibold text-[var(--color-black)] shadow-[var(--shadow-sm)]">
+                Gesperrt bis zum Freischalten
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function BookingBlock() {
   return (
@@ -705,13 +736,13 @@ function Choice<T extends string>({
 
 function UnlockForm({
   id,
-  lockedMeasures,
+  measureCount,
   defaultBranche,
   landing,
   onUnlocked,
 }: {
   id: string;
-  lockedMeasures: number;
+  measureCount: number;
   defaultBranche?: Branche;
   landing: string;
   onUnlocked: (d: SeoCheckResponse) => void;
@@ -723,6 +754,7 @@ function UnlockForm({
   const [websiteAlter, setWebsiteAlter] = useState<WebsiteAlter | ''>('');
   const [business, setBusiness] = useState(false);
   const [wantsCall, setWantsCall] = useState(false);
+  const [measureConsent, setMeasureConsent] = useState(false);
   const [website, setWebsite] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<{ field?: FieldKey; message: string } | null>(null);
@@ -755,7 +787,17 @@ function UnlockForm({
       const res = await fetch(`/api/seo-check/${encodeURIComponent(id)}/unlock`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, branche, websiteAlter: websiteAlter || undefined, business, wantsCall, website }),
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          branche,
+          websiteAlter: websiteAlter || undefined,
+          business,
+          wantsCall,
+          measureConsent: SHOW_MEASURE_CONSENT ? measureConsent : undefined,
+          website,
+        }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -789,10 +831,10 @@ function UnlockForm({
   return (
     <form onSubmit={submit} noValidate className="mt-8 rounded-[18px] bg-[var(--color-blue-light)] p-4 md:p-6">
       <p className="text-[17px] font-semibold text-[var(--color-black)]">
-        {lockedMeasures > 0 ? `Die nächsten ${lockedMeasures} Maßnahmen und alle Details freischalten` : 'So setzt du die Maßnahmen um'}
+        {measureCount > 0 ? `Alle Befunde und deine ${measureCount} Maßnahmen freischalten` : 'Deinen vollständigen Bericht freischalten'}
       </p>
       <p className="mt-1 text-[15px] text-[var(--color-gray)]">
-        Du bekommst den vollständigen Bericht: alle Maßnahmen mit Anleitung, was wir bei jedem Prüfpunkt gefunden haben, und deine
+        Du bekommst den vollständigen Bericht: was wir bei jedem Prüfpunkt gefunden haben, deine Maßnahmen mit Anleitung und deine
         Suchbegriffe bei Google. Den Link schicken wir dir zusätzlich per Mail.
       </p>
 
@@ -906,6 +948,18 @@ function UnlockForm({
         <input type="checkbox" checked={wantsCall} onChange={(e) => setWantsCall(e.target.checked)} className="mt-1 h-4 w-4 accent-[var(--color-blue)]" />
         Ruf mich an und geh das Ergebnis 15 Minuten mit mir durch (kostenlos).
       </label>
+      {SHOW_MEASURE_CONSENT && (
+        <label className="mt-3 flex cursor-pointer items-start gap-3 text-[15px] text-[var(--color-black)]">
+          <input
+            type="checkbox"
+            checked={measureConsent}
+            onChange={(e) => setMeasureConsent(e.target.checked)}
+            className="mt-1 h-4 w-4 accent-[var(--color-blue)]"
+          />
+          {/* Text wird mit der Datenschutzerklärung abgestimmt, sobald die Erfolgsmessung kommt. */}
+          Erfolgsmessung an Meta erlauben (optional).
+        </label>
+      )}
       <div className="hidden" aria-hidden="true">
         <label>
           Website (nicht ausfüllen)

@@ -82,6 +82,8 @@ export interface StoredLead {
   business?: boolean;
   /** Herkunft aus Anzeigen, vom Check übernommen. */
   source?: LeadSource;
+  /** Einwilligung in die Erfolgsmessung an Meta (Häkchen, noch ausgeblendet). */
+  measureConsent?: boolean;
 }
 
 export interface StoredCheck {

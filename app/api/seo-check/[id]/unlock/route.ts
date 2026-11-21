@@ -29,6 +29,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     branche?: string;
     websiteAlter?: string;
     business?: boolean;
+    /** Optionales Häkchen „Erfolgsmessung an Meta“ (im Formular noch ausgeblendet). */
+    measureConsent?: boolean;
   };
 
   const stored = await loadCheck(id).catch(() => null);
@@ -76,6 +78,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     websiteAlter,
     business: true,
     source: stored.source,
+    ...(body.measureConsent === true ? { measureConsent: true } : {}),
   };
   const firstUnlock = !stored.lead;
   await saveLead(id, lead);

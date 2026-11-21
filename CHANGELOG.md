@@ -12,7 +12,7 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 | Status | Änderung | Nutzen | Nachweis |
 |---|---|---|---|
-| ✅ | Kostenloser SEO-Check: Gesamtnote, Kennzahlen und die ersten zwei Maßnahmen sind sofort sichtbar, den vollständigen Bericht gibt es gegen Name, E-Mail, Telefonnummer und Branche | Wer den Check macht, kann direkt zu seinem Ergebnis beraten werden | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Kostenloser SEO-Check: Gesamtnote, die Noten der vier Bereiche und der wichtigste Befund sind sofort sichtbar, alle weiteren Befunde, Maßnahmen und Suchbegriffe gibt es gegen Name, E-Mail, Telefonnummer und Branche | Wer den Check macht, kann direkt zu seinem Ergebnis beraten werden | [SEO-Check](https://www.kolac-digital.de/seo-check) |
 | ✅ | Nach dem Freischalten steht oben ein Block, um direkt ein kostenloses Gespräch zu buchen oder anzurufen | Interessenten kommen ohne Umweg zum Termin | [SEO-Check](https://www.kolac-digital.de/seo-check) |
 | ✅ | Eigene Check-Seiten für Werkstätten und für Makler in OWL, gedacht für Anzeigen und nicht bei Google gelistet | Anzeigen führen auf eine Seite, die genau zur Branche passt | [Werkstätten](https://www.kolac-digital.de/seo-check/werkstatt) [Makler](https://www.kolac-digital.de/seo-check/makler) |
 

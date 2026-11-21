@@ -898,28 +898,46 @@ const EVERGREEN_MEASURES: Measure[] = [
 ];
 
 /** Entfernt die Loesungen, solange der Bericht nicht freigeschaltet ist. */
-/** Wie viele Maßnahmen Besucher vor dem Freischalten vollständig sehen. */
-export const TEASER_MEASURES = 2;
+const STATUS_RANK: Record<string, number> = { fail: 0, warn: 1 };
 
 /**
- * Öffentliche Ansicht vor dem Freischalten: Gesamtnote, Kategorien und
- * Kennzahlen bleiben, dazu die ersten Maßnahmen (ohne Anleitung). Weitere
- * Maßnahmen, alle Prüfpunkte im Detail und die Suchbegriffe gibt es erst
- * gegen Kontaktdaten. Gesperrte Einträge bleiben als leere Hüllen erhalten,
- * damit die Seite zeigen kann, wie viel noch kommt.
+ * Der wichtigste Befund: zuerst Probleme, dann Verbesserbares, jeweils
+ * nach Gewicht. Null, wenn nichts zu verbessern ist.
+ */
+export function topFindingId(result: SeoCheckResult): string | null {
+  const open = result.checks
+    .map((c, i) => ({ c, i }))
+    .filter(({ c }) => c.status === 'fail' || c.status === 'warn')
+    .sort((x, y) => STATUS_RANK[x.c.status] - STATUS_RANK[y.c.status] || y.c.weight - x.c.weight || x.i - y.i);
+  return open[0]?.c.id ?? null;
+}
+
+/**
+ * Öffentliche Ansicht vor dem Freischalten. Sichtbar: Gesamtnote, Noten der
+ * Bereiche und der wichtigste Befund als Satz (ohne Lösung). Gesperrt und
+ * hier serverseitig entfernt: alle anderen Prüfpunkte, alle Maßnahmen und
+ * Lösungen, Suchbegriffe, Platzierungen, Kennzahlen und Ladezeit-Wertung.
+ * Gesperrte Prüfpunkte bleiben als leere Hüllen mit Status erhalten, damit
+ * die Seite „12 weitere Befunde, davon 5 dringend“ zählen kann.
  */
 export function redactResult(result: SeoCheckResult): SeoCheckResult {
+  const top = topFindingId(result);
   return {
     ...result,
-    checks: result.checks.map(({ fix: _fix, ...rest }) => ({ ...rest, title: '', detail: '' })),
-    measures: result.measures.map((m, i) =>
-      i < TEASER_MEASURES ? { ...m, how: '' } : { ...m, title: '', why: '', how: '' },
+    checks: result.checks.map(({ fix: _fix, ...rest }) =>
+      rest.id === top ? rest : { ...rest, title: '', detail: '' },
     ),
+    measures: result.measures.map((m) => ({ ...m, title: '', why: '', how: '' })),
     rankings: {
-      ...result.rankings,
-      error: undefined,
+      available: result.rankings.available,
+      total: 0,
+      top3: 0,
+      top10: 0,
+      top20: 0,
+      estTraffic: 0,
       top: [],
       potentials: [],
     },
+    pagespeed: { available: result.pagespeed.available },
   };
 }
