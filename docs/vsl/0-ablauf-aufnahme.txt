@@ -32,8 +32,3 @@ DATEIEN
 Leg die Aufnahmen in einen Ordner, zum Beispiel:
 ~/Documents/Code/internal/kolac-content/3-aufnahmen/vsl-und-ads-2026-11/
 Dann sag mir Bescheid, ich schneide.
-
-NOCH EINSTELLEN (2 Minuten)
-Im Video bittest du die Leute, bei der Terminbuchung ihre Stadt dazuzuschreiben.
-Dafür in Google Kalender bei deiner Terminbuchungsseite ein Feld ergänzen:
-„In welcher Stadt sollen dich deine Kunden finden?“
