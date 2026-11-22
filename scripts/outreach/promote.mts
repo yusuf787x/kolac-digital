@@ -6,7 +6,7 @@
  *   OUTREACH_STORE=staging npx tsx scripts/outreach/promote.mts [--probe]   (--probe: nur zaehlen, nichts verschieben)
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { MAIN_STORE, REJECTED, STORE, hasNeed, hostOf, loadLeads, saveLeads } from './store.mts';
+import { clientConflict, MAIN_STORE, REJECTED, SKIP_NEW, STORE, hasNeed, hostOf, loadLeads, saveLeads } from './store.mts';
 
 if (STORE === MAIN_STORE) throw new Error('OUTREACH_STORE=<name> angeben, z. B. staging.');
 const STAGING_STORE = STORE;
@@ -16,11 +16,13 @@ const staging = loadLeads(STAGING_STORE);
 const main = loadLeads(MAIN_STORE);
 const rejected = new Set<string>(existsSync(REJECTED) ? JSON.parse(readFileSync(REJECTED, 'utf8')) : []);
 
-const ready = staging.filter((l) => l.scan && l.instagram && hasNeed(l));
+// Neue Friseure/Nagelstudios und Konkurrenz neben Bestandskunden gleich verwerfen
+const blocked = (l: (typeof staging)[number]) => SKIP_NEW.test(`${l.category ?? ''} ${l.name}`) || !!clientConflict(l);
+const ready = staging.filter((l) => !blocked(l) && l.scan && l.instagram && hasNeed(l));
 // Noch nicht geprueft oder Instagram-Suche noch nicht gelaufen (z. B. Guthaben leer): bleibt liegen
-const waiting = staging.filter((l) => !l.scan || (hasNeed(l) && !l.instagram && !l.igSearchedAt));
+const waiting = staging.filter((l) => !blocked(l) && (!l.scan || (hasNeed(l) && !l.instagram && !l.igSearchedAt)));
 const drop = staging.filter((l) => !ready.includes(l) && !waiting.includes(l));
-const reasons = { 'kein Bedarf': drop.filter((l) => !hasNeed(l)).length, 'kein Instagram': drop.filter((l) => hasNeed(l) && !l.instagram).length };
+const reasons = { 'Branche oder Kundenabstand': drop.filter(blocked).length, 'kein Bedarf': drop.filter((l) => !blocked(l) && !hasNeed(l)).length, 'kein Instagram': drop.filter((l) => !blocked(l) && hasNeed(l) && !l.instagram).length };
 console.log(`Übernehmen: ${ready.length}, verwerfen: ${drop.length} (${Object.entries(reasons).map(([k, v]) => `${k} ${v}`).join(', ')}), noch offen (nicht geprüft oder nicht gesucht): ${waiting.length}`);
 if (probe) process.exit(0);
 

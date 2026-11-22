@@ -7,7 +7,7 @@
  * Doppelte Betriebe (gleiche Maps-ID oder gleiche Website) werden
  * uebersprungen, bereits angeschriebene bleiben unberuehrt.
  */
-import { EXCLUDE_NAMES, knownKeys, loadEnv, loadLeads, saveLeads, slug, type Lead } from './store.mts';
+import { clientConflict, EXCLUDE_NAMES, knownKeys, SKIP_NEW, loadEnv, loadLeads, saveLeads, slug, type Lead } from './store.mts';
 
 interface MapsItem {
   type?: string;
@@ -70,6 +70,7 @@ const leads = loadLeads();
 const known = knownKeys();
 const now = new Date().toISOString();
 let added = 0;
+let skipped = 0;
 
 for (const it of items) {
   const id = it.cid ? `cid-${it.cid}` : `n-${slug(`${it.title}-${it.address ?? stadt}`)}`;
@@ -82,6 +83,15 @@ for (const it of items) {
   // Instagram- oder Facebook-Seite als "Website" eingetragen: als Handle merken, nicht als Website
   const social = host && /(^|\.)(instagram|facebook)\.com$/.test(host);
   if (known.has(id) || (host && !social && known.has(host)) || EXCLUDE_NAMES.test(it.title!)) continue;
+  // Keine neuen Friseure/Nagelstudios, keine Konkurrenz direkt neben Bestandskunden
+  if (SKIP_NEW.test(`${it.category ?? ''} ${it.title}`)) {
+    skipped++;
+    continue;
+  }
+  if (clientConflict({ category: it.category, name: it.title!, query: keyword, city: it.address_info?.city ?? stadt, address: it.address })) {
+    skipped++;
+    continue;
+  }
   const lead: Lead = {
     id,
     name: it.title!,
@@ -107,6 +117,6 @@ for (const it of items) {
 saveLeads(leads);
 const withSite = items.filter((i) => i.url && !/instagram|facebook/.test(i.url)).length;
 console.log(
-  `${keyword}: ${items.length} Treffer, ${added} neu aufgenommen (${withSite} mit Website). ` +
+  `${keyword}: ${items.length} Treffer, ${added} neu aufgenommen (${withSite} mit Website, ${skipped} wegen Branche oder Kundenabstand übersprungen). ` +
     `Gesamt in der Liste: ${leads.length}. Kosten: ${json.cost ?? '?'} $`,
 );

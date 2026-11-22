@@ -126,6 +126,39 @@ export function knownKeys(): Set<string> {
 /** Bestandskunden und laufende Interessenten nie anschreiben. */
 export const EXCLUDE_NAMES = /bacara|paderpuls|pader\s*automobil|acko|mk[\s-]*automobile|mironi|car\s*-?hifi|hifi\.halim|mc[\s-]*autopflege|motorenfachmann|fahrschule kreuzer|af-geb(ae|ä)udeservice/i;
 
+/** Friseure und Nagelstudios nicht mehr neu aufnehmen (Yusuf, 22.11.2026). Schon vorhandene bleiben. */
+export const SKIP_NEW = /friseur|barb(er|ier)|hair ?salon|haarstudio|coiffeur|hairdresser|nagel|nail/i;
+
+/**
+ * Abstand nur zu Bestandskunden aus dem Portfolio (Yusuf, 22.11.2026): kein direkter Konkurrent
+ * derselben Branche im gleichen Ort oder im direkten Nachbarort. Locker gemeint, Outreach-Betriebe
+ * untereinander duerfen nebeneinander liegen. Orte klein geschrieben.
+ */
+const CLIENT_ZONES: { client: string; branch: RegExp; cities: string[] }[] = [
+  {
+    client: 'MC-Autopflege (Herford)',
+    branch: /aufbereit|folier|detailing|car wash|autopflege|keramikversiegel|wrap/i,
+    cities: ['herford', 'hiddenhausen', 'enger'],
+  },
+  {
+    client: 'Motorenfachmann (Lage)',
+    branch: /kfz|motoren|motorinstand|autowerkstatt|autoservice|car repair|auto repair/i,
+    cities: ['lage', 'detmold'],
+  },
+  {
+    client: 'Bacara (Ästhetik Bielefeld)',
+    branch: /ästhet|aesthet|medical spa|skin care clinic|dermatolog|faltenbehandlung|botox|hyaluron/i,
+    cities: ['bielefeld'],
+  },
+];
+
+/** Name des Bestandskunden, dem der Betrieb Konkurrenz macht, sonst undefined. */
+export function clientConflict(l: Pick<Lead, 'category' | 'name' | 'query' | 'city' | 'address'>): string | undefined {
+  const what = `${l.category ?? ''} ${l.name} ${l.query ?? ''}`;
+  const where = `${l.city ?? ''} | ${l.address ?? ''}`.toLowerCase();
+  return CLIENT_ZONES.find((z) => z.branch.test(what) && z.cities.some((c) => (l.city ?? '').toLowerCase() === c || where.includes(` ${c},`) || where.includes(` ${c} `)))?.client;
+}
+
 /**
  * Hat der Betrieb echten Bedarf? Keine eigene Website zaehlt immer. Bei Terminbranchen
  * (Beauty, Friseur, Wellness) reicht die fehlende Online-Buchung, sonst braucht es mehr.

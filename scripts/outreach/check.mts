@@ -12,7 +12,7 @@
  * Je Betrieb:
  * 1. Instagram nur behalten, wenn Yusuf es eingetragen hat oder die Website des
  *    Betriebs genau dieses Profil verlinkt. Verlinkt sie ein anderes, gilt das.
- *    Sonst wie „Kein Instagram“: Ansprache per Mail (direkt per API, Aktion "instagram").
+ *    Sonst raus (ausgeschlossen). Keine Mails, nur Instagram (Yusuf, 22.11.2026).
  * 2. SEO-Check mit Google-Daten (lib/seo-check, ca. 2 Cent): Punktzahl, Ladezeit,
  *    Platzierungen, HTTPS richtig geprueft. Die Funde ersetzen die grobe Schaetzung.
  * 3. DM und Nachfassen neu schreiben (nur wenn Instagram bleibt).
@@ -126,6 +126,8 @@ async function setInstagram(updates: { id: string; instagram: string | null }[])
 
 const igUpdates: { id: string; instagram: string | null }[] = [];
 const toExclude: { id: string; reason: string }[] = [];
+// Ohne bestaetigtes Instagram kein Kontakt: Mails schickt Yusuf nicht (rechtlich heikel)
+const NO_IG = 'Kein bestätigtes Instagram (keine Mails)';
 const report: string[] = [];
 let cost = 0;
 const queue = [...todo];
@@ -146,7 +148,8 @@ async function one(lead: Lead) {
       delete lead.ig;
       igUpdates.push({ id: lead.id, instagram: handles[0] });
     } else {
-      notes.push(`Instagram @${lead.instagram} nicht auf der Website, raus → per Mail`);
+      notes.push(`Instagram @${lead.instagram} nicht auf der Website, ausgeschlossen`);
+      toExclude.push({ id: lead.id, reason: NO_IG });
       igUpdates.push({ id: lead.id, instagram: null });
       lead.igRejected = lead.instagram;
       delete lead.instagram;
@@ -156,7 +159,8 @@ async function one(lead: Lead) {
     }
   } else if (!lead.website && lead.instagram && lead.igSource === 'suche') {
     // Ohne Website laesst sich nichts gegenpruefen: lieber raus
-    notes.push(`Instagram @${lead.instagram} nur aus der Google-Suche, ohne Website nicht prüfbar, raus → per Mail`);
+    notes.push(`Instagram @${lead.instagram} nur aus der Google-Suche, ohne Website nicht prüfbar, ausgeschlossen`);
+    toExclude.push({ id: lead.id, reason: NO_IG });
     igUpdates.push({ id: lead.id, instagram: null });
     lead.igRejected = lead.instagram;
     delete lead.instagram;
