@@ -278,7 +278,7 @@ const NEARBY = [
   'oerlinghausen', 'leopoldshöhe', 'halle (westf', 'halle westf', 'werther', 'steinhagen', 'versmold', 'borgholzhausen',
   'delbrück', 'salzkotten', 'bad lippspringe', 'schlangen', 'horn-bad meinberg', 'blomberg', 'extertal', 'kalletal',
   'barntrup', 'dörentrup', 'augustdorf', 'porta westfalica', 'lübbecke', 'espelkamp', 'hüllhorst', 'preußisch oldendorf',
-  'rietberg', 'langenberg', 'herzebrock', 'bad driburg', 'hövelhof', 'büren', 'bad wünnenberg', 'altenbeken', 'höxter',
+  'rietberg', 'langenberg', 'herzebrock', 'bad driburg', 'hövelhof', 'büren', 'bad wünnenberg', 'altenbeken', 'höxter', 'borchen', 'lichtenau',
   'osnabrück', 'melle', 'bad essen', 'bückeburg', 'rinteln', 'hameln',
 ];
 
