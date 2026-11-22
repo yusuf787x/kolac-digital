@@ -22,9 +22,8 @@ Ohne Schild.
 
 Es geht auch anders.
 Bei einer Praxis haben wir das geändert.
-Danach war sie dreimal so oft bei Google zu sehen.
-In vier Wochen.
-Und auf meine eigene Seite kommen heute fünfmal so viele Leute über Google wie im Sommer.
+Einen Monat später war sie über siebenmal so oft bei Google zu sehen.
+(Schnitt: Kurve der Praxis aus der Search Console einblenden.)
 
 Woran es meistens liegt? An drei Sachen.
 Eins: Es gibt eine Seite für alles. Google weiß nicht, was du genau machst.

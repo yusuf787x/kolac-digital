@@ -24,7 +24,7 @@ const EYEBROW = 'text-[13px] font-semibold uppercase tracking-[0.08em]';
 /** Kleine Zeile mit Porträt im Hero. */
 export function FunnelByline() {
   return (
-    <div className="mt-6 flex items-center gap-3">
+    <div className="mt-6 flex items-center justify-center gap-3 text-left">
       <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[var(--color-offwhite)] ring-2 ring-white shadow-[var(--shadow-sm)]">
         <Image src="/images/yk-portrait.webp" alt="" fill sizes="40px" className="object-cover" />
       </span>
@@ -44,143 +44,7 @@ export function FunnelByline() {
   );
 }
 
-/**
- * Rechte Seite im Hero: das Verkaufsvideo, sobald es eine Datei gibt. Mit
- * ?vorschau=1 in der Adresse ein gestalteter Video-Rahmen, damit Yusuf sieht,
- * wie die Seite mit Video wirkt (live ohne Parameter nie sichtbar). Sonst
- * eine gebaute Beispiel-Ergebniskarte (klar als Beispiel gekennzeichnet).
- */
-export function FunnelHeroVisual({ preview = false }: { preview?: boolean }) {
-  if (VSL_VIDEO_URL) {
-    return (
-      <div className="overflow-hidden rounded-[24px] bg-black shadow-[var(--shadow-md)]">
-        <video src={VSL_VIDEO_URL} controls playsInline preload="metadata" className="aspect-video w-full" />
-      </div>
-    );
-  }
-  if (preview) return <VideoPreviewFrame />;
-  return <ExampleResultCard />;
-}
-
-/** Standbild des künftigen Videos: Bildschirm mit Check-Ergebnis, Yusuf klein im Eck, großer Play-Knopf. */
-function VideoPreviewFrame() {
-  return (
-    <figure>
-      <div className="relative aspect-video overflow-hidden rounded-[24px] bg-[var(--color-offwhite)] shadow-[var(--shadow-md)] ring-1 ring-black/5">
-        {/* Bildschirm im Hintergrund */}
-        <div className="absolute inset-x-[6%] top-[9%] bottom-0 rounded-t-[14px] bg-white shadow-[var(--shadow-sm)]">
-          <div className="flex items-center gap-1.5 border-b border-[#eceef1] px-3 py-2">
-            <span className="h-2 w-2 rounded-full bg-[#e5e7eb]" />
-            <span className="h-2 w-2 rounded-full bg-[#e5e7eb]" />
-            <span className="h-2 w-2 rounded-full bg-[#e5e7eb]" />
-            <span className="ml-2 h-3 w-1/3 rounded-full bg-[var(--color-offwhite)]" />
-          </div>
-          <div className="flex gap-4 p-4 opacity-70">
-            <svg viewBox="0 0 40 40" className="h-12 w-12 shrink-0" aria-hidden>
-              <circle cx="20" cy="20" r="16" fill="none" stroke="#e5e7eb" strokeWidth="5" />
-              <circle cx="20" cy="20" r="16" fill="none" stroke="var(--color-fail)" strokeWidth="5" strokeDasharray="38 100" strokeLinecap="round" transform="rotate(-90 20 20)" />
-            </svg>
-            <div className="flex-1 space-y-2 pt-1">
-              {[78, 52, 64].map((w, i) => (
-                <div key={w} className="h-2 rounded-full bg-[#eef0f3]">
-                  <div className="h-2 rounded-full" style={{ width: `${w}%`, background: i === 1 ? 'var(--color-fail)' : 'var(--color-warn)' }} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        {/* leichter Schleier, damit der Knopf trägt */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-
-        {/* Play-Knopf */}
-        <span className="absolute left-1/2 top-1/2 flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center">
-          <span aria-hidden className="fz-pulse absolute inset-0 rounded-full bg-[var(--color-blue)]/30" />
-          <span className="relative flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[var(--color-blue)] shadow-[0_10px_30px_rgba(0,113,227,0.45)]">
-            <svg viewBox="0 0 24 24" className="ml-1 h-7 w-7" fill="#fff" aria-hidden>
-              <path d="M7 4.5v15l12.5-7.5z" />
-            </svg>
-          </span>
-        </span>
-
-        {/* Yusuf im Eck */}
-        <span className="absolute bottom-3 right-3 h-[64px] w-[64px] overflow-hidden rounded-full ring-[3px] ring-white shadow-[var(--shadow-md)] md:h-[76px] md:w-[76px]">
-          <Image src="/images/yk-portrait.webp" alt="" fill sizes="76px" className="object-cover" />
-        </span>
-
-        {/* Untertitel */}
-        <span className="absolute bottom-3 left-3 rounded-full bg-white px-3 py-1.5 text-[13px] font-semibold text-[var(--color-black)] shadow-[var(--shadow-sm)]">
-          In 2 Minuten erklärt
-        </span>
-        <span className="absolute left-3 top-3 rounded-full bg-[var(--color-scarcity-bg)] px-3 py-1 text-[12px] font-semibold text-[var(--color-scarcity)]">
-          Vorschau: hier kommt das Video hin
-        </span>
-      </div>
-      <figcaption className="mt-3 text-[14px] leading-snug text-[var(--color-gray)]">
-        Warum Google viele Websites nicht zeigt, und was du dagegen tun kannst.
-      </figcaption>
-    </figure>
-  );
-}
-
-function ExampleResultCard() {
-  const score = 38;
-  const r = 36;
-  const c = 2 * Math.PI * r;
-  const bars: Array<[string, number, string]> = [
-    ['Sichtbarkeit bei Google', 14, 'var(--color-fail)'],
-    ['Technik', 71, 'var(--color-warn)'],
-    ['Inhalte', 46, 'var(--color-fail)'],
-    ['Lokale Auffindbarkeit', 52, 'var(--color-warn)'],
-  ];
-  return (
-    <figure aria-label="Beispiel für ein Ergebnis des Website-Checks" className="relative rounded-[24px] bg-white p-6 shadow-[var(--shadow-md)] md:p-7">
-      <span className="absolute right-5 top-5 rounded-full bg-[var(--color-offwhite)] px-3 py-1 text-[12px] font-semibold text-[var(--color-gray)]">
-        Beispiel
-      </span>
-      <div className="flex items-center gap-5">
-        <svg width="88" height="88" viewBox="0 0 88 88" aria-hidden className="shrink-0">
-          <circle cx="44" cy="44" r={r} fill="none" stroke="#e5e7eb" strokeWidth="8" />
-          <circle
-            cx="44"
-            cy="44"
-            r={r}
-            fill="none"
-            stroke="var(--color-fail)"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={`${(score / 100) * c} ${c}`}
-            transform="rotate(-90 44 44)"
-          />
-          <text x="44" y="50" textAnchor="middle" className="fill-[var(--color-black)]" fontSize="22" fontWeight="800">
-            {score}
-          </text>
-        </svg>
-        <div>
-          <p className="text-[13px] text-[var(--color-gray)]">beispiel-betrieb.de</p>
-          <p className="text-[20px] font-bold text-[var(--color-fail)]">Viel Luft nach oben</p>
-        </div>
-      </div>
-      <div className="mt-5 space-y-3">
-        {bars.map(([label, value, color]) => (
-          <div key={label}>
-            <div className="flex justify-between text-[13px]">
-              <span className="text-[var(--color-black)]">{label}</span>
-              <span className="font-semibold text-[var(--color-black)]">{value}</span>
-            </div>
-            <div className="mt-1 h-1.5 rounded-full bg-[#eef0f3]">
-              <div className="h-1.5 rounded-full" style={{ width: `${value}%`, background: color }} />
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-5 rounded-[12px] bg-[var(--color-fail-bg)] p-3 text-[13px] leading-snug text-[var(--color-black)]">
-        <span className="font-semibold text-[var(--color-fail)]">Wichtigster Befund: </span>
-        Nur 2 Suchbegriffe stehen auf Seite 1.
-      </div>
-    </figure>
-  );
-}
-
+/** Passendes Symbol zur Gründe-Karte, nach dem Titel. */
 const REASONS: Array<[string, string, string]> = [
   ['01', 'Eine Seite für alles', 'Alle Leistungen stehen auf einer Seite. Google weiß dann gar nicht, wofür du eigentlich gefunden werden willst.'],
   [
@@ -461,10 +325,6 @@ function PaketSection({ variant }: { variant: FunnelVariant }) {
               </div>
             ))}
           </div>
-          <p className="mt-4 flex items-center gap-2 text-[15px] text-[var(--color-gray)]">
-            <Icon name="check" className="h-4 w-4 text-[var(--color-guarantee)]" />
-            Die genauen Regeln besprechen wir im Gespräch und du bekommst sie schriftlich.
-          </p>
         </div>
 
         {/* Boni */}

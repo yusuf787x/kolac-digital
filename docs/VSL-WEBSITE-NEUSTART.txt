@@ -2,7 +2,7 @@ KURZFASSUNG (aktuell, 21.11. abends): fertige Aufnahme-Skripte je Branche in doc
 
 VSL: Das Gefunden-Garantie-Paket (Bildschirmvideo, ca. 4 Minuten)
 Stand 21.11.2026. Aufbau 1:1 nach Hormozis Scaling-Workshop-VSL (18 Bausteine, siehe Skill hormozi-wissen/references/vsl.md), Ton nach kolac-content/vibe: ehrlich, locker, Sprache der Zielgruppe.
-Alle Zahlen echt: Outreach-Prüfungen OWL (122 voll geprüft, 48 mit höchstens 2 Begriffen auf Seite 1, 24 mit keinem), Praxis-Referenz (19.414 auf 59.666 Einblendungen in 28 Tagen), eigene Seite (rund 3 auf 15 bis 18 Besucher pro Woche über Google).
+Alle Zahlen echt: Outreach-Prüfungen OWL (122 voll geprüft, 48 mit höchstens 2 Begriffen auf Seite 1, 24 mit keinem), Praxis-Referenz (1.984 Einblendungen in der Woche 25.9. bis 1.10., 14.957 in der Woche 25. bis 31.10., also über 7-mal). Eigene Website wird nicht mehr als Beleg genannt (22.11.).
 Aufnahme: Bildschirm mit einem echten Check-Ergebnis bzw. den Belegen von der Landingpage, du klein im Eck.
 Die Einstiege nimmst du je Branche auf (ca. 40 Sek., vier Branchen in der Vorrunde). Alles ab „Der Rest“ ist für beide gleich.
 
@@ -64,10 +64,9 @@ Und meistens merkst du das erst, wenn es ruhiger wird. Empfehlungen bleiben aus.
 Stell dir vor, du hast den besten Laden der Stadt. Aber in einer Seitenstraße, ohne Schild.
 So ist eine unsichtbare Website.
 
-[7 Eigene Geschichte, echte Zahlen]
-Bei meiner eigenen Seite war das genauso. Im Sommer kamen da vielleicht drei Leute die Woche über Google.
-Heute sind es ungefähr fünfmal so viele.
-Und bei einer Praxis aus OWL haben wir das Gleiche gemacht. Danach wurde sie dreimal so oft bei Google angezeigt. In 28 Tagen.
+[7 Geschichte mit echten Zahlen]
+Bei einer Praxis aus OWL haben wir genau das gemacht. In der ersten Woche wurde sie rund 2.000 Mal bei Google angezeigt, einen Monat später fast 15.000 Mal pro Woche. Über siebenmal so oft.
+(Schnitt: Kurve der Praxis aus der Search Console einblenden.)
 
 [8 Ein Betrieb wie deiner]
 Ob Treppenlift, Reinigung, Hörgeräte oder Auto: Deine Kunden suchen alle gleich.

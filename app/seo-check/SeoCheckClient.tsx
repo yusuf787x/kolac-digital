@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { FunnelByline, FunnelHeroVisual } from './FunnelSections';
+import { FunnelByline } from './FunnelSections';
 import { site } from '@/lib/site-config';
 import {
   CATEGORY_LABELS,
@@ -109,14 +109,11 @@ export default function SeoCheckClient({
   initialId,
   variant,
   measureEnabled = false,
-  videoPreview = false,
 }: {
   initialId?: string;
   variant?: FunnelVariant;
   /** Häkchen „Erfolgsmessung an Meta“ zeigen (nur wenn Pixel-ID und Schlüssel gesetzt sind). */
   measureEnabled?: boolean;
-  /** Video-Rahmen im Hero zeigen (Adresse mit ?vorschau=1), solange es noch kein Video gibt. */
-  videoPreview?: boolean;
 }) {
   const basePath = variant ? `/seo-check/${variant.slug}` : '/seo-check';
   const sourceRef = useRef<LeadSource | null>(null);
@@ -148,7 +145,10 @@ export default function SeoCheckClient({
   async function start(e: FormEvent) {
     e.preventDefault();
     const value = url.trim();
-    if (!value) return;
+    if (!value) {
+      document.getElementById('seo-url')?.focus();
+      return;
+    }
     setPhase({ kind: 'running', url: value });
     try {
       const res = await apiFetch('/api/seo-check', { method: 'POST', body: JSON.stringify({ url: value, source: sourceRef.current ?? readSource(basePath) }) });
@@ -180,25 +180,21 @@ export default function SeoCheckClient({
         className={`bg-[var(--color-offwhite)] pb-16 md:pb-20 ${variant ? 'pt-8 md:pt-14' : 'pt-[calc(var(--nav-height)+48px)]'}`}
       >
         <div
-          className={
-            variant
-              ? 'mx-auto grid max-w-[1100px] items-center gap-10 px-4 md:grid-cols-[1.05fr_0.95fr] md:gap-14 md:px-6'
-              : 'mx-auto max-w-[800px] px-4 md:px-6 text-center'
-          }
+          className="mx-auto max-w-[800px] px-4 md:px-6 text-center"
         >
-          <div className={variant ? 'text-left' : undefined}>
+          <div>
           <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">
             {variant?.eyebrow ?? 'Kostenloser SEO-Check'}
           </p>
           <h1 className={`mt-3 font-extrabold leading-[1.1] tracking-tight text-[var(--color-black)] ${variant ? 'text-[32px] md:text-[44px]' : 'text-[32px] md:text-[48px]'}`}>
             {variant?.title ?? 'Wird deine Website bei Google gefunden?'}
           </h1>
-          <p className={`mt-4 max-w-[600px] text-[17px] leading-relaxed text-[var(--color-gray)] ${variant ? '' : 'mx-auto'}`}>
+          <p className={`mt-4 mx-auto max-w-[600px] text-[17px] leading-relaxed text-[var(--color-gray)]`}>
             {variant?.subline ??
               'Gib deine Adresse ein. In rund 30 Sekunden siehst du, wie gut deine Seite gebaut ist, für welche Suchbegriffe sie angezeigt wird und was die fünf wichtigsten Schritte sind.'}
           </p>
 
-          <form onSubmit={start} className={`mt-8 max-w-[620px] text-left ${variant ? '' : 'mx-auto'}`} noValidate>
+          <form onSubmit={start} className="mx-auto mt-8 max-w-[620px] text-left" noValidate>
             <label htmlFor="seo-url" className="block text-[13px] font-semibold text-[var(--color-black)] mb-2">
               Deine Website
             </label>
@@ -218,7 +214,7 @@ export default function SeoCheckClient({
               />
               <button
                 type="submit"
-                disabled={running || !url.trim()}
+                disabled={running}
                 className="btn btn-primary justify-center disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
               >
                 {running ? 'Check läuft …' : 'Check starten'}
@@ -230,7 +226,7 @@ export default function SeoCheckClient({
             </p>
           </form>
 
-          <div aria-live="polite" className={`max-w-[620px] text-left ${variant ? '' : 'mx-auto'}`}>
+          <div aria-live="polite" className="mx-auto max-w-[620px] text-left">
             {running && <RunningCard url={phase.url} />}
             {phase.kind === 'loading-report' && (
               <p className="mt-8 text-center text-[15px] text-[var(--color-gray)]">Bericht wird geladen …</p>
@@ -239,11 +235,6 @@ export default function SeoCheckClient({
           </div>
           {variant && <FunnelByline />}
           </div>
-          {variant && (
-            <div className="w-full max-w-[460px] justify-self-center md:justify-self-end">
-              <FunnelHeroVisual preview={videoPreview} />
-            </div>
-          )}
         </div>
       </section>
 
@@ -693,22 +684,34 @@ function BookingBlock({ variant }: { variant?: FunnelVariant }) {
   return (
     <div className="rounded-[24px] bg-[var(--color-blue-light)] p-6 md:p-8">
       <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Dein Bericht ist freigeschaltet</p>
-      <h2 className="mt-2 text-[24px] md:text-[30px] font-bold tracking-tight text-[var(--color-black)]">
-        Sollen wir dein Ergebnis gemeinsam durchgehen?
-      </h2>
+      {VSL_VIDEO_URL ? (
+        <>
+          <h2 className="mt-2 text-[24px] md:text-[30px] font-bold tracking-tight text-[var(--color-black)]">
+            Bevor du weiterliest: 2 Minuten von mir
+          </h2>
+          <p className="mt-2 max-w-[640px] text-[17px] leading-relaxed text-[var(--color-gray)]">
+            Ich zeige dir, warum Google viele Websites nicht anzeigt und was ich bei dir machen würde.
+          </p>
+          <video
+            className="mt-6 aspect-video w-full rounded-[18px] bg-black shadow-[var(--shadow-md)]"
+            src={VSL_VIDEO_URL}
+            controls
+            preload="metadata"
+            playsInline
+          />
+          <h3 className="mt-8 text-[20px] md:text-[24px] font-bold tracking-tight text-[var(--color-black)]">
+            Sollen wir dein Ergebnis gemeinsam durchgehen?
+          </h3>
+        </>
+      ) : (
+        <h2 className="mt-2 text-[24px] md:text-[30px] font-bold tracking-tight text-[var(--color-black)]">
+          Sollen wir dein Ergebnis gemeinsam durchgehen?
+        </h2>
+      )}
       <p className="mt-2 max-w-[640px] text-[17px] leading-relaxed text-[var(--color-gray)]">
         In einem kurzen Gespräch zeige ich dir, was dir bei Google am meisten bringt.
         {variant ? ' Und wie das Gefunden-Garantie-Paket bei dir aussehen würde.' : ''} Kostenlos und unverbindlich.
       </p>
-      {VSL_VIDEO_URL && (
-        <video
-          className="mt-6 w-full rounded-[18px] bg-black"
-          src={VSL_VIDEO_URL}
-          controls
-          preload="metadata"
-          playsInline
-        />
-      )}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <a href={site.meetingUrl} target="_blank" rel="noopener" className="btn btn-primary justify-center">
           Kostenloses Gespräch buchen
