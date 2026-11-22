@@ -41,11 +41,21 @@ export function websiteAlterLabel(v?: string): string {
 }
 
 /**
- * Verkaufsvideo (VSL) unter dem freigeschalteten Ergebnis. Nur eine selbst
- * gehostete Videodatei (mp4 oder webm), damit keine fremden Cookies laden.
- * Leer = der Video-Block wird nicht angezeigt.
+ * Verkaufsvideos (VSL) unter dem freigeschalteten Ergebnis, je Branche eins.
+ * Selbst gehostet als HLS-Stream (public/videos/vsl/<slug>/, je 360p, 540p,
+ * 720p), damit es bei jeder Verbindung sofort läuft und keine fremden
+ * Cookies laden. Erzeugt aus kolac-content/6-werbung/verkaufsvideos/
+ * (zsh scripts/vsl-hls.sh). Branche ohne Eintrag = kein Video.
  */
-export const VSL_VIDEO_URL = '';
+export const VSL_VIDEOS: Record<string, { src: string; poster: string }> = Object.fromEntries(
+  ['treppenlift', 'gebaeudereinigung', 'hoerakustik', 'autohaus'].map((slug) => [
+    slug,
+    { src: `/videos/vsl/${slug}/master.m3u8`, poster: `/videos/vsl/${slug}/poster.jpg` },
+  ]),
+);
+
+/** Terminbuchung für Besucher der Branchen-Check-Seiten (eigener Google-Kalender-Termin). */
+export const FUNNEL_MEETING_URL = 'https://calendar.app.google/kTXDDn2FSknRsFbU7';
 
 /**
  * NFC-Bewertungs-Aufsteller, die Yusuf noch auf Lager hat (echte Knappheit,

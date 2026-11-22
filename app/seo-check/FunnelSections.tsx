@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import type { FunnelVariant } from '@/lib/seo-check/funnel';
-import { NFC_AUFSTELLER_VORRAT, VSL_VIDEO_URL } from '@/lib/seo-check/funnel';
+import { NFC_AUFSTELLER_VORRAT } from '@/lib/seo-check/funnel';
 import { BELEG_SCREENSHOTS, FUNNEL_REVIEWS, PRAXIS_DAILY, PRAXIS_MARKER, PRAXIS_MASSNAHMEN } from '@/lib/seo-check/proof-data';
 import { site } from '@/lib/site-config';
 import { Icon, type IconName } from './FunnelIcons';

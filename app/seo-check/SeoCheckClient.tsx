@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { FunnelByline } from './FunnelSections';
+import VslPlayer from './VslPlayer';
 import { site } from '@/lib/site-config';
 import {
   CATEGORY_LABELS,
@@ -12,7 +13,8 @@ import {
 } from '@/lib/seo-check/types';
 import {
   BRANCHEN,
-  VSL_VIDEO_URL,
+  VSL_VIDEOS,
+  FUNNEL_MEETING_URL,
   WEBSITE_ALTER,
   type Branche,
   type FunnelVariant,
@@ -681,10 +683,12 @@ function LockedTeaser({ result }: { result: SeoCheckResponse['result'] }) {
 }
 
 function BookingBlock({ variant }: { variant?: FunnelVariant }) {
+  const vsl = variant ? VSL_VIDEOS[variant.slug] : undefined;
+  const meetingUrl = variant ? FUNNEL_MEETING_URL : site.meetingUrl;
   return (
     <div className="rounded-[24px] bg-[var(--color-blue-light)] p-6 md:p-8">
       <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Dein Bericht ist freigeschaltet</p>
-      {VSL_VIDEO_URL ? (
+      {vsl ? (
         <>
           <h2 className="mt-2 text-[24px] md:text-[30px] font-bold tracking-tight text-[var(--color-black)]">
             Bevor du weiterliest: 2 Minuten von mir
@@ -692,13 +696,9 @@ function BookingBlock({ variant }: { variant?: FunnelVariant }) {
           <p className="mt-2 max-w-[640px] text-[17px] leading-relaxed text-[var(--color-gray)]">
             Ich zeige dir, warum Google viele Websites nicht anzeigt und was ich bei dir machen würde.
           </p>
-          <video
-            className="mt-6 aspect-video w-full rounded-[18px] bg-black shadow-[var(--shadow-md)]"
-            src={VSL_VIDEO_URL}
-            controls
-            preload="metadata"
-            playsInline
-          />
+          <div className="mt-6">
+            <VslPlayer src={vsl.src} poster={vsl.poster} />
+          </div>
           <h3 className="mt-8 text-[20px] md:text-[24px] font-bold tracking-tight text-[var(--color-black)]">
             Sollen wir dein Ergebnis gemeinsam durchgehen?
           </h3>
@@ -713,7 +713,7 @@ function BookingBlock({ variant }: { variant?: FunnelVariant }) {
         {variant ? ' Und wie das Gefunden-Garantie-Paket bei dir aussehen würde.' : ''} Kostenlos und unverbindlich.
       </p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <a href={site.meetingUrl} target="_blank" rel="noopener" className="btn btn-primary justify-center">
+        <a href={meetingUrl} target="_blank" rel="noopener" className="btn btn-primary justify-center">
           Kostenloses Gespräch buchen
         </a>
         <a href={`tel:${site.phoneE164}`} className="btn btn-outline justify-center">
@@ -723,6 +723,9 @@ function BookingBlock({ variant }: { variant?: FunnelVariant }) {
       <p className="mt-3 text-[15px] text-[var(--color-black)]">
         Ich schaue mir dein Ergebnis vor dem Gespräch an. Wir prüfen gemeinsam, ob wir dir helfen können.
       </p>
+      {variant && (
+        <p className="mt-1 text-[15px] text-[var(--color-gray)]">Kein passender Termin dabei? Kein Problem, ich rufe dich kurz an.</p>
+      )}
     </div>
   );
 }
