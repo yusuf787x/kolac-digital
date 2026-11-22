@@ -312,15 +312,6 @@ const STATIONEN: Station[] = [
   },
 ];
 
-const GARANTIE_REGELN = [
-  'Gemessen werden die Klicks aus der Google-Suche, ohne Suchen nach deinem Firmennamen. Wir messen in der Google Search Console, das ist Googles eigenes Messwerkzeug. Die Zahlen siehst du auch in deinem Kundenportal.',
-  'Startwert sind deine Klicks in den 28 Tagen vor dem Livegang, also bevor die neue Seite online geht. Gibt es schon ältere Daten, zählt der Schnitt der letzten 3 Monate.',
-  'Ziel: in den Tagen 63 bis 90 nach dem Livegang mindestens doppelt so viele Klicks. Liegt der Startwert unter 10, gelten 20 Klicks als Ziel.',
-  'Du machst mit: Zugänge innerhalb von 7 Tagen, Freigaben innerhalb von 5 Werktagen, Kunden um Bewertungen bitten und nichts ohne Absprache ändern.',
-  'Nach dem Check sagen wir dir, ob die Garantie für deine Website gilt. Ist eine Seite schon sehr stark, vereinbaren wir ein kleineres Ziel.',
-  'Keine Garantie auf Platzierungen bei Google oder auf eine bestimmte Zahl an Anfragen.',
-];
-
 /** Garantie-Stempel: Kreis mit umlaufender Schrift und Schild. */
 function GuaranteeSeal({ id }: { id: string }) {
   return (
@@ -472,24 +463,8 @@ function PaketSection({ variant }: { variant: FunnelVariant }) {
           </div>
           <p className="mt-4 flex items-center gap-2 text-[15px] text-[var(--color-gray)]">
             <Icon name="check" className="h-4 w-4 text-[var(--color-guarantee)]" />
-            Die genauen Regeln bekommst du schriftlich im Angebot.
+            Die genauen Regeln besprechen wir im Gespräch und du bekommst sie schriftlich.
           </p>
-          <details className="group mt-3 rounded-[12px] bg-white px-4 py-3 shadow-[var(--shadow-sm)]">
-            <summary className="cursor-pointer list-none text-[15px] font-semibold text-[var(--color-black)] [&::-webkit-details-marker]:hidden">
-              <span className="inline-block transition-transform group-open:rotate-90" aria-hidden>
-                ›
-              </span>{' '}
-              Die Spielregeln der Doppelt-gefunden-Garantie kurz
-            </summary>
-            <ul className="mt-3 space-y-2 pb-1">
-              {GARANTIE_REGELN.map((r) => (
-                <li key={r} className="flex gap-3 text-[14px] leading-relaxed text-[var(--color-gray)]">
-                  <Icon name="check" className="mt-[3px] h-4 w-4 shrink-0 text-[var(--color-guarantee)]" />
-                  {r}
-                </li>
-              ))}
-            </ul>
-          </details>
         </div>
 
         {/* Boni */}
@@ -685,15 +660,6 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
               </div>
             </div>
           )}
-
-          <div className="mt-6 flex items-start gap-3 rounded-[18px] border border-[#e5e7eb] p-5">
-            <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-guarantee-bg)] text-[var(--color-guarantee)]">
-              <Icon name="chart" className="h-4 w-4" />
-            </span>
-            <p className="text-[15px] text-[var(--color-black)]">
-              <span className="font-semibold">Meine eigene Website:</span> rund 5-mal so viele Besucher über Google wie im Sommer, nach denselben Regeln umgebaut.
-            </p>
-          </div>
 
           {/* Google-Bewertungen */}
           <div className="mt-12">
