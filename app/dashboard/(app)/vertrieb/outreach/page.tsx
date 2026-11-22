@@ -33,6 +33,7 @@ const VIEWS = [
   ['nachfassen', 'Nachfassen'],
   ['gesendet', 'Gesendet'],
   ['antworten', 'Antworten'],
+  ['erinnerungen', 'Erinnerungen'],
   ['alle', 'Alle'],
 ] as const;
 type View = (typeof VIEWS)[number][0];
@@ -44,6 +45,8 @@ const dayKey = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('sv-SE'
 const formatDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('de-DE') : '');
 
 function inView(l: OutreachLead, v: View): boolean {
+  // Selbst gesetzte Erinnerungen gelten immer, auch bei erledigten Betrieben
+  if (v === 'erinnerungen') return !!l.remindAt;
   // Kein Interesse ist erledigt: taucht in keiner Liste mehr auf. Der Eintrag bleibt
   // gespeichert, damit der Betrieb bei neuen Suchen nie wieder angeschrieben wird.
   if (l.status === 'kein-interesse') return false;
@@ -82,6 +85,7 @@ const EMPTY: Record<View, string> = {
   mail: 'Noch keine Betriebe per Mail. Passt das Instagram-Profil auf einer Karte nicht, dort „Kein Instagram“ drücken: Der Betrieb landet hier und bekommt eine Mail mit Auswertung seiner Website.',
   nachfassen: `Gerade ist niemand dran. Nachgefasst wird einmal, ${OUTREACH_FOLLOWUP_DAYS} Tage nach der ersten Nachricht. Kommt danach ${OUTREACH_GIVE_UP_DAYS} Tage nichts, verschwindet der Betrieb von selbst und wird nie wieder angeschrieben.`,
   gesendet: 'Noch nichts gesendet.',
+  erinnerungen: 'Keine Erinnerungen. Auf einer Karte „Erinnern“ drücken, dann taucht der Betrieb hier auf und du bekommst am Tag eine Mail.',
   antworten: 'Noch keine Antworten. Antwortet jemand, hier auf „Geantwortet“ setzen und die Antwort Claude zeigen.',
   alle: 'Noch keine Betriebe. In Claude Code sagen: „Outreach: Kosmetikstudios Bielefeld“.',
 };
@@ -174,7 +178,9 @@ function OutreachInner() {
   const visible = scoped
     .filter((l) => inView(l, view))
     .sort(
-      view === 'gesendet'
+      view === 'erinnerungen'
+        ? (a, b) => (a.remindAt ?? '').localeCompare(b.remindAt ?? '')
+        : view === 'gesendet'
         ? byDate('sentAt')
         : view === 'antworten'
           ? byDate('repliedAt')
@@ -185,6 +191,8 @@ function OutreachInner() {
   const hits = searching
     ? leads.filter((l) => matchesName(l, nameTerm)).sort((a, b) => a.name.localeCompare(b.name, 'de')).slice(0, 50)
     : [];
+
+  const dueCount = leads.filter((l) => l.remindAt && l.remindAt <= todayKey()).length;
 
   // Kennzahlen je Kanal: Instagram und Mail getrennt
   const channelLeads = scoped.filter((l) => (channel === 'mail') === isMailLead(l));
@@ -256,6 +264,19 @@ function OutreachInner() {
         </dl>
         <WeekChart week={week} />
       </section>
+
+      {dueCount > 0 && view !== 'erinnerungen' && !searching && (
+        <button
+          type="button"
+          onClick={() => setParam('ansicht', 'erinnerungen')}
+          className="card flex w-full items-center justify-between gap-3 border-amber-200 bg-amber-50 text-left text-sm text-amber-900 hover:bg-amber-100"
+        >
+          <span>
+            <span className="font-semibold">{dueCount} {dueCount === 1 ? 'Erinnerung ist' : 'Erinnerungen sind'} fällig.</span> Betriebe, bei denen du nachhaken wolltest.
+          </span>
+          <span className="shrink-0 font-medium">Ansehen →</span>
+        </button>
+      )}
 
       <div role="search" className="relative">
         <label className="label" htmlFor="outreach-name">
@@ -734,6 +755,8 @@ function LeadCard({
       )}
       {info && <p className="mt-2 text-sm text-amber-700">{info}</p>}
 
+      <ReminderBox lead={l} open={view === 'antworten' || view === 'erinnerungen'} busy={busy} onSave={run} />
+
       {(view === 'antworten' || l.note) && (
         <div className="mt-3">
           <label className="label" htmlFor={`note-${l.id}`}>
@@ -874,3 +897,105 @@ function StatusLink({ children, onClick, busy }: { children: React.ReactNode; on
     </button>
   );
 }
+
+/** Tag in deutscher Zeit, n Tage ab heute (YYYY-MM-DD). */
+const dayFromToday = (n: number) => new Date(Date.now() + n * DAY_MS).toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' });
+
+const REMIND_PRESETS: Array<[string, number]> = [
+  ['Morgen', 1],
+  ['In 3 Tagen', 3],
+  ['In 1 Woche', 7],
+  ['In 2 Wochen', 14],
+  ['In 1 Monat', 30],
+];
+
+/**
+ * CRM-Erinnerung auf der Karte: Tag wählen (Schnellknöpfe oder Kalender), kurz
+ * notieren wozu. Am Tag kommt morgens eine Mail, die Karte steht unter
+ * „Erinnerungen“. „Erledigt“ löscht sie, ein neuer Tag verschiebt sie.
+ */
+function ReminderBox({
+  lead: l,
+  open,
+  busy,
+  onSave,
+}: {
+  lead: OutreachLead;
+  open: boolean;
+  busy: boolean;
+  onSave: (patch: Partial<OutreachLead>) => Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [what, setWhat] = useState(l.remindNote ?? '');
+  const today = todayKey();
+  const set = (day: string) => onSave({ remindAt: day, remindNote: what.trim() }).then(() => setEditing(false));
+
+  if (!l.remindAt && !open && !editing) {
+    return (
+      <button type="button" className="mt-3 text-sm font-medium text-brand-blue hover:underline" onClick={() => setEditing(true)}>
+        + Erinnern
+      </button>
+    );
+  }
+
+  const due = !!l.remindAt && l.remindAt <= today;
+  return (
+    <div className={`mt-3 rounded-lg border p-3 ${due ? 'border-amber-300 bg-amber-50' : 'border-gray-200 bg-gray-50'}`}>
+      {l.remindAt && !editing ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-gray-900">
+            <span className={`font-semibold ${due ? 'text-amber-800' : ''}`}>
+              {l.remindAt < today ? 'Überfällig seit' : l.remindAt === today ? 'Heute:' : 'Erinnerung am'} {formatDate(`${l.remindAt}T12:00:00`)}
+            </span>
+            {l.remindNote ? ` · ${l.remindNote}` : ''}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn-secondary pointer-coarse:h-11" disabled={busy} onClick={() => setEditing(true)}>
+              Ändern
+            </button>
+            <button type="button" className="btn-primary pointer-coarse:h-11" disabled={busy} onClick={() => onSave({ remindAt: '', remindNote: '' })}>
+              Erledigt
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <label className="label" htmlFor={`remind-what-${l.id}`}>
+            Erinnern, wozu?
+          </label>
+          <input
+            id={`remind-what-${l.id}`}
+            className="input text-base sm:text-sm"
+            placeholder="z. B. Angebot nachfassen, Termin bestätigen"
+            value={what}
+            onChange={(e) => setWhat(e.target.value)}
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            {REMIND_PRESETS.map(([label, n]) => (
+              <button key={label} type="button" className="btn-secondary pointer-coarse:h-11" disabled={busy} onClick={() => set(dayFromToday(n))}>
+                {label}
+              </button>
+            ))}
+            <label className="sr-only" htmlFor={`remind-day-${l.id}`}>
+              Eigener Tag
+            </label>
+            <input
+              id={`remind-day-${l.id}`}
+              type="date"
+              min={today}
+              className="input w-auto text-base sm:text-sm"
+              disabled={busy}
+              onChange={(e) => e.target.value && set(e.target.value)}
+            />
+            {(editing || l.remindAt) && (
+              <button type="button" className="text-sm text-gray-500 hover:text-gray-900" onClick={() => setEditing(false)}>
+                Abbrechen
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+

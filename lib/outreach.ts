@@ -92,6 +92,10 @@ export interface OutreachLead {
   sentAt?: string;
   followedUpAt?: string;
   repliedAt?: string;
+  /** Erinnerung (CRM): an diesem Tag (YYYY-MM-DD, deutsche Zeit) nochmal melden. Leer = keine. Tägliche Mail über /api/outreach/cron. */
+  remindAt?: string;
+  /** Wozu die Erinnerung, z. B. „Angebot nachfassen“. */
+  remindNote?: string;
   note?: string;
   /** Antworten des Studios und Yusufs Nachrichten danach, aelteste zuerst. */
   thread?: OutreachMessage[];

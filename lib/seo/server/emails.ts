@@ -240,3 +240,50 @@ export async function sendTaskReminderEmail(items: TaskReminderItem[]): Promise<
     text: items.map((i) => `${i.displayName}: ${i.change} (bis ${date(i.dueDate)}, ${when(i.daysLeft)}) ${i.adminLink}`).join('\n'),
   });
 }
+
+export interface OutreachReminderItem {
+  name: string;
+  remindAt: string;
+  note?: string;
+  status: string;
+  /** Tage bis fällig, negativ = überfällig. */
+  daysLeft: number;
+}
+
+/** Morgens an Yusuf: Outreach-Betriebe, bei denen er heute nachhaken wollte (plus Überfällige). */
+export async function sendOutreachReminderEmail(items: OutreachReminderItem[]): Promise<void> {
+  const date = (iso: string) => iso.split('-').reverse().join('.');
+  const link = `${portalBaseUrl()}/dashboard/vertrieb/outreach?ansicht=erinnerungen`;
+  const groups: Array<[string, OutreachReminderItem[]]> = [
+    ['Überfällig', items.filter((i) => i.daysLeft < 0)],
+    ['Heute', items.filter((i) => i.daysLeft === 0)],
+  ];
+  const html = groups
+    .filter(([, list]) => list.length)
+    .map(
+      ([title, list]) =>
+        `<p style="margin:18px 0 6px;font-weight:700;${title === 'Überfällig' ? 'color:#b91c1c;' : ''}">${esc(title)}</p><ul style="margin:0;padding-left:20px;">${list
+          .map(
+            (i) =>
+              `<li style="margin:0 0 10px;"><strong>${esc(i.name)}</strong>${i.note ? `: ${esc(i.note)}` : ''}<br><span style="font-size:13px;color:#6b7280;">Erinnerung am ${date(i.remindAt)}</span></li>`,
+          )
+          .join('')}</ul>`,
+    )
+    .join('');
+  const today = items.filter((i) => i.daysLeft === 0).length;
+  const subject = today
+    ? `Outreach: heute bei ${today} ${today === 1 ? 'Betrieb' : 'Betrieben'} nachhaken`
+    : `Outreach: ${items.length} ${items.length === 1 ? 'Erinnerung ist' : 'Erinnerungen sind'} überfällig`;
+  await send({
+    to: OWNER_EMAIL,
+    subject,
+    html: layout({
+      preheader: 'Betriebe, bei denen du dich melden wolltest.',
+      title: 'Heute nachhaken',
+      bodyHtml: `<p style="margin:0;">Diese Betriebe hast du dir im Outreach gemerkt. Erledigt? Auf der Karte „Erledigt“ drücken oder einen neuen Tag wählen, dann hört die Erinnerung auf.</p>${html}`,
+      button: { label: 'Zu den Erinnerungen', href: link },
+      footnote: 'Kommt am Tag der Erinnerung. Überfälliges kommt jeden Montag wieder.',
+    }),
+    text: items.map((i) => `${i.name}${i.note ? `: ${i.note}` : ''} (Erinnerung am ${date(i.remindAt)})`).join('\n') + `\n${link}`,
+  });
+}
