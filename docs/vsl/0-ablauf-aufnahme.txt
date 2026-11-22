@@ -1,0 +1,39 @@
+ABLAUF DER AUFNAHME (Stand 22.11.2026)
+
+Du nimmst 4 Blöcke auf. Ich schneide daraus 4 Verkaufsvideos (eins je Branche) und 8 Werbevideos.
+Gleiche Teile nimmst du nur einmal auf.
+
+1. Verkaufsvideo, Mittelteil (Datei 2): einmal, gilt für alle vier Branchen. Querformat.
+2. Verkaufsvideo, Einstiege (Datei 1): vier kurze Einstiege, je Branche einer. Querformat, direkt nach dem Mittelteil.
+3. Werbevideos (Datei 3): Kamera hochkant drehen. Erst Schluss und Hauptteil, die für alle gleich sind, dann die acht Einstiege.
+
+KAMERA UND PLATZ
+- Verkaufsvideo im Querformat, weil es auf die Website kommt.
+- Werbevideos hochkant. Kopf ins obere Drittel, oben und unten etwas Luft lassen. Dann passt es für Reels, Stories und den Feed.
+- Für alle Blöcke der gleiche Platz, das gleiche Licht und die gleiche Kamerahöhe (Augenhöhe). Einstiege und Mittelteil werden aneinandergeschnitten, Unterschiede würden auffallen.
+- Licht von vorne, am besten vor einem Fenster. Kein Fenster im Rücken.
+- In die Linse schauen, nicht auf den Bildschirm.
+- Mikro nutzen. Der Ton ist wichtiger als das Bild.
+
+KLEIDUNG
+- Überall das Gleiche anziehen. Der Mittelteil gilt für alle Branchen, daher geht pro Branche anderes Outfit nicht.
+- Hell und einfarbig: hellblaues oder beiges Hemd, oder ein heller Pullover ohne Muster. Wirkt freundlich und trotzdem seriös.
+- Kein reines Weiß (wird vor der Kamera schnell zu hell), keine feinen Streifen oder Karos (flimmern), keine großen Logos.
+- Eher Hemd als Hoodie. Die Inhaber in diesen Branchen sind oft 45 bis 65.
+
+BEIM SPRECHEN
+- Vor und nach jedem Abschnitt 2 Sekunden still in die Kamera schauen. Das macht den Schnitt sauber.
+- Versprochen? Einfach den Satz nochmal sagen. Ich schneide das raus.
+- Frei sprechen ist erlaubt. Die Zahlen bitte genau so sagen, wie sie im Skript stehen.
+- Aufsteller griffbereit legen.
+- Hinweise in Klammern sind für den Schnitt, die liest du nicht vor.
+
+DATEIEN
+Leg die Aufnahmen in einen Ordner, zum Beispiel:
+~/Documents/Code/internal/kolac-content/3-aufnahmen/vsl-und-ads-2026-11/
+Dann sag mir Bescheid, ich schneide.
+
+NOCH EINSTELLEN (2 Minuten)
+Im Video bittest du die Leute, bei der Terminbuchung ihre Stadt dazuzuschreiben.
+Dafür in Google Kalender bei deiner Terminbuchungsseite ein Feld ergänzen:
+„In welcher Stadt sollen dich deine Kunden finden?“

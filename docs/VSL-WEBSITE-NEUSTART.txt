@@ -1,4 +1,4 @@
-KURZFASSUNG (aktuell, 21.11. abends): fertige Aufnahme-Skripte je Branche in docs/vsl/*.txt, ca. 2 Minuten, leichte Sprache. Die lange Fassung unten bleibt als Vorlage mit allen 18 Hormozi-Bausteinen.
+AKTUELL (22.11.): Aufnahme-Skripte in docs/vsl/ (0-ablauf, 1-einstiege, 2-mittelteil, 3-video-ads), gebaut nach Hormozis 8-Schritte-Gerüst. Die lange Fassung unten bleibt nur als Vorlage mit den 18 Bausteinen.
 
 VSL: Das Gefunden-Garantie-Paket (Bildschirmvideo, ca. 4 Minuten)
 Stand 21.11.2026. Aufbau 1:1 nach Hormozis Scaling-Workshop-VSL (18 Bausteine, siehe Skill hormozi-wissen/references/vsl.md), Ton nach kolac-content/vibe: ehrlich, locker, Sprache der Zielgruppe.
