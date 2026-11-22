@@ -30,3 +30,6 @@ next-env.d.ts
 
 # Outreach-Kontaktdaten (lokal)
 /outreach/
+
+# Rohaufnahmen und Schnitt-Dateien (groß, nicht in Git)
+docs/vsl/videos/
