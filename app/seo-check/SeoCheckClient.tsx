@@ -109,11 +109,14 @@ export default function SeoCheckClient({
   initialId,
   variant,
   measureEnabled = false,
+  videoPreview = false,
 }: {
   initialId?: string;
   variant?: FunnelVariant;
   /** Häkchen „Erfolgsmessung an Meta“ zeigen (nur wenn Pixel-ID und Schlüssel gesetzt sind). */
   measureEnabled?: boolean;
+  /** Video-Rahmen im Hero zeigen (Adresse mit ?vorschau=1), solange es noch kein Video gibt. */
+  videoPreview?: boolean;
 }) {
   const basePath = variant ? `/seo-check/${variant.slug}` : '/seo-check';
   const sourceRef = useRef<LeadSource | null>(null);
@@ -238,7 +241,7 @@ export default function SeoCheckClient({
           </div>
           {variant && (
             <div className="w-full max-w-[460px] justify-self-center md:justify-self-end">
-              <FunnelHeroVisual />
+              <FunnelHeroVisual preview={videoPreview} />
             </div>
           )}
         </div>

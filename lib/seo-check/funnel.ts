@@ -122,11 +122,11 @@ export function landingPageLabel(landing?: string): string {
 const PROFIL_KARTE: [string, string, string] = [
   '02',
   'Google-Profil halb ausgefüllt',
-  'Wer bei Google Maps oben steht, bekommt die Anrufe. Fehlen Kategorien, Fotos und Bewertungen, stehen andere vor dir.',
+  'Dein Google-Profil ist dein Eintrag bei Google Maps. Wer dort oben steht, bekommt die Anrufe. Fehlen Kategorien, Fotos und Bewertungen, stehen andere vor dir.',
 ];
 
 const SUBLINE =
-  'Gib deine Adresse ein. In rund 30 Sekunden siehst du, für welche Suchbegriffe Google deine Website zeigt und was du als Erstes verbessern solltest.';
+  'Gib deine Website ein. In 30 Sekunden siehst du, für welche Suchbegriffe Google dich zeigt, also bei welchen Suchen deine Kunden dich finden.';
 const CLOSING_TEXT =
   'Von der Website bis zur Sichtbarkeit bei Google: Wir gehen dein Ergebnis gemeinsam durch und prüfen, ob wir dir helfen können. Kostenlos und unverbindlich.';
 

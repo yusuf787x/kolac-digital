@@ -15,7 +15,7 @@ import { metaCapiEnabled } from '@/lib/seo-check/meta-server';
 
 type Props = {
   params: Promise<{ branche: string }>;
-  searchParams: Promise<{ id?: string | string[] }>;
+  searchParams: Promise<{ id?: string | string[]; vorschau?: string | string[] }>;
 };
 
 export const dynamicParams = false;
@@ -40,12 +40,14 @@ export default async function SeoCheckBranchePage({ params, searchParams }: Prop
   const { branche } = await params;
   const variant = FUNNEL_VARIANTS[branche];
   if (!variant) notFound();
-  const { id } = await searchParams;
+  const { id, vorschau } = await searchParams;
+  // ?vorschau=1 zeigt den Video-Rahmen im Hero, solange es noch kein Video gibt
+  const videoPreview = vorschau === '1';
   const initialId = typeof id === 'string' && /^[A-Za-z0-9_-]{10,40}$/.test(id) ? id : undefined;
 
   return (
     <>
-      <SeoCheckClient key={initialId ?? 'neu'} initialId={initialId} variant={variant} measureEnabled={metaCapiEnabled()} />
+      <SeoCheckClient key={initialId ?? 'neu'} initialId={initialId} variant={variant} measureEnabled={metaCapiEnabled()} videoPreview={videoPreview} />
       <FunnelSections variant={variant} />
       <SeoCheckSections faq={FAQ_FUNNEL} showChecked={false} />
     </>

@@ -6,6 +6,18 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ---
 
+## 22.11.2026
+
+### SEO-Check
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Check-Seiten der Branchen lebendiger gestaltet: Beleg der Praxis aus OWL jetzt als Kurve zum Antippen mit Klicks und Einblendungen pro Tag aus der Google Search Console, dazu zwei Original-Screenshots bis 18.11.2026 | Besucher sehen das Wachstum Tag für Tag und können die Zahlen selbst nachprüfen | [Treppenlift](https://www.kolac-digital.de/seo-check/treppenlift) [Gebäudereinigung](https://www.kolac-digital.de/seo-check/gebaeudereinigung) [Hörakustik](https://www.kolac-digital.de/seo-check/hoerakustik) [Autohaus](https://www.kolac-digital.de/seo-check/autohaus) |
+| ✅ | Gefunden-Garantie-Paket als Zeitstrahl vom Startwert bis zum monatlichen Bericht, Garantien in Grün mit Garantie-Stempel, Texte inklusive in Grün, gezeichneter Bewertungs-Aufsteller mit Hinweis auf den Vorrat und Symbole an allen Problemen und Gründen | Besucher erkennen auf einen Blick, was wann passiert und wo das Risiko liegt | [Treppenlift](https://www.kolac-digital.de/seo-check/treppenlift) [Hörakustik](https://www.kolac-digital.de/seo-check/hoerakustik) |
+| ✅ | Texte auf den Check-Seiten einfacher: Fachwörter wie Suchbegriffe, Google-Profil und Search Console werden direkt im Satz erklärt | Auch Leser ohne Vorwissen verstehen sofort, worum es geht | [Gebäudereinigung](https://www.kolac-digital.de/seo-check/gebaeudereinigung) [Autohaus](https://www.kolac-digital.de/seo-check/autohaus) |
+
+---
+
 ## 21.11.2026
 
 ### SEO-Check

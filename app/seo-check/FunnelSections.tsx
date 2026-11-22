@@ -1,17 +1,25 @@
 import Image from 'next/image';
 import type { FunnelVariant } from '@/lib/seo-check/funnel';
 import { NFC_AUFSTELLER_VORRAT, VSL_VIDEO_URL } from '@/lib/seo-check/funnel';
-import { BELEG_SCREENSHOTS, FUNNEL_REVIEWS, PRAXIS_MASSNAHMEN, PRAXIS_WEEKS } from '@/lib/seo-check/proof-data';
+import { BELEG_SCREENSHOTS, FUNNEL_REVIEWS, PRAXIS_DAILY, PRAXIS_MARKER, PRAXIS_MASSNAHMEN } from '@/lib/seo-check/proof-data';
 import { site } from '@/lib/site-config';
+import { Icon, type IconName } from './FunnelIcons';
+import NfcAufsteller from './NfcAufsteller';
+import ProofChart from './ProofChart';
 
 /**
  * Bausteine der Branchen-Landingpages (/seo-check/<branche>, siehe FUNNEL_VARIANTS).
  * Aufbau angelehnt an Hormozis Workshop-Seite, aber kurz: Symptome, drei
- * Gründe, Belege, Ablauf, Über mich, zweiter Einstieg. Nur echte Zahlen,
- * keine Kundennamen, kein Preis.
+ * Gründe, Belege, Paket als Zeitstrahl, Garantien, Über mich, zweiter
+ * Einstieg. Nur echte Zahlen, keine Kundennamen, kein Preis.
+ *
+ * Signalfarben (Tokens in public/css/style.css, siehe DESIGN.md): Grün für
+ * Garantien und Inklusives, Bernstein für Knappheit, Rot und Orange dezent
+ * für Probleme. Blau bleibt Hauptaktion und Kennzahl.
  */
 
 const H2 = 'text-[28px] md:text-[36px] font-bold leading-[1.15] tracking-tight text-[var(--color-black)]';
+const EYEBROW = 'text-[13px] font-semibold uppercase tracking-[0.08em]';
 
 /** Kleine Zeile mit Porträt im Hero. */
 export function FunnelByline() {
@@ -37,10 +45,12 @@ export function FunnelByline() {
 }
 
 /**
- * Rechte Seite im Hero: das Verkaufsvideo, sobald es eine Datei gibt, sonst
+ * Rechte Seite im Hero: das Verkaufsvideo, sobald es eine Datei gibt. Mit
+ * ?vorschau=1 in der Adresse ein gestalteter Video-Rahmen, damit Yusuf sieht,
+ * wie die Seite mit Video wirkt (live ohne Parameter nie sichtbar). Sonst
  * eine gebaute Beispiel-Ergebniskarte (klar als Beispiel gekennzeichnet).
  */
-export function FunnelHeroVisual() {
+export function FunnelHeroVisual({ preview = false }: { preview?: boolean }) {
   if (VSL_VIDEO_URL) {
     return (
       <div className="overflow-hidden rounded-[24px] bg-black shadow-[var(--shadow-md)]">
@@ -48,7 +58,68 @@ export function FunnelHeroVisual() {
       </div>
     );
   }
+  if (preview) return <VideoPreviewFrame />;
   return <ExampleResultCard />;
+}
+
+/** Standbild des künftigen Videos: Bildschirm mit Check-Ergebnis, Yusuf klein im Eck, großer Play-Knopf. */
+function VideoPreviewFrame() {
+  return (
+    <figure>
+      <div className="relative aspect-video overflow-hidden rounded-[24px] bg-[var(--color-offwhite)] shadow-[var(--shadow-md)] ring-1 ring-black/5">
+        {/* Bildschirm im Hintergrund */}
+        <div className="absolute inset-x-[6%] top-[9%] bottom-0 rounded-t-[14px] bg-white shadow-[var(--shadow-sm)]">
+          <div className="flex items-center gap-1.5 border-b border-[#eceef1] px-3 py-2">
+            <span className="h-2 w-2 rounded-full bg-[#e5e7eb]" />
+            <span className="h-2 w-2 rounded-full bg-[#e5e7eb]" />
+            <span className="h-2 w-2 rounded-full bg-[#e5e7eb]" />
+            <span className="ml-2 h-3 w-1/3 rounded-full bg-[var(--color-offwhite)]" />
+          </div>
+          <div className="flex gap-4 p-4 opacity-70">
+            <svg viewBox="0 0 40 40" className="h-12 w-12 shrink-0" aria-hidden>
+              <circle cx="20" cy="20" r="16" fill="none" stroke="#e5e7eb" strokeWidth="5" />
+              <circle cx="20" cy="20" r="16" fill="none" stroke="var(--color-fail)" strokeWidth="5" strokeDasharray="38 100" strokeLinecap="round" transform="rotate(-90 20 20)" />
+            </svg>
+            <div className="flex-1 space-y-2 pt-1">
+              {[78, 52, 64].map((w, i) => (
+                <div key={w} className="h-2 rounded-full bg-[#eef0f3]">
+                  <div className="h-2 rounded-full" style={{ width: `${w}%`, background: i === 1 ? 'var(--color-fail)' : 'var(--color-warn)' }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* leichter Schleier, damit der Knopf trägt */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+
+        {/* Play-Knopf */}
+        <span className="absolute left-1/2 top-1/2 flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center">
+          <span aria-hidden className="fz-pulse absolute inset-0 rounded-full bg-[var(--color-blue)]/30" />
+          <span className="relative flex h-[64px] w-[64px] items-center justify-center rounded-full bg-[var(--color-blue)] shadow-[0_10px_30px_rgba(0,113,227,0.45)]">
+            <svg viewBox="0 0 24 24" className="ml-1 h-7 w-7" fill="#fff" aria-hidden>
+              <path d="M7 4.5v15l12.5-7.5z" />
+            </svg>
+          </span>
+        </span>
+
+        {/* Yusuf im Eck */}
+        <span className="absolute bottom-3 right-3 h-[64px] w-[64px] overflow-hidden rounded-full ring-[3px] ring-white shadow-[var(--shadow-md)] md:h-[76px] md:w-[76px]">
+          <Image src="/images/yk-portrait.webp" alt="" fill sizes="76px" className="object-cover" />
+        </span>
+
+        {/* Untertitel */}
+        <span className="absolute bottom-3 left-3 rounded-full bg-white px-3 py-1.5 text-[13px] font-semibold text-[var(--color-black)] shadow-[var(--shadow-sm)]">
+          In 2 Minuten erklärt
+        </span>
+        <span className="absolute left-3 top-3 rounded-full bg-[var(--color-scarcity-bg)] px-3 py-1 text-[12px] font-semibold text-[var(--color-scarcity)]">
+          Vorschau: hier kommt das Video hin
+        </span>
+      </div>
+      <figcaption className="mt-3 text-[14px] leading-snug text-[var(--color-gray)]">
+        Warum Google viele Websites nicht zeigt, und was du dagegen tun kannst.
+      </figcaption>
+    </figure>
+  );
 }
 
 function ExampleResultCard() {
@@ -102,7 +173,7 @@ function ExampleResultCard() {
           </div>
         ))}
       </div>
-      <div className="mt-5 rounded-[12px] bg-[#fdeceb] p-3 text-[13px] leading-snug text-[var(--color-black)]">
+      <div className="mt-5 rounded-[12px] bg-[var(--color-fail-bg)] p-3 text-[13px] leading-snug text-[var(--color-black)]">
         <span className="font-semibold text-[var(--color-fail)]">Wichtigster Befund: </span>
         Nur 2 Suchbegriffe stehen auf Seite 1.
       </div>
@@ -112,197 +183,369 @@ function ExampleResultCard() {
 
 const REASONS: Array<[string, string, string]> = [
   ['01', 'Eine Seite für alles', 'Alle Leistungen stehen auf einer Seite. Google weiß dann gar nicht, wofür du eigentlich gefunden werden willst.'],
-  ['02', 'Google-Profil halb ausgefüllt', 'Wer bei Google Maps oben steht, bekommt die Anrufe. Fehlen Kategorien, Fotos und Bewertungen, stehen andere vor dir.'],
+  [
+    '02',
+    'Google-Profil halb ausgefüllt',
+    'Dein Google-Profil ist dein Eintrag bei Google Maps. Wer dort oben steht, bekommt die Anrufe. Fehlen Kategorien, Fotos und Bewertungen, stehen andere vor dir.',
+  ],
   ['03', 'Seit Jahren nichts Neues', 'Kommt nie etwas dazu, wirkt deine Seite für Google wie ein Laden, der zu hat.'],
 ];
 
+/** Passendes Symbol zur Gründe-Karte, nach dem Titel. */
+function reasonIcon(title: string): IconName {
+  if (/eine seite/i.test(title)) return 'pages';
+  if (/profil|maps/i.test(title)) return 'mapPin';
+  if (/neues/i.test(title)) return 'clock';
+  if (/fragen/i.test(title)) return 'question';
+  if (/anfrage/i.test(title)) return 'phone';
+  if (/hersteller/i.test(title)) return 'building';
+  return 'alert';
+}
+
 function Stars() {
   return (
-    <span aria-hidden className="text-[13px] tracking-[1px] text-[#f5a623]">
+    <span aria-hidden className="text-[13px] tracking-[1px] text-[var(--color-star)]">
       ★★★★★
     </span>
   );
 }
 
 const fmt = (n: number) => n.toLocaleString('de-DE');
+const dm = (iso: string) => `${Number(iso.slice(8, 10))}.${Number(iso.slice(5, 7))}.`;
 
-/** Säulen der Einblendungen pro Woche, ohne Bibliothek, serverseitig gezeichnet. */
-function WeeksChart() {
-  const max = Math.max(...PRAXIS_WEEKS.map((w) => w.impressions));
-  return (
-    <figure aria-label="Einblendungen bei Google pro Woche, Praxis aus OWL">
-      <div className="flex h-[200px] items-end gap-3 border-b border-[#e5e7eb] md:gap-5">
-        {PRAXIS_WEEKS.map((w, i) => (
-          <div key={w.label} className="flex h-full flex-1 flex-col items-center justify-end">
-            <span className="mb-1 text-[12px] font-semibold tabular-nums text-[var(--color-black)]">{fmt(w.impressions)}</span>
-            <div
-              className="w-full max-w-[44px] rounded-t-[6px]"
-              style={{ height: `${(w.impressions / max) * 100}%`, background: i === 0 ? '#c9d6ea' : 'var(--color-blue)' }}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="mt-2 flex gap-3 md:gap-5">
-        {PRAXIS_WEEKS.map((w) => (
-          <span key={w.label} className="flex-1 text-center text-[11px] tabular-nums text-[var(--color-gray)]">
-            {w.label}
-          </span>
-        ))}
-      </div>
-      <figcaption className="mt-3 text-[12px] leading-snug text-[var(--color-gray)]">
-        Einblendungen pro Woche. Echte Werte aus der Google Search Console, Name des Betriebs auf Wunsch weggelassen. Am 2. Oktober gingen 21 neue
-        Ratgeber-Beiträge online.
-      </figcaption>
-      <details className="mt-2 text-[12px] text-[var(--color-gray)]">
-        <summary className="cursor-pointer">Zahlen als Tabelle</summary>
-        <table className="mt-2 w-full text-left tabular-nums">
-          <thead>
-            <tr>
-              <th className="py-1 font-semibold">Woche</th>
-              <th className="py-1 font-semibold">Einblendungen</th>
-              <th className="py-1 font-semibold">Klicks</th>
-            </tr>
-          </thead>
-          <tbody>
-            {PRAXIS_WEEKS.map((w) => (
-              <tr key={w.label}>
-                <td className="py-0.5">{w.label}</td>
-                <td className="py-0.5">{fmt(w.impressions)}</td>
-                <td className="py-0.5">{fmt(w.clicks)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </details>
-    </figure>
-  );
+/** Erste gegen letzte Woche der Tageswerte, für die Kennzahl über der Grafik. */
+function weekCompare() {
+  const first = PRAXIS_DAILY.slice(0, 7);
+  const last = PRAXIS_DAILY.slice(-7);
+  const sum = (rows: typeof PRAXIS_DAILY, k: 1 | 2) => rows.reduce((s, r) => s + r[k], 0);
+  return {
+    firstFrom: first[0][0],
+    firstTo: first[first.length - 1][0],
+    lastFrom: last[0][0],
+    lastTo: last[last.length - 1][0],
+    impFirst: sum(first, 2),
+    impLast: sum(last, 2),
+    clkFirst: sum(first, 1),
+    clkLast: sum(last, 1),
+  };
 }
 
-const STEPS: Array<[string, string]> = [
-  ['Adresse eingeben', 'Nur deine Website, keine Anmeldung.'],
-  ['Ergebnis in 30 Sekunden', 'Du siehst deine Note und das wichtigste Problem sofort.'],
-  ['Vollen Bericht freischalten', 'Mit allen Befunden und Lösungen. Auf Wunsch gehen wir ihn gemeinsam durch.'],
+const STEPS: Array<[IconName, string, string]> = [
+  ['search', 'Adresse eingeben', 'Nur deine Website, keine Anmeldung.'],
+  ['clock', 'Ergebnis in 30 Sekunden', 'Du siehst deine Note und das wichtigste Problem sofort.'],
+  ['filePlus', 'Vollen Bericht freischalten', 'Mit allen Befunden und Lösungen. Auf Wunsch gehen wir ihn gemeinsam durch.'],
 ];
 
-/** Bausteine des Gefunden-Garantie-Pakets: Nummer, Name, Zeitpunkt, was man bekommt, was danach kommt. */
-const PAKET_BAUSTEINE: Array<[string, string, string, string]> = [
-  ['Startwert-Scan', 'Tag 0', 'Wir richten die Search Console ein, schauen uns deine Konkurrenz an und schreiben deinen Startwert auf.', 'Entwurf deiner Startseite'],
-  ['Erst-sehen-Entwurf', 'bis Tag 7', 'Du siehst den Entwurf deiner neuen Startseite. Gefällt er dir nicht, kostet es dich nichts.', 'Neubau nach deiner Freigabe'],
-  ['Neubau ohne Nachteile', 'Woche 2 bis 4', 'Eine eigene Seite für jede Leistung und jeden Ort. Alles, was deine alte Seite bei Google schon hat, nehmen wir mit.', 'Livegang'],
-  ['Maps-Makeover', 'Woche 1 bis 4', 'Dein Google-Profil machen wir komplett fertig, dazu einheitliche Firmendaten und ein einfacher Weg zu mehr Bewertungen.', 'Erste Zahlen im Kundenportal'],
-  ['Themen-Turbo', '90 Tage nach Livegang', '10 bis 20 neue Seiten zu genau dem, was deine Kunden bei Google suchen.', 'Prüfung der Garantie an Tag 90'],
-  ['Zahlen-Zentrale', 'jeden Monat', 'Dein Kundenportal mit allen Zahlen und jeder Maßnahme. Der Bericht kommt in normalem Deutsch.', 'Plan für den nächsten Monat'],
+type Station = {
+  icon: IconName;
+  when: string;
+  title: string;
+  text: string;
+  next?: string;
+  tone?: 'guarantee' | 'milestone';
+  badge?: string;
+  nfc?: boolean;
+};
+
+/** Das Gefunden-Garantie-Paket als Zeitstrahl: wann, was, was danach kommt. */
+const STATIONEN: Station[] = [
+  {
+    icon: 'search',
+    when: 'Tag 0',
+    title: 'Startwert-Scan',
+    text: 'Wir richten die Search Console ein, das ist Googles kostenloses Messwerkzeug. Dann schauen wir uns deine Konkurrenz an und schreiben deinen Startwert auf.',
+    next: 'Entwurf deiner Startseite',
+  },
+  {
+    icon: 'eye',
+    when: 'bis Tag 7',
+    title: 'Erst-sehen-Entwurf',
+    text: 'Du siehst den Entwurf deiner neuen Startseite. Gefällt er dir nicht, kostet es dich nichts.',
+    next: 'Neubau nach deiner Freigabe',
+    tone: 'guarantee',
+    badge: 'Erst-sehen-Garantie',
+  },
+  {
+    icon: 'layout',
+    when: 'Woche 2 bis 4',
+    title: 'Neubau ohne Nachteile',
+    text: 'Eine eigene Seite für jede Leistung und jeden Ort. Alles, was deine alte Seite bei Google schon erreicht hat, nehmen wir mit.',
+    next: 'Livegang',
+  },
+  {
+    icon: 'mapPin',
+    when: 'Woche 1 bis 4, parallel',
+    title: 'Maps-Makeover',
+    text: 'Wir machen dein Google-Profil komplett fertig, das ist dein Eintrag bei Google Maps. Dazu einheitliche Firmendaten überall im Netz und ein einfacher Weg zu mehr Bewertungen.',
+    next: 'Erste Zahlen im Kundenportal',
+    nfc: true,
+  },
+  {
+    icon: 'flag',
+    when: 'Livegang',
+    title: 'Deine neue Website ist online',
+    text: 'Ab jetzt läuft die Uhr für die Doppelt-gefunden-Garantie.',
+    tone: 'milestone',
+  },
+  {
+    icon: 'filePlus',
+    when: 'Tag 1 bis 90 nach dem Livegang',
+    title: 'Themen-Turbo',
+    text: '10 bis 20 neue Seiten zu genau dem, was deine Kunden bei Google suchen.',
+    next: 'Prüfung der Garantie',
+  },
+  {
+    icon: 'shieldCheck',
+    when: 'Tag 90',
+    title: 'Garantie-Prüfung',
+    text: 'Finden dich doppelt so viele neue Leute über Google wie vorher? Wenn nicht, arbeiten wir ohne Monatsbeitrag weiter, bis es so ist.',
+    tone: 'guarantee',
+    badge: 'Doppelt-gefunden-Garantie',
+    next: 'Jeden Monat dein Bericht',
+  },
+  {
+    icon: 'chart',
+    when: 'jeden Monat',
+    title: 'Zahlen-Zentrale',
+    text: 'Dein Kundenportal mit allen Zahlen und jeder Maßnahme. Den Bericht bekommst du in normalem Deutsch.',
+    next: 'Plan für den nächsten Monat',
+  },
 ];
 
 const GARANTIE_REGELN = [
-  'Gemessen werden die Klicks aus der Google-Suche ohne Suchen mit deinem Firmennamen, in der Google Search Console. Die Zahlen siehst du auch in deinem Kundenportal.',
-  'Startwert sind deine Klicks in den 28 Tagen vor dem Livegang. Gibt es schon ältere Daten, zählt der Schnitt der letzten 3 Monate.',
+  'Gemessen werden die Klicks aus der Google-Suche, ohne Suchen nach deinem Firmennamen. Wir messen in der Google Search Console, das ist Googles eigenes Messwerkzeug. Die Zahlen siehst du auch in deinem Kundenportal.',
+  'Startwert sind deine Klicks in den 28 Tagen vor dem Livegang, also bevor die neue Seite online geht. Gibt es schon ältere Daten, zählt der Schnitt der letzten 3 Monate.',
   'Ziel: in den Tagen 63 bis 90 nach dem Livegang mindestens doppelt so viele Klicks. Liegt der Startwert unter 10, gelten 20 Klicks als Ziel.',
   'Du machst mit: Zugänge innerhalb von 7 Tagen, Freigaben innerhalb von 5 Werktagen, Kunden um Bewertungen bitten und nichts ohne Absprache ändern.',
   'Nach dem Check sagen wir dir, ob die Garantie für deine Website gilt. Ist eine Seite schon sehr stark, vereinbaren wir ein kleineres Ziel.',
-  'Keine Garantie auf Platzierungen oder auf eine bestimmte Zahl an Anfragen.',
+  'Keine Garantie auf Platzierungen bei Google oder auf eine bestimmte Zahl an Anfragen.',
 ];
+
+/** Garantie-Stempel: Kreis mit umlaufender Schrift und Schild. */
+function GuaranteeSeal({ id }: { id: string }) {
+  return (
+    <svg viewBox="0 0 96 96" className="h-[100px] w-[100px] shrink-0 -rotate-[8deg]" aria-hidden>
+      <defs>
+        <path id={`${id}-ring`} d="M48 48m-31 0a31 31 0 1 1 62 0a31 31 0 1 1-62 0" />
+      </defs>
+      <circle cx="48" cy="48" r="45" fill="var(--color-guarantee-bg)" stroke="var(--color-guarantee)" strokeWidth="2.5" />
+      <circle cx="48" cy="48" r="38" fill="none" stroke="var(--color-guarantee)" strokeWidth="1" strokeDasharray="2.5 2.5" />
+      <text fill="var(--color-guarantee)" fontSize="10.5" fontWeight="800">
+        <textPath href={`#${id}-ring`} startOffset="0" textLength="190" lengthAdjust="spacing">
+          GARANTIE ★ GARANTIE ★
+        </textPath>
+      </text>
+      <circle cx="48" cy="48" r="20" fill="var(--color-guarantee)" />
+      <g transform="translate(36 36)" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3 4.5 6v5.5c0 4.8 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.7 7.5-9.5V6z" />
+        <path d="m8.5 12 2.5 2.5 4.5-5" />
+      </g>
+    </svg>
+  );
+}
+
+function Timeline({ variant }: { variant: FunnelVariant }) {
+  return (
+    <ol id="ablauf" className="relative mt-12">
+      {/* Linie: grau als Spur, farbig füllt sich beim Scrollen */}
+      <span aria-hidden className="absolute bottom-6 left-[19px] top-6 w-[3px] -translate-x-1/2 rounded-full bg-[#e3e6ea] md:left-1/2" />
+      <span
+        aria-hidden
+        className="fz-line-fill absolute bottom-6 left-[19px] top-6 w-[3px] -translate-x-1/2 rounded-full md:left-1/2"
+        style={{ background: 'linear-gradient(to bottom, var(--color-blue), var(--color-blue) 55%, var(--color-guarantee))' }}
+      />
+      {STATIONEN.map((s, i) => {
+        const left = i % 2 === 0;
+        const isG = s.tone === 'guarantee';
+        const isM = s.tone === 'milestone';
+        const showNfc = s.nfc && NFC_AUFSTELLER_VORRAT > 0;
+        return (
+          <li key={s.title} className="relative grid grid-cols-[40px_1fr] gap-x-4 pb-6 last:pb-0 md:grid-cols-[1fr_56px_1fr] md:gap-x-6 md:pb-8 md:[&:not(:first-of-type)]:-mt-28">
+            {/* Punkt auf der Linie */}
+            <span
+              className={`col-start-1 row-start-1 mt-3 flex h-10 w-10 items-center justify-center rounded-full ring-[6px] ring-[var(--color-offwhite)] md:col-start-2 md:mx-auto md:mt-4 md:h-12 md:w-12 ${
+                isG
+                  ? 'bg-[var(--color-guarantee)] text-white'
+                  : isM
+                    ? 'bg-[var(--color-blue)] text-white'
+                    : 'bg-white text-[var(--color-blue)] shadow-[var(--shadow-sm)]'
+              }`}
+            >
+              <Icon name={s.icon} className="h-5 w-5 md:h-6 md:w-6" />
+            </span>
+
+            <div
+              className={`fz-reveal col-start-2 row-start-1 ${left ? 'md:col-start-1 md:justify-self-end' : 'md:col-start-3 md:justify-self-start'} w-full md:max-w-[440px]`}
+            >
+              <div
+                className={`rounded-[18px] p-5 md:p-6 ${
+                  isG
+                    ? 'bg-[var(--color-guarantee-bg)] ring-1 ring-[var(--color-guarantee-line)]'
+                    : isM
+                      ? 'bg-[var(--color-blue-light)]'
+                      : 'bg-white shadow-[var(--shadow-sm)]'
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-full px-3 py-1 text-[13px] font-semibold ${
+                      isG ? 'bg-white text-[var(--color-guarantee)]' : isM ? 'bg-white text-[var(--color-blue)]' : 'bg-[var(--color-blue-light)] text-[var(--color-blue)]'
+                    }`}
+                  >
+                    {s.when}
+                  </span>
+                  {s.badge && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-guarantee)] px-2.5 py-1 text-[12px] font-semibold text-white">
+                      <Icon name="shieldCheck" className="h-3.5 w-3.5" />
+                      {s.badge}
+                    </span>
+                  )}
+                </div>
+                <div className={showNfc ? 'mt-3 flex gap-4' : 'mt-3'}>
+                  <div className="flex-1">
+                    <h3 className={`text-[18px] font-bold ${isG ? 'text-[var(--color-guarantee)]' : 'text-[var(--color-black)]'}`}>{s.title}</h3>
+                    <p className="mt-1.5 text-[15px] leading-relaxed text-[var(--color-black)]/80">{s.text}</p>
+                  </div>
+                  {showNfc && <NfcAufsteller id="nfc-zeitstrahl" className="w-[76px] shrink-0 self-start md:w-[96px]" />}
+                </div>
+                {showNfc && (
+                  <p className="mt-2 text-[13px] font-semibold text-[var(--color-scarcity)]">
+                    Dazu ein Bewertungs-Aufsteller{variant.nfcText ? '' : ' für die Theke'}, solange der Vorrat reicht.
+                  </p>
+                )}
+                {s.next && (
+                  <p className="mt-3 flex items-center gap-1.5 border-t border-black/5 pt-3 text-[13px] text-[var(--color-gray)]">
+                    <span aria-hidden className="text-[var(--color-blue)]">→</span>
+                    <span>
+                      <span className="font-semibold text-[var(--color-black)]">Als Nächstes:</span> {s.next}
+                    </span>
+                  </p>
+                )}
+              </div>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 function PaketSection({ variant }: { variant: FunnelVariant }) {
   return (
     <section className="bg-[var(--color-offwhite)] py-16 md:py-24">
       <div className="mx-auto max-w-[1100px] px-4 md:px-6">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Was du bekommst</p>
-        <h2 className={`${H2} mt-2`}>Das Gefunden-Garantie-Paket</h2>
-        <p className="mt-3 max-w-[620px] text-[17px] text-[var(--color-gray)]">
-          Ein fester Ablauf. Du weißt bei jedem Schritt, was als Nächstes kommt.
-        </p>
+        <div className="md:text-center">
+          <p className={`${EYEBROW} text-[var(--color-blue)]`}>Was du bekommst</p>
+          <h2 className={`${H2} mt-2`}>Das Gefunden-Garantie-Paket</h2>
+          <p className="mt-3 max-w-[620px] text-[17px] text-[var(--color-gray)] md:mx-auto">
+            Ein fester Ablauf. Du weißt bei jedem Schritt, was als Nächstes kommt.
+          </p>
+        </div>
 
-        {/* Fahrplan: auf dem Handy senkrecht mit Linie, ab md als Raster */}
-        <ol className="mt-10 grid gap-0 md:grid-cols-3 md:gap-4">
-          {PAKET_BAUSTEINE.map(([title, when, text, next], i) => (
-            <li key={title} className="flex gap-4 md:block">
-              <div className="flex flex-col items-center md:hidden">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-blue)] text-[15px] font-bold text-white">
-                  {i + 1}
-                </span>
-                {i < PAKET_BAUSTEINE.length - 1 && <span aria-hidden className="w-px flex-1 bg-[var(--color-blue)] opacity-25" />}
-              </div>
-              <div className="mb-4 flex-1 rounded-[18px] bg-white p-5 shadow-[var(--shadow-sm)] md:mb-0 md:h-full md:p-6">
-                <div className="flex items-center gap-3">
-                  <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-blue)] text-[15px] font-bold text-white md:flex">
-                    {i + 1}
-                  </span>
-                  <span className="rounded-full bg-[var(--color-blue-light)] px-3 py-1 text-[13px] font-semibold text-[var(--color-blue)]">{when}</span>
-                </div>
-                <h3 className="mt-3 text-[17px] font-semibold text-[var(--color-black)]">{title}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-[var(--color-gray)]">{text}</p>
-                <p className="mt-3 text-[13px] text-[var(--color-gray)]">
-                  <span className="font-semibold text-[var(--color-black)]">Als Nächstes:</span> {next}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
+        <Timeline variant={variant} />
 
         {/* Garantien */}
-        <div className="mt-10 grid gap-4 md:grid-cols-2">
-          {[
-            ['Erst-sehen-Garantie', 'Du siehst den Entwurf deiner neuen Startseite, bevor du zahlst. Gefällt er dir nicht, kostet es dich 0 €.'],
-            [
-              'Doppelt-gefunden-Garantie',
-              'Finden dich 90 Tage nach dem Livegang nicht doppelt so viele neue Leute über Google wie vorher, arbeiten wir ohne Monatsbeitrag weiter, bis es so ist.',
-            ],
-          ].map(([title, text]) => (
-            <div key={title} className="rounded-[18px] border-2 border-[var(--color-blue)] bg-white p-6">
-              <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Garantie</p>
-              <h3 className="mt-1 text-[20px] font-bold text-[var(--color-black)]">{title}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-[var(--color-black)]">{text}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 text-[15px] text-[var(--color-gray)]">Die genauen Regeln bekommst du schriftlich im Angebot.</p>
-        <details className="group mt-2 rounded-[12px] bg-white px-4 py-3 shadow-[var(--shadow-sm)]">
-          <summary className="cursor-pointer list-none text-[15px] font-semibold text-[var(--color-black)] [&::-webkit-details-marker]:hidden">
-            <span className="inline-block transition-transform group-open:rotate-90" aria-hidden>
-              ›
-            </span>{' '}
-            Die Spielregeln der Doppelt-gefunden-Garantie kurz
-          </summary>
-          <ul className="mt-3 space-y-2 pb-1">
-            {GARANTIE_REGELN.map((r) => (
-              <li key={r} className="flex gap-3 text-[14px] leading-relaxed text-[var(--color-gray)]">
-                <span aria-hidden className="mt-[1px] text-[var(--color-blue)]">•</span>
-                {r}
-              </li>
+        <div id="garantien" className="mt-16 scroll-mt-[calc(var(--nav-height)+24px)]">
+          <div className="md:text-center">
+            <p className={`${EYEBROW} text-[var(--color-guarantee)]`}>Zwei Garantien</p>
+            <h2 className={`${H2} mt-2`}>Das Risiko liegt bei mir</h2>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            {[
+              ['g1', 'Garantie 1', 'Erst-sehen-Garantie', 'Du siehst den Entwurf deiner neuen Startseite, bevor du zahlst. Gefällt er dir nicht, kostet es dich 0 €.'],
+              [
+                'g2',
+                'Garantie 2',
+                'Doppelt-gefunden-Garantie',
+                'Finden dich 90 Tage nach dem Livegang nicht doppelt so viele neue Leute über Google wie vorher, arbeiten wir ohne Monatsbeitrag weiter, bis es so ist.',
+              ],
+            ].map(([id, label, title, text]) => (
+              <div key={id} className="flex flex-col gap-4 rounded-[18px] border-2 border-[var(--color-guarantee)] bg-white p-6 sm:flex-row sm:items-start sm:gap-5">
+                <GuaranteeSeal id={`seal-${id}`} />
+                <div>
+                  <p className={`${EYEBROW} text-[var(--color-guarantee)]`}>{label}</p>
+                  <h3 className="mt-1 text-[21px] font-bold text-[var(--color-black)]">{title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[var(--color-black)]">{text}</p>
+                </div>
+              </div>
             ))}
-          </ul>
-        </details>
+          </div>
+          <p className="mt-4 flex items-center gap-2 text-[15px] text-[var(--color-gray)]">
+            <Icon name="check" className="h-4 w-4 text-[var(--color-guarantee)]" />
+            Die genauen Regeln bekommst du schriftlich im Angebot.
+          </p>
+          <details className="group mt-3 rounded-[12px] bg-white px-4 py-3 shadow-[var(--shadow-sm)]">
+            <summary className="cursor-pointer list-none text-[15px] font-semibold text-[var(--color-black)] [&::-webkit-details-marker]:hidden">
+              <span className="inline-block transition-transform group-open:rotate-90" aria-hidden>
+                ›
+              </span>{' '}
+              Die Spielregeln der Doppelt-gefunden-Garantie kurz
+            </summary>
+            <ul className="mt-3 space-y-2 pb-1">
+              {GARANTIE_REGELN.map((r) => (
+                <li key={r} className="flex gap-3 text-[14px] leading-relaxed text-[var(--color-gray)]">
+                  <Icon name="check" className="mt-[3px] h-4 w-4 shrink-0 text-[var(--color-guarantee)]" />
+                  {r}
+                </li>
+              ))}
+            </ul>
+          </details>
+        </div>
 
         {/* Boni */}
-        <ul className="mt-8 grid gap-3 md:grid-cols-2">
-          <li className="flex gap-3 rounded-[12px] bg-white px-4 py-3 text-[15px] leading-snug text-[var(--color-black)]">
-            <span aria-hidden className="font-bold text-[var(--color-blue)]">+</span>
-            <span>
-              <span className="font-semibold">Texte inklusive:</span> Du redest 30 Minuten mit uns, wir schreiben alle Texte.
-            </span>
-          </li>
-          {NFC_AUFSTELLER_VORRAT > 0 && (
-            <li className="flex gap-3 rounded-[12px] bg-white px-4 py-3 text-[15px] leading-snug text-[var(--color-black)]">
-              <span aria-hidden className="font-bold text-[var(--color-blue)]">+</span>
-              <span>
-                <span className="font-semibold">Bewertungs-Aufsteller:</span> Die ersten {NFC_AUFSTELLER_VORRAT} Betriebe bekommen{' '}
-                {variant.nfcText ??
-                  'einen NFC-Aufsteller für die Theke. Kunde hält das Handy dran und landet direkt bei deinen Google-Bewertungen.'}
+        <div id="boni" className="mt-14">
+          <p className={`${EYEBROW} flex items-center gap-2 text-[var(--color-black)]`}>
+            <Icon name="gift" className="h-4 w-4 text-[var(--color-guarantee)]" />
+            Obendrauf
+          </p>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div className="flex gap-4 rounded-[18px] bg-[var(--color-guarantee-bg)] p-6 ring-1 ring-[var(--color-guarantee-line)]">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-guarantee)] text-white">
+                <Icon name="pen" className="h-5 w-5" />
               </span>
-            </li>
-          )}
-        </ul>
+              <div>
+                <p className="inline-flex items-center gap-1.5 text-[19px] font-bold text-[var(--color-guarantee)]">
+                  Texte inklusive <Icon name="check" className="h-5 w-5" />
+                </p>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-[var(--color-black)]">
+                  Du redest 30 Minuten mit uns, wir schreiben alle Texte. Du musst nichts selbst formulieren.
+                </p>
+              </div>
+            </div>
+            {NFC_AUFSTELLER_VORRAT > 0 && (
+              <div className="flex items-center gap-5 rounded-[18px] bg-white p-6 shadow-[var(--shadow-sm)]">
+                <NfcAufsteller id="nfc-bonus" className="w-[112px] shrink-0 md:w-[140px]" />
+                <div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-scarcity-bg)] px-3 py-1 text-[12px] font-semibold text-[var(--color-scarcity)]">
+                    <span aria-hidden className="h-2 w-2 rounded-full bg-[var(--color-scarcity-fill)]" />
+                    Noch {NFC_AUFSTELLER_VORRAT} auf Lager
+                  </span>
+                  <p className="mt-2 text-[19px] font-bold text-[var(--color-black)]">Bewertungs-Aufsteller</p>
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-[var(--color-black)]">
+                    Die ersten {NFC_AUFSTELLER_VORRAT} Betriebe bekommen{' '}
+                    {variant.nfcText ??
+                      'einen NFC-Aufsteller für die Theke. Kunde hält das Handy dran und landet direkt bei deinen Google-Bewertungen.'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
-        <a href="#seo-url" className="btn btn-outline mt-8 justify-center">
-          Erst Website prüfen
-        </a>
+        <div className="mt-10 md:text-center">
+          <a href="#seo-url" className="btn btn-outline justify-center">
+            Erst Website prüfen
+          </a>
+        </div>
       </div>
     </section>
   );
 }
 
 export default function FunnelSections({ variant }: { variant: FunnelVariant }) {
+  const w = weekCompare();
+  const ratio = w.impLast / w.impFirst;
+  const clickPlus = Math.floor(((w.clkLast - w.clkFirst) / w.clkFirst) * 100);
   return (
     <>
       {/* Kommt dir das bekannt vor? */}
@@ -312,8 +555,10 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
           <div>
             <ul className="space-y-3">
               {variant.symptoms.map((s) => (
-                <li key={s} className="flex gap-3 rounded-[12px] bg-[var(--color-offwhite)] px-4 py-3 text-[16px] leading-snug text-[var(--color-black)]">
-                  <span aria-hidden className="mt-[2px] font-bold text-[var(--color-blue)]">✓</span>
+                <li key={s} className="fz-reveal flex items-start gap-3 rounded-[12px] bg-[var(--color-offwhite)] px-4 py-3 text-[16px] leading-snug text-[var(--color-black)]">
+                  <span aria-hidden className="mt-[1px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-warn-bg)] text-[var(--color-warn)]">
+                    <Icon name="alert" className="h-4 w-4" />
+                  </span>
                   {s}
                 </li>
               ))}
@@ -334,9 +579,14 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
           </p>
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             {(variant.reasons ?? REASONS).map(([n, title, text]) => (
-              <div key={n} className="rounded-[18px] bg-white p-6 shadow-[var(--shadow-sm)]">
-                <p className="text-[20px] font-extrabold text-[var(--color-blue)]">{n}</p>
-                <h3 className="mt-2 text-[17px] font-semibold text-[var(--color-black)]">{title}</h3>
+              <div key={n} className="fz-reveal rounded-[18px] bg-white p-6 shadow-[var(--shadow-sm)]">
+                <div className="flex items-center justify-between">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-[var(--color-fail-bg)] text-[var(--color-fail)]">
+                    <Icon name={reasonIcon(title)} className="h-6 w-6" />
+                  </span>
+                  <span className="text-[15px] font-bold tabular-nums text-[var(--color-gray)]">{n}</span>
+                </div>
+                <h3 className="mt-4 text-[17px] font-semibold text-[var(--color-black)]">{title}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-[var(--color-gray)]">{text}</p>
               </div>
             ))}
@@ -349,22 +599,45 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
         <div className="mx-auto max-w-[1100px] px-4 md:px-6">
           <h2 className={H2}>Dass es anders geht</h2>
 
-          <div className="mt-10 grid gap-8 rounded-[24px] bg-[var(--color-offwhite)] p-6 md:grid-cols-[1.15fr_0.85fr] md:gap-12 md:p-10">
-            <div>
-              <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Eine Praxis aus OWL</p>
-              <p className="mt-2 text-[44px] font-extrabold leading-none tracking-tight text-[var(--color-blue)] md:text-[56px]">3-mal</p>
-              <p className="mt-2 text-[17px] font-semibold text-[var(--color-black)]">so oft bei Google angezeigt, in 28 Tagen</p>
-              <p className="mt-1 text-[15px] text-[var(--color-gray)]">Von {fmt(19414)} auf {fmt(59666)} Einblendungen.</p>
-              <div className="mt-8 rounded-[18px] bg-white p-5 shadow-[var(--shadow-sm)]">
-                <WeeksChart />
+          <div className="mt-10 rounded-[24px] bg-[var(--color-offwhite)] p-5 md:p-10">
+            <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
+              <div>
+                <p className={`${EYEBROW} text-[var(--color-blue)]`}>Eine Praxis aus OWL</p>
+                <p className="mt-2 flex items-center gap-3 text-[44px] font-extrabold leading-none tracking-tight text-[var(--color-guarantee)] md:text-[56px]">
+                  über {Math.floor(ratio)}-mal
+                  <svg viewBox="0 0 24 24" className="h-9 w-9 md:h-11 md:w-11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M3 17l6-6 4 4 8-8M15 7h6v6" />
+                  </svg>
+                </p>
+                <p className="mt-2 text-[17px] font-semibold text-[var(--color-black)]">so oft bei Google angezeigt wie in der ersten Woche</p>
+                <p className="mt-1 max-w-[560px] text-[15px] leading-relaxed text-[var(--color-gray)]">
+                  Erste Woche ({dm(w.firstFrom)} bis {dm(w.firstTo)}): {fmt(w.impFirst)} Einblendungen. Letzte Oktoberwoche ({dm(w.lastFrom)} bis{' '}
+                  {dm(w.lastTo)}): {fmt(w.impLast)}. Einblendungen heißt: so oft hat Google die Praxis in den Suchergebnissen gezeigt.
+                </p>
+              </div>
+              <div className="rounded-[18px] bg-white px-5 py-4 shadow-[var(--shadow-sm)]">
+                <p className="text-[13px] text-[var(--color-gray)]">Klicks pro Woche</p>
+                <p className="mt-1 text-[22px] font-bold tabular-nums text-[var(--color-black)]">
+                  {fmt(w.clkFirst)} <span className="text-[var(--color-gray)]">→</span> {fmt(w.clkLast)}
+                </p>
+                <p className="mt-1 inline-flex rounded-full bg-[var(--color-guarantee-bg)] px-2.5 py-0.5 text-[13px] font-semibold text-[var(--color-guarantee)]">
+                  +{clickPlus} %
+                </p>
               </div>
             </div>
-            <div>
+
+            <div className="mt-8 rounded-[18px] bg-white p-4 shadow-[var(--shadow-sm)] md:p-6">
+              <ProofChart data={PRAXIS_DAILY} marker={PRAXIS_MARKER} />
+            </div>
+
+            <div className="mt-8">
               <h3 className="text-[17px] font-semibold text-[var(--color-black)]">Was wir gemacht haben</h3>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 grid gap-x-8 gap-y-3 md:grid-cols-2">
                 {PRAXIS_MASSNAHMEN.map((m) => (
                   <li key={m} className="flex gap-3 text-[15px] leading-snug text-[var(--color-black)]">
-                    <span aria-hidden className="mt-[1px] font-bold text-[var(--color-blue)]">✓</span>
+                    <span aria-hidden className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--color-guarantee-bg)] text-[var(--color-guarantee)]">
+                      <Icon name="check" className="h-3.5 w-3.5" />
+                    </span>
                     {m}
                   </li>
                 ))}
@@ -372,15 +645,32 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
             </div>
           </div>
 
+          {BELEG_SCREENSHOTS.length > 0 && (
+            <div className="mt-6">
+              <p className="text-[15px] font-semibold text-[var(--color-black)]">Original aus der Search Console, Stand 18.11.2026</p>
+              <div className="mt-3 grid gap-4 md:grid-cols-2">
+                {BELEG_SCREENSHOTS.map((b) => (
+                  <figure key={b.src} className="overflow-hidden rounded-[18px] bg-white shadow-[var(--shadow-sm)] ring-1 ring-black/5">
+                    <a href={b.src} target="_blank" rel="noopener noreferrer" aria-label={`${b.caption} Bild groß öffnen`}>
+                      <Image src={b.src} alt={b.alt} width={b.width} height={b.height} sizes="(min-width: 768px) 520px, 100vw" className="h-auto w-full" />
+                    </a>
+                    <figcaption className="px-4 py-3 text-[13px] leading-snug text-[var(--color-gray)]">{b.caption}</figcaption>
+                  </figure>
+                ))}
+              </div>
+              <p className="mt-2 text-[12px] text-[var(--color-gray)]">Name des Betriebs auf Wunsch weggelassen. Impressionen ist Googles Wort für Einblendungen.</p>
+            </div>
+          )}
+
           {variant.proof === 'kfz' && (
             <div className="mt-6 rounded-[24px] bg-[var(--color-offwhite)] p-6 md:p-10">
-              <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Kfz-Meisterbetrieb aus Lage</p>
+              <p className={`${EYEBROW} text-[var(--color-blue)]`}>Kfz-Meisterbetrieb aus Lage</p>
               <h3 className="mt-2 text-[22px] font-bold leading-snug text-[var(--color-black)] md:text-[26px]">
                 Motorenfachmann: Onpage-Score von 60 auf 95 Prozent
               </h3>
               <p className="mt-2 max-w-[640px] text-[15px] leading-relaxed text-[var(--color-gray)]">
-                Bestehende Website übernommen und aufgeräumt: eine Adresse statt mehrerer, eigener Titel und eigene Beschreibung für alle 34 Seiten,
-                klare Überschriften, veraltete Angaben korrigiert.
+                Der Onpage-Score zeigt, wie sauber eine Seite für Google gebaut ist. Wir haben die bestehende Website übernommen und aufgeräumt: eine
+                Adresse statt mehrerer, eigener Titel und eigene Beschreibung für alle 34 Seiten, klare Überschriften, veraltete Angaben korrigiert.
               </p>
               <div className="mt-6 grid gap-4">
                 {[
@@ -396,18 +686,10 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
             </div>
           )}
 
-          {BELEG_SCREENSHOTS.length > 0 && (
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {BELEG_SCREENSHOTS.map((b) => (
-                <figure key={b.src} className="overflow-hidden rounded-[18px] bg-white shadow-[var(--shadow-sm)]">
-                  <Image src={b.src} alt={b.alt} width={b.width} height={b.height} sizes="(min-width: 640px) 520px, 100vw" className="h-auto w-full" />
-                  <figcaption className="px-4 py-3 text-[13px] text-[var(--color-gray)]">{b.caption}</figcaption>
-                </figure>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-6 rounded-[18px] border border-[#e5e7eb] p-5 md:flex md:items-center md:justify-between md:gap-6">
+          <div className="mt-6 flex items-start gap-3 rounded-[18px] border border-[#e5e7eb] p-5">
+            <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-guarantee-bg)] text-[var(--color-guarantee)]">
+              <Icon name="chart" className="h-4 w-4" />
+            </span>
             <p className="text-[15px] text-[var(--color-black)]">
               <span className="font-semibold">Meine eigene Website:</span> rund 5-mal so viele Besucher über Google wie im Sommer, nach denselben Regeln umgebaut.
             </p>
@@ -426,7 +708,7 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-3">
               {FUNNEL_REVIEWS.map((r) => (
-                <figure key={r.author} className="flex flex-col rounded-[18px] bg-[var(--color-offwhite)] p-5">
+                <figure key={r.author} className="fz-reveal flex flex-col rounded-[18px] bg-[var(--color-offwhite)] p-5">
                   <Stars />
                   <blockquote className="mt-2 flex-1 text-[15px] leading-relaxed text-[var(--color-black)]">„{r.text}“</blockquote>
                   <figcaption className="mt-3 text-[13px] text-[var(--color-gray)]">{r.author}, Google-Bewertung</figcaption>
@@ -445,11 +727,14 @@ export default function FunnelSections({ variant }: { variant: FunnelVariant }) 
         <div className="mx-auto max-w-[1100px] px-4 md:px-6">
           <h2 className={H2}>So läuft der Check</h2>
           <ol className="mt-10 grid gap-4 md:grid-cols-3">
-            {STEPS.map(([title, text], i) => (
+            {STEPS.map(([icon, title, text], i) => (
               <li key={title} className="rounded-[18px] bg-[var(--color-offwhite)] p-6">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-blue-light)] text-[15px] font-bold text-[var(--color-blue)]">
-                  {i + 1}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-blue)] text-white">
+                    <Icon name={icon} className="h-5 w-5" />
+                  </span>
+                  <span className="text-[13px] font-semibold text-[var(--color-gray)]">Schritt {i + 1}</span>
+                </div>
                 <h3 className="mt-4 text-[17px] font-semibold text-[var(--color-black)]">{title}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-[var(--color-gray)]">{text}</p>
               </li>

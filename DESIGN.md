@@ -12,6 +12,11 @@ Tokens in `public/css/style.css` unter `:root`.
 - `--color-blue` #0071e3: einziger Akzent, nur für Hauptaktion, Links und Kennzahlen. Weiße Schrift darauf 4.7:1.
 - `--color-blue-light` #e8f0fb: Hinterlegung für hervorgehobene Hinweise.
 - `--color-ok` #1b7a3d, `--color-warn` #8f5300, `--color-fail` #b4232a: nur für Prüfergebnisse, nie dekorativ. Rot (Farbton ca. 357°) liegt weit genug vom Akzentblau (ca. 211°) entfernt.
+- Signalfarben nur auf den Verkaufsseiten `/seo-check/<branche>` (Yusufs Wunsch vom 22.11.2026: Garantien müssen sich vom Blau abheben):
+  - `--color-guarantee` #147a42 auf `--color-guarantee-bg` #eaf6ee (4.86:1, weiß auf Grün 5.4:1), Rahmen `--color-guarantee-line` #9fd5b2: Garantien, „Texte inklusive“, Wachstum.
+  - `--color-scarcity` #9a4f00 auf `--color-scarcity-bg` #fff4e0 (5.52:1), Punkt `--color-scarcity-fill` #f59e0b: echte Knappheit (Aufsteller-Vorrat), Hinweis „Vorschau“.
+  - Probleme dezent mit `--color-warn`/`--color-fail` und ihren Hintergründen (Ja-Fragen, Gründe-Karten).
+  - `--color-impressions` #6d3fc4: zweite Linie (Einblendungen) in der Search-Console-Grafik, `--color-star` #f5a623: Bewertungssterne.
 
 ## Typography
 - Familie: Inter, geladen über `next/font/google` im jeweiligen Layout (Startseite per Link in `public/index.html`). Akzent-Serif Playfair Display nur auf der Startseite.
