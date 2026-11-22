@@ -86,6 +86,29 @@ const EMPTY: Record<View, string> = {
   alle: 'Noch keine Betriebe. In Claude Code sagen: „Outreach: Kosmetikstudios Bielefeld“.',
 };
 
+/** Für die Namenssuche: klein, ohne Akzente und Sonderzeichen, „ß“ wie „ss“. */
+const norm = (v?: string) =>
+  (v ?? '')
+    .toLowerCase()
+    .replace(/ß/g, 'ss')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+/** Findet Betriebe über Name, Instagram, TikTok, Ansprechpartner, Mail, Website, Ort oder Telefon. Alle Wörter müssen vorkommen. */
+function matchesName(l: OutreachLead, term: string): boolean {
+  const words = norm(term).split(' ').filter(Boolean);
+  if (!words.length) return true;
+  const hay = norm([l.name, l.instagram, l.tiktok, l.igRejected, l.ig?.fullName, l.contact, l.email, l.website, l.city, l.address].join(' '));
+  const phone = (l.phone ?? '').replace(/\D/g, '');
+  return words.every((w) => hay.includes(w) || (/^\d{4,}$/.test(w) && phone.includes(w)));
+}
+
+/** Ansicht, in der ein Suchtreffer gerade steht (für die Knöpfe auf der Karte). */
+const homeView = (l: OutreachLead): View =>
+  (['antworten', 'nachfassen', 'gesendet', 'schreiben', 'mail'] as const).find((v) => inView(l, v)) ?? 'alle';
+
 export default function OutreachPage() {
   return (
     <Suspense fallback={<div className="card text-sm text-gray-500">Lädt…</div>}>
@@ -106,6 +129,8 @@ function OutreachInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [channel, setChannel] = useState<'instagram' | 'mail'>('instagram');
+  const [nameTerm, setNameTerm] = useState('');
+  const searching = norm(nameTerm).length > 0;
 
   const load = useCallback(async () => {
     setError(null);
@@ -155,6 +180,11 @@ function OutreachInner() {
           ? byDate('repliedAt')
           : (a, b) => rank(b) - rank(a) || a.name.localeCompare(b.name, 'de'),
     );
+
+  // Namenssuche: über alle Betriebe und Ansichten, auch erledigte, damit Antwortende immer auffindbar sind
+  const hits = searching
+    ? leads.filter((l) => matchesName(l, nameTerm)).sort((a, b) => a.name.localeCompare(b.name, 'de')).slice(0, 50)
+    : [];
 
   // Kennzahlen je Kanal: Instagram und Mail getrennt
   const channelLeads = scoped.filter((l) => (channel === 'mail') === isMailLead(l));
@@ -227,6 +257,54 @@ function OutreachInner() {
         <WeekChart week={week} />
       </section>
 
+      <div role="search" className="relative">
+        <label className="label" htmlFor="outreach-name">
+          Betrieb finden
+        </label>
+        <input
+          id="outreach-name"
+          type="search"
+          className="input text-base sm:text-sm"
+          placeholder="Name, Instagram, Mail, Ort oder Telefon"
+          value={nameTerm}
+          onChange={(e) => setNameTerm(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setNameTerm('');
+          }}
+          autoComplete="off"
+          spellCheck={false}
+        />
+      </div>
+
+      {searching ? (
+        <section aria-live="polite" aria-labelledby="outreach-hits" className="space-y-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="outreach-hits" className="text-sm font-semibold text-gray-900">
+              {loading ? 'Suche läuft…' : `${hits.length === 50 ? 'Über 50' : hits.length} ${hits.length === 1 ? 'Treffer' : 'Treffer'} für „${nameTerm.trim()}“`}
+            </h2>
+            <button type="button" className="text-sm font-medium text-brand-blue hover:underline" onClick={() => setNameTerm('')}>
+              Suche löschen
+            </button>
+          </div>
+          {!loading && hits.length === 0 ? (
+            <div className="card text-sm text-gray-600">Kein Betrieb gefunden. Teil des Namens, Instagram-Name oder Ort probieren.</div>
+          ) : (
+            <ul className="space-y-3">
+              {hits.map((l) => (
+                <li key={l.id} className="space-y-1">
+                  {(l.status === 'kein-interesse' || (l.status === 'nachgefasst' && daysSince(l.followedUpAt) >= OUTREACH_GIVE_UP_DAYS)) && (
+                    <p className="text-xs font-medium text-amber-700">Erledigt, steht in keiner Liste mehr</p>
+                  )}
+                  <ul>
+                    <LeadCard lead={l} view={homeView(l)} limitReached={!isMailLead(l) && sentTodayIg >= OUTREACH_DAILY_LIMIT} onSave={save} onReload={reload} />
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ) : (
+      <>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <div role="group" aria-label="Ansicht" className="inline-flex gap-1 rounded-lg bg-gray-100 p-1">
@@ -288,6 +366,8 @@ function OutreachInner() {
             <LeadCard key={l.id} lead={l} view={view} limitReached={!isMailLead(l) && sentTodayIg >= OUTREACH_DAILY_LIMIT} onSave={save} onReload={reload} />
           ))}
         </ul>
+      )}
+      </>
       )}
     </div>
   );
