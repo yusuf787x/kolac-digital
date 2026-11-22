@@ -301,7 +301,7 @@ function ErrorCard({ phase, onRetry }: { phase: Extract<Phase, { kind: 'error' }
                 Meinen Bericht öffnen
               </a>
             )}
-            <a href={site.meetingUrl} target="_blank" rel="noopener" className="btn btn-primary">
+            <a href={FUNNEL_MEETING_URL} target="_blank" rel="noopener" className="btn btn-primary">
               Gespräch buchen
             </a>
           </div>
@@ -522,7 +522,7 @@ function Report({
               'Mit „Sichtbar in 90 Tagen“ richten wir dein Google-Profil ein, optimieren deine Website auf die zehn wichtigsten Suchbegriffe und du siehst jeden Monat die Zahlen in deinem eigenen Kundenportal. Mit doppelter Garantie.'}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <a href={site.meetingUrl} target="_blank" rel="noopener" className="btn btn-primary">
+            <a href={FUNNEL_MEETING_URL} target="_blank" rel="noopener" className="btn btn-primary">
               Kostenloses Gespräch buchen
             </a>
             <a href={`tel:${site.phoneE164}`} className="btn border border-white/40 text-white hover:bg-white/10">
@@ -684,7 +684,6 @@ function LockedTeaser({ result }: { result: SeoCheckResponse['result'] }) {
 
 function BookingBlock({ variant }: { variant?: FunnelVariant }) {
   const vsl = variant ? VSL_VIDEOS[variant.slug] : undefined;
-  const meetingUrl = variant ? FUNNEL_MEETING_URL : site.meetingUrl;
   return (
     <div className="rounded-[24px] bg-[var(--color-blue-light)] p-6 md:p-8">
       <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Dein Bericht ist freigeschaltet</p>
@@ -713,7 +712,7 @@ function BookingBlock({ variant }: { variant?: FunnelVariant }) {
         {variant ? ' Und wie das Gefunden-Garantie-Paket bei dir aussehen würde.' : ''} Kostenlos und unverbindlich.
       </p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <a href={meetingUrl} target="_blank" rel="noopener" className="btn btn-primary justify-center">
+        <a href={FUNNEL_MEETING_URL} target="_blank" rel="noopener" className="btn btn-primary justify-center">
           Kostenloses Gespräch buchen
         </a>
         <a href={`tel:${site.phoneE164}`} className="btn btn-outline justify-center">
@@ -723,9 +722,7 @@ function BookingBlock({ variant }: { variant?: FunnelVariant }) {
       <p className="mt-3 text-[15px] text-[var(--color-black)]">
         Ich schaue mir dein Ergebnis vor dem Gespräch an. Wir prüfen gemeinsam, ob wir dir helfen können.
       </p>
-      {variant && (
-        <p className="mt-1 text-[15px] text-[var(--color-gray)]">Kein passender Termin dabei? Kein Problem, ich rufe dich kurz an.</p>
-      )}
+      <p className="mt-1 text-[15px] text-[var(--color-gray)]">Kein passender Termin dabei? Kein Problem, ich rufe dich kurz an.</p>
     </div>
   );
 }

@@ -20,6 +20,8 @@ const MAX_BATCH = 400;
  *   { action: "pull" }                  → alle Betriebe
  *   { action: "push", leads: [...] }    → anlegen oder Recherche-Felder aktualisieren
  *   { action: "legacy" }                → alte Cold-Call-Leads (nur lesen)
+ *   { action: "restore-instagram", updates: [{ id, instagram }] }
+ *                                       → Mail-Betrieb mit geprueftem Profil zurueck zu Instagram
  *   { action: "exclude", ids, reason }  → noch nicht angeschriebene Betriebe ausschliessen
  *   { action: "followups", updates: [{ id, followup }] }  → Nachfass-Text fuer Betriebe im Status "gesendet"
  *   { action: "instagram", updates: [{ id, instagram }] }
@@ -148,6 +150,31 @@ async function handlePOST(req: Request) {
     return NextResponse.json({ ok: true, changed });
   }
 
+  // Mail-Betriebe zurueck zu Instagram, wenn ein geprueftes Profil gefunden wurde
+  // (Yusuf schickt keine Mails, 22.11.2026). Nur Status "neu" und Kanal Mail. igSource "dashboard",
+  // damit check.mts das von Hand gepruefte Profil nicht wieder verwirft.
+  if (body?.action === 'restore-instagram') {
+    const updates = (body as { updates?: unknown }).updates;
+    if (!Array.isArray(updates) || updates.length > MAX_BATCH) return badRequest('updates fehlt.');
+    const valid = updates.filter(
+      (u): u is { id: string; instagram: string } =>
+        !!u && typeof u.id === 'string' && /^[\w-]{3,120}$/.test(u.id) && typeof u.instagram === 'string' && /^[A-Za-z0-9_.]{2,30}$/.test(u.instagram) && !/^\d+$/.test(u.instagram),
+    );
+    const refs = valid.map((u) => db.collection(COL).doc(u.id));
+    const snaps = refs.length ? await db.getAll(...refs) : [];
+    const batch = db.batch();
+    let changed = 0;
+    const now = new Date().toISOString();
+    snaps.forEach((snap, i) => {
+      const cur = snap.data() as OutreachLead | undefined;
+      if (!cur || cur.status !== 'neu' || cur.channel !== 'mail') return;
+      batch.set(refs[i], { channel: FieldValue.delete(), instagram: valid[i].instagram, igSource: 'dashboard', updatedAt: now }, { merge: true });
+      changed++;
+    });
+    await batch.commit();
+    return NextResponse.json({ ok: true, changed });
+  }
+
   // Nur Betriebe im Status "neu": was Yusuf schon angeschrieben oder bewertet hat, bleibt unberuehrt
   if (body?.action === 'exclude') {
     const { ids, reason } = body as { ids?: unknown; reason?: unknown };
@@ -168,7 +195,7 @@ async function handlePOST(req: Request) {
     return NextResponse.json({ ok: true, excluded });
   }
 
-  return badRequest('Unbekannte Aktion. Erlaubt: pull, push, legacy, exclude.');
+  return badRequest('Unbekannte Aktion. Erlaubt: pull, push, legacy, exclude, followups, instagram, restore-instagram.');
 }
 
 export const POST = safe(handlePOST);
