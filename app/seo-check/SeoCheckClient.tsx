@@ -742,7 +742,8 @@ function BookingBlock({ variant }: { variant?: FunnelVariant }) {
       <p className="mt-2 text-[15px] text-[var(--color-black)]">
         Ich schaue mir dein Ergebnis vor dem Gespräch an. Wir prüfen gemeinsam, ob wir dir helfen können.
       </p>
-      <div className="mt-5">
+      {/* Auf dem Handy fast randlos, sonst schneidet Googles Kalender die Uhrzeiten rechts ab */}
+      <div className="mt-5 -mx-5 sm:mx-0">
         <BookingCalendar />
       </div>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
