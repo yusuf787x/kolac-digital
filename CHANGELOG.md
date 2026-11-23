@@ -6,6 +6,20 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ---
 
+## 23.11.2026
+
+### SEO-Check
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Freischalt-Formular mit nur noch einem Häkchen statt drei; die Erlaubnis zur Werbemessung kommt aus dem Banner („Akzeptieren“), nicht mehr aus einem eigenen Häkchen | Weniger Klicks bis zum Bericht, weniger Abbrüche | [Treppenlift-Check](https://www.kolac-digital.de/seo-check/treppenlift) |
+| ✅ | Pflichtfelder mit Sternchen; E-Mail und Telefon werden direkt beim Ausfüllen geprüft (Tippfehler wie „gmial.com“, fehlende Vorwahl, zu kurze Handynummer, Mail-Adresse ohne Postfach) mit klarer Meldung | Weniger falsche Kontaktdaten, jeder Interessent ist erreichbar | [Treppenlift-Check](https://www.kolac-digital.de/seo-check/treppenlift) |
+| ✅ | „Gesperrt“ im Bericht ist jetzt ein Knopf, der direkt zum Formular springt | Auf dem Handy finden Besucher sofort, wo sie ihre Daten eintragen | [Gebäudereinigung-Check](https://www.kolac-digital.de/seo-check/gebaeudereinigung) |
+| ✅ | Freie Termine direkt unter dem Erklärvideo: der Kalender öffnet sich nach einem Klick auf der Seite, auf Deutsch und ohne eigene Scrollleiste | Termin buchen, ohne die Seite zu verlassen | [Hörakustik-Check](https://www.kolac-digital.de/seo-check/hoerakustik) |
+| ✅ | Datenschutzerklärung zu Werbemessung und eingebettetem Terminkalender ergänzt | Besucher sehen genau, was wann an Meta und Google geht | [Datenschutz](https://www.kolac-digital.de/datenschutz.html#termin) |
+
+---
+
 ## 22.11.2026
 
 ### SEO-Check
