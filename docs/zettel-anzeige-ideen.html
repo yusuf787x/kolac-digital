@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zettel-Anzeige Ideen</title>
+<link href="https://fonts.googleapis.com/css2?family=Gochi+Hand&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#fafaf8; --card:#fff; --ink:#1d1d1b; --muted:#6b6b66; --line:#e6e4df; --pen:#22389a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:32px 16px 80px; }
+  h1 { font-size:28px; margin:0 0 6px; }
+  p.lead { color:var(--muted); margin:0 0 24px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:22px; }
+  .idee { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .tisch { background:#2b2b2b; padding:22px; }
+  .tisch svg { display:block; width:100%; height:auto; background:#f7f6f2; box-shadow:0 6px 20px rgba(0,0,0,.35); }
+  .info { padding:14px 18px 18px; }
+  .info h2 { font-size:19px; margin:0 0 4px; }
+  .info .warum { color:var(--muted); font-size:14px; margin:0 0 10px; }
+  .info ol { padding-left:20px; margin:6px 0; font-size:15px; }
+  .info li { margin:3px 0; }
+  .tipps { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin-top:24px; }
+  .tipps ul { padding-left:20px; margin:6px 0; }
+  .empf { display:inline-block; background:#eaf6ee; color:#1a7f4b; font-size:13px; font-weight:600; border-radius:6px; padding:1px 8px; margin-left:6px; vertical-align:2px; }
+  svg text { font-family:'Gochi Hand', 'Bradley Hand', cursive; fill:var(--pen); }
+  svg .s { fill:none; stroke:var(--pen); stroke-width:4.5; stroke-linecap:round; stroke-linejoin:round; }
+  svg .t { fill:none; stroke:var(--pen); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+</style>
+</head>
+<body>
+<main>
+<h1>Zettel-Anzeige: drei Ideen zum Nachmalen</h1>
+<p class="lead">Eine Anzeige für alle Branchen. Oben der Grafiker-Witz, in der Mitte die Zeichnung, unten das Problem und der Check. Die Skizzen zeigen nur, was wohin kommt. Deine echte Handschrift wird schöner, weil sie echt ist.</p>
+
+<div class="grid">
+
+<!-- Idee 1: Plakat in der Wüste -->
+<section class="idee">
+<div class="tisch">
+<svg viewBox="0 0 800 1000" role="img" aria-label="Skizze Plakat in der Wüste">
+  <defs><filter id="rau"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="5"/></filter></defs>
+  <g filter="url(#rau)">
+  <text x="50" y="95" font-size="54">Sorry, mein Grafiker hat</text>
+  <text x="50" y="155" font-size="54">keine Zeit. Er bringt gerade</text>
+  <text x="50" y="215" font-size="54">Websites bei Google nach oben.</text>
+  <!-- Sonne -->
+  <circle class="s" cx="690" cy="320" r="38"/>
+  <path class="t" d="M690 262v-20M690 378v20M632 320h-20M748 320h20M650 280l-14-14M730 360l14 14M730 280l14-14M650 360l-14 14"/>
+  <!-- Boden -->
+  <path class="s" d="M40 700 C 200 690, 420 712, 760 698"/>
+  <!-- Plakat -->
+  <rect class="s" x="150" y="370" width="300" height="190" rx="6"/>
+  <path class="s" d="M215 560 L215 702 M385 560 L385 700"/>
+  <text x="185" y="430" font-size="44">Deine Website</text>
+  <path class="t" d="M190 455h220M190 485h160M190 515h190"/>
+  <!-- Kaktus -->
+  <path class="s" d="M560 700 V560 a22 22 0 0 1 44 0 V700 M560 620 h-26 v-36 M604 640 h26 v-46"/>
+  <!-- Steppenläufer -->
+  <circle class="s" cx="500" cy="665" r="28"/>
+  <path class="t" d="M480 650 l40 30 M478 672 l44 -20 M495 640 l10 52"/>
+  <path class="t" d="M430 650 h30 M420 672 h34"/>
+  <!-- Kunden weit weg -->
+  <text x="655" y="560" font-size="34">Kunden</text>
+  <path class="t" d="M700 572 v60 M690 590 l-4 -12"/>
+  <path class="t" d="M660 650 l10 -40 l10 40 M700 650 l10 -50 l10 50 M740 650 l8 -30 l8 30"/>
+  <text x="50" y="800" font-size="52">Bringt deine Website Anfragen?</text>
+  <text x="200" y="900" font-size="64">Kostenloser Check ↓</text>
+  <path class="s" d="M195 920 C 350 912, 520 918, 690 910"/>
+  </g>
+</svg>
+</div>
+<div class="info">
+  <h2>1. Plakat in der Wüste <span class="empf">Empfehlung</span></h2>
+  <p class="warum">Ein Bild sagt alles: Die Website ist da, aber keiner kommt vorbei. Jeder versteht es in einer Sekunde.</p>
+  <ol>
+    <li>Oben drei Zeilen: <b>Sorry, mein Grafiker hat keine Zeit. Er bringt gerade Websites bei Google nach oben.</b></li>
+    <li>Mitte: Plakat auf zwei Pfosten, darauf <b>„Deine Website“</b>. Daneben Kaktus, rollender Strauch mit Strichen, Sonne. Ganz rechts klein ein paar Häuser mit <b>„Kunden“</b> und Pfeil.</li>
+    <li>Unten: <b>Bringt deine Website Anfragen?</b></li>
+    <li>Ganz unten, unterstrichen: <b>Kostenloser Check ↓</b></li>
+  </ol>
+</div>
+</section>
+
+<!-- Idee 2: Briefkasten vorher/nachher -->
+<section class="idee">
+<div class="tisch">
+<svg viewBox="0 0 800 1000" role="img" aria-label="Skizze Briefkasten vorher nachher">
+  <g filter="url(#rau)">
+  <text x="50" y="95" font-size="54">Sorry, mein Grafiker hat</text>
+  <text x="50" y="155" font-size="54">keine Zeit. Er bringt gerade</text>
+  <text x="50" y="215" font-size="54">Websites bei Google nach oben.</text>
+  <!-- linker Kasten -->
+  <rect class="s" x="45" y="270" width="340" height="420" rx="4"/>
+  <text x="62" y="320" font-size="29">Google zeigt dich nicht</text>
+  <!-- Regenwolke -->
+  <path class="t" d="M250 360 a24 24 0 0 1 46 -8 a20 20 0 0 1 34 18 h-80 z"/>
+  <path class="t" d="M262 395 l-6 16 M285 395 l-6 16 M308 395 l-6 16"/>
+  <!-- Briefkasten mit Spinnennetz -->
+  <path class="s" d="M90 470 h120 v80 h-120 z M90 470 a60 40 0 0 1 120 0 M150 550 v110"/>
+  <path class="t" d="M105 480 l40 30 M195 480 l-40 30 M150 475 v45 M115 505 q35 -10 70 0"/>
+  <text x="100" y="600" font-size="30">0</text>
+  <!-- trauriges Männchen -->
+  <circle class="s" cx="300" cy="490" r="26"/>
+  <path class="t" d="M290 485 v2 M310 485 v2 M288 506 q12 -10 24 0"/>
+  <path class="s" d="M300 516 v80 M300 545 l-28 26 M300 545 l28 26 M300 596 l-22 60 M300 596 l22 60"/>
+  <!-- rechter Kasten -->
+  <rect class="s" x="415" y="270" width="340" height="420" rx="4"/>
+  <text x="455" y="320" font-size="34">Google zeigt dich</text>
+  <!-- Sonne -->
+  <circle class="s" cx="690" cy="375" r="22"/>
+  <path class="t" d="M690 340v-10M690 410v10M655 375h-10M725 375h10"/>
+  <!-- Briefkasten voller Briefe -->
+  <path class="s" d="M460 470 h120 v80 h-120 z M460 470 a60 40 0 0 1 120 0 M520 550 v110"/>
+  <path class="t" d="M470 455 l28 -40 l34 22 l-28 40 M520 450 l20 -44 l36 16 l-20 44 M490 428 l10 8 l14 -8"/>
+  <text x="595" y="470" font-size="32">Ring Ring!</text>
+  <!-- lachendes Männchen -->
+  <circle class="s" cx="670" cy="520" r="26"/>
+  <path class="t" d="M660 514 v2 M680 514 v2 M656 528 q14 14 28 0"/>
+  <path class="s" d="M670 546 v70 M670 566 l-30 -26 M670 566 l30 -26 M670 616 l-22 46 M670 616 l22 46"/>
+  <text x="50" y="800" font-size="52">Bringt deine Website Anfragen?</text>
+  <text x="200" y="900" font-size="64">Kostenloser Check ↓</text>
+  <path class="s" d="M195 920 C 350 912, 520 918, 690 910"/>
+  </g>
+</svg>
+</div>
+<div class="info">
+  <h2>2. Briefkasten vorher und nachher</h2>
+  <p class="warum">Am nächsten an deinem Vorbild: zwei Kästen, links traurig, rechts fröhlich. Der leere Briefkasten mit Spinnennetz trifft genau den Schmerz.</p>
+  <ol>
+    <li>Oben die drei Grafiker-Zeilen wie bei Idee 1.</li>
+    <li>Linker Kasten <b>„Google zeigt dich nicht“</b>: Briefkasten mit Spinnennetz und einer 0, trauriges Männchen, Regenwolke.</li>
+    <li>Rechter Kasten <b>„Google zeigt dich“</b>: Briefkasten quillt über vor Briefen, <b>„Ring Ring!“</b>, Männchen jubelt, Sonne.</li>
+    <li>Unten: <b>Bringt deine Website Anfragen?</b> und <b>Kostenloser Check ↓</b></li>
+  </ol>
+</div>
+</section>
+
+<!-- Idee 3: Der beschäftigte Grafiker -->
+<section class="idee">
+<div class="tisch">
+<svg viewBox="0 0 800 1000" role="img" aria-label="Skizze beschäftigter Grafiker">
+  <g filter="url(#rau)">
+  <text x="50" y="95" font-size="56">Sorry für die hässliche Werbung.</text>
+  <text x="50" y="160" font-size="56">Mein Grafiker ist beschäftigt:</text>
+  <!-- Treppe mit Podest -->
+  <path class="s" d="M80 690 h140 v-70 h140 v-70 h140 v-70 h200"/>
+  <path class="s" d="M80 690 h680"/>
+  <!-- Podest Platz 1 -->
+  <rect class="s" x="545" y="400" width="190" height="80"/>
+  <text x="575" y="455" font-size="44">Platz 1</text>
+  <text x="575" y="370" font-size="48">Google</text>
+  <path class="t" d="M585 330 l-14 -14 M690 330 l14 -14 M637 300 v-18"/>
+  <!-- Kiste Website -->
+  <rect class="s" x="300" y="440" width="150" height="110" rx="4"/>
+  <text x="315" y="505" font-size="38">Website</text>
+  <!-- Grafiker mit Brille schiebt -->
+  <circle class="s" cx="215" cy="455" r="28"/>
+  <path class="t" d="M196 452 h14 M220 452 h14 M210 452 h10 M205 470 q10 6 20 0"/>
+  <path class="s" d="M215 483 l20 80 M222 510 l78 -20 M226 530 l74 -2 M235 563 l-30 57 M235 563 l40 50"/>
+  <!-- Schweißtropfen -->
+  <path class="t" d="M168 430 q-8 14 0 20 q8 -6 0 -20 M180 405 q-6 10 0 15 q6 -5 0 -15"/>
+  <!-- Sprechblase -->
+  <path class="s" d="M60 250 h230 a20 20 0 0 1 20 20 v60 a20 20 0 0 1 -20 20 h-120 l-30 40 l4 -40 h-84 a20 20 0 0 1 -20 -20 v-60 a20 20 0 0 1 20 -20 z"/>
+  <text x="90" y="320" font-size="46">Keine Zeit!</text>
+  <text x="50" y="790" font-size="54">Er bringt Websites nach oben.</text>
+  <text x="50" y="850" font-size="54">Bringt deine Website Anfragen?</text>
+  <text x="200" y="940" font-size="64">Kostenloser Check ↓</text>
+  <path class="s" d="M195 960 C 350 952, 520 958, 690 950"/>
+  </g>
+</svg>
+</div>
+<div class="info">
+  <h2>3. Der Grafiker schiebt</h2>
+  <p class="warum">Der Witz wird selbst zum Bild: ein schwitzendes Männchen mit Brille (du) schiebt eine Kiste „Website“ die Treppe hoch zu „Platz 1“ bei Google.</p>
+  <ol>
+    <li>Oben: <b>Sorry für die hässliche Werbung. Mein Grafiker ist beschäftigt:</b></li>
+    <li>Mitte: Treppe, oben Podest <b>„Platz 1“</b> mit großem G. Männchen mit Brille schiebt die Kiste <b>„Website“</b> hoch, Schweißtropfen, Sprechblase <b>„Keine Zeit!“</b>.</li>
+    <li>Unten: <b>Er bringt Websites nach oben. Bringt deine Website Anfragen?</b></li>
+    <li><b>Kostenloser Check ↓</b></li>
+  </ol>
+</div>
+</section>
+
+</div>
+
+<div class="tipps">
+<b>Beim Zeichnen</b>
+<ul>
+  <li>Weißes Blatt ohne Karos, dicker blauer Filzstift. Groß schreiben, das ganze Blatt füllen.</li>
+  <li>Blatt auf einen dunklen Tisch legen, gerade von oben bei Tageslicht fotografieren, hochkant.</li>
+  <li>Nicht schön machen. Schief und krakelig ist hier gewollt.</li>
+  <li>Foto an Claude schicken, dann kommen die zwei Größen und die fünfte Anzeige in die Anleitung.</li>
+</ul>
+</div>
+</main>
+</body>
+</html>
