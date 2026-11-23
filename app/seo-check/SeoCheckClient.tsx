@@ -810,7 +810,7 @@ function BookingCalendar() {
           src={FUNNEL_MEETING_EMBED_URL}
           title="Freie Termine für ein kostenloses Gespräch"
           onLoad={() => setLoaded(true)}
-          className="relative block h-[760px] w-full border-0 md:h-[680px]"
+          className="relative block h-[1420px] w-full border-0 md:h-[1000px]"
         />
       </div>
       <p className="mt-2 text-[13px] text-[var(--color-gray)]">

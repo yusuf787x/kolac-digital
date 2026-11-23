@@ -56,9 +56,9 @@ export const VSL_VIDEOS: Record<string, { src: string; poster: string }> = Objec
 
 /** Terminbuchung für Besucher der Branchen-Check-Seiten (eigener Google-Kalender-Termin). */
 export const FUNNEL_MEETING_URL = 'https://calendar.app.google/kTXDDn2FSknRsFbU7';
-/** Derselbe Termin zum Einbetten (Ziel des Kurzlinks oben plus ?gv=true). Lädt erst nach Klick (Google setzt Cookies). */
+/** Derselbe Termin zum Einbetten (Ziel des Kurzlinks oben plus ?gv=true, hl=de für Deutsch; Höhe im Client ohne inneres Scrollen: Handy ca. 1.370 px, breit ca. 980 px). Lädt erst nach Klick (Google setzt Cookies). */
 export const FUNNEL_MEETING_EMBED_URL =
-  'https://calendar.google.com/calendar/appointments/schedules/AcZssZ36NILx1sOQjLm-dBS4HHmvJRYvC5b4ESOehNWYZu4wfp9jDrv5hQVJoF-sT-OPuIsyF64MTiJK?gv=true';
+  'https://calendar.google.com/calendar/appointments/schedules/AcZssZ36NILx1sOQjLm-dBS4HHmvJRYvC5b4ESOehNWYZu4wfp9jDrv5hQVJoF-sT-OPuIsyF64MTiJK?gv=true&hl=de';
 
 /**
  * NFC-Bewertungs-Aufsteller, die Yusuf noch auf Lager hat (echte Knappheit,
