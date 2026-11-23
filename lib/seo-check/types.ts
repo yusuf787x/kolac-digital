@@ -84,6 +84,8 @@ export interface SeoCheckResponse {
   unlocked: boolean;
   owner: boolean;
   result: SeoCheckResult;
+  /** Testmodus (?test=1): Beispielbericht, keine Kosten, keine Mails, nichts an Meta. */
+  test?: boolean;
 }
 
 export const CATEGORY_LABELS: Record<CheckCategory, string> = {

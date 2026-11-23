@@ -2,7 +2,8 @@ import { NextResponse, after } from 'next/server';
 import { Resend } from 'resend';
 import { checkNotificationEmail } from '@/lib/seo-check/emails';
 import { CheckFailedError, normalizeInputUrl, redactResult, runSeoCheck } from '@/lib/seo-check/run';
-import { checkLimits, clientIp, isOwnerRequest, recordUsage, saveCheck } from '@/lib/seo-check/store';
+import { checkLimits, clientIp, isOwnerRequest, latestTestSource, recordUsage, saveCheck } from '@/lib/seo-check/store';
+import { hitRateLimit } from '@/lib/portal/rate-limit';
 import type { SeoCheckResponse } from '@/lib/seo-check/types';
 import { cleanSource } from '@/lib/seo-check/funnel';
 
@@ -16,13 +17,37 @@ export const maxDuration = 60;
  * dem Freischalten (/api/seo-check/[id]/unlock), der Inhaber sofort.
  */
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as { url?: string; source?: unknown };
+  const body = (await req.json().catch(() => ({}))) as { url?: string; source?: unknown; test?: boolean };
   const url = normalizeInputUrl(body.url ?? '');
   if (!url) {
     return NextResponse.json({ error: 'Bitte gib eine gültige Adresse ein, z. B. meinefirma.de.' }, { status: 400 });
   }
 
   const ip = clientIp(req);
+
+  // Testmodus (?test=1 an der Adresse): Funnel durchklicken ohne Kosten. Statt eines neuen Checks
+  // eine Kopie des letzten echten Berichts von kolac-digital.de, kein Gratis-Check verbraucht,
+  // keine Mails, beim Freischalten nichts an Meta.
+  if (body.test === true) {
+    if (!(await hitRateLimit(`seocheck-test:${ip}`, 30, 3600).catch(() => true))) {
+      return NextResponse.json({ error: 'Zu viele Testläufe. Bitte in einer Stunde noch einmal.' }, { status: 429 });
+    }
+    try {
+      let sample = await latestTestSource();
+      if (!sample) {
+        // Einmalig einen echten Bericht als Vorlage anlegen (danach immer wiederverwendet)
+        sample = await runSeoCheck(normalizeInputUrl('kolac-digital.de')!);
+        await saveCheck(sample, true, ip);
+      }
+      const id = await saveCheck(sample, false, ip, cleanSource(body.source), true);
+      const response: SeoCheckResponse = { id, owner: false, unlocked: false, result: redactResult(sample), test: true };
+      return NextResponse.json(response);
+    } catch (err) {
+      console.error('SEO-Check Testmodus:', err);
+      return NextResponse.json({ error: 'Der Testmodus ist gerade nicht verfügbar.' }, { status: 503 });
+    }
+  }
+
   const owner = await isOwnerRequest(req);
   if (!owner) {
     try {

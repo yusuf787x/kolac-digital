@@ -6,7 +6,7 @@ import type { StoredLead } from './store';
 
 /**
  * Meta Conversions API: meldet einen Lead vom Server, aber nur, wenn der
- * Besucher im Formular das Häkchen „Erfolgsmessung an Meta“ gesetzt hat.
+ * Besucher im Banner „Akzeptieren“ gewählt hat (bis 22.11.2026 eigenes Häkchen im Formular).
  *
  * Konfiguration (Vercel):
  *   NEXT_PUBLIC_META_PIXEL_ID  Pixel-ID (optional, Standard steht in ./meta.ts)
@@ -19,7 +19,7 @@ export function metaPixelId(): string {
   return (process.env.META_PIXEL_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || META_PIXEL_ID_DEFAULT).trim();
 }
 
-/** Häkchen und Server-Meldung gibt es nur, wenn Pixel-ID und Schlüssel gesetzt sind. */
+/** Server-Meldung gibt es nur, wenn Pixel-ID und Schlüssel gesetzt sind. */
 export function metaCapiEnabled(): boolean {
   return Boolean(metaPixelId() && process.env.META_CAPI_TOKEN?.trim());
 }

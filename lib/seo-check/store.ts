@@ -82,7 +82,7 @@ export interface StoredLead {
   business?: boolean;
   /** Herkunft aus Anzeigen, vom Check übernommen. */
   source?: LeadSource;
-  /** Einwilligung in die Erfolgsmessung an Meta (Häkchen, noch ausgeblendet). */
+  /** Einwilligung in die Erfolgsmessung an Meta (seit 23.11.2026: „Akzeptieren“ im Banner). */
   measureConsent?: boolean;
 }
 
@@ -93,9 +93,11 @@ export interface StoredCheck {
   createdAt: Timestamp;
   lead?: StoredLead;
   source?: LeadSource;
+  /** Testmodus: Kopie eines vorhandenen Berichts, ohne Mails und ohne Meta. */
+  test?: boolean;
 }
 
-export async function saveCheck(result: SeoCheckResult, owner: boolean, ip: string, source?: LeadSource): Promise<string> {
+export async function saveCheck(result: SeoCheckResult, owner: boolean, ip: string, source?: LeadSource, test = false): Promise<string> {
   const id = randomBytes(12).toString('base64url');
   // Firestore lehnt undefined-Werte ab (z. B. platform, wenn kein Baukasten
   // erkannt wurde). Der JSON-Umweg entfernt sie, das Ergebnis ist reines JSON.
@@ -111,6 +113,7 @@ export async function saveCheck(result: SeoCheckResult, owner: boolean, ip: stri
       score: result.score,
       createdAt: Timestamp.now(),
       ...(source ? { source: JSON.parse(JSON.stringify(source)) } : {}),
+      ...(test ? { test: true } : {}),
     });
   return id;
 }
@@ -124,4 +127,17 @@ export async function loadCheck(id: string): Promise<StoredCheck | null> {
 export async function saveLead(id: string, lead: StoredLead): Promise<void> {
   // Telefon und Firma sind optional und sonst undefined (Firestore lehnt das ab).
   await adminDb().collection(CHECKS).doc(id).update({ lead: JSON.parse(JSON.stringify(lead)) });
+}
+
+/** Domain, deren letzter echter Bericht im Testmodus als Beispiel dient. */
+const TEST_SOURCE_DOMAIN = 'kolac-digital.de';
+
+/** Neuester gespeicherter Bericht der Beispiel-Domain mit Google-Daten (ohne Testkopien). */
+export async function latestTestSource(): Promise<SeoCheckResult | null> {
+  const snap = await adminDb().collection(CHECKS).where('domain', 'in', [TEST_SOURCE_DOMAIN, `www.${TEST_SOURCE_DOMAIN}`]).limit(50).get();
+  const best = snap.docs
+    .map((d) => d.data() as StoredCheck)
+    .filter((c) => !c.test && c.result?.rankings?.available)
+    .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0))[0];
+  return best?.result ?? null;
 }

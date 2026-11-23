@@ -7,6 +7,8 @@ import { clientIp, loadCheck, saveLead, type StoredLead } from '@/lib/seo-check/
 import type { SeoCheckResponse } from '@/lib/seo-check/types';
 import { BRANCHEN, WEBSITE_ALTER, type Branche, type WebsiteAlter } from '@/lib/seo-check/funnel';
 import { onLeadCaptured } from '@/lib/seo-check/lead-hooks';
+import { emailProblem, phoneProblem } from '@/lib/seo-check/contact-check';
+import { emailDomainIsDead } from '@/lib/seo-check/email-dns';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -44,15 +46,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const phone = (body.phone ?? '').trim().slice(0, 40);
   const company = (body.company ?? '').trim().slice(0, 160);
   if (!name) return NextResponse.json({ error: 'Bitte gib deinen Namen an.', field: 'name' }, { status: 400 });
-  if (!isValidEmail(email)) return NextResponse.json({ error: 'Die E-Mail-Adresse sieht nicht vollständig aus. Bitte prüf sie noch einmal.', field: 'email' }, { status: 400 });
-  if (!phone) {
+  const mailProblem = emailProblem(email) ?? (isValidEmail(email) ? null : 'Die E-Mail-Adresse sieht nicht vollständig aus. Bitte prüf sie noch einmal.');
+  if (mailProblem) return NextResponse.json({ error: mailProblem, field: 'email' }, { status: 400 });
+  const telProblem = phoneProblem(phone);
+  if (telProblem) return NextResponse.json({ error: telProblem, field: 'phone' }, { status: 400 });
+  if (await emailDomainIsDead(email).catch(() => false)) {
     return NextResponse.json(
-      { error: 'Bitte gib deine Telefonnummer an. Wir rufen nur an, um dein Ergebnis mit dir durchzugehen.', field: 'phone' },
+      { error: 'An diese E-Mail-Adresse können keine Mails zugestellt werden. Bitte prüf die Schreibweise nach dem @.', field: 'email' },
       { status: 400 },
     );
-  }
-  if (!/^[+\d][\d\s/()-]{5,}$/.test(phone)) {
-    return NextResponse.json({ error: 'Die Telefonnummer sieht nicht vollständig aus. Bitte prüf sie noch einmal.', field: 'phone' }, { status: 400 });
   }
   const branche = BRANCHEN.some((b) => b.value === body.branche) ? (body.branche as Branche) : null;
   if (!branche) return NextResponse.json({ error: 'Bitte wähl deine Branche aus.', field: 'branche' }, { status: 400 });
@@ -80,7 +82,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     source: stored.source,
     ...(body.measureConsent === true ? { measureConsent: true } : {}),
   };
-  const firstUnlock = !stored.lead;
+  // Testmodus (?test=1): Freischalten wie echt, aber ohne Mails und ohne Meldung an Meta.
+  const firstUnlock = !stored.lead && !stored.test;
   await saveLead(id, lead);
 
   if (firstUnlock && !process.env.RESEND_API_KEY) console.error('SEO-Check: RESEND_API_KEY fehlt, keine Kontakt-Mail an Yusuf.');
@@ -110,6 +113,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     after(() => onLeadCaptured(id, lead, ctx).catch((err) => console.error('SEO-Check Lead-Hook:', err)));
   }
 
-  const response: SeoCheckResponse = { id, owner: false, unlocked: true, result: stored.result };
+  const response: SeoCheckResponse = { id, owner: false, unlocked: true, result: stored.result, ...(stored.test ? { test: true } : {}) };
   return NextResponse.json(response);
 }

@@ -18,6 +18,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     owner,
     unlocked,
     result: unlocked ? stored.result : redactResult(stored.result),
+    ...(stored.test ? { test: true } : {}),
   };
   return NextResponse.json(response);
 }

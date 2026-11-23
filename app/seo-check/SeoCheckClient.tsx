@@ -14,6 +14,7 @@ import {
 import {
   BRANCHEN,
   VSL_VIDEOS,
+  FUNNEL_MEETING_EMBED_URL,
   FUNNEL_MEETING_URL,
   WEBSITE_ALTER,
   type Branche,
@@ -22,6 +23,8 @@ import {
   type WebsiteAlter,
 } from '@/lib/seo-check/funnel';
 import { emitLeadCaptured } from '@/lib/seo-check/lead-event';
+import { emailProblem, phoneProblem } from '@/lib/seo-check/contact-check';
+import { readMarketingConsent } from '@/lib/seo-check/meta';
 
 type Phase =
   | { kind: 'idle' }
@@ -114,7 +117,7 @@ export default function SeoCheckClient({
 }: {
   initialId?: string;
   variant?: FunnelVariant;
-  /** Häkchen „Erfolgsmessung an Meta“ zeigen (nur wenn Pixel-ID und Schlüssel gesetzt sind). */
+  /** Conversions API aktiv (Pixel-ID und Schlüssel gesetzt). Einwilligung kommt aus dem Banner. */
   measureEnabled?: boolean;
 }) {
   const basePath = variant ? `/seo-check/${variant.slug}` : '/seo-check';
@@ -122,10 +125,13 @@ export default function SeoCheckClient({
   const [url, setUrl] = useState('');
   const [phase, setPhase] = useState<Phase>(initialId ? { kind: 'loading-report' } : { kind: 'idle' });
   const resultRef = useRef<HTMLDivElement>(null);
+  // Testmodus: ?test=1 an der Adresse (Beispielbericht, keine Kosten, keine Mails, nichts an Meta)
+  const testRef = useRef(false);
 
   // Herkunft einmal beim Laden merken, bevor die Adresszeile ersetzt wird.
   useEffect(() => {
     sourceRef.current = readSource(basePath);
+    testRef.current = new URLSearchParams(window.location.search).get('test') === '1';
   }, [basePath]);
 
   // Gespeicherten Bericht laden, wenn die Seite mit ?id=... geoeffnet wird.
@@ -153,14 +159,17 @@ export default function SeoCheckClient({
     }
     setPhase({ kind: 'running', url: value });
     try {
-      const res = await apiFetch('/api/seo-check', { method: 'POST', body: JSON.stringify({ url: value, source: sourceRef.current ?? readSource(basePath) }) });
+      const res = await apiFetch('/api/seo-check', {
+        method: 'POST',
+        body: JSON.stringify({ url: value, source: sourceRef.current ?? readSource(basePath), ...(testRef.current ? { test: true } : {}) }),
+      });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         setPhase({ kind: 'error', message: json.error ?? 'Der Check ist fehlgeschlagen.', code: json.code, lastCheckId: json.lastCheckId });
         return;
       }
       const data = json as SeoCheckResponse;
-      window.history.replaceState(null, '', `${basePath}?id=${data.id}`);
+      window.history.replaceState(null, '', `${basePath}?id=${data.id}${data.test ? '&test=1' : ''}`);
       setPhase({ kind: 'done', data });
     } catch {
       setPhase({ kind: 'error', message: 'Keine Verbindung. Bitte prüf dein Internet und versuch es noch einmal.' });
@@ -168,7 +177,7 @@ export default function SeoCheckClient({
   }
 
   function reset() {
-    window.history.replaceState(null, '', basePath);
+    window.history.replaceState(null, '', testRef.current ? `${basePath}?test=1` : basePath);
     setUrl('');
     setPhase({ kind: 'idle' });
   }
@@ -370,6 +379,12 @@ function Report({
   return (
     <section className="bg-white py-12 md:py-16">
       <div className="mx-auto max-w-[1000px] px-4 md:px-6 space-y-6">
+        {data.test && (
+          <p className="rounded-[12px] border border-[var(--color-warn)] bg-[var(--color-warn-bg)] px-4 py-3 text-[15px] text-[var(--color-black)]">
+            <span className="font-semibold">Testmodus:</span> Beispielbericht von {r.domain}. Kostet nichts, verbraucht keinen Gratis-Check,
+            schickt keine Mails und meldet nichts an Meta.
+          </p>
+        )}
         {data.unlocked && !data.owner && (
           <div ref={bookingRef} className="scroll-mt-[calc(var(--nav-height)+16px)]">
             <BookingBlock variant={variant} />
@@ -472,6 +487,7 @@ function Report({
             <LockedTeaser result={r} />
             <UnlockForm
               id={data.id}
+              test={!!data.test}
               measureCount={r.measures.length}
               defaultBranche={variant?.defaultBranche}
               landing={variant ? `/seo-check/${variant.slug}` : '/seo-check'}
@@ -631,6 +647,11 @@ function LockedTeaser({ result }: { result: SeoCheckResponse['result'] }) {
   const others = result.checks.filter((c) => c !== top && (c.status === 'fail' || c.status === 'warn'));
   const urgent = others.filter((c) => c.status === 'fail').length;
   const measures = result.measures.length;
+  // Auf dem Handy liegt das Formular weit unten: Klick auf „Gesperrt“ führt direkt hin.
+  const jumpToForm = () => {
+    document.getElementById('ul-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => document.getElementById('ul-name')?.focus({ preventScroll: true }), 500);
+  };
   return (
     <div>
       <h2 className="text-[22px] md:text-[26px] font-bold tracking-tight text-[var(--color-black)]">Der wichtigste Befund</h2>
@@ -658,8 +679,8 @@ function LockedTeaser({ result }: { result: SeoCheckResponse['result'] }) {
           <p className="mt-1 text-[15px] text-[var(--color-gray)]">
             {measures > 0 ? `Dazu deine ${measures} wichtigsten Maßnahmen mit Anleitung und deine Suchbegriffe bei Google.` : 'Dazu deine Suchbegriffe bei Google.'}
           </p>
-          <div className="relative mt-4 overflow-hidden rounded-[18px] border border-[#e5e7eb]" aria-hidden="true">
-            <ul className="select-none blur-[5px]">
+          <div className="relative mt-4 overflow-hidden rounded-[18px] border border-[#e5e7eb]">
+            <ul className="select-none blur-[5px]" aria-hidden="true">
               {Array.from({ length: Math.min(Math.max(others.length, 3), 4) }).map((_, i) => (
                 <li key={i} className="flex gap-3 border-b border-[#f0f0f2] px-5 py-4 last:border-b-0">
                   <span className={`h-5 w-16 shrink-0 rounded-full ${i < urgent ? 'bg-[var(--color-fail-bg)]' : 'bg-[var(--color-warn-bg)]'}`} />
@@ -670,11 +691,18 @@ function LockedTeaser({ result }: { result: SeoCheckResponse['result'] }) {
                 </li>
               ))}
             </ul>
-            <div className="absolute inset-0 flex items-center justify-center bg-white/40">
-              <span className="rounded-full bg-white px-4 py-2 text-[13px] font-semibold text-[var(--color-black)] shadow-[var(--shadow-sm)]">
-                Gesperrt bis zum Freischalten
+            <button
+              type="button"
+              onClick={jumpToForm}
+              className="group absolute inset-0 flex cursor-pointer items-center justify-center bg-white/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-[var(--color-blue)]"
+            >
+              <span className="flex min-h-[44px] items-center gap-2 rounded-full bg-[var(--color-blue)] px-5 py-2 text-[15px] font-semibold text-white shadow-[var(--shadow-sm)] transition-transform group-hover:-translate-y-0.5">
+                Gesperrt. Unten freischalten
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 3v10m0 0l-4-4m4 4l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </span>
-            </div>
+            </button>
           </div>
         </div>
       )}
@@ -711,18 +739,86 @@ function BookingBlock({ variant }: { variant?: FunnelVariant }) {
         In einem kurzen Gespräch zeige ich dir, was dir bei Google am meisten bringt.
         {variant ? ' Und wie das Gefunden-Garantie-Paket bei dir aussehen würde.' : ''} Kostenlos und unverbindlich.
       </p>
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <a href={FUNNEL_MEETING_URL} target="_blank" rel="noopener" className="btn btn-primary justify-center">
-          Kostenloses Gespräch buchen
-        </a>
+      <p className="mt-2 text-[15px] text-[var(--color-black)]">
+        Ich schaue mir dein Ergebnis vor dem Gespräch an. Wir prüfen gemeinsam, ob wir dir helfen können.
+      </p>
+      <div className="mt-5">
+        <BookingCalendar />
+      </div>
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
         <a href={`tel:${site.phoneE164}`} className="btn btn-outline justify-center">
           {site.phone} anrufen
         </a>
+        <p className="text-[15px] text-[var(--color-gray)]">Kein passender Termin dabei? Kein Problem, ich rufe dich kurz an.</p>
       </div>
-      <p className="mt-3 text-[15px] text-[var(--color-black)]">
-        Ich schaue mir dein Ergebnis vor dem Gespräch an. Wir prüfen gemeinsam, ob wir dir helfen können.
+    </div>
+  );
+}
+
+const CALENDAR_OK_KEY = 'kd-calendar-ok';
+
+/**
+ * Freie Termine direkt auf der Seite. Der Google-Kalender setzt Cookies, darum
+ * lädt er erst nach einem Klick (danach in diesem Browser automatisch).
+ */
+function BookingCalendar() {
+  // Nur im Browser gerendert (Bericht lädt immer erst nach dem Check), darum direkt lesbar.
+  const [show, setShow] = useState(() => {
+    try {
+      return localStorage.getItem(CALENDAR_OK_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const [loaded, setLoaded] = useState(false);
+
+  function open() {
+    setShow(true);
+    try {
+      localStorage.setItem(CALENDAR_OK_KEY, '1');
+    } catch {
+      /* egal */
+    }
+  }
+
+  if (!show) {
+    return (
+      <div className="rounded-[18px] border border-[#e5e7eb] bg-white p-5 md:p-6">
+        <p className="text-[17px] font-semibold text-[var(--color-black)]">Freie Termine ansehen</p>
+        <p className="mt-1 text-[15px] text-[var(--color-gray)]">
+          Such dir direkt hier einen Termin aus, ohne die Seite zu verlassen. Der Kalender kommt von Google.{' '}
+          <a href="/datenschutz.html#termin" className="underline">
+            Datenschutz
+          </a>
+        </p>
+        <button type="button" onClick={open} className="btn btn-primary mt-4 w-full justify-center sm:w-auto">
+          Freie Termine anzeigen
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="relative overflow-hidden rounded-[18px] border border-[#e5e7eb] bg-white">
+        {!loaded && (
+          <p className="absolute inset-x-0 top-10 text-center text-[15px] text-[var(--color-gray)]" aria-live="polite">
+            Freie Termine werden geladen …
+          </p>
+        )}
+        <iframe
+          src={FUNNEL_MEETING_EMBED_URL}
+          title="Freie Termine für ein kostenloses Gespräch"
+          onLoad={() => setLoaded(true)}
+          className="relative block h-[760px] w-full border-0 md:h-[680px]"
+        />
+      </div>
+      <p className="mt-2 text-[13px] text-[var(--color-gray)]">
+        Kalender lädt nicht?{' '}
+        <a href={FUNNEL_MEETING_URL} target="_blank" rel="noopener" className="underline">
+          In neuem Fenster öffnen
+        </a>
       </p>
-      <p className="mt-1 text-[15px] text-[var(--color-gray)]">Kein passender Termin dabei? Kein Problem, ich rufe dich kurz an.</p>
     </div>
   );
 }
@@ -771,6 +867,7 @@ function Choice<T extends string>({
 
 function UnlockForm({
   id,
+  test,
   measureCount,
   defaultBranche,
   landing,
@@ -778,6 +875,7 @@ function UnlockForm({
   onUnlocked,
 }: {
   id: string;
+  test: boolean;
   measureCount: number;
   defaultBranche?: Branche;
   landing: string;
@@ -790,33 +888,38 @@ function UnlockForm({
   const [branche, setBranche] = useState<Branche | ''>(defaultBranche ?? '');
   const [websiteAlter, setWebsiteAlter] = useState<WebsiteAlter | ''>('');
   const [business, setBusiness] = useState(false);
-  const [wantsCall, setWantsCall] = useState(false);
-  const [measureConsent, setMeasureConsent] = useState(false);
   const [website, setWebsite] = useState('');
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState<{ field?: FieldKey; message: string } | null>(null);
-  const clearErr = (field: FieldKey) => setError((e) => (e?.field === field ? null : e));
+  const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const setFieldError = (field: FieldKey, message: string | null) =>
+    setErrors((e) => {
+      const next = { ...e };
+      if (message) next[field] = message;
+      else delete next[field];
+      return next;
+    });
 
-  function check(): { field: FieldKey; message: string } | null {
-    if (!name.trim()) return { field: 'name', message: 'Bitte gib deinen Namen an.' };
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      return { field: 'email', message: 'Die E-Mail-Adresse sieht nicht vollständig aus. Bitte prüf sie noch einmal.' };
-    if (!phone.trim())
-      return { field: 'phone', message: 'Bitte gib deine Telefonnummer an. Wir rufen nur an, um dein Ergebnis mit dir durchzugehen.' };
-    if (!/^[+\d][\d\s/()-]{5,}$/.test(phone.trim()))
-      return { field: 'phone', message: 'Die Telefonnummer sieht nicht vollständig aus. Bitte prüf sie noch einmal.' };
-    if (!branche) return { field: 'branche', message: 'Bitte wähl deine Branche aus.' };
-    if (!business)
-      return { field: 'business', message: 'Der Check ist für Unternehmen. Bitte bestätige, dass du für ein Unternehmen anfragst.' };
-    return null;
+  function checkAll(): Partial<Record<FieldKey, string>> {
+    const found: Partial<Record<FieldKey, string>> = {};
+    if (!name.trim()) found.name = 'Bitte gib deinen Namen an.';
+    const mail = emailProblem(email);
+    if (mail) found.email = mail;
+    const tel = phoneProblem(phone);
+    if (tel) found.phone = tel;
+    if (!branche) found.branche = 'Bitte wähl deine Branche aus.';
+    if (!business) found.business = 'Bitte bestätige das Häkchen, damit wir deinen Bericht freischalten können.';
+    return found;
   }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    const problem = check();
-    setError(problem);
-    if (problem) {
-      document.getElementById(`ul-${problem.field}`)?.focus();
+    setFormError(null);
+    const found = checkAll();
+    setErrors(found);
+    const first = (['name', 'email', 'phone', 'branche', 'business'] as FieldKey[]).find((f) => found[f]);
+    if (first) {
+      document.getElementById(`ul-${first}`)?.focus();
       return;
     }
     setSending(true);
@@ -831,23 +934,27 @@ function UnlockForm({
           branche,
           websiteAlter: websiteAlter || undefined,
           business,
-          wantsCall,
-          measureConsent: measureEnabled ? measureConsent : undefined,
+          // Das Häkchen schließt den Rückruf zum Ergebnis ein.
+          wantsCall: true,
+          // Erfolgsmessung an Meta nur mit „Akzeptieren“ im Banner (freiwillig, getrennt vom Formular).
+          measureConsent: measureEnabled && !test && readMarketingConsent() === 'granted' ? true : undefined,
           website,
         }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError({
-          field: json.field as FieldKey | undefined,
-          message: json.error ?? 'Das Freischalten hat nicht geklappt. Bitte prüf deine Verbindung und versuch es noch einmal.',
-        });
+        const message = json.error ?? 'Das Freischalten hat nicht geklappt. Bitte prüf deine Verbindung und versuch es noch einmal.';
+        const field = json.field as FieldKey | undefined;
+        if (field) {
+          setFieldError(field, message);
+          document.getElementById(`ul-${field}`)?.focus();
+        } else setFormError(message);
         return;
       }
-      emitLeadCaptured({ checkId: id, branche: branche || undefined, landing });
+      if (!test) emitLeadCaptured({ checkId: id, branche: branche || undefined, landing });
       onUnlocked(json as SeoCheckResponse);
     } catch {
-      setError({ message: 'Keine Verbindung. Bitte prüf dein Internet und versuch es noch einmal. Deine Angaben bleiben stehen.' });
+      setFormError('Keine Verbindung. Bitte prüf dein Internet und versuch es noch einmal. Deine Angaben bleiben stehen.');
     } finally {
       setSending(false);
     }
@@ -855,18 +962,34 @@ function UnlockForm({
 
   const input = (field: FieldKey) =>
     `w-full rounded-[12px] border bg-white px-4 py-3 text-[16px] text-[var(--color-black)] outline-none focus:border-[var(--color-blue)] focus:ring-2 focus:ring-[var(--color-blue)]/30 ${
-      error?.field === field ? 'border-[var(--color-fail)]' : 'border-[#d1d1d6]'
+      errors[field] ? 'border-[var(--color-fail)]' : 'border-[#d1d1d6]'
     }`;
   const label = 'mb-1 block text-[13px] font-semibold text-[var(--color-black)]';
+  const star = (
+    <span aria-hidden="true" className="text-[var(--color-fail)]">
+      {' '}
+      *
+    </span>
+  );
   const fieldError = (field: FieldKey) =>
-    error?.field === field ? (
+    errors[field] ? (
       <p id={`ul-${field}-error`} className="mt-1 text-[13px] text-[var(--color-fail)]">
-        {error.message}
+        {errors[field]}
       </p>
     ) : null;
+  const a11y = (field: FieldKey) => ({
+    'aria-required': true,
+    'aria-invalid': !!errors[field],
+    'aria-describedby': errors[field] ? `ul-${field}-error` : undefined,
+  });
 
   return (
-    <form onSubmit={submit} noValidate className="mt-8 rounded-[18px] bg-[var(--color-blue-light)] p-4 md:p-6">
+    <form
+      id="ul-form"
+      onSubmit={submit}
+      noValidate
+      className="mt-8 scroll-mt-[calc(var(--nav-height)+16px)] rounded-[18px] bg-[var(--color-blue-light)] p-4 md:p-6"
+    >
       <p className="text-[17px] font-semibold text-[var(--color-black)]">
         {measureCount > 0 ? `Alle Befunde und deine ${measureCount} Maßnahmen freischalten` : 'Deinen vollständigen Bericht freischalten'}
       </p>
@@ -880,7 +1003,7 @@ function UnlockForm({
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="ul-name" className={label}>
-              Name
+              Name{star}
             </label>
             <input
               id="ul-name"
@@ -888,51 +1011,54 @@ function UnlockForm({
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
-                clearErr('name');
+                if (errors.name) setFieldError('name', null);
               }}
               autoComplete="name"
-              aria-invalid={error?.field === 'name'}
-              aria-describedby={error?.field === 'name' ? 'ul-name-error' : undefined}
+              {...a11y('name')}
             />
             {fieldError('name')}
           </div>
           <div>
             <label htmlFor="ul-email" className={label}>
-              E-Mail
+              E-Mail{star}
             </label>
             <input
               id="ul-email"
               type="email"
               inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder="name@firma.de"
               className={input('email')}
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                clearErr('email');
+                if (errors.email && !emailProblem(e.target.value)) setFieldError('email', null);
               }}
+              onBlur={() => email.trim() && setFieldError('email', emailProblem(email))}
               autoComplete="email"
-              aria-invalid={error?.field === 'email'}
-              aria-describedby={error?.field === 'email' ? 'ul-email-error' : undefined}
+              {...a11y('email')}
             />
             {fieldError('email')}
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="ul-phone" className={label}>
-              Telefon
+              Telefon{star}
             </label>
             <input
               id="ul-phone"
               type="tel"
               inputMode="tel"
+              placeholder="0171 2345678"
               className={input('phone')}
               value={phone}
               onChange={(e) => {
                 setPhone(e.target.value);
-                clearErr('phone');
+                if (errors.phone && !phoneProblem(e.target.value)) setFieldError('phone', null);
               }}
+              onBlur={() => phone.trim() && setFieldError('phone', phoneProblem(phone))}
               autoComplete="tel"
-              aria-invalid={error?.field === 'phone'}
-              aria-describedby={error?.field === 'phone' ? 'ul-phone-error' : undefined}
+              {...a11y('phone')}
             />
             {fieldError('phone')}
           </div>
@@ -943,16 +1069,16 @@ function UnlockForm({
         <legend className="text-[15px] font-semibold text-[var(--color-black)]">Zu deinem Betrieb</legend>
         <div className="mt-3 space-y-4">
           <div id="ul-branche" tabIndex={-1} className="outline-none">
-            <p className={label}>Branche</p>
+            <p className={label}>Branche{star}</p>
             <Choice
               name="branche"
               options={BRANCHEN}
               value={branche}
               onChange={(v) => {
                 setBranche(v);
-                clearErr('branche');
+                setFieldError('branche', null);
               }}
-              invalid={error?.field === 'branche'}
+              invalid={!!errors.branche}
             />
             {fieldError('branche')}
           </div>
@@ -972,45 +1098,29 @@ function UnlockForm({
           checked={business}
           onChange={(e) => {
             setBusiness(e.target.checked);
-            clearErr('business');
+            setFieldError('business', null);
           }}
-          className="mt-1 h-4 w-4 accent-[var(--color-blue)]"
-          aria-invalid={error?.field === 'business'}
-          aria-describedby={error?.field === 'business' ? 'ul-business-error' : undefined}
+          className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-blue)]"
+          {...a11y('business')}
         />
-        Ich frage für ein Unternehmen an.
+        <span>
+          Ich frage für ein Unternehmen an und bin einverstanden, dass ihr mich anruft, um mein Ergebnis mit mir durchzugehen. Die{' '}
+          <a href="/datenschutz.html#seo-check" className="underline">
+            Datenschutzerklärung
+          </a>{' '}
+          habe ich gelesen.{star}
+        </span>
       </label>
       {fieldError('business')}
-      <label className="mt-3 flex cursor-pointer items-start gap-3 text-[15px] text-[var(--color-black)]">
-        <input type="checkbox" checked={wantsCall} onChange={(e) => setWantsCall(e.target.checked)} className="mt-1 h-4 w-4 accent-[var(--color-blue)]" />
-        Ruf mich an und geh das Ergebnis 15 Minuten mit mir durch (kostenlos).
-      </label>
-      {measureEnabled && (
-        <label className="mt-3 flex cursor-pointer items-start gap-3 text-[15px] text-[var(--color-black)]">
-          <input
-            type="checkbox"
-            checked={measureConsent}
-            onChange={(e) => setMeasureConsent(e.target.checked)}
-            className="mt-1 h-4 w-4 accent-[var(--color-blue)]"
-          />
-          <span>
-            Ich bin einverstanden, dass meine Anfrage zur Erfolgsmessung unserer Werbung an Meta übermittelt wird
-            (freiwillig, jederzeit widerrufbar).{' '}
-            <a href="/datenschutz.html#meta" className="underline">
-              Mehr dazu
-            </a>
-          </span>
-        </label>
-      )}
       <div className="hidden" aria-hidden="true">
         <label>
           Website (nicht ausfüllen)
           <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
         </label>
       </div>
-      {error && !error.field && (
+      {formError && (
         <p role="alert" className="mt-3 rounded-[12px] bg-[var(--color-fail-bg)] px-3 py-2 text-[15px] text-[var(--color-fail)]">
-          {error.message}
+          {formError}
         </p>
       )}
       <button
@@ -1021,11 +1131,8 @@ function UnlockForm({
         {sending ? 'Wird freigeschaltet …' : 'Vollständigen Bericht freischalten'}
       </button>
       <p className="mt-3 text-[12px] text-[var(--color-gray)]">
-        Wir nutzen deine Angaben nur für den Bericht und um dich zu deinem Ergebnis zu kontaktieren. Mehr in der{' '}
-        <a href="/datenschutz.html" className="underline">
-          Datenschutzerklärung
-        </a>
-        .
+        <span className="text-[var(--color-fail)]">*</span> Pflichtfeld. Wir nutzen deine Angaben nur für den Bericht und um dich zu
+        deinem Ergebnis zu kontaktieren.
       </p>
     </form>
   );

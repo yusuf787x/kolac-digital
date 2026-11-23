@@ -114,7 +114,7 @@ export default function MetaConsent({ pixelId }: { pixelId?: string }) {
         <span id="meta-consent-title" className="font-semibold text-[var(--color-black)] sm:block sm:text-[15px]">
           Darf Meta messen, über welche Anzeige du hier gelandet bist?
         </span>{' '}
-        Das hilft uns, unsere Werbung zu verbessern. Dabei setzt Meta Cookies.
+        Das hilft uns, unsere Werbung zu verbessern. Dabei setzt Meta Cookies, und schaltest du deinen Bericht frei, melden wir das verschlüsselt an Meta.
         <span className="hidden sm:inline"> Du kannst deine Auswahl jederzeit unten auf der Seite ändern.</span>{' '}
         <a href="/datenschutz.html#meta" className="text-[var(--color-blue)] underline">
           Datenschutzerklärung
