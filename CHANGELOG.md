@@ -6,6 +6,18 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ---
 
+## 24.11.2026
+
+### SEO-Check
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Ein kostenloser Check pro Person und Tag statt einem in 30 Tagen; erkannt am Gerät, mit Schutz gegen Mehrfach-Checks vom selben Anschluss | Besucher aus dem Handynetz werden nicht mehr gesperrt, nur weil ein Fremder dieselbe Internetadresse nutzt; Spam bleibt gebremst | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Erklärvideo nach dem Freischalten jetzt auch auf dem allgemeinen SEO-Check, in einer Fassung ohne Branchen-Einstieg (rund 2 Minuten) | Besucher aus Social Media sehen vor der Terminbuchung, wie das Paket abläuft | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Datenschutzerklärung zum technisch notwendigen Cookie des SEO-Checks ergänzt | Transparenz, wofür das Cookie da ist | [Datenschutz](https://www.kolac-digital.de/datenschutz.html#seo-check) |
+
+---
+
 ## 23.11.2026
 
 ### SEO-Check
