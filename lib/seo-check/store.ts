@@ -11,7 +11,11 @@ import type { Branche, LeadSource, WebsiteAlter } from './funnel';
  * Speicherung und Begrenzung des SEO-Checks.
  *
  * - Jeder Check landet in `seoChecks/{id}` (zufaellige ID, teilbarer Link).
- * - Besucher: 1 Check pro IP in SEO_CHECK_WINDOW_DAYS (Standard 30 Tage).
+ * - Besucher (seit 24.11.2026): 1 Check pro Person in 24 Stunden. Person =
+ *   Geraete-Kennung im Cookie `kd_sc` (zufaellig, nur gehasht gespeichert).
+ *   Wer das Cookie loescht, faengt am selben Anschluss ueber die IP-Bremse:
+ *   hoechstens SEO_CHECK_IP_MAX Checks pro IP in 24 Stunden (Standard 3, weil
+ *   sich im Handynetz viele Fremde eine IP teilen).
  * - Inhaber: unbegrenzt, erkannt am Dashboard-Login (Firebase-Token) oder
  *   an einer IP aus SEO_CHECK_UNLIMITED_IPS (Komma-getrennt).
  * - Sicherung gegen Kostenexplosion: hoechstens SEO_CHECK_DAILY_CAP
@@ -36,35 +40,58 @@ export async function isOwnerRequest(req: Request): Promise<boolean> {
   return auth.ok;
 }
 
-const windowMs = () => Number(process.env.SEO_CHECK_WINDOW_DAYS ?? 30) * 24 * 3600 * 1000;
+const WINDOW_MS = 24 * 3600 * 1000;
+const ipMax = () => Number(process.env.SEO_CHECK_IP_MAX ?? 3);
 const dailyCap = () => Number(process.env.SEO_CHECK_DAILY_CAP ?? 150);
+
+/** Cookie mit der Geraete-Kennung fuer die Begrenzung „1 Check pro Person und Tag“. */
+export const DEVICE_COOKIE = 'kd_sc';
+
+/** Kennung aus dem Cookie lesen oder neu erzeugen. */
+export function deviceIdFrom(req: Request): { id: string; fresh: boolean } {
+  const m = (req.headers.get('cookie') ?? '').match(new RegExp(`(?:^|;\\s*)${DEVICE_COOKIE}=([A-Za-z0-9_-]{16,64})`));
+  return m ? { id: m[1], fresh: false } : { id: randomBytes(18).toString('base64url'), fresh: true };
+}
 const dayKey = () => new Date().toISOString().slice(0, 10);
 
 export type LimitState = { ok: true } | { ok: false; reason: 'limit' | 'busy'; lastCheckId?: string };
 
-export async function checkLimits(ip: string): Promise<LimitState> {
+export async function checkLimits(ip: string, deviceId: string): Promise<LimitState> {
   const db = adminDb();
-  const [ipSnap, daySnap] = await Promise.all([
-    db.collection(LIMITS).doc(`ip_${sha256(ip || 'unbekannt')}`).get(),
+  const [devSnap, ipSnap, daySnap] = await Promise.all([
+    db.collection(LIMITS).doc(`dev_${sha256(deviceId)}`).get(),
+    db.collection(LIMITS).doc(`ip24_${sha256(ip || 'unbekannt')}`).get(),
     db.collection(LIMITS).doc(`day_${dayKey()}`).get(),
   ]);
-  const ipData = ipSnap.data() as { lastAt?: number; lastCheckId?: string } | undefined;
-  if (ipData?.lastAt && Date.now() - ipData.lastAt < windowMs()) {
-    return { ok: false, reason: 'limit', lastCheckId: ipData.lastCheckId };
+  const now = Date.now();
+  const dev = devSnap.data() as { lastAt?: number; lastCheckId?: string } | undefined;
+  if (dev?.lastAt && now - dev.lastAt < WINDOW_MS) {
+    return { ok: false, reason: 'limit', lastCheckId: dev.lastCheckId };
+  }
+  const ipData = ipSnap.data() as { since?: number; count?: number; lastCheckId?: string } | undefined;
+  if (ipData?.since && now - ipData.since < WINDOW_MS && (ipData.count ?? 0) >= ipMax()) {
+    return { ok: false, reason: 'limit' };
   }
   if ((daySnap.data()?.count ?? 0) >= dailyCap()) return { ok: false, reason: 'busy' };
   return { ok: true };
 }
 
-export async function recordUsage(ip: string, checkId: string): Promise<void> {
+export async function recordUsage(ip: string, deviceId: string, checkId: string): Promise<void> {
   const db = adminDb();
-  const expires = Timestamp.fromMillis(Date.now() + windowMs());
+  const now = Date.now();
+  const expires = Timestamp.fromMillis(now + 2 * WINDOW_MS);
+  const ipRef = db.collection(LIMITS).doc(`ip24_${sha256(ip || 'unbekannt')}`);
   await Promise.all([
-    db.collection(LIMITS).doc(`ip_${sha256(ip || 'unbekannt')}`).set({ lastAt: Date.now(), lastCheckId: checkId, expiresAt: expires }),
+    db.collection(LIMITS).doc(`dev_${sha256(deviceId)}`).set({ lastAt: now, lastCheckId: checkId, expiresAt: expires }),
+    db.runTransaction(async (tx) => {
+      const cur = (await tx.get(ipRef)).data() as { since?: number; count?: number } | undefined;
+      const fresh = !cur?.since || now - cur.since >= WINDOW_MS;
+      tx.set(ipRef, { since: fresh ? now : cur!.since, count: fresh ? 1 : (cur!.count ?? 0) + 1, expiresAt: expires });
+    }),
     db
       .collection(LIMITS)
       .doc(`day_${dayKey()}`)
-      .set({ count: FieldValue.increment(1), expiresAt: Timestamp.fromMillis(Date.now() + 3 * 24 * 3600 * 1000) }, { merge: true }),
+      .set({ count: FieldValue.increment(1), expiresAt: Timestamp.fromMillis(now + 3 * 24 * 3600 * 1000) }, { merge: true }),
   ]);
 }
 

@@ -232,7 +232,7 @@ export default function SeoCheckClient({
               </button>
             </div>
             <p className="mt-3 text-[13px] text-[var(--color-gray)]">
-              Kostenlos und ohne Anmeldung. Ein Check pro Person.
+              Kostenlos und ohne Anmeldung. Ein Check pro Person und Tag.
               {owner && <span className="ml-2 font-semibold text-[var(--color-ok)]">Inhaber-Modus: unbegrenzt</span>}
             </p>
           </form>
@@ -711,7 +711,8 @@ function LockedTeaser({ result }: { result: SeoCheckResponse['result'] }) {
 }
 
 function BookingBlock({ variant }: { variant?: FunnelVariant }) {
-  const vsl = variant ? VSL_VIDEOS[variant.slug] : undefined;
+  // Branchenseiten: Video mit Branchen-Einstieg; allgemeine Seite: dasselbe Video ohne Branchen-Einstieg
+  const vsl = VSL_VIDEOS[variant?.slug ?? 'allgemein'];
   return (
     <div className="rounded-[24px] bg-[var(--color-blue-light)] p-6 md:p-8">
       <p className="text-[13px] font-semibold uppercase tracking-[0.08em] text-[var(--color-blue)]">Dein Bericht ist freigeschaltet</p>
@@ -736,8 +737,8 @@ function BookingBlock({ variant }: { variant?: FunnelVariant }) {
         </h2>
       )}
       <p className="mt-2 max-w-[640px] text-[17px] leading-relaxed text-[var(--color-gray)]">
-        In einem kurzen Gespräch zeige ich dir, was dir bei Google am meisten bringt.
-        {variant ? ' Und wie das Gefunden-Garantie-Paket bei dir aussehen würde.' : ''} Kostenlos und unverbindlich.
+        In einem kurzen Gespräch zeige ich dir, was dir bei Google am meisten bringt. Und wie das
+        Gefunden-Garantie-Paket bei dir aussehen würde. Kostenlos und unverbindlich.
       </p>
       <p className="mt-2 text-[15px] text-[var(--color-black)]">
         Ich schaue mir dein Ergebnis vor dem Gespräch an. Wir prüfen gemeinsam, ob wir dir helfen können.

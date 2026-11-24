@@ -5,7 +5,7 @@
 # Aufruf: zsh scripts/vsl-hls.sh [slug …]   (ohne Angabe alle vier)
 set -e
 SRC=~/Documents/Code/internal/kolac-content/6-werbung/verkaufsvideos
-SLUGS=(${@:-treppenlift gebaeudereinigung hoerakustik autohaus})
+SLUGS=(${@:-treppenlift gebaeudereinigung hoerakustik autohaus allgemein})
 for s in $SLUGS; do
   O=public/videos/vsl/$s
   rm -rf $O; mkdir -p $O

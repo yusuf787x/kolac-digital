@@ -2,7 +2,7 @@ import { NextResponse, after } from 'next/server';
 import { Resend } from 'resend';
 import { checkNotificationEmail } from '@/lib/seo-check/emails';
 import { CheckFailedError, normalizeInputUrl, redactResult, runSeoCheck } from '@/lib/seo-check/run';
-import { checkLimits, clientIp, isOwnerRequest, latestTestSource, recordUsage, saveCheck } from '@/lib/seo-check/store';
+import { DEVICE_COOKIE, checkLimits, clientIp, deviceIdFrom, isOwnerRequest, latestTestSource, recordUsage, saveCheck } from '@/lib/seo-check/store';
 import { hitRateLimit } from '@/lib/portal/rate-limit';
 import type { SeoCheckResponse } from '@/lib/seo-check/types';
 import { cleanSource } from '@/lib/seo-check/funnel';
@@ -49,14 +49,15 @@ export async function POST(req: Request) {
   }
 
   const owner = await isOwnerRequest(req);
+  const device = deviceIdFrom(req);
   if (!owner) {
     try {
-      const limit = await checkLimits(ip);
+      const limit = await checkLimits(ip, device.id);
       if (!limit.ok) {
         return NextResponse.json(
           limit.reason === 'limit'
             ? {
-                error: 'Du hast deinen kostenlosen Check bereits genutzt.',
+                error: 'Du hast heute schon deinen kostenlosen Check gemacht. Morgen geht wieder einer.',
                 code: 'limit',
                 lastCheckId: limit.lastCheckId,
               }
@@ -87,7 +88,7 @@ export async function POST(req: Request) {
     }
     const source = cleanSource(body.source);
     const id = await saveCheck(result, owner, ip, source);
-    if (!owner) await recordUsage(ip, id);
+    if (!owner) await recordUsage(ip, device.id, id);
     // Mail an Yusuf bei jedem Check eines Besuchers, nie im Inhaber-Modus.
     if (!owner && process.env.RESEND_API_KEY) {
       after(async () => {
@@ -108,7 +109,12 @@ export async function POST(req: Request) {
       unlocked: owner,
       result: owner ? result : redactResult(result),
     };
-    return NextResponse.json(response);
+    const res = NextResponse.json(response);
+    // Geraete-Kennung erst setzen, wenn wirklich ein Check gelaufen ist (nur zur Begrenzung, kein Tracking)
+    if (device.fresh && !owner) {
+      res.cookies.set(DEVICE_COOKIE, device.id, { httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: 365 * 24 * 3600 });
+    }
+    return res;
   } catch (err) {
     if (err instanceof CheckFailedError) {
       return NextResponse.json({ error: err.message, code: 'unreachable' }, { status: 422 });

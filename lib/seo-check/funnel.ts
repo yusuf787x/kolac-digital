@@ -48,7 +48,7 @@ export function websiteAlterLabel(v?: string): string {
  * (zsh scripts/vsl-hls.sh). Branche ohne Eintrag = kein Video.
  */
 export const VSL_VIDEOS: Record<string, { src: string; poster: string }> = Object.fromEntries(
-  ['treppenlift', 'gebaeudereinigung', 'hoerakustik', 'autohaus'].map((slug) => [
+  ['treppenlift', 'gebaeudereinigung', 'hoerakustik', 'autohaus', 'allgemein'].map((slug) => [
     slug,
     { src: `/videos/vsl/${slug}/master.m3u8`, poster: `/videos/vsl/${slug}/poster.jpg` },
   ]),
