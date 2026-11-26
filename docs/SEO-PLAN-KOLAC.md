@@ -123,8 +123,7 @@ nicht ranken:
 ## Offen zur Entscheidung (26.11.2026)
 - SEO als eigener Bereich mit Seite /seo (bisher drei Bereiche: Webdesign, Software, KI-Beratung).
 - Wer fragt die Kunden nach dem Fußzeilen-Link und den Bewertungen.
-- Verzeichnisse über Yusufs Browser eintragen lassen. Stand 26.11.: Chrome-Erweiterung war in der Sitzung
-  nicht verbunden, darum noch nichts eingetragen.
+- Verzeichnisse über Yusufs Browser eintragen lassen: am 26.11. erledigt, siehe „Stand Umsetzung“.
 
 ## Stand Umsetzung
 - 26.11.2026: /seo, /seo/paderborn, /webdesign/guetersloh live und in der Sitemap, per IndexNow an Bing,
@@ -143,15 +142,31 @@ nicht ranken:
     Texte gespeichert.
   - feedbax: Profil mit Texten, Adresse, Leistungen; zeigt noch „nicht sichtbar“.
   - Sortlist: live, Webseitengestaltung und SEO je Startpreis 1.000 € (Yusufs Entscheidung), Logo.
-  - werbeagentur.de: Formular vorausgefüllt, Passwort, Captcha und Absenden macht Yusuf.
-  - Bing Places: Google-Anmeldung läuft über ein Popup, das Claude nicht bedienen kann (2 Versuche). Macht Yusuf.
-  - Cylex: Konto mit yusuf@kolac-digital.de gibt es schon (fragt Passwort). Yusuf meldet sich an, dann Eintrag prüfen.
+  - werbeagentur.de: Konto von Yusuf, Profil vollständig (Stammdaten, Standort, Logo, Titelbild, Leistungen
+    Webdesign/SEO/Website-Entwicklung/Google Ads, Branchen Automotive/Beauty/Dienstleistungen/Bildung, B2B/B2C,
+    Webagentur + SEO Agentur, Budgets < 5.000 € und 5.000 bis 12.000 €, Sprache Englisch) und aktiviert.
   - Netz & Werke: Logo hochgeladen, Status „In Prüfung“. feedbax: Logo hochgeladen. agenturmarkt: Logo fehlt
-    (Upload öffnet nur das Mac-Dateifenster).
-  - Noch nicht begonnen: trustlocal, Apple Business Connect, 11880, Gelbe Seiten, Das Örtliche, Das Telefonbuch,
-    golocal, branchen-info.net, meinestadt.de, Yelp, ProvenExpert, Clutch, DesignRush, GoodFirms, LinkedIn, XING,
-    Facebook.
-  - Logo für Portale: `docs/backlinks/assets/logo-quadrat.png`.
+    (nur mit Upgrade möglich, Yusuf: passt so).
+  - Bing Places und Apple Business Connect: von Yusuf beantragt, Veröffentlichung ausstehend.
+  - 11880 (inkl. werkenntdenBESTEN): kostenloser Eintrag abgeschickt, Freischaltung durch 11880.
+  - Gelbe Seiten: Eintrag gab es schon (mit Logo). Das Örtliche: Grundeintrag abgeschickt, Bestätigungsmail
+    („Anmeldebestätigung…“) klickt Yusuf; Verlag Oeding betreut auch Das Telefonbuch.
+  - branchen-info.net: eingetragen (Yusuf hat Passwort gesetzt und abgeschlossen).
+  - trustlocal: Firmenprofil angelegt, danach nur kostenpflichtig (29 €/Monat ab 2027 + 50 € je Anfrage), nicht
+    weitergemacht.
+  - Yelp: Kolac Digital war schon beansprucht, wartet auf Freigabe durch Yelp.
+  - Clutch: kostenloses Profil angelegt (Webdesign 50 %, SEO 50 %, Mindestprojekt 1.000 $, Stundensatz keine
+    Angabe, 2 bis 9 Mitarbeiter), Standortprüfung 7 bis 10 Werktage.
+  - LinkedIn: Unternehmensseite gab es schon, vollständig, nicht verändert.
+  - Offen bei Yusuf: DesignRush und GoodFirms (vorausgefüllt, Passwort + Absenden), ProvenExpert (Seite nahm
+    die Eingabe nicht an), Cylex (vorhandenes Konto gehört einem Kunden), golocal (Browser mit Kundenkonto
+    Pader angemeldet).
+  - Ausgelassen: meinestadt.de (nur über kostenpflichtigen Partner), XING (nur bezahlte Arbeitgeberprofile, nicht
+    angemeldet), Facebook (lässt sich nicht automatisieren).
+  - Logo für Portale: `docs/backlinks/assets/logo-quadrat.png`, große Fassungen `logo-1024.png`,
+    `header-1920x400.png`.
+
+### Weiter offen zur Entscheidung
 - Studie aus SEO-Check- und Outreach-Daten (zusammengefasst, ohne Namen).
 - Seite zu Kosten („was kostet eine website“ 480, „website kosten“ 590 Suchen), obwohl bisher keine
   Preise in Themen.
