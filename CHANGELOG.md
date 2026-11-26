@@ -8,6 +8,21 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ## 26.11.2026
 
+### Inhalte
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Neue Seite „SEO für Bielefeld und OWL“: Probleme lokaler Betriebe, sechs Hebel (Google-Profil, Seiten für Suchbegriffe, Verzeichnisse, Bewertungen, Technik, Monatsbericht), Paket „Sichtbar in 90 Tagen“, echte Search-Console-Kurve einer Praxis, Ablauf und häufige Fragen | Die Website kann jetzt für Suchen wie „SEO Agentur Bielefeld“ gefunden werden, vorher gab es dafür keine passende Seite | [Seite ansehen](https://www.kolac-digital.de/seo) |
+| ✅ | Neue Seite „SEO Paderborn“ mit eigenem Text zu Stadtteilen und Kreis und den zwei Projekten aus Paderborn | Erreicht Betriebe, die nach SEO in Paderborn suchen (rund 210 Suchen im Monat) | [Seite ansehen](https://www.kolac-digital.de/seo/paderborn) |
+| ✅ | Neue Stadtseite „Webdesign Gütersloh“ mit eigenem Text zum Kreis Gütersloh | Bei „Webdesign Gütersloh“ (rund 210 Suchen im Monat) stehen bisher vor allem Verzeichnisse vorne, eine Agenturseite hat dort gute Chancen | [Seite ansehen](https://www.kolac-digital.de/webdesign/guetersloh) |
+| ✅ | Die neuen Seiten sind von Startseite, Fußzeile, Webdesign-Seite, Stadtseiten und SEO-Check verlinkt und stehen in Sitemap und llms.txt | Google und KI-Suchen finden die neuen Seiten schneller | [Startseite](https://www.kolac-digital.de/#branchen) [Sitemap](https://www.kolac-digital.de/sitemap-pages.xml) |
+
+### Technik
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Titel von 28 Seiten auf höchstens 60 Zeichen gekürzt, Beschreibungen von 22 Seiten auf höchstens 160 Zeichen, drei zu kurze Beschreibungen ergänzt, Hauptsuchbegriff jeweils vorne | Google zeigt Titel und Beschreibung vollständig an statt abgeschnitten, das hilft bei der Klickrate | [Webdesign Bielefeld](https://www.kolac-digital.de/webseiten) [Portfolio](https://www.kolac-digital.de/portfolio) |
+
 ### SEO-Check
 
 | Status | Änderung | Nutzen | Nachweis |
