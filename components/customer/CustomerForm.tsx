@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Customer, Salutation } from '@/lib/types';
 import { createCustomer, updateCustomer } from '@/lib/firestore';
+import { LIFECYCLE_HINTS, LIFECYCLE_LABELS, LIFECYCLE_ORDER, normalizeDomain } from '@/lib/crm';
 
 type CustomerFormData = Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>;
 
@@ -22,6 +23,9 @@ const EMPTY: CustomerFormData = {
   gocardlessCustomerId: '',
   retainerInvoiceEmail: '',
   retainerInvoiceTemplate: '',
+  lifecycle: 'lead',
+  website: '',
+  source: '',
 };
 
 const DEFAULT_RETAINER_TEMPLATE = `Systempflege {monat_jahr}
@@ -52,6 +56,9 @@ export default function CustomerForm({ initial, mode }: Props) {
           gocardlessCustomerId: initial.gocardlessCustomerId ?? '',
           retainerInvoiceEmail: initial.retainerInvoiceEmail ?? '',
           retainerInvoiceTemplate: initial.retainerInvoiceTemplate ?? '',
+          lifecycle: initial.lifecycle ?? 'kunde',
+          website: initial.website ?? '',
+          source: initial.source ?? '',
         }
       : EMPTY,
   );
@@ -67,9 +74,15 @@ export default function CustomerForm({ initial, mode }: Props) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
+    const clean: CustomerFormData = {
+      ...data,
+      email: data.email.trim(),
+      website: normalizeDomain(data.website) || (data.website ?? '').trim(),
+      source: (data.source ?? '').trim(),
+    };
     try {
       if (mode === 'create') {
-        await createCustomer(data);
+        await createCustomer(clean);
         // Land on the list with a success banner — avoids a race where
         // the detail page tries to read the new doc before Firestore has
         // propagated it locally.
@@ -77,7 +90,7 @@ export default function CustomerForm({ initial, mode }: Props) {
           `/dashboard/kunden?created=${encodeURIComponent(data.company || data.lastName || 'Kunde')}`,
         );
       } else if (initial) {
-        await updateCustomer(initial.id, data);
+        await updateCustomer(initial.id, clean);
         router.push(
           `/dashboard/kunden/${initial.id}?updated=${encodeURIComponent(data.company || data.lastName || 'Kunde')}`,
         );
@@ -189,6 +202,64 @@ export default function CustomerForm({ initial, mode }: Props) {
               value={data.phone}
               onChange={(e) => update('phone', e.target.value)}
             />
+          </div>
+        </div>
+      </section>
+
+      <section className="card space-y-4">
+        <h2 className="text-base font-semibold text-gray-900">Vertrieb</h2>
+        <div>
+          <span className="label">Status</span>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Status">
+            {LIFECYCLE_ORDER.map((l) => (
+              <button
+                key={l}
+                type="button"
+                role="radio"
+                aria-checked={data.lifecycle === l}
+                onClick={() => update('lifecycle', l)}
+                title={LIFECYCLE_HINTS[l]}
+                className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${
+                  data.lifecycle === l
+                    ? 'border-brand-blue bg-blue-50 text-brand-blue font-medium'
+                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {LIFECYCLE_LABELS[l]}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1.5 text-xs text-gray-500">
+            {data.lifecycle ? LIFECYCLE_HINTS[data.lifecycle] : ''}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="label" htmlFor="cf-website">Website</label>
+            <input
+              id="cf-website"
+              className="input"
+              placeholder="beispiel.de"
+              value={data.website ?? ''}
+              onChange={(e) => update('website', e.target.value)}
+            />
+            <p className="mt-1 text-xs text-gray-500">Verknüpft SEO-Checks und Mails dieser Firma.</p>
+          </div>
+          <div>
+            <label className="label" htmlFor="cf-source">Woher kam der Kontakt?</label>
+            <input
+              id="cf-source"
+              className="input"
+              list="cf-source-list"
+              placeholder="z. B. SEO-Check, Empfehlung"
+              value={data.source ?? ''}
+              onChange={(e) => update('source', e.target.value)}
+            />
+            <datalist id="cf-source-list">
+              {['SEO-Check', 'Empfehlung', 'TikTok', 'Instagram', 'Outreach Instagram', 'Google', 'Kontaktformular', 'Meta-Werbung', 'BNI / Netzwerk'].map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
           </div>
         </div>
       </section>

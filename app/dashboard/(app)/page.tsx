@@ -273,22 +273,27 @@ export default function DashboardHomePage() {
               </div>
               <div className="divide-y divide-gray-100">
                 {dueActivities
-                  .filter((a) => a.dealId)
+                  .filter((a) => a.dealId || a.customerId)
                   .map((a) => {
-                  const deal = dealMap.get(a.dealId!);
+                  const deal = a.dealId ? dealMap.get(a.dealId) : undefined;
+                  const akteId = deal?.customerId ?? a.customerId;
                   const def = activityDef(a.type);
                   const due = a.dueDate!.toDate();
                   const overdue = a.dueDate!.toMillis() < Date.now();
                   const days = daysOverdue(due);
-                  const customerName = deal
-                    ? customerMap.get(deal.customerId)?.company ??
-                      `${customerMap.get(deal.customerId)?.firstName ?? ''} ${customerMap.get(deal.customerId)?.lastName ?? ''}`.trim()
+                  const customerName = akteId
+                    ? customerMap.get(akteId)?.company ??
+                      `${customerMap.get(akteId)?.firstName ?? ''} ${customerMap.get(akteId)?.lastName ?? ''}`.trim()
                     : '';
                   return (
                     <Link
                       key={a.id}
                       href={
-                        deal ? `/dashboard/vertrieb/${deal.id}` : '/dashboard/vertrieb'
+                        deal
+                          ? `/dashboard/vertrieb/${deal.id}`
+                          : a.customerId
+                            ? `/dashboard/kunden/${a.customerId}`
+                            : '/dashboard/vertrieb'
                       }
                       className="flex items-center justify-between py-3 hover:bg-gray-50 -mx-2 px-2 rounded-sm"
                     >

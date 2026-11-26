@@ -26,7 +26,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: '📊', group: 'Allgemein' },
   { href: '/dashboard/aufgaben', label: 'Aufgaben', icon: '✅', group: 'Allgemein' },
-  { href: '/dashboard/kunden', label: 'Kunden', icon: '👥', group: 'Allgemein' },
+  { href: '/dashboard/kunden', label: 'Kontakte & Kunden', shortLabel: 'Kunden', icon: '👥', group: 'Allgemein' },
   { href: '/dashboard/vertrieb', label: 'Vertrieb', icon: '🔄', group: 'Vertrieb' },
   { href: '/dashboard/vertrieb/outreach', label: 'Outreach', icon: '💬', group: 'Vertrieb' },
   { href: '/dashboard/termine', label: 'Termine', icon: '📅', group: 'Vertrieb' },

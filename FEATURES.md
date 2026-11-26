@@ -90,6 +90,17 @@ Drei Modi im „Neuer Vertrag"-Flow:
 - **E-Mail-Templates** mit Platzhaltern (`EmailTemplate`).
 - **Aufgaben-Kanban** (Task/TaskColumn) mit Priority-Tags.
 
+### Kundenakte (`app/dashboard/(app)/kunden/` + `lib/crm*.ts` + `components/crm/`)
+
+- **Eine Akte pro Firma** in `customers`, auch für Leads. Neue Felder: `lifecycle` (lead / interessent / kunde / verloren / ehemalig, fehlt = kunde), `website` (normalisierte Domain, verknüpft SEO-Checks und Gmail), `source`, `nextStep` + `nextStepAt`, `outreachLeadId`, `importedFrom`.
+- **Ansprechpartner:** der erste steht wie bisher im Kunden, weitere in `contacts` (`customerId`, Name, Rolle, Mail, Telefon, Notiz).
+- **Verlauf** (`buildTimeline` in `lib/crm.ts`) wird live zusammengesetzt aus: `activities` mit `customerId` (Notiz, Anruf, Mail, Gespräch, Aufgaben mit `dueDate`) und den Aktivitäten der Deals, Deals, Angeboten, Rechnungen inkl. Mahnstufen, Verträgen, `meetings` (Gast-Mail oder `sourceId`), öffentlichen `seoChecks` (gleiche Domain oder Mail beim Freischalten), dem verknüpften `outreachLeads`-Eintrag, `portalLoginEvents` (pro Tag gebündelt) und Gmail.
+- **Gmail:** `GET /api/crm/mails?customerId=` liest per OAuth (`gmail.readonly`, Token in `settings/google_auth`) die letzten 40 Mails von/an alle Adressen und die Firmen-Domain der Akte. Nichts wird gespeichert. Ohne Scope zeigt die Akte einen Hinweis; freischalten unter Einstellungen → „Mail-Zugriff erlauben“.
+- **Kennzahlen:** Umsatz bisher netto (bezahlte Rechnungen, gleiche Rechnung wie Startseite), offen brutto, Ø pro Monat seit erster Rechnung, letzter Kontakt.
+- **Automatisch angelegt** (`upsertLeadAkte` in `lib/crm-server.ts`): beim ersten Freischalten eines SEO-Checks und bei jeder Kontaktformular-Anfrage. Sucht erst über Mail, Ansprechpartner-Mail, Domain; sonst neue Akte als Lead.
+- **Übernahme alter Kontakte:** Liste → „Kontakte ohne Akte“ (`/api/crm/import`): Vorschau aus SEO-Checks, Outreach (angeschrieben/geantwortet) und Termin-Gästen, vorausgewählt nur echte Kontakte; legt erst nach Klick an.
+- **Suche:** Liste durchsucht alle Felder und Ansprechpartner; ⌘K findet zusätzlich Ansprechpartner, SEO-Checks und Outreach.
+
 ## Termin-Erinnerungen (`app/dashboard/(app)/termine/` + `lib/meetings/`)
 
 - Google-Meet-Termine aus dem eigenen Kalender (Organisator = ich, Meet-Link, mindestens ein Gast außerhalb von @kolac-digital.de, Gast hat nicht abgesagt). Eigene Buchungen und Buchungen über die Google-Terminbuchungsseite landen gleich im Kalender.

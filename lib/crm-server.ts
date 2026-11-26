@@ -1,0 +1,362 @@
+import 'server-only';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { adminDb } from './firebase-admin';
+import { companyDomainFromEmail, normalizeDomain } from './crm-shared';
+import type { CustomerLifecycle } from './types';
+
+/**
+ * Serverseitige Kundenakte: Akten automatisch anlegen (SEO-Check
+ * freigeschaltet, Kontaktformular) und die einmalige Übernahme alter
+ * Kontakte (SEO-Checks, Outreach, Termine) vorbereiten.
+ */
+
+const OWN_DOMAIN = 'kolac-digital.de';
+
+export interface AkteInput {
+  company?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  street?: string;
+  zip?: string;
+  city?: string;
+  source: string;
+  lifecycle?: CustomerLifecycle;
+  notes?: string;
+  outreachLeadId?: string;
+  importedFrom?: string;
+}
+
+function splitName(name: string | undefined): { firstName: string; lastName: string } {
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { firstName: '', lastName: '' };
+  if (parts.length === 1) return { firstName: parts[0], lastName: '' };
+  return { firstName: parts.slice(0, -1).join(' '), lastName: parts[parts.length - 1] };
+}
+
+/** Sucht eine bestehende Akte über Mail, Website-Domain oder Outreach-Lead. */
+export async function findAkte(input: Pick<AkteInput, 'email' | 'website' | 'outreachLeadId'>): Promise<string | null> {
+  const db = adminDb();
+  const col = db.collection('customers');
+  const email = (input.email ?? '').trim().toLowerCase();
+  if (input.outreachLeadId) {
+    const s = await col.where('outreachLeadId', '==', input.outreachLeadId).limit(1).get();
+    if (!s.empty) return s.docs[0].id;
+  }
+  if (email) {
+    const s = await col.where('email', '==', email).limit(1).get();
+    if (!s.empty) return s.docs[0].id;
+    const c = await db.collection('contacts').where('email', '==', email).limit(1).get();
+    if (!c.empty) return (c.docs[0].data().customerId as string) ?? null;
+  }
+  const domain = normalizeDomain(input.website) || companyDomainFromEmail(email);
+  if (domain) {
+    const s = await col.where('website', '==', domain).limit(1).get();
+    if (!s.empty) return s.docs[0].id;
+  }
+  return null;
+}
+
+export async function createAkte(input: AkteInput): Promise<string> {
+  const email = (input.email ?? '').trim().toLowerCase();
+  const domain = normalizeDomain(input.website) || companyDomainFromEmail(email);
+  const { firstName, lastName } = splitName(input.name);
+  const ref = await adminDb()
+    .collection('customers')
+    .add({
+      company: (input.company ?? '').trim() || domain || `${firstName} ${lastName}`.trim(),
+      salutation: 'Divers',
+      firstName,
+      lastName,
+      street: input.street ?? '',
+      zip: input.zip ?? '',
+      city: input.city ?? '',
+      email,
+      phone: (input.phone ?? '').trim(),
+      notes: input.notes ?? '',
+      lifecycle: input.lifecycle ?? 'lead',
+      website: domain,
+      source: input.source,
+      ...(input.outreachLeadId ? { outreachLeadId: input.outreachLeadId } : {}),
+      ...(input.importedFrom ? { importedFrom: input.importedFrom } : {}),
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+  return ref.id;
+}
+
+/** Eintrag im Verlauf der Akte (erscheint als Notiz/Mail). */
+export async function addAkteActivity(
+  customerId: string,
+  type: 'notiz' | 'email' | 'anruf' | 'meeting',
+  description: string,
+  emailSubject: string | null = null,
+): Promise<void> {
+  await adminDb().collection('activities').add({
+    customerId,
+    type,
+    description,
+    emailSubject,
+    emailBody: null,
+    dueDate: null,
+    completed: true,
+    completedAt: Timestamp.now(),
+    createdAt: FieldValue.serverTimestamp(),
+  });
+}
+
+/** Neue Anfrage (SEO-Check, Kontaktformular): Akte finden oder als Lead anlegen. */
+export async function upsertLeadAkte(input: AkteInput, activity?: { type: 'notiz' | 'email'; text: string; subject?: string }): Promise<string | null> {
+  try {
+    const email = (input.email ?? '').toLowerCase();
+    if (email.endsWith(`@${OWN_DOMAIN}`)) return null;
+    let id = await findAkte(input);
+    if (!id) id = await createAkte(input);
+    if (activity) await addAkteActivity(id, activity.type, activity.text, activity.subject ?? null);
+    return id;
+  } catch (err) {
+    console.error('[crm] Akte konnte nicht angelegt werden:', err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+// ===================================================================
+// ÜBERNAHME ALTER KONTAKTE
+// ===================================================================
+
+export type CandidateKind = 'seo' | 'outreach' | 'termin';
+
+export interface ImportCandidate {
+  key: string;
+  kinds: CandidateKind[];
+  company: string;
+  name: string;
+  email: string;
+  phone: string;
+  website: string;
+  city: string;
+  street: string;
+  zip: string;
+  lifecycle: CustomerLifecycle;
+  source: string;
+  /** Was wir über den Kontakt wissen, eine Zeile je Quelle. */
+  facts: string[];
+  lastAt: number;
+  /** Vorschlag: vorausgewählt in der Vorschau. */
+  suggested: boolean;
+  outreachLeadId?: string;
+}
+
+const REPLIED = new Set(['geantwortet', 'termin', 'kunde', 'kein-interesse']);
+
+function tsMs(v: unknown): number {
+  if (!v) return 0;
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string') return Date.parse(v) || 0;
+  if (typeof (v as { toMillis?: () => number }).toMillis === 'function') return (v as { toMillis: () => number }).toMillis();
+  return 0;
+}
+
+/** "Hauptstr. 1, 33602 Bielefeld" → Straße, PLZ, Ort. */
+function splitAddress(address: string, fallbackCity: string): { street: string; zip: string; city: string } {
+  const [first, ...rest] = address.split(',').map((p) => p.trim());
+  const m = rest.join(' ').match(/(\d{5})\s+(.+)/);
+  if (m) return { street: first ?? '', zip: m[1], city: m[2].replace(/,?\s*Deutschland$/i, '').trim() };
+  return { street: rest.length ? (first ?? '') : '', zip: '', city: fallbackCity };
+}
+
+const fmt = (ms: number) => (ms ? new Date(ms).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }) : '');
+
+/** Alle Kontakte aus SEO-Checks, Outreach und Terminen, die noch keine Akte haben. */
+export async function importCandidates(): Promise<{ candidates: ImportCandidate[]; existingMatches: number }> {
+  const db = adminDb();
+  const [custSnap, contactSnap, checkSnap, outreachSnap, meetingSnap] = await Promise.all([
+    db.collection('customers').get(),
+    db.collection('contacts').get(),
+    db.collection('seoChecks').orderBy('createdAt', 'desc').limit(2000).get(),
+    db.collection('outreachLeads').where('status', 'in', ['gesendet', 'nachgefasst', 'geantwortet', 'termin', 'kunde', 'kein-interesse']).get(),
+    db.collection('meetings').orderBy('startAt', 'desc').limit(500).get(),
+  ]);
+
+  // Was schon eine Akte hat.
+  const knownEmails = new Set<string>();
+  const knownDomains = new Set<string>();
+  const knownOutreach = new Set<string>();
+  for (const d of custSnap.docs) {
+    const c = d.data();
+    const e = String(c.email ?? '').toLowerCase();
+    if (e) knownEmails.add(e);
+    const dom = normalizeDomain(c.website) || companyDomainFromEmail(e);
+    if (dom) knownDomains.add(dom);
+    if (c.outreachLeadId) knownOutreach.add(String(c.outreachLeadId));
+  }
+  for (const d of contactSnap.docs) {
+    const e = String(d.data().email ?? '').toLowerCase();
+    if (e) knownEmails.add(e);
+  }
+
+  const byKey = new Map<string, ImportCandidate>();
+  let existingMatches = 0;
+  const isKnown = (email: string, domain: string, outreachId?: string) =>
+    (!!email && knownEmails.has(email)) || (!!domain && knownDomains.has(domain)) || (!!outreachId && knownOutreach.has(outreachId));
+
+  /** Fasst Einträge mit gleicher Mail oder Domain zusammen. */
+  const upsert = (c: ImportCandidate) => {
+    const keys = [c.email && `e:${c.email}`, c.website && `d:${c.website}`, c.outreachLeadId && `o:${c.outreachLeadId}`].filter(Boolean) as string[];
+    const hit = keys.map((k) => byKey.get(k)).find(Boolean);
+    if (!hit) {
+      keys.forEach((k) => byKey.set(k, c));
+      return;
+    }
+    hit.kinds = [...new Set([...hit.kinds, ...c.kinds])];
+    hit.facts.push(...c.facts);
+    hit.company ||= c.company;
+    hit.name ||= c.name;
+    hit.email ||= c.email;
+    hit.phone ||= c.phone;
+    hit.website ||= c.website;
+    hit.city ||= c.city;
+    hit.street ||= c.street;
+    hit.zip ||= c.zip;
+    hit.outreachLeadId ||= c.outreachLeadId;
+    hit.suggested ||= c.suggested;
+    hit.lastAt = Math.max(hit.lastAt, c.lastAt);
+    const rank: CustomerLifecycle[] = ['verloren', 'lead', 'interessent', 'kunde'];
+    if (rank.indexOf(c.lifecycle) > rank.indexOf(hit.lifecycle)) hit.lifecycle = c.lifecycle;
+    keys.forEach((k) => byKey.set(k, hit));
+  };
+
+  // SEO-Checks: pro Domain der neueste, freigeschaltete bevorzugt.
+  for (const d of checkSnap.docs) {
+    const x = d.data();
+    if (!x.result || x.test || x.owner) continue;
+    const domain = normalizeDomain(x.domain ?? x.result?.domain);
+    if (!domain || domain === OWN_DOMAIN) continue;
+    const lead = x.lead ?? null;
+    const email = String(lead?.email ?? '').toLowerCase();
+    if (isKnown(email, domain)) {
+      existingMatches++;
+      continue;
+    }
+    const at = tsMs(x.createdAt);
+    upsert({
+      key: `seo:${domain}`,
+      kinds: ['seo'],
+      company: lead?.company ?? '',
+      name: lead?.name ?? '',
+      email,
+      phone: lead?.phone ?? '',
+      website: domain,
+      city: '',
+      street: '',
+      zip: '',
+      lifecycle: 'lead',
+      source: 'SEO-Check',
+      facts: [`SEO-Check am ${fmt(at)}: ${x.score ?? x.result?.score ?? '?'}/100${lead ? ', Bericht freigeschaltet' : ', ohne Kontaktdaten'}${lead?.wantsCall ? ', möchte Rückruf' : ''}${x.source?.landing ? ` (über ${x.source.landing})` : ''}`],
+      lastAt: at,
+      suggested: !!lead,
+    });
+  }
+
+  // Outreach: angeschrieben (ohne Antwort optional) und alle mit Antwort.
+  for (const d of outreachSnap.docs) {
+    const o = d.data();
+    const domain = normalizeDomain(o.website);
+    const email = String(o.email ?? '').toLowerCase();
+    if (isKnown(email, domain, d.id)) {
+      existingMatches++;
+      continue;
+    }
+    const replied = REPLIED.has(o.status);
+    const lifecycle: CustomerLifecycle =
+      o.status === 'termin' ? 'interessent' : o.status === 'kunde' ? 'kunde' : o.status === 'kein-interesse' ? 'verloren' : 'lead';
+    const channel = o.channel === 'mail' ? 'Mail' : o.tiktok && !o.instagram ? 'TikTok' : 'Instagram';
+    const handle = o.instagram ? ` @${o.instagram}` : o.tiktok ? ` @${o.tiktok}` : '';
+    upsert({
+      key: `outreach:${d.id}`,
+      kinds: ['outreach'],
+      company: o.name ?? '',
+      name: o.contact ?? '',
+      email,
+      phone: o.phone ?? '',
+      website: domain,
+      ...splitAddress(String(o.address ?? ''), String(o.city ?? '')),
+      lifecycle,
+      source: `Outreach ${channel}`,
+      facts: [
+        `Outreach (${channel}${handle}): ${o.status}${o.sentAt ? `, angeschrieben ${fmt(tsMs(o.sentAt))}` : ''}${o.repliedAt ? `, Antwort ${fmt(tsMs(o.repliedAt))}` : ''}`,
+      ],
+      lastAt: Math.max(tsMs(o.repliedAt), tsMs(o.followedUpAt), tsMs(o.sentAt)),
+      suggested: replied,
+      outreachLeadId: d.id,
+    });
+  }
+
+  // Termine: Gäste, die noch keiner Akte zugeordnet sind.
+  for (const d of meetingSnap.docs) {
+    const m = d.data();
+    for (const g of (m.guests ?? []) as { email: string; name?: string; company?: string; source?: string }[]) {
+      const email = String(g.email ?? '').toLowerCase();
+      if (!email || email.endsWith(`@${OWN_DOMAIN}`) || g.source === 'kunde') continue;
+      const domain = companyDomainFromEmail(email);
+      if (isKnown(email, domain)) {
+        existingMatches++;
+        continue;
+      }
+      upsert({
+        key: `termin:${email}`,
+        kinds: ['termin'],
+        company: g.company ?? '',
+        name: g.name ?? '',
+        email,
+        phone: '',
+        website: domain,
+        city: '',
+        street: '',
+        zip: '',
+        lifecycle: 'interessent',
+        source: 'Termin',
+        facts: [`Termin am ${fmt(tsMs(m.startAt))}: ${m.title ?? ''}${m.status === 'cancelled' ? ' (abgesagt)' : ''}`],
+        lastAt: tsMs(m.startAt),
+        suggested: false,
+      });
+    }
+  }
+
+  const unique = [...new Set(byKey.values())];
+  // Stabiler Schlüssel: der erste Schlüssel des Eintrags.
+  return { candidates: unique.sort((a, b) => b.lastAt - a.lastAt), existingMatches };
+}
+
+export async function runImport(keys: string[]): Promise<{ created: number; skipped: number }> {
+  const { candidates } = await importCandidates();
+  const wanted = new Set(keys);
+  let created = 0;
+  let skipped = 0;
+  const stamp = `crm-import-${new Date().toISOString().slice(0, 10)}`;
+  for (const c of candidates) {
+    if (!wanted.has(c.key)) continue;
+    if (await findAkte(c)) {
+      skipped++;
+      continue;
+    }
+    const id = await createAkte({
+      company: c.company,
+      name: c.name,
+      email: c.email,
+      phone: c.phone,
+      website: c.website,
+      city: c.city,
+      street: c.street,
+      zip: c.zip,
+      source: c.source,
+      lifecycle: c.lifecycle,
+      outreachLeadId: c.outreachLeadId,
+      importedFrom: stamp,
+    });
+    await addAkteActivity(id, 'notiz', `Aus der Übernahme: ${c.facts.join(' · ')}`);
+    created++;
+  }
+  return { created, skipped };
+}

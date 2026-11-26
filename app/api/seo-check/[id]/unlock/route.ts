@@ -7,6 +7,7 @@ import { clientIp, loadCheck, saveLead, type StoredLead } from '@/lib/seo-check/
 import type { SeoCheckResponse } from '@/lib/seo-check/types';
 import { BRANCHEN, WEBSITE_ALTER, type Branche, type WebsiteAlter } from '@/lib/seo-check/funnel';
 import { onLeadCaptured } from '@/lib/seo-check/lead-hooks';
+import { upsertLeadAkte } from '@/lib/crm-server';
 import { emailProblem, phoneProblem } from '@/lib/seo-check/contact-check';
 import { emailDomainIsDead } from '@/lib/seo-check/email-dns';
 
@@ -111,6 +112,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       clickSeenAtMs: typeof stored.createdAt?.toMillis === 'function' ? stored.createdAt.toMillis() : undefined,
     };
     after(() => onLeadCaptured(id, lead, ctx).catch((err) => console.error('SEO-Check Lead-Hook:', err)));
+    // Kundenakte: Kontakt als Lead anlegen oder an die bestehende Akte hängen.
+    after(async () => {
+      await upsertLeadAkte(
+        { company, name, email, phone, website: stored.result.domain, source: 'SEO-Check' },
+        {
+          type: 'notiz',
+          text: `SEO-Check freigeschaltet: ${stored.result.domain}, ${stored.result.score}/100${lead.wantsCall ? ', möchte einen Rückruf' : ''}${branche ? `, Branche: ${branche}` : ''}`,
+        },
+      );
+    });
   }
 
   const response: SeoCheckResponse = { id, owner: false, unlocked: true, result: stored.result, ...(stored.test ? { test: true } : {}) };

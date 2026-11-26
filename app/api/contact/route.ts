@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
+import { upsertLeadAkte } from '@/lib/crm-server';
 import { Resend } from 'resend';
 import { buildContactNotificationEmail } from '@/lib/email-templates';
 
@@ -97,6 +98,18 @@ export async function POST(req: Request) {
         { status: 502 },
       );
     }
+
+    // Kundenakte: Anfrage als Lead festhalten (Daten bleiben auch ohne Mailpostfach erhalten).
+    after(async () => {
+      await upsertLeadAkte(
+        { company, name, email, phone, source: `Kontaktformular (${source})` },
+        {
+          type: 'email',
+          subject: `Kontaktanfrage${service ? `: ${service}` : ''}`,
+          text: message || '(ohne Nachricht)',
+        },
+      );
+    });
 
     return NextResponse.json({ ok: true, id: result.data?.id });
   } catch (err) {

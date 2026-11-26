@@ -21,6 +21,41 @@ export interface Customer {
   retainerInvoiceEmail?: string;
   /** Template-Text für die Auto-Rechnung. Unterstützt {monat}, {jahr}, {monat_jahr}, {kunde_firma}, {betrag}. */
   retainerInvoiceTemplate?: string;
+  // ----- CRM (Kundenakte) -----
+  /** Wo die Firma im Vertrieb steht. Fehlt bei Altkunden: dann „kunde“. */
+  lifecycle?: CustomerLifecycle;
+  /** Website, ohne Pfad. Verknüpft SEO-Checks über die Domain. */
+  website?: string;
+  /** Woher der Kontakt kam (SEO-Check, Instagram, Empfehlung …). */
+  source?: string;
+  /** Nächster Schritt im Vertrieb, z. B. „Angebot nachfassen“. */
+  nextStep?: string;
+  nextStepAt?: Timestamp | null;
+  /** Verknüpfter Outreach-Lead (Instagram/TikTok). */
+  outreachLeadId?: string;
+  /** Aus welcher Übernahme die Akte stammt (für Nachvollziehbarkeit). */
+  importedFrom?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export type CustomerLifecycle =
+  | 'lead'
+  | 'interessent'
+  | 'kunde'
+  | 'verloren'
+  | 'ehemalig';
+
+/** Weitere Ansprechpartner einer Firma (der erste steht direkt im Kunden). */
+export interface Contact {
+  id: string;
+  customerId: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  email: string;
+  phone: string;
+  notes: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -550,9 +585,11 @@ export type ActivityType =
 
 export interface Activity {
   id: string;
-  /** Ein Aktivitaet gehoert zu einem Deal ODER zu einem Lead. */
+  /** Ein Aktivitaet gehoert zu einem Deal, einem Lead oder direkt zu einer Kundenakte. */
   dealId?: string;
   leadId?: string;
+  customerId?: string;
+  contactId?: string;
   type: ActivityType;
   description: string;
   emailSubject: string | null;

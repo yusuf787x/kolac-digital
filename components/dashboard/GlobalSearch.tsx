@@ -17,6 +17,7 @@ import {
   listQuotes,
 } from '@/lib/firestore';
 import type {
+  Contact,
   Customer,
   Deal,
   EmailTemplate,
@@ -25,10 +26,27 @@ import type {
   Quote,
 } from '@/lib/types';
 import { stageDef } from '@/lib/sales';
+import {
+  domainOf,
+  LIFECYCLE_LABELS,
+  lifecycleOf,
+  listAllContacts,
+  listRecentSeoChecks,
+  normalizeDomain,
+  personName,
+  type PublicSeoCheck,
+} from '@/lib/crm';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { OutreachLead } from '@/lib/outreach';
+import { OUTREACH_STATUS_LABELS } from '@/lib/outreach';
 import { formatEUR, formatDateDE } from '@/lib/utils';
 
 type Group =
   | 'Kunden'
+  | 'Ansprechpartner'
+  | 'SEO-Checks'
+  | 'Outreach'
   | 'Deals'
   | 'Angebote'
   | 'Rechnungen'
@@ -51,6 +69,9 @@ interface Indexed {
 
 const GROUP_ORDER: Group[] = [
   'Kunden',
+  'Ansprechpartner',
+  'SEO-Checks',
+  'Outreach',
   'Deals',
   'Angebote',
   'Rechnungen',
@@ -72,7 +93,7 @@ export default function GlobalSearch() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [customers, deals, quotes, invoices, expenses, templates] =
+      const [customers, deals, quotes, invoices, expenses, templates, contacts, seoChecks, outreach] =
         await Promise.all([
           listCustomers(),
           listDeals(),
@@ -80,9 +101,14 @@ export default function GlobalSearch() {
           listInvoices(),
           listExpenses(),
           listEmailTemplates(),
+          listAllContacts().catch(() => [] as Contact[]),
+          listRecentSeoChecks(300).catch(() => [] as PublicSeoCheck[]),
+          getDocs(collection(db, 'outreachLeads'))
+            .then((s) => s.docs.map((d) => ({ id: d.id, ...d.data() }) as OutreachLead))
+            .catch(() => [] as OutreachLead[]),
         ]);
       setIndex(
-        buildIndex({ customers, deals, quotes, invoices, expenses, templates }),
+        buildIndex({ customers, deals, quotes, invoices, expenses, templates, contacts, seoChecks, outreach }),
       );
       setLoaded(true);
     } catch (err) {
@@ -320,8 +346,11 @@ function buildIndex(data: {
   invoices: Invoice[];
   expenses: Expense[];
   templates: EmailTemplate[];
+  contacts: Contact[];
+  seoChecks: PublicSeoCheck[];
+  outreach: OutreachLead[];
 }): Indexed[] {
-  const { customers, deals, quotes, invoices, expenses, templates } = data;
+  const { customers, deals, quotes, invoices, expenses, templates, contacts, seoChecks, outreach } = data;
   const customerMap = new Map(customers.map((c) => [c.id, c]));
   const nameOf = (id: string) => {
     const c = customerMap.get(id);
@@ -346,7 +375,7 @@ function buildIndex(data: {
     const title =
       c.company || `${c.firstName} ${c.lastName}`.trim() || c.email || 'Kunde';
     const subtitle =
-      [`${c.firstName} ${c.lastName}`.trim(), c.city, c.email]
+      [LIFECYCLE_LABELS[lifecycleOf(c)], `${c.firstName} ${c.lastName}`.trim(), domainOf(c) || c.city, c.email]
         .filter(Boolean)
         .join(' · ') || '—';
     add(
@@ -358,7 +387,64 @@ function buildIndex(data: {
         subtitle,
         href: `/dashboard/kunden/${c.id}`,
       },
-      [c.phone, c.email, c.firstName, c.lastName, c.city, c.taxId],
+      [c.phone, c.email, c.firstName, c.lastName, c.city, c.taxId, c.website, c.source, c.notes, c.nextStep, c.street, c.zip],
+    );
+  });
+
+  contacts.forEach((k) => {
+    const name = personName(k) || k.email || 'Ansprechpartner';
+    add(
+      {
+        id: `k-${k.id}`,
+        group: 'Ansprechpartner',
+        icon: '🧑',
+        title: name,
+        subtitle: [k.role, nameOf(k.customerId), k.email || k.phone].filter(Boolean).join(' · '),
+        href: `/dashboard/kunden/${k.customerId}`,
+      },
+      [k.email, k.phone, k.notes, nameOf(k.customerId)],
+    );
+  });
+
+  // SEO-Checks: zur Akte mit gleicher Domain oder Mail, sonst zur Kontaktliste.
+  const akteByDomain = new Map<string, string>();
+  const akteByMail = new Map<string, string>();
+  customers.forEach((c) => {
+    const d = domainOf(c);
+    if (d) akteByDomain.set(d, c.id);
+    if (c.email) akteByMail.set(c.email.toLowerCase(), c.id);
+  });
+  contacts.forEach((k) => k.email && akteByMail.set(k.email.toLowerCase(), k.customerId));
+  const seenDomains = new Set<string>();
+  seoChecks.forEach((chk) => {
+    if (seenDomains.has(chk.domain)) return;
+    seenDomains.add(chk.domain);
+    const akte = akteByDomain.get(normalizeDomain(chk.domain)) ?? (chk.lead?.email ? akteByMail.get(chk.lead.email.toLowerCase()) : undefined);
+    add(
+      {
+        id: `s-${chk.id}`,
+        group: 'SEO-Checks',
+        icon: '🔍',
+        title: `${chk.domain} · ${chk.score}/100`,
+        subtitle: `${formatDateDE(new Date(chk.createdAt))}${chk.lead?.name ? ` · ${chk.lead.name}` : ' · ohne Kontaktdaten'}${akte ? ' · hat Akte' : ''}`,
+        href: akte ? `/dashboard/kunden/${akte}` : '/dashboard/kunden',
+      },
+      [chk.lead?.email, chk.lead?.company, chk.lead?.phone],
+    );
+  });
+
+  outreach.forEach((o) => {
+    if (o.status === 'neu' || o.status === 'ausgeschlossen') return;
+    add(
+      {
+        id: `o-${o.id}`,
+        group: 'Outreach',
+        icon: '💬',
+        title: o.name,
+        subtitle: [OUTREACH_STATUS_LABELS[o.status], o.instagram ? `@${o.instagram}` : '', o.city].filter(Boolean).join(' · '),
+        href: '/dashboard/vertrieb/outreach',
+      },
+      [o.instagram, o.tiktok, o.email, o.phone, o.website, o.contact, o.category],
     );
   });
 
