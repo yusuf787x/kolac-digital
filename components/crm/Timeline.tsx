@@ -20,6 +20,8 @@ interface Props {
   items: TimelineItem[];
   mailState: MailState;
   onChanged: () => void;
+  /** Nach einer erledigten Notiz, einem Anruf oder einer Mail (nicht bei Aufgaben). */
+  onLogged?: (type: Activity['type']) => Promise<void> | void;
 }
 
 const PAGE = 30;
@@ -42,7 +44,7 @@ function formatWhen(ms: number): string {
   return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + (d.getHours() || d.getMinutes() ? `, ${time}` : '');
 }
 
-export default function Timeline({ customerId, contacts, items, mailState, onChanged }: Props) {
+export default function Timeline({ customerId, contacts, items, mailState, onChanged, onLogged }: Props) {
   const [type, setType] = useState<Activity['type']>('notiz');
   const [text, setText] = useState('');
   const [subject, setSubject] = useState('');
@@ -84,6 +86,7 @@ export default function Timeline({ customerId, contacts, items, mailState, onCha
         completedAt: asTask ? null : at,
         createdAt: asTask ? Timestamp.now() : at,
       });
+      if (!asTask) await onLogged?.(type);
       setText('');
       setSubject('');
       setAsTask(false);

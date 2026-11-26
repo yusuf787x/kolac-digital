@@ -42,13 +42,18 @@ export interface Customer {
   /** Stand der Anrufe bei SEO-Leads. Fehlt = neu, noch nicht angerufen. */
   callStatus?: CallStatus;
   callAttempts?: number;
+  /** Spalte im Board „SEO-Leads“. Fehlt sie, wird sie aus Status und Anruf-Ergebnis abgeleitet (lib/crm.ts leadStageOf). */
+  leadStage?: LeadStage;
   /** Letzter SEO-Check zu dieser Akte (auch wenn die Akte aus einer anderen Quelle stammt). */
   seoCheckAt?: Timestamp | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
 
-export type CallStatus = 'neu' | 'nicht-erreicht' | 'spaeter' | 'termin' | 'kein-interesse';
+export type LeadStage = 'neu' | 'kontaktiert' | 'gesprochen' | 'termin' | 'verloren';
+
+/** bearbeitet: Yusuf hat sich gekümmert (Notiz, Anruf oder Mail in der Akte), ohne Ergebnis-Knopf. */
+export type CallStatus = 'neu' | 'nicht-erreicht' | 'spaeter' | 'termin' | 'kein-interesse' | 'bearbeitet';
 
 export type CustomerLifecycle =
   | 'lead'
@@ -609,6 +614,8 @@ export interface Activity {
   completed: boolean;
   completedAt: Timestamp | null;
   createdAt: Timestamp;
+  /** Automatisch angelegt (Formular, Übernahme, Statuswechsel), keine Arbeit von Yusuf. */
+  auto?: boolean;
 }
 
 export interface EmailTemplate {

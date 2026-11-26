@@ -66,6 +66,7 @@ export default function CallScript({ customer, vorname, check, domain, openTaskI
       spaeter: `Erreicht, Rückruf verabredet am ${new Date(spaeterAm).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}`,
       termin: 'Erreicht, Termin gelegt',
       'kein-interesse': 'Erreicht, kein Interesse',
+      bearbeitet: '',
     }[status];
     try {
       await createActivity({
@@ -80,7 +81,8 @@ export default function CallScript({ customer, vorname, check, domain, openTaskI
       });
       await Promise.all(openTaskIds.map((id) => updateActivity(id, { completed: true, completedAt: now })));
 
-      const patch: Parameters<typeof updateCustomer>[1] = { callStatus: status, callAttempts: versuch, branche };
+      const stage = ({ termin: 'termin', 'nicht-erreicht': 'kontaktiert', spaeter: 'gesprochen', 'kein-interesse': 'verloren' } as const)[status as 'termin'];
+      const patch: Parameters<typeof updateCustomer>[1] = { callStatus: status, callAttempts: versuch, branche, ...(stage ? { leadStage: stage } : {}) };
       if (status === 'nicht-erreicht') {
         const next = morgen10();
         patch.nextStep = versuch >= 3 ? 'Letzter Versuch, danach Mail oder WhatsApp schicken' : `Nochmal anrufen (Versuch ${versuch + 1})`;

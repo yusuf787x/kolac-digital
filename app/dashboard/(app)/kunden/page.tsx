@@ -36,7 +36,7 @@ type Sort = 'schritt' | 'name' | 'umsatz' | 'neu';
 
 const FILTERS: { key: Filter; label: string; match: (l: CustomerLifecycle, c: Customer) => boolean }[] = [
   // Anruf-Liste: neue SEO-Leads und heute fällige neue Versuche (lib/crm.ts inCallQueue)
-  { key: 'anrufen', label: 'SEO-Leads anrufen', match: (_l, c) => inCallQueue(c) },
+  { key: 'anrufen', label: 'Neue SEO-Leads', match: (_l, c) => inCallQueue(c) },
   { key: 'alle', label: 'Alle', match: () => true },
   { key: 'offen', label: 'Im Vertrieb', match: (l) => l === 'lead' || l === 'interessent' },
   { key: 'lead', label: 'Leads', match: (l) => l === 'lead' },

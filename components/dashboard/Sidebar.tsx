@@ -34,8 +34,8 @@ function useZaehler(aktiv: boolean): Zaehler {
       listCustomers().catch(() => []),
     ]);
     setZaehler({
-      // Neue SEO-Leads und heute fällige Anrufversuche
-      kunden: customers.filter((c) => inCallQueue(c, now)).length,
+      // Neue SEO-Leads (Spalte „Neu“ im Board)
+      kunden: customers.filter((c) => inCallQueue(c)).length,
       rechnungen: invoices.filter(
         (inv) => inv.status !== 'paid' && inv.status !== 'partially_paid' && isOverdue(inv.status, inv.dueDate.toDate()),
       ).length,

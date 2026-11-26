@@ -29,6 +29,7 @@ import type {
   Customer,
   CustomerLifecycle,
   Deal,
+  LeadStage,
   Invoice,
   Quote,
 } from './types';
@@ -96,6 +97,7 @@ export const CALL_STATUS_LABELS: Record<CallStatus, string> = {
   spaeter: 'Rückruf verabredet',
   termin: 'Termin gelegt',
   'kein-interesse': 'Kein Interesse',
+  bearbeitet: 'Bearbeitet',
 };
 
 /** Hat die Akte einen SEO-Check (als Quelle oder später dazugekommen)? */
@@ -103,29 +105,69 @@ export function hasSeoCheck(c: Customer): boolean {
   return (c.source ?? '').startsWith('SEO-Check') || !!c.seoCheckAt;
 }
 
+/** Spalten im Board „SEO-Leads“, von links (neu) nach rechts. */
+export const LEAD_STAGES: { key: LeadStage; label: string; hint: string; color: string }[] = [
+  { key: 'neu', label: 'Neu', hint: 'SEO-Check gemacht, noch nicht kontaktiert', color: '#2563eb' },
+  { key: 'kontaktiert', label: 'Kontaktiert', hint: 'Angerufen oder geschrieben, noch nicht gesprochen', color: '#7c3aed' },
+  { key: 'gesprochen', label: 'Gesprochen', hint: 'Gespräch geführt', color: '#0891b2' },
+  { key: 'termin', label: 'Termin', hint: 'Termin gelegt', color: '#16a34a' },
+  { key: 'verloren', label: 'Verloren', hint: 'Kein Interesse', color: '#64748b' },
+];
+
+export const LEAD_STAGE_LABEL: Record<LeadStage, string> = Object.fromEntries(LEAD_STAGES.map((s) => [s.key, s.label])) as Record<LeadStage, string>;
+
 /**
- * Gehört die Akte heute in die Anruf-Liste? Jeder SEO-Check ist ein Lead (auch wenn
- * jemand die Seite eines anderen geprüft hat), außer bei bestehenden Kunden: noch nicht
- * angerufen, oder der neue Versuch ist heute fällig.
+ * Spalte einer Akte im Board „SEO-Leads“, oder null, wenn sie nicht dorthin gehört
+ * (kein SEO-Check, oder schon Kunde). Verloren/ehemalig im Status schlägt alles.
  */
-export function inCallQueue(c: Customer, now = Date.now()): boolean {
-  if (!hasSeoCheck(c)) return false;
-  if (lifecycleOf(c) === 'kunde') return false;
-  const st = c.callStatus ?? 'neu';
-  if (st === 'neu') return true;
-  if (st === 'nicht-erreicht' || st === 'spaeter') {
-    const end = new Date(now);
-    end.setHours(23, 59, 59, 999);
-    return !c.nextStepAt || tsToMillis(c.nextStepAt) <= end.getTime();
+export function leadStageOf(c: Customer): LeadStage | null {
+  if (!hasSeoCheck(c)) return null;
+  const lc = lifecycleOf(c);
+  if (lc === 'kunde') return null;
+  if (lc === 'verloren' || lc === 'ehemalig') return 'verloren';
+  if (c.leadStage) return c.leadStage;
+  switch (c.callStatus) {
+    case 'termin':
+      return 'termin';
+    case 'kein-interesse':
+      return 'verloren';
+    case 'nicht-erreicht':
+      return 'kontaktiert';
+    case 'spaeter':
+    case 'bearbeitet':
+      return 'gesprochen';
   }
-  return false;
+  return lc === 'interessent' ? 'termin' : 'neu';
 }
 
-/** Reihenfolge der Anruf-Liste: mit Rückrufwunsch bzw. Nummer zuerst, dann die neuesten (frische Leads zuerst). */
+/** Felder, die beim Verschieben in eine Spalte mitgesetzt werden (Status der Akte bleibt stimmig). */
+export function leadStagePatch(c: Customer, stage: LeadStage): Partial<Customer> {
+  const lc = lifecycleOf(c);
+  const patch: Partial<Customer> = { leadStage: stage };
+  if (stage === 'verloren') patch.lifecycle = 'verloren';
+  else if (stage === 'termin') patch.lifecycle = 'interessent';
+  else if (lc === 'verloren' || lc === 'ehemalig' || lc === 'interessent') patch.lifecycle = 'lead';
+  return patch;
+}
+
+/** Neue SEO-Leads, die noch niemand kontaktiert hat (Spalte „Neu“, Zähler in der Seitenleiste). */
+export function inCallQueue(c: Customer): boolean {
+  return leadStageOf(c) === 'neu';
+}
+
+/** Hat Yusuf schon selbst etwas mit der Akte gemacht (keine automatische Notiz)? */
+export function isOwnActivity(a: Activity): boolean {
+  if (a.auto || !a.completed) return false;
+  if (a.description.startsWith('SEO-Check freigeschaltet') || a.description.startsWith('Aus der Übernahme')) return false;
+  if (a.description.startsWith('Lead-Status:')) return false;
+  if (a.type === 'email' && (a.emailSubject ?? '').startsWith('Kontaktanfrage')) return false;
+  return true;
+}
+
+/** Reihenfolge der Anruf-Liste: wer zuletzt angefragt hat (neuester SEO-Check), steht oben. */
 export function callQueueSort(a: Customer, b: Customer): number {
-  const prio = (c: Customer) => (c.wantsCall ? 2 : 0) + (c.phone ? 1 : 0);
   const frisch = (c: Customer) => Math.max(tsToMillis(c.seoCheckAt), tsToMillis(c.createdAt));
-  return prio(b) - prio(a) || frisch(b) - frisch(a);
+  return frisch(b) - frisch(a);
 }
 
 // ===================================================================

@@ -127,6 +127,7 @@ export async function addAkteActivity(
     completed: true,
     completedAt: Timestamp.now(),
     createdAt: FieldValue.serverTimestamp(),
+    auto: true,
   });
 }
 
@@ -167,7 +168,7 @@ async function enrichAkte(id: string, input: AkteInput): Promise<void> {
   // Jeder SEO-Check ist ein Lead, auch wenn die Akte schon aus Outreach o. Ä. stammt: zurück in die Anruf-Liste.
   if (isSeoCheck(input) && (c.lifecycle ?? 'kunde') !== 'kunde') {
     patch.seoCheckAt = FieldValue.serverTimestamp();
-    if (c.callStatus === 'kein-interesse' || c.lifecycle === 'verloren') Object.assign(patch, { callStatus: 'neu', lifecycle: 'lead' });
+    if (c.callStatus === 'kein-interesse' || c.lifecycle === 'verloren') Object.assign(patch, { callStatus: 'neu', lifecycle: 'lead', leadStage: 'neu' });
     else if (c.callStatus === 'nicht-erreicht' || c.callStatus === 'spaeter') patch.nextStepAt = null;
   }
   if (Object.keys(patch).length === 0) return;

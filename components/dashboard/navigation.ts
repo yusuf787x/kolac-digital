@@ -43,7 +43,7 @@ export const NAVIGATION: Bereich[] = [
     kurz: 'Kunden',
     icon: Users,
     unterpunkte: [
-      { href: '/dashboard/kunden?filter=anrufen', label: 'SEO-Leads anrufen' },
+      { href: '/dashboard/kunden/leads', label: 'SEO-Leads' },
       { href: '/dashboard/kunden', label: 'Alle Kontakte', exakt: true },
       { href: '/dashboard/kunden/neu', label: 'Neuer Kontakt' },
     ],

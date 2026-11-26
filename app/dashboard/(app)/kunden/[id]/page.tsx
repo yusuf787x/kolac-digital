@@ -38,6 +38,7 @@ import {
   LIFECYCLE_HINTS,
   LIFECYCLE_LABELS,
   hasSeoCheck,
+  leadStageOf,
   LIFECYCLE_ORDER,
   lifecycleOf,
   listActivitiesByCustomer,
@@ -197,8 +198,22 @@ function KundenAkte() {
 
   const setLifecycle = async (l: CustomerLifecycle) => {
     if (!customer) return;
-    setCustomer({ ...customer, lifecycle: l });
-    await updateCustomer(customer.id, { lifecycle: l });
+    // Board „SEO-Leads“ mitziehen: verloren in die Spalte Verloren, zurück auf Lead aus Verloren heraus.
+    const leadStage = !hasSeoCheck(customer)
+      ? customer.leadStage
+      : l === 'verloren'
+        ? 'verloren'
+        : l === 'lead' && customer.leadStage === 'verloren'
+          ? 'gesprochen'
+          : customer.leadStage;
+    setCustomer({ ...customer, lifecycle: l, ...(leadStage ? { leadStage } : {}) });
+    await updateCustomer(customer.id, { lifecycle: l, ...(leadStage ? { leadStage } : {}) });
+  };
+
+  // Notiz, Anruf oder Mail in der Akte: der Lead ist nicht mehr neu.
+  const onLogged = async (type: Activity['type']) => {
+    if (!customer || leadStageOf(customer) !== 'neu') return;
+    await updateCustomer(customer.id, { leadStage: type === 'email' ? 'kontaktiert' : 'gesprochen' });
   };
 
   const handleDelete = async () => {
@@ -338,7 +353,7 @@ function KundenAkte() {
               onLogged={load}
             />
           )}
-          <Timeline customerId={customer.id} contacts={contacts} items={timeline} mailState={mailState} onChanged={load} />
+          <Timeline customerId={customer.id} contacts={contacts} items={timeline} mailState={mailState} onChanged={load} onLogged={onLogged} />
 
           <ListSection title="Deals" count={deals.length} action={{ href: '/dashboard/vertrieb', label: 'Zur Pipeline →' }} empty="Noch kein Deal.">
             {deals.map((d) => {
