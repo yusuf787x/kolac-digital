@@ -8,5 +8,5 @@
 - Der Schlüssel steht in `.env.local` (nie ausgeben oder committen).
 
 ## UI work
-Read DESIGN.md before creating or changing any UI on the public marketing pages, and take every colour, size, spacing and radius from its tokens (`public/css/style.css`). The dashboard has its own Tailwind tokens in `app/globals.css`.
+Read DESIGN.md before creating or changing any UI on the public marketing pages, and take every colour, size, spacing and radius from its tokens (`public/css/style.css`). The internal dashboard has its own design: read DASHBOARD-DESIGN.md and use the tokens in `app/dashboard/dashboard.css` (scoped to `.dash`, never change shared utilities in `app/globals.css` for the dashboard, the public site uses them too).
 For a new screen or component, consult the UX Engine skills first (ux-intent-discovery, then the ones it names). To fix an existing screen, ux-auditor.

@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react';
 import { useRouter } from 'next/navigation';
+import { Search } from 'lucide-react';
 import {
   listCustomers,
   listDeals,
@@ -206,17 +207,16 @@ export default function GlobalSearch() {
 
   return (
     <>
-      {/* Trigger-Leiste */}
+      {/* Auslöser: am Handy ein runder Knopf, ab Tablet eine Suchkapsel */}
       <button
         type="button"
         onClick={openPalette}
-        className="flex w-full max-w-md items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-400 hover:border-gray-400 hover:text-gray-500 transition-colors"
+        className="dash-pill w-9 justify-center md:w-64 md:justify-start md:px-3.5 lg:w-80"
+        aria-label="Suchen"
       >
-        <span className="text-base">🔍</span>
-        <span className="flex-1 text-left">
-          Suchen – Kunden, Deals, Rechnungen…
-        </span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded-sm border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[11px] font-medium text-gray-400">
+        <Search size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
+        <span className="hidden flex-1 truncate text-left md:inline">Kunden, Deals, Rechnungen suchen</span>
+        <kbd className="hidden rounded-md border border-gray-200 bg-gray-50 px-1.5 text-[10px] font-medium text-gray-500 lg:inline">
           ⌘K
         </kbd>
       </button>

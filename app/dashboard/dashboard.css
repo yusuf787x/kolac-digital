@@ -1,0 +1,227 @@
+/* ==================================================================
+   Dashboard-Design (seit 26.11.2026, Vorbild: wagenpuls, DASHBOARD-DESIGN.md)
+   Gilt nur unter .dash (app/dashboard/layout.tsx). Die öffentliche
+   Website und der SEO-Check teilen sich app/globals.css und bleiben
+   dadurch unverändert.
+
+   Wie es wirkt, ohne 40 Seiten anzufassen:
+   - Die Grautöne und Radien von Tailwind werden unter .dash neu belegt.
+     Jede Seite, die bg-gray-50, border-gray-200 oder rounded-xl nutzt,
+     bekommt so automatisch die neue Optik.
+   - .card, .btn-primary, .btn-secondary, .input, .label und die
+     Tabellenköpfe werden hier überschrieben. Diese Regeln stehen nicht
+     in einer @layer und schlagen damit die Tailwind-Utilities.
+   ================================================================== */
+
+.dash {
+  /* Marke: Kolac-Blau, die eine Akzentfarbe */
+  --k-brand: #2563eb;
+  --k-brand-dunkel: #1d4ed8;
+  --k-brand-tint: #eaf1fe;
+  --k-brand-line: #c4d6fb;
+
+  /* Flächen */
+  --k-canvas: #f1f3f6;
+  --k-bg: #ffffff;
+  --k-subtle: #f6f7f9;
+  --k-fg: #141a26;
+  --k-muted: #5c6474;
+  --k-border: #e3e6eb;
+  --k-border-strong: #c9ced6;
+
+  /* Schatten im kühlen Grau, nie reines Schwarz */
+  --k-shadow-karte: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03);
+  --k-shadow-knopf: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --k-shadow-schwebend: 0 8px 24px -6px rgba(16, 24, 40, 0.12), 0 2px 6px rgba(16, 24, 40, 0.05);
+  --k-shadow-overlay: 0 16px 48px -12px rgba(16, 24, 40, 0.22), 0 4px 12px rgba(16, 24, 40, 0.06);
+  --k-ease-feder: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Tailwind-Grautöne neu belegt (kühl, etwas weicher). Muted auf Weiß 5,9:1. */
+  --color-gray-50: #f6f7f9;
+  --color-gray-100: #eef0f3;
+  --color-gray-200: #e3e6eb;
+  --color-gray-300: #c9ced6;
+  --color-gray-400: #98a0ad;
+  --color-gray-500: #5c6474;
+  --color-gray-600: #4a5261;
+  --color-gray-700: #353c49;
+  --color-gray-800: #222936;
+  --color-gray-900: #141a26;
+
+  /* Radien wie wagenpuls: Steuerelemente 10px, Flächen 16px, Dialoge 20px */
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+  font-family: var(--font-geist), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--k-fg);
+  background: var(--k-canvas);
+  letter-spacing: -0.005em;
+  font-feature-settings: 'tnum' 1;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ---------------- Fokus ---------------- */
+.dash :focus-visible {
+  outline: 2px solid var(--k-brand);
+  outline-offset: 2px;
+}
+.dash input:not([type='checkbox']):not([type='radio']):not([type='range']):focus-visible,
+.dash select:focus-visible,
+.dash textarea:focus-visible,
+.dash .input:focus {
+  outline: none;
+  border-color: var(--k-brand) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--k-brand) 18%, transparent) !important;
+}
+.dash input[type='checkbox'],
+.dash input[type='radio'] {
+  accent-color: var(--k-brand);
+}
+
+/* ---------------- Karten ---------------- */
+.dash .card {
+  background: var(--k-bg);
+  border: 1px solid var(--k-border);
+  border-radius: 16px;
+  box-shadow: var(--k-shadow-karte);
+}
+
+/* Karten mit Tabelle (card p-0) bleiben auch am Handy randlos. */
+.dash .card.p-0 {
+  padding: 0;
+}
+
+/* ---------------- Knöpfe ---------------- */
+.dash .btn-primary {
+  border-radius: 10px;
+  background: var(--k-brand);
+  color: #fff;
+  font-weight: 500;
+  /* Lichtkante oben wie bei wagenpuls */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), var(--k-shadow-knopf);
+  transition: background-color 150ms ease, transform 100ms ease;
+}
+.dash .btn-primary:hover:not(:disabled) {
+  background: var(--k-brand-dunkel);
+}
+.dash .btn-secondary {
+  border-radius: 10px;
+  background: var(--k-bg);
+  border: 1px solid var(--k-border);
+  color: var(--k-fg);
+  font-weight: 500;
+  box-shadow: var(--k-shadow-knopf);
+  transition: border-color 150ms ease, background-color 150ms ease, transform 100ms ease;
+}
+.dash .btn-secondary:hover:not(:disabled) {
+  background: var(--k-subtle);
+  border-color: var(--k-border-strong);
+}
+.dash .btn-primary:active:not(:disabled),
+.dash .btn-secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* ---------------- Felder ---------------- */
+.dash .input {
+  border-radius: 10px;
+  border: 1px solid var(--k-border);
+  background: var(--k-bg);
+  box-shadow: var(--k-shadow-knopf);
+}
+.dash .input:hover:not(:disabled):not(:focus) {
+  border-color: var(--k-border-strong);
+}
+.dash .label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-gray-700);
+}
+
+/* ---------------- Typografie ---------------- */
+/* Seitentitel: 22px statt 30px, ruhiger und moderner (gilt für alle Seiten). */
+.dash h1.text-3xl,
+.dash h1.text-2xl {
+  font-size: 22px;
+  line-height: 30px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.dash h2.text-base {
+  font-size: 15px;
+  letter-spacing: -0.005em;
+}
+
+/* ---------------- Tabellen ---------------- */
+/* Spaltenköpfe ohne Versalien, wie wagenpuls (th-stil) */
+.dash thead th {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--k-muted);
+}
+.dash thead {
+  background: var(--k-subtle);
+}
+.dash tbody tr {
+  transition: background-color 120ms ease;
+}
+
+/* ---------------- Dialoge ---------------- */
+.dash .modal-panel {
+  border-radius: 20px;
+  box-shadow: var(--k-shadow-overlay);
+}
+
+/* ---------------- Schale ---------------- */
+.dash-nav-link {
+  transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+/* Aktiver Bereich: weiße Kapsel mit leichtem Schatten, Zeichen in Blau */
+.dash-nav-link[data-aktiv='true'] {
+  background: var(--k-bg);
+  box-shadow: var(--k-shadow-knopf);
+  color: var(--k-fg);
+}
+.dash-nav-link[data-aktiv='false']:hover {
+  background: color-mix(in srgb, var(--k-bg) 65%, transparent);
+}
+.dash-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 36px;
+  border-radius: 9999px;
+  border: 1px solid var(--k-border);
+  background: var(--k-bg);
+  box-shadow: var(--k-shadow-knopf);
+  color: var(--k-muted);
+  font-size: 14px;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+.dash-pill:hover {
+  border-color: var(--k-border-strong);
+  color: var(--k-fg);
+}
+
+/* Platz unten für die schwebende Leiste am Handy */
+.dash .dashboard-main {
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .dash .dashboard-main {
+    padding-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash *,
+  .dash *::before,
+  .dash *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
