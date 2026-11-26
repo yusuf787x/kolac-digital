@@ -15,7 +15,7 @@
     { "status": "warn", "text": "28 Seitentitel und 22 Beschreibungen sind länger, als Google sie anzeigt. Sie werden gekürzt." },
     { "status": "fail", "text": "Bei den Suchbegriffen für Webdesign und SEO in Bielefeld und Paderborn erscheint die Website noch nicht unter den ersten 50 Ergebnissen. Vorne stehen vor allem Agenturportale." },
     { "status": "fail", "text": "Es gibt noch keine eigene Seite für SEO. Für Suchen wie „seo bielefeld“ oder „seo agentur bielefeld“ kann die Website deshalb nicht gefunden werden." },
-    { "status": "warn", "text": "Nur 5 fremde Websites verlinken auf uns. Von 12 Kundenwebsites verlinken erst 2." }
+    { "status": "warn", "text": "Google kennt erst 5 fremde Websites, die auf uns verlinken. Die meisten Kundenwebsites verlinken erst seit Anfang November auf uns, diese Links werden in den nächsten Wochen mitgezählt." }
   ],
   "links": [
     { "label": "Google-Suche „webdesign bielefeld“", "url": "https://www.google.de/search?q=webdesign+bielefeld" },

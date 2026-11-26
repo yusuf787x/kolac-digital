@@ -55,7 +55,10 @@ nicht ranken:
 ## Der Plan
 
 ### Phase 1: Vertrauen aufbauen (bis Mitte Dezember 2026)
-1. **Links von Kundenwebsites.** 11 von 12 Kundenseiten verlinken nicht. Je Seite im Fußbereich
+1. **Links von Kundenwebsites.** Geprüft 26.11.: 10 von 12 verlinken (meist im Impressum), viele erst seit
+   Anfang November, darum noch nicht in den Backlink-Daten. Ohne Link: mironi.de (Shopify), akquise-helfer.de
+   (WordPress des Kunden). Behoben: carhifi (canonical aller Seiten zeigte auf die Startseite), pader (Link in der
+   Fußzeile). Stärker als das Impressum wäre je Seite ein Link im Fußbereich
    „Website von Kolac Digital“ auf /webseiten (Software-Kunden auf /software). Nur mit Zustimmung des
    Kunden. Yusuf ändert die Kundenprojekte selbst bzw. gibt frei, Claude bereitet je Projekt den
    Schnipsel vor. Bringt bis zu 11 verweisende Domains aus OWL und passenden Branchen.
