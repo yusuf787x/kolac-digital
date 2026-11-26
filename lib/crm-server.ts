@@ -58,6 +58,22 @@ export async function findAkte(input: Pick<AkteInput, 'email' | 'website' | 'out
   return null;
 }
 
+/** Altkunden haben oft kein Feld „website“: dann über die Domain ihrer Mail-Adresse finden. */
+async function findAkteByDomainScan(input: Pick<AkteInput, 'email' | 'website'>): Promise<string | null> {
+  const domain = normalizeDomain(input.website) || companyDomainFromEmail(input.email);
+  if (!domain) return null;
+  const snap = await adminDb().collection('customers').select('website', 'email', 'retainerInvoiceEmail').get();
+  const hit = snap.docs.find((d) => {
+    const c = d.data();
+    return (
+      normalizeDomain(c.website) === domain ||
+      companyDomainFromEmail(c.email) === domain ||
+      companyDomainFromEmail(c.retainerInvoiceEmail) === domain
+    );
+  });
+  return hit?.id ?? null;
+}
+
 export async function createAkte(input: AkteInput): Promise<string> {
   const email = (input.email ?? '').trim().toLowerCase();
   const domain = normalizeDomain(input.website) || companyDomainFromEmail(email);
@@ -106,13 +122,35 @@ export async function addAkteActivity(
   });
 }
 
-/** Neue Anfrage (SEO-Check, Kontaktformular): Akte finden oder als Lead anlegen. */
+/** Leere Felder einer bestehenden Akte mit neuen Kontaktdaten füllen (nie überschreiben). */
+async function enrichAkte(id: string, input: AkteInput): Promise<void> {
+  const ref = adminDb().collection('customers').doc(id);
+  const snap = await ref.get();
+  const c = snap.data();
+  if (!c) return;
+  const patch: Record<string, unknown> = {};
+  const email = (input.email ?? '').trim().toLowerCase();
+  const { firstName, lastName } = splitName(input.name);
+  if (!c.firstName && !c.lastName && (firstName || lastName)) Object.assign(patch, { firstName, lastName });
+  if (!c.email && email) patch.email = email;
+  if (!c.phone && input.phone?.trim()) patch.phone = input.phone.trim();
+  const domain = normalizeDomain(input.website) || companyDomainFromEmail(email);
+  if (!c.website && domain) patch.website = domain;
+  // Akte aus einem Check ohne Kontaktdaten heißt erst wie die Domain: dann den echten Firmennamen nehmen.
+  const company = (input.company ?? '').trim();
+  if (company && (!c.company || c.company === c.website)) patch.company = company;
+  if (Object.keys(patch).length === 0) return;
+  await ref.update({ ...patch, updatedAt: FieldValue.serverTimestamp() });
+}
+
+/** Neue Anfrage (SEO-Check, Kontaktformular, Outreach-Antwort): Akte finden und ergänzen oder als Lead anlegen. */
 export async function upsertLeadAkte(input: AkteInput, activity?: { type: 'notiz' | 'email'; text: string; subject?: string }): Promise<string | null> {
   try {
     const email = (input.email ?? '').toLowerCase();
-    if (email.endsWith(`@${OWN_DOMAIN}`)) return null;
-    let id = await findAkte(input);
-    if (!id) id = await createAkte(input);
+    if (email.endsWith(`@${OWN_DOMAIN}`) || normalizeDomain(input.website) === OWN_DOMAIN) return null;
+    let id = (await findAkte(input)) ?? (await findAkteByDomainScan(input));
+    if (id) await enrichAkte(id, input);
+    else id = await createAkte(input);
     if (activity) await addAkteActivity(id, activity.type, activity.text, activity.subject ?? null);
     return id;
   } catch (err) {
@@ -145,6 +183,8 @@ export interface ImportCandidate {
   lastAt: number;
   /** Vorschlag: vorausgewählt in der Vorschau. */
   suggested: boolean;
+  /** Outreach-Kontakt hat geantwortet (wird automatisch eine Akte). */
+  replied?: boolean;
   outreachLeadId?: string;
 }
 
@@ -221,6 +261,7 @@ export async function importCandidates(): Promise<{ candidates: ImportCandidate[
     hit.zip ||= c.zip;
     hit.outreachLeadId ||= c.outreachLeadId;
     hit.suggested ||= c.suggested;
+    hit.replied ||= c.replied;
     hit.lastAt = Math.max(hit.lastAt, c.lastAt);
     const rank: CustomerLifecycle[] = ['verloren', 'lead', 'interessent', 'kunde'];
     if (rank.indexOf(c.lifecycle) > rank.indexOf(hit.lifecycle)) hit.lifecycle = c.lifecycle;
@@ -268,7 +309,7 @@ export async function importCandidates(): Promise<{ candidates: ImportCandidate[
       existingMatches++;
       continue;
     }
-    const replied = REPLIED.has(o.status);
+    const replied = REPLIED.has(o.status) && (o.status !== 'kein-interesse' || !!o.repliedAt || (o.thread?.length ?? 0) > 0);
     const lifecycle: CustomerLifecycle =
       o.status === 'termin' ? 'interessent' : o.status === 'kunde' ? 'kunde' : o.status === 'kein-interesse' ? 'verloren' : 'lead';
     const channel = o.channel === 'mail' ? 'Mail' : o.tiktok && !o.instagram ? 'TikTok' : 'Instagram';
@@ -289,6 +330,7 @@ export async function importCandidates(): Promise<{ candidates: ImportCandidate[
       ],
       lastAt: Math.max(tsMs(o.repliedAt), tsMs(o.followedUpAt), tsMs(o.sentAt)),
       suggested: replied,
+      replied,
       outreachLeadId: d.id,
     });
   }
@@ -329,8 +371,8 @@ export async function importCandidates(): Promise<{ candidates: ImportCandidate[
   return { candidates: unique.sort((a, b) => b.lastAt - a.lastAt), existingMatches };
 }
 
-export async function runImport(keys: string[]): Promise<{ created: number; skipped: number }> {
-  const { candidates } = await importCandidates();
+export async function runImport(keys: string[], opts: { note?: boolean; candidates?: ImportCandidate[] } = {}): Promise<{ created: number; skipped: number }> {
+  const candidates = opts.candidates ?? (await importCandidates()).candidates;
   const wanted = new Set(keys);
   let created = 0;
   let skipped = 0;
@@ -355,8 +397,72 @@ export async function runImport(keys: string[]): Promise<{ created: number; skip
       outreachLeadId: c.outreachLeadId,
       importedFrom: stamp,
     });
-    await addAkteActivity(id, 'notiz', `Aus der Übernahme: ${c.facts.join(' · ')}`);
+    if (opts.note !== false) await addAkteActivity(id, 'notiz', `Aus der Übernahme: ${c.facts.join(' · ')}`);
     created++;
   }
   return { created, skipped };
+}
+
+/**
+ * Automatik: jeder öffentliche SEO-Check und jeder Outreach-Kontakt mit Antwort
+ * bekommt eine Akte. Läuft beim Öffnen der Kontaktliste, höchstens alle 10 Minuten.
+ */
+export async function syncAutoAkten(force = false): Promise<{ created: number; skipped: boolean }> {
+  const db = adminDb();
+  const stateRef = db.collection('settings').doc('crm_sync');
+  const last = Number((await stateRef.get()).data()?.lastRunAt ?? 0);
+  if (!force && Date.now() - last < 10 * 60 * 1000) return { created: 0, skipped: true };
+  await stateRef.set({ lastRunAt: Date.now() }, { merge: true });
+  const { candidates } = await importCandidates();
+  const auto = candidates.filter((c) => c.kinds.includes('seo') || c.replied);
+  if (auto.length === 0) return { created: 0, skipped: false };
+  const { created } = await runImport(
+    auto.map((c) => c.key),
+    { note: false, candidates: auto },
+  );
+  return { created, skipped: false };
+}
+
+const OUTREACH_LIFECYCLE: Record<string, CustomerLifecycle> = {
+  geantwortet: 'lead',
+  termin: 'interessent',
+  kunde: 'kunde',
+  'kein-interesse': 'verloren',
+};
+
+/** Outreach-Kontakt hat geantwortet (oder Termin/Kunde): Akte anlegen oder Status nachziehen. */
+export async function akteFromOutreach(leadId: string): Promise<string | null> {
+  const db = adminDb();
+  const snap = await db.collection('outreachLeads').doc(leadId).get();
+  const o = snap.data();
+  if (!o) return null;
+  const target = OUTREACH_LIFECYCLE[o.status as string];
+  const hasAnswer = !!o.repliedAt || (o.thread?.length ?? 0) > 0 || o.status === 'termin' || o.status === 'kunde';
+  if (!target || !hasAnswer) return null;
+  const channel = o.channel === 'mail' ? 'Mail' : o.tiktok && !o.instagram ? 'TikTok' : 'Instagram';
+  const address = splitAddress(String(o.address ?? ''), String(o.city ?? ''));
+  const existing = (await findAkte({ email: o.email, website: o.website, outreachLeadId: leadId })) ?? (await findAkteByDomainScan({ email: o.email, website: o.website }));
+  if (!existing) {
+    return createAkte({
+      company: o.name ?? '',
+      name: o.contact ?? '',
+      email: o.email ?? '',
+      phone: o.phone ?? '',
+      website: o.website ?? '',
+      ...address,
+      source: `Outreach ${channel}`,
+      lifecycle: target,
+      outreachLeadId: leadId,
+    });
+  }
+  // Bestehende Akte: verknüpfen und den Status nur nach vorne ziehen (oder auf verloren, wenn noch Lead).
+  const ref = db.collection('customers').doc(existing);
+  const cur = (await ref.get()).data() ?? {};
+  const lc = (cur.lifecycle ?? 'kunde') as CustomerLifecycle;
+  const rank: CustomerLifecycle[] = ['lead', 'interessent', 'kunde'];
+  const patch: Record<string, unknown> = {};
+  if (!cur.outreachLeadId) patch.outreachLeadId = leadId;
+  if (target === 'verloren' ? lc === 'lead' : rank.indexOf(target) > rank.indexOf(lc) && rank.indexOf(lc) >= 0) patch.lifecycle = target;
+  if (Object.keys(patch).length) await ref.update({ ...patch, updatedAt: FieldValue.serverTimestamp() });
+  return existing;
 }

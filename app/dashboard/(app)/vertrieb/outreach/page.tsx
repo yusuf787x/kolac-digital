@@ -7,6 +7,7 @@ import ReplyBox from '@/components/outreach/ReplyBox';
 import { postJson } from '@/components/seo/admin/api';
 import { branchOf, type Branch } from '@/lib/outreach-playbook';
 import { db } from '@/lib/firebase';
+import { authedFetch } from '@/lib/api-client';
 import { MAIL_MAX } from '@/lib/outreach-mail';
 import {
   OUTREACH_DAILY_LIMIT,
@@ -164,6 +165,14 @@ function OutreachInner() {
     const data = { ...patch, updatedAt: new Date().toISOString() };
     await updateDoc(doc(db, 'outreachLeads', id), data);
     setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, ...data } : l)));
+    // Kundenakte: Antwort, Termin, Kunde (oder Absage nach Antwort) legt die Akte an bzw. zieht den Status nach.
+    if (patch.status && ['geantwortet', 'termin', 'kunde', 'kein-interesse'].includes(patch.status)) {
+      authedFetch('/api/crm/outreach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId: id }),
+      }).catch((e) => console.error('Outreach-Akte:', e));
+    }
   }, []);
 
   const reload = useCallback(async (id: string) => {

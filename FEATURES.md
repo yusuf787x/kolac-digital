@@ -90,6 +90,14 @@ Drei Modi im „Neuer Vertrag"-Flow:
 - **E-Mail-Templates** mit Platzhaltern (`EmailTemplate`).
 - **Aufgaben-Kanban** (Task/TaskColumn) mit Priority-Tags.
 
+### SEO-Check: Sichtbarkeit (`lib/seo-check/local-keywords.ts`, Stand 26.11.2026)
+
+- **Firmennamen raus:** Suchen nach dem eigenen Namen (Domainname, Wörter aus dem wiederkehrenden Titelstück, Kürzel wie „cb“) zählen nicht als Sichtbarkeit und kommen in keine Maßnahme; der beste eigene Treffer steht als Prüfpunkt `kw-brand`.
+- **Unpassende Begriffe raus:** Datenbank-Begriffe, deren Wörter nirgends auf der Website stehen (fremde Firmennamen), fliegen raus.
+- **„Leistung + Ort“ live:** Zielort = Ort aus dem Startseiten-Titel, sonst der Ort aus den Datenbank-Begriffen, sonst Orte in Titeln, zuletzt die Adresse. Leistungen aus Titeln/H1 mit Ort (sonst aus dem Startseiten-Titel). Eine Suchvolumen-Abfrage (Labs keyword_overview) und höchstens drei Live-Suchen (SERP organic, Tiefe 20) inkl. Karte mit drei Firmen. Hauptleistung (Startseiten-Titel) steht immer zuerst.
+- **Bewertung:** Sichtbarkeit = 70 % live geprüfte Begriffe (gewichtet nach Suchen; Karte oder Platz 1 bis 3 = 100, 4 bis 10 = 75, 11 bis 20 = 40) + 30 % Datenbank, +5 wenn der eigene Name vorne steht. Gesamtnote ohne Deckel (vorher höchstens Sichtbarkeit + 30).
+- **Maßnahmen** zuerst aus den Live-Daten: Platz 4 bis 20 nach vorne holen, in die Karte kommen (mit den drei Firmen und ihren Bewertungen), gesuchte Begriffe ohne Treffer (mit passender Unterseite), „Auf Begriffe setzen, die gesucht werden“, wenn alle Begriffe kaum Suchen haben.
+
 ### Kundenakte (`app/dashboard/(app)/kunden/` + `lib/crm*.ts` + `components/crm/`)
 
 - **Eine Akte pro Firma** in `customers`, auch für Leads. Neue Felder: `lifecycle` (lead / interessent / kunde / verloren / ehemalig, fehlt = kunde), `website` (normalisierte Domain, verknüpft SEO-Checks und Gmail), `source`, `nextStep` + `nextStepAt`, `outreachLeadId`, `importedFrom`.
@@ -97,8 +105,9 @@ Drei Modi im „Neuer Vertrag"-Flow:
 - **Verlauf** (`buildTimeline` in `lib/crm.ts`) wird live zusammengesetzt aus: `activities` mit `customerId` (Notiz, Anruf, Mail, Gespräch, Aufgaben mit `dueDate`) und den Aktivitäten der Deals, Deals, Angeboten, Rechnungen inkl. Mahnstufen, Verträgen, `meetings` (Gast-Mail oder `sourceId`), öffentlichen `seoChecks` (gleiche Domain oder Mail beim Freischalten), dem verknüpften `outreachLeads`-Eintrag, `portalLoginEvents` (pro Tag gebündelt) und Gmail.
 - **Gmail:** `GET /api/crm/mails?customerId=` liest per OAuth (`gmail.readonly`, Token in `settings/google_auth`) die letzten 40 Mails von/an alle Adressen und die Firmen-Domain der Akte. Nichts wird gespeichert. Ohne Scope zeigt die Akte einen Hinweis; freischalten unter Einstellungen → „Mail-Zugriff erlauben“.
 - **Kennzahlen:** Umsatz bisher netto (bezahlte Rechnungen, gleiche Rechnung wie Startseite), offen brutto, Ø pro Monat seit erster Rechnung, letzter Kontakt.
-- **Automatisch angelegt** (`upsertLeadAkte` in `lib/crm-server.ts`): beim ersten Freischalten eines SEO-Checks und bei jeder Kontaktformular-Anfrage. Sucht erst über Mail, Ansprechpartner-Mail, Domain; sonst neue Akte als Lead.
-- **Übernahme alter Kontakte:** Liste → „Kontakte ohne Akte“ (`/api/crm/import`): Vorschau aus SEO-Checks, Outreach (angeschrieben/geantwortet) und Termin-Gästen, vorausgewählt nur echte Kontakte; legt erst nach Klick an.
+- **Automatisch angelegt** (`upsertLeadAkte` in `lib/crm-server.ts`): bei **jedem** SEO-Check eines Besuchers (erst nur mit Website), beim Freischalten (füllt leere Felder: Name, Mail, Telefon, Firmenname statt Domain), bei jeder Kontaktformular-Anfrage und bei Outreach-Antworten (`akteFromOutreach`: Status geantwortet/Termin/Kunde, Absage nur nach Antwort; zieht den Status der Akte nach vorne). Sucht erst über Outreach-ID, Mail, Ansprechpartner-Mail, Website-Domain, zuletzt Mail-Domain aller Akten.
+- **Abgleich** (`/api/crm/sync`, beim Öffnen der Kontaktliste, höchstens alle 10 Minuten, Stand in `settings/crm_sync`): legt Akten für alle alten SEO-Checks und Outreach-Antworten an, die noch keine haben.
+- **„Kontakte ohne Akte“** (`/api/crm/import`): nur noch für Termin-Gäste und Outreach ohne Antwort, mit Häkchen.
 - **Suche:** Liste durchsucht alle Felder und Ansprechpartner; ⌘K findet zusätzlich Ansprechpartner, SEO-Checks und Outreach.
 
 ## Termin-Erinnerungen (`app/dashboard/(app)/termine/` + `lib/meetings/`)

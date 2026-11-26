@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
+import { akteFromOutreach } from '@/lib/crm-server';
 import Anthropic from '@anthropic-ai/sdk';
 import { adminDb } from '@/lib/firebase-admin';
 import { isMailLead, isOptOut, type OutreachLead, type OutreachMessage } from '@/lib/outreach';
@@ -106,12 +107,17 @@ async function handlePOST(req: Request) {
 
   if (!retry && isOptOut(reply!)) {
     await ref.update({ thread, status: 'kein-interesse', repliedAt: lead.repliedAt ?? now, updatedAt: now });
+    after(() => akteFromOutreach(id).then(() => undefined, (e) => console.error('[crm] Outreach-Akte:', e)));
     return NextResponse.json({ optOut: true });
   }
 
   // Antwort sofort festhalten, auch wenn der Vorschlag gleich scheitert
   const statusPatch = ['neu', 'gesendet', 'nachgefasst'].includes(lead.status) ? { status: 'geantwortet', repliedAt: lead.repliedAt ?? now } : {};
-  if (!retry) await ref.update({ thread, ...statusPatch, updatedAt: now });
+  if (!retry) {
+    await ref.update({ thread, ...statusPatch, updatedAt: now });
+    // Kundenakte: wer antwortet, wird ein Kontakt mit Akte.
+    after(() => akteFromOutreach(id).then(() => undefined, (e) => console.error('[crm] Outreach-Akte:', e)));
+  }
 
   const client = new Anthropic();
   try {

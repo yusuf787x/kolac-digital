@@ -18,6 +18,7 @@ import {
 import { formatDateDE, formatEUR, tsToMillis } from '@/lib/utils';
 import SensitiveValue from '@/components/ui/SensitiveValue';
 import ImportPanel from '@/components/crm/ImportPanel';
+import { authedFetch } from '@/lib/api-client';
 
 export default function KundenPage() {
   return (
@@ -70,6 +71,22 @@ function KundenInner() {
   }, []);
 
   useEffect(load, [load]);
+
+  // Automatik: neue SEO-Checks und Outreach-Antworten bekommen eine Akte (Server prüft höchstens alle 10 Minuten).
+  useEffect(() => {
+    let cancelled = false;
+    authedFetch('/api/crm/sync', { method: 'POST' })
+      .then((res) => res.json())
+      .then((data: { created?: number }) => {
+        if (cancelled || !data.created) return;
+        setSuccessBanner(`✓ ${data.created} neue Akte${data.created === 1 ? '' : 'n'} aus SEO-Checks und Outreach-Antworten angelegt.`);
+        load();
+      })
+      .catch((err) => console.error('CRM-Abgleich:', err));
+    return () => {
+      cancelled = true;
+    };
+  }, [load]);
 
   useEffect(() => {
     if (!createdName) return;

@@ -110,7 +110,7 @@ export default function ImportPanel({ onClose, onImported }: { onClose: () => vo
         <div>
           <h2 className="text-base font-semibold text-gray-900">Kontakte ohne Akte</h2>
           <p className="text-sm text-gray-500">
-            Aus SEO-Checks, Outreach und Terminen. Häkchen setzen, dann Akten anlegen. Es wird nichts verschickt.
+            SEO-Checks und Outreach-Antworten werden automatisch zu Akten. Hier bleiben Termin-Gäste und Outreach ohne Antwort: Häkchen setzen, dann Akten anlegen. Es wird nichts verschickt.
           </p>
         </div>
         <button type="button" onClick={onClose} className="text-sm text-gray-500 hover:text-gray-900">
