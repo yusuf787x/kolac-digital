@@ -17,6 +17,9 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 | ✅ | Suchen nach dem eigenen Firmennamen und Begriffe, die nichts mit der Website zu tun haben, zählen nicht mehr als Sichtbarkeit; der Platz bei Suche nach dem eigenen Namen steht als eigener Prüfpunkt | Die Bewertung zeigt, wie gut neue Kunden die Firma finden, nicht nur Stammkunden | [SEO-Check](https://www.kolac-digital.de/seo-check) |
 | ✅ | Gesamtnote fairer: eine sehr gute Website wird nicht mehr künstlich auf die Sichtbarkeit gedeckelt, die Sichtbarkeit zählt weiter am stärksten | Note und Bericht passen zur tatsächlichen Lage | [SEO-Check](https://www.kolac-digital.de/seo-check) |
 | ✅ | Die fünf Maßnahmen bauen auf den live gemessenen Zahlen auf (Begriff, Suchanfragen, Platz, passende Unterseite) statt auf allgemeinen Tipps | Konkrete Schritte, die sich nachprüfen lassen | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Bericht nennt für jeden Suchbegriff nur noch einen Platz: weichen Live-Abfrage und Datenbank ab, gilt der Platz aus der Datenbank | Keine widersprüchlichen Zahlen im selben Bericht | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Beim Freischalten freiwilliges Häkchen für gelegentliche Neuigkeiten per E-Mail, mit Bestätigungsmail (Double-Opt-in) und Abmeldelink | Wer Tipps möchte, bekommt sie mit sauberer Einwilligung | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Datenschutzerklärung um den Abschnitt „Neuigkeiten per E-Mail“ ergänzt | Transparenz, welche Daten für die Anmeldung gespeichert werden | [Datenschutz](https://www.kolac-digital.de/datenschutz.html#newsletter) |
 
 ---
 
