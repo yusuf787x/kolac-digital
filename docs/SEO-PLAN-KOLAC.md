@@ -158,9 +158,15 @@ nicht ranken:
   - Clutch: kostenloses Profil angelegt (Webdesign 50 %, SEO 50 %, Mindestprojekt 1.000 $, Stundensatz keine
     Angabe, 2 bis 9 Mitarbeiter), Standortprüfung 7 bis 10 Werktage.
   - LinkedIn: Unternehmensseite gab es schon, vollständig, nicht verändert.
-  - Offen bei Yusuf: DesignRush und GoodFirms (vorausgefüllt, Passwort + Absenden), ProvenExpert (Seite nahm
-    die Eingabe nicht an), Cylex (vorhandenes Konto gehört einem Kunden), golocal (Browser mit Kundenkonto
-    Pader angemeldet).
+  - 27.11.: DesignRush eingereicht (in Prüfung; Stundensatz 75 $, Budget 1.000 bis 10.000 $, Kunden Bacara,
+    Car-HiFi, Akquise-Helfer, Fotos aus den Case Studies). Teamgröße überall auf das Kleinste gesetzt (Yusuf ist
+    solo): Clutch Freelancer/1, feedbax 1, agenturmarkt 1, Sortlist 1, werbeagentur.de 2 bis 5 (kleinste Stufe).
+    Das Örtliche bestätigt. ProvenExpert: Yusuf ist schon eingetragen.
+  - golocal: Pader-Konto abgemeldet, Kolac Digital als neue Location vorgeschlagen (Prüfung durch golocal);
+    Übernahme per „Mit Google-Konto“ (Popup) klickt Yusuf.
+  - Cylex: neues Konto mit cylex@kolac-digital.de (Catch-all) vorbereitet, Passwort + Captcha macht Yusuf.
+  - GoodFirms: Registrierung kaputt („something went wrong“, LinkedIn-Login „not configured“), später erneut.
+  - feedbax: weiter „nicht sichtbar“, vermutlich erst ab erster Bewertung.
   - Ausgelassen: meinestadt.de (nur über kostenpflichtigen Partner), XING (nur bezahlte Arbeitgeberprofile, nicht
     angemeldet), Facebook (lässt sich nicht automatisieren).
   - Logo für Portale: `docs/backlinks/assets/logo-quadrat.png`, große Fassungen `logo-1024.png`,
