@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import SeoCheckClient from './SeoCheckClient';
 import SeoCheckSections, { FAQ } from './SeoCheckSections';
 import { metaCapiEnabled } from '@/lib/seo-check/meta-server';
@@ -6,9 +7,9 @@ import { metaCapiEnabled } from '@/lib/seo-check/meta-server';
 type PageProps = { searchParams: Promise<{ id?: string | string[] }> };
 
 const BASE_METADATA: Metadata = {
-  title: 'Kostenloser SEO-Check: Wird deine Website bei Google gefunden? | Kolac Digital',
+  title: 'Kostenloser SEO-Check: Wirst du bei Google gefunden?',
   description:
-    'Kostenloser SEO-Check für lokale Unternehmen: Technik, Inhalte, Platzierungen bei Google und lokale Auffindbarkeit in rund 30 Sekunden. Mit deinen 5 wichtigsten Maßnahmen.',
+    'Kostenloser SEO-Check für lokale Betriebe: Technik, Inhalte, Google-Platzierungen und deine Lage in der Karte. In 30 Sekunden, mit den wichtigsten Maßnahmen.',
   alternates: { canonical: '/seo-check' },
   openGraph: {
     title: 'Kostenloser SEO-Check | Kolac Digital',
@@ -38,6 +39,19 @@ export default async function SeoCheckPage({ searchParams }: PageProps) {
       <SeoCheckClient key={initialId ?? 'neu'} initialId={initialId} measureEnabled={metaCapiEnabled()} />
 
       <SeoCheckSections faq={FAQ} />
+
+      <section className="bg-white py-12 md:py-16">
+        <div className="mx-auto max-w-[800px] px-4 text-center md:px-6">
+          <p className="text-[17px] leading-relaxed text-[var(--color-black)]">
+            Du willst die Maßnahmen nicht selbst umsetzen? Wie wir dein Google-Profil, deine Seiten und deine
+            Bewertungen aufbauen, steht auf unserer Seite{' '}
+            <Link href="/seo" className="font-semibold text-[var(--color-blue)] underline underline-offset-2">
+              SEO für Bielefeld und OWL
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
     </>

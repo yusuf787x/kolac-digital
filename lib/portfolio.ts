@@ -121,9 +121,9 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       'Aus fünf dünnen Seiten wurden über 40 Seiten mit echtem Inhalt, die für Krankenfahrten in Paderborn und der Region gefunden werden. Die Seite wirkt so, wie der Betrieb arbeitet: verlässlich, freundlich, nah. Das Ergebnis ist messbar: PaderPuls bekommt über die Webseite aktiv mehr Kundenanfragen und Anrufe, und Interessenten wissen schon vor dem Anruf, dass die Fahrt mit der Krankenkasse abgerechnet wird.',
     metaTitle:
-      'PaderPuls Krankenfahrdienst Paderborn · Rebranding und Relaunch · Kolac Digital',
+      'PaderPuls Paderborn · Rebranding und Relaunch',
     metaDescription:
-      'Wie Kolac Digital für PaderPuls aus Paderborn die veraltete Webseite durch ein modernes Rebranding mit SEO und GEO ersetzt hat. Mehr Sichtbarkeit, mehr Anfragen, mehr Anrufe.',
+      'Wie Kolac Digital für PaderPuls aus Paderborn die alte Webseite durch ein Rebranding mit SEO und GEO ersetzt hat. Mehr Sichtbarkeit, mehr Anfragen, mehr Anrufe.',
   },
   {
     slug: 'mc-autopflege',
@@ -183,9 +183,9 @@ export const portfolioProjects: PortfolioProject[] = [
       ],
     },
     metaTitle:
-      'MC-Autopflege Herford · Relaunch mit SEO · Projekt von Kolac Digital',
+      'MC-Autopflege Herford · Relaunch mit SEO | Kolac Digital',
     metaDescription:
-      'Wie Kolac Digital für MC-Autopflege in Herford die veraltete Website neu gebaut hat: Ladezeit-Note auf dem Handy von 68 auf 99, 31 statt 13 Seiten, Ortsseiten für OWL.',
+      'Wie Kolac Digital für MC-Autopflege in Herford die alte Website neu gebaut hat: Ladezeit-Note am Handy von 68 auf 99, 31 statt 13 Seiten, Ortsseiten für OWL.',
   },
   {
     slug: 'motorenfachmann',
@@ -245,7 +245,7 @@ export const portfolioProjects: PortfolioProject[] = [
       ],
     },
     metaTitle:
-      'Motorenfachmann Lage · SEO-Optimierung · Projekt von Kolac Digital',
+      'Motorenfachmann Lage · SEO-Optimierung | Kolac Digital',
     metaDescription:
       'Wie Kolac Digital die Website von Motorenfachmann aus Lage für Google aufgeräumt hat: Onpage-Score von 60 auf 95 Prozent, saubere Technik, neue Motorseiten.',
   },
@@ -283,9 +283,9 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       'Der Betrieb startet nicht unsichtbar, sondern mit einer Website, die Google vom ersten Tag an eindeutig zuordnen kann: Paderborn, Autoankauf, Reifenservice, Smart Repair. Sobald Google das Unternehmensprofil bestätigt hat, erscheint Pader Automobilzentrum auch in Google Maps. Wie sich Besucher und Platzierungen entwickeln, sieht der Betrieb jeden Monat in seinem Kundenportal.',
     metaTitle:
-      'Pader Automobilzentrum Paderborn · Neue Website und Google-Profil · Kolac Digital',
+      'Pader Automobilzentrum Paderborn · Website und Google-Profil',
     metaDescription:
-      'Wie Kolac Digital für die Neugründung Pader Automobilzentrum in Paderborn SEO-Analyse, Website und Google-Unternehmensprofil aufgebaut hat. Sichtbar vom ersten Tag an.',
+      'Wie Kolac Digital für die Neugründung Pader Automobilzentrum in Paderborn SEO-Analyse, Website und Google-Profil aufgebaut hat. Sichtbar vom ersten Tag an.',
   },
   {
     slug: 'fahrschule-kreuzer',
@@ -322,7 +322,7 @@ export const portfolioProjects: PortfolioProject[] = [
     metaTitle:
       'Fahrschule Kreuzer Bielefeld · Projekt von Kolac Digital',
     metaDescription:
-      'Wie Kolac Digital für die Fahrschule Kreuzer in Bielefeld-Brackwede eine komplette Webseite von Grund auf gebaut hat. Von null Web-Präsenz zu online buchbaren Anfragen.',
+      'Wie Kolac Digital für die Fahrschule Kreuzer in Bielefeld-Brackwede die erste eigene Webseite gebaut hat. Von null Web-Präsenz zu Anfragen direkt online.',
   },
   {
     slug: 'akquise-helfer',
@@ -359,9 +359,9 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       'Vier Unternehmen laufen in einem System statt in vier Insellösungen. Die Frage nach dem Gesamtbild beantwortet ein Blick aufs Dashboard. Belege kommen vorausgefüllt herein, jede Person sieht genau das, was für sie gedacht ist, und alle Daten liegen auf dem eigenen Server. Das Entscheidende ist nicht die Zahl der Funktionen, sondern dass die Software der Struktur des Unternehmens folgt statt umgekehrt.',
     metaTitle:
-      'Akquise-Helfer · Individualsoftware für vier Unternehmen · Kolac Digital',
+      'Akquise-Helfer · Software für vier Unternehmen',
     metaDescription:
-      'Wie Kolac Digital für Akquise-Helfer eine eigene Software für vier Unternehmen gebaut hat, nachdem mehrere Dienstleister abgesagt hatten. Buchhaltung, Leads und Projekte auf dem eigenen Server.',
+      'Wie Kolac Digital für Akquise-Helfer eine eigene Software für vier Unternehmen gebaut hat: Buchhaltung, Leads und Projekte auf dem eigenen Server.',
   },
   {
     slug: 'wagenpuls',
@@ -424,9 +424,9 @@ export const portfolioProjects: PortfolioProject[] = [
       },
     ],
     metaTitle:
-      'wagenpuls · Software für Autohändler entwickelt · Projekt von Kolac Digital',
+      'wagenpuls · Software für Autohändler | Kolac Digital',
     metaDescription:
-      'Wie Kolac Digital mit wagenpuls eine Software für freie Autohändler gebaut hat: Ankauf, Bestand, §25a-Kalkulation, Verträge und mobile.de-Anbindung als SaaS, in rund acht Wochen am Markt.',
+      'Wie Kolac Digital mit wagenpuls eine Software für freie Autohändler gebaut hat: Ankauf, Bestand, §25a-Kalkulation, Verträge, mobile.de. In acht Wochen am Markt.',
   },
   {
     slug: 'bacara-aesthetik',
@@ -462,7 +462,7 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       'Über 800 Termine sind über die Webseite gebucht worden. Die Buchungen haben sich verdreifacht. Die Praxis hat den Aufwand für Terminverwaltung massiv reduziert und der Inhaber kann sich auf die Behandlungen konzentrieren statt auf Rückrufe.',
     metaTitle:
-      'Bacara Ästhetik Bünde · Webseite mit Buchungssystem · Projekt von Kolac Digital',
+      'Bacara Ästhetik Bünde · Webseite mit Buchungssystem',
     metaDescription:
       'Wie Kolac Digital für Bacara Ästhetik in Bünde eine Webseite mit Onlinebuchungssystem gebaut hat. Über 800 Termine online gebucht, Buchungen verdreifacht.',
   },
@@ -500,7 +500,7 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       'Die Kundenanfragen sind um 74 Prozent gestiegen. Wichtiger noch: die Anfragen sind qualifizierter, weil der Konfigurator schon vorne vorsortiert. Der Inhaber hat mit dem Backend jetzt einen zentralen Arbeitsplatz für sein Tagesgeschäft statt Zettel und E-Mails.',
     metaTitle:
-      'CarHiFi Herford · Webseite mit Konfigurator · Projekt von Kolac Digital',
+      'CarHiFi Herford · Webseite mit Konfigurator | Kolac Digital',
     metaDescription:
       'Wie Kolac Digital für CarHiFi Herford eine Webseite mit Konfigurator und individuellem Backend gebaut hat. Kundenanfragen plus 74 Prozent.',
   },
@@ -535,7 +535,7 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       'Das komplette Marketing läuft ausgelagert. Der Inhaber kümmert sich um Produkt, Einkauf und Strategie, statt jeden Tag Ads-Manager und Newsletter-Tool zu öffnen.',
     metaTitle:
-      'Mironi Herford · Onlineshop und Marketing · Projekt von Kolac Digital',
+      'Mironi Herford · Onlineshop und Marketing | Kolac Digital',
     metaDescription:
       'Wie Kolac Digital für Mironi in Herford Onlineshop, Ads, Mailings und Social Media betreibt. Komplettes Marketing ausgelagert.',
   },
@@ -570,7 +570,7 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       'Anfragen laufen jetzt jederzeit digital rein, auch außerhalb der Bürozeiten. Kein verpasster Auftrag mehr, weil ein Anruf durchgerutscht ist. Und der Betrieb ist bei lokalen Suchen sichtbar.',
     metaTitle:
-      'AF-Gebäudeservice · Webseite und Digitalisierung · Projekt von Kolac Digital',
+      'AF-Gebäudeservice · Webseite und Digitalisierung',
     metaDescription:
       'Wie Kolac Digital für AF-Gebäudeservice einen neuen Webauftritt gebaut und Anfragen digitalisiert hat. Lokales SEO für OWL.',
   },
@@ -604,7 +604,7 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       'Durch TikTok wurden konkret Autos vermittelt. Menschen kamen ins Autohaus, weil sie einen Content gesehen hatten. Organische Reichweite, die sich in Umsatz übersetzt hat.',
     metaTitle:
-      'MK Automobile Herford · TikTok und Social Media · Projekt von Kolac Digital',
+      'MK Automobile Herford · TikTok und Social Media',
     metaDescription:
       'Wie Kolac Digital für MK Automobile in Herford den TikTok-Kanal aufgebaut und aus Reichweite echte Autoverkäufe gemacht hat.',
   },
@@ -641,9 +641,9 @@ export const portfolioProjects: PortfolioProject[] = [
     outcome:
       'Über 90 Millionen Aufrufe, 4,7 Millionen Likes und 40.000 Abonnenten. Aus dem Kanal ist mit YUMA PLAY ein eigenes Produkt entstanden, inklusive App in beiden Stores und eigener Webseite. Alle Erkenntnisse fließen in die Arbeit für Kunden zurück.',
     metaTitle:
-      'Die Marke Yuma · TikTok und Quiz-App YUMA PLAY · Projekt von Kolac Digital',
+      'Die Marke Yuma · TikTok und Quiz-App YUMA PLAY',
     metaDescription:
-      'Yuma ist das eigene Entertainment-Projekt von Kolac Digital. TikTok-Kanal mit über 40.000 Abonnenten, die Quiz-App YUMA PLAY für iOS und Android und die Webseite yumaplay.de.',
+      'Yuma ist das eigene Entertainment-Projekt von Kolac Digital: TikTok-Kanal mit über 40.000 Abonnenten, Quiz-App YUMA PLAY für iOS und Android, yumaplay.de.',
   },
 ];
 

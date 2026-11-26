@@ -66,9 +66,9 @@ export const branchenSeiten: BranchenSeite[] = [
     name: 'Fahrschulen',
     zielgruppe: 'Fahrschulen',
     metaTitle:
-      'Webseite für Fahrschulen erstellen lassen · mit Online-Anmeldung | Kolac Digital',
+      'Webseite für Fahrschulen erstellen lassen | Kolac Digital',
     metaDescription:
-      'Webseite für deine Fahrschule mit Online-Anmeldung, Führerscheinklassen und Kursterminen. Individuell gebaut, bei Google sichtbar, in der Regel in einer Woche live.',
+      'Webseite für deine Fahrschule mit Online-Anmeldung, Führerscheinklassen und Kursterminen. Individuell gebaut, bei Google sichtbar, meist in einer Woche live.',
     eyebrow: 'Webseite für Fahrschulen',
     h1: 'Webseite für deine Fahrschule, die Anmeldungen reinholt.',
     intro:
@@ -156,9 +156,9 @@ export const branchenSeiten: BranchenSeite[] = [
     name: 'Gebäudereinigung',
     zielgruppe: 'Reinigungsfirmen',
     metaTitle:
-      'Webseite für Gebäudereinigung erstellen lassen · mehr Aufträge | Kolac Digital',
+      'Webseite für Gebäudereinigung erstellen lassen',
     metaDescription:
-      'Webseite für deine Reinigungsfirma: Leistungen klar dargestellt, Anfrageformular für Firmenkunden und lokales SEO. Individuell gebaut, in der Regel in einer Woche live.',
+      'Webseite für deine Reinigungsfirma: Leistungen klar erklärt, Anfrageformular für Firmenkunden und lokales SEO. Individuell gebaut, meist in einer Woche live.',
     eyebrow: 'Webseite für Gebäudereinigung',
     h1: 'Webseite für deine Gebäudereinigung, die Aufträge bringt.',
     intro:
@@ -245,7 +245,7 @@ export const branchenSeiten: BranchenSeite[] = [
     name: 'Kosmetikstudios',
     zielgruppe: 'Kosmetikstudios',
     metaTitle:
-      'Webseite für Kosmetikstudios erstellen lassen · mit Online-Terminbuchung | Kolac Digital',
+      'Webseite für Kosmetikstudios erstellen lassen',
     metaDescription:
       'Webseite für dein Kosmetikstudio mit Online-Terminbuchung, Behandlungen und echten Bildern. Referenz: über 800 online gebuchte Termine bei Bacara Ästhetik.',
     eyebrow: 'Webseite für Kosmetikstudios',
@@ -336,9 +336,9 @@ export const branchenSeiten: BranchenSeite[] = [
     name: 'Fahrdienste',
     zielgruppe: 'Fahrdienste',
     metaTitle:
-      'Webseite für Fahrdienste und Krankenfahrten erstellen lassen | Kolac Digital',
+      'Webseite für Fahrdienste und Krankenfahrten erstellen lassen',
     metaDescription:
-      'Webseite für deinen Fahrdienst: jede Fahrt mit eigener Seite, Hotline und WhatsApp mit einem Klick, gefunden in jedem Ort. Referenz: PaderPuls Krankenfahrdienst aus Paderborn.',
+      'Webseite für deinen Fahrdienst: jede Fahrt mit eigener Seite, Hotline und WhatsApp mit einem Klick, gefunden in jedem Ort. Referenz: PaderPuls aus Paderborn.',
     eyebrow: 'Webseite für Fahrdienste',
     h1: 'Webseite für deinen Fahrdienst, über die Fahrten reinkommen.',
     intro:
@@ -421,9 +421,9 @@ export const branchenSeiten: BranchenSeite[] = [
     name: 'Kfz-Werkstätten',
     zielgruppe: 'Kfz-Werkstätten',
     metaTitle:
-      'Webseite für Kfz-Werkstätten erstellen lassen · mehr Aufträge | Kolac Digital',
+      'Webseite für Kfz-Werkstätten erstellen lassen',
     metaDescription:
-      'Webseite für deine Kfz-Werkstatt: jede Leistung mit eigener Seite, Anfrage mit Fahrzeugdaten, gefunden in deiner Stadt. Referenzen: Motorenfachmann und Pader Automobilzentrum.',
+      'Webseite für deine Kfz-Werkstatt: jede Leistung mit eigener Seite, Anfrage mit Fahrzeugdaten, gefunden in deiner Stadt. Referenz: Motorenfachmann aus Lage.',
     eyebrow: 'Webseite für Kfz-Werkstätten',
     h1: 'Webseite für deine Kfz-Werkstatt, die Aufträge bringt.',
     intro:
@@ -516,9 +516,9 @@ export const branchenSeiten: BranchenSeite[] = [
     name: 'Autoaufbereitung',
     zielgruppe: 'Autoaufbereiter',
     metaTitle:
-      'Webseite für Autoaufbereitung erstellen lassen · mit Terminanfrage | Kolac Digital',
+      'Webseite für Autoaufbereitung erstellen lassen',
     metaDescription:
-      'Webseite für deine Autoaufbereitung: Pakete, Vorher-Nachher-Bilder, Anfrage mit Fotos und Terminwunsch, schnell geladen und in deiner Stadt gefunden. Referenz: MC-Autopflege Herford.',
+      'Webseite für deine Autoaufbereitung: Pakete, Vorher-Nachher-Bilder, Anfrage mit Fotos und Terminwunsch, in deiner Stadt gefunden. Referenz: MC-Autopflege.',
     eyebrow: 'Webseite für Autoaufbereitung',
     h1: 'Webseite für deine Autoaufbereitung, die deine Arbeit zeigt und Kunden bringt.',
     intro:

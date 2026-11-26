@@ -149,7 +149,7 @@ function Hero({ seite, haupt }: { seite: StadtSeite; haupt: PortfolioProject }) 
                 📅 Termin buchen
               </a>
               <a href="#projekte" className="btn-secondary px-5 py-3 text-base">
-                Projekte aus {seite.stadt}
+                {seite.referenzTitel ? 'Projekte ansehen' : `Projekte aus ${seite.stadt}`}
               </a>
             </div>
             <p className="mt-3 text-sm text-gray-600">
@@ -216,7 +216,7 @@ function Lokal({ seite }: { seite: StadtSeite }) {
           </p>
         ))}
         <p className="mt-5 text-base leading-relaxed text-gray-700">
-          Wir arbeiten für Betriebe in {seite.stadt} und Umgebung, zum Beispiel
+          {seite.referenzTitel ? 'Wir bauen Websites' : 'Wir arbeiten'} für Betriebe in {seite.stadt} und Umgebung, zum Beispiel
           in {seite.nachbarorte.slice(0, -1).join(', ')} und{' '}
           {seite.nachbarorte[seite.nachbarorte.length - 1]}.
         </p>
@@ -240,9 +240,10 @@ function Projekte({
             Referenzen
           </p>
           <h2 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            {projekte.length > 1
-              ? `Projekte aus ${seite.stadt} und Umgebung.`
-              : `Ein Projekt aus ${seite.stadt}.`}
+            {seite.referenzTitel ??
+              (projekte.length > 1
+                ? `Projekte aus ${seite.stadt} und Umgebung.`
+                : `Ein Projekt aus ${seite.stadt}.`)}
           </h2>
           {seite.referenzHinweis && (
             <p className="mt-3 text-base text-gray-600">{seite.referenzHinweis}</p>
@@ -275,6 +276,18 @@ function WeitereSeiten({ seite }: { seite: StadtSeite }) {
               Webdesign {s.stadt}
             </Link>
           ))}
+        </p>
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span>Bei Google gefunden werden:</span>
+          <Link href="/seo" className="font-medium text-brand-blue hover:underline">
+            SEO Agentur Bielefeld
+          </Link>
+          <Link href="/seo/paderborn" className="font-medium text-brand-blue hover:underline">
+            SEO Paderborn
+          </Link>
+          <Link href="/seo-check" className="font-medium text-brand-blue hover:underline">
+            Kostenloser SEO-Check
+          </Link>
         </p>
         <p className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <span>Nach Branche:</span>

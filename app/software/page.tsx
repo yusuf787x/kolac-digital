@@ -15,9 +15,9 @@ import {
 } from '../webseiten/sections';
 
 const PAGE_URL = `${site.baseUrl}/software`;
-const TITLE = 'Individuelle Software entwickeln lassen · für kleine Betriebe | Kolac Digital';
+const TITLE = 'Individuelle Software entwickeln lassen | Kolac Digital';
 const DESCRIPTION =
-  'Individuelle Software für kleine und mittlere Betriebe: Excel ablösen, interne Tools, Kundenportale und Schnittstellen zu DATEV, Lexware und Co. Referenzen: wagenpuls und Akquise-Helfer.';
+  'Individuelle Software für kleine Betriebe: Excel ablösen, interne Tools, Kundenportale, Schnittstellen zu DATEV und Co. Referenzen: wagenpuls, Akquise-Helfer.';
 
 export const metadata: Metadata = {
   title: TITLE,

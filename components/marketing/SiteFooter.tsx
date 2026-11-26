@@ -23,6 +23,7 @@ export default function SiteFooter() {
               <div className="footer-col">
                 <span className="footer-col-title">Links</span>
                 <Link href="/webseiten">Webdesign</Link>
+                <Link href="/seo">SEO</Link>
                 <Link href="/software">Software</Link>
                 <Link href="/ki-beratung">KI-Beratung</Link>
                 <Link href="/case-studys">Case Studys</Link>

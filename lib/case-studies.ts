@@ -123,6 +123,8 @@ export interface CaseStudy {
 export const caseStudies: CaseStudy[] = [
   {
     slug: 'bacara-aesthetik',
+    metaDescription:
+      'Case Study Bacara Ästhetik: Website mit eigenem Buchungssystem. Über 800 Termine online gebucht, ohne einen einzigen Anruf. So haben wir es gebaut.',
     company: 'Bacara Ästhetik',
     category: 'Ästhetische Medizin',
     resultTeaser: 'Über 800 Termine online gebucht, ohne einen einzigen Anruf.',
@@ -367,9 +369,9 @@ export const caseStudies: CaseStudy[] = [
   {
     slug: 'wagenpuls',
     metaTitle:
-      'Branchensoftware entwickeln lassen: wagenpuls für Autohändler · Case Study',
+      'wagenpuls: Branchensoftware für Autohändler · Case Study',
     metaDescription:
-      'Wie Kolac Digital mit wagenpuls eine Branchensoftware für Autohändler als SaaS entwickelt hat. Ankauf, Bestand, §25a, Verträge und mobile.de in einem System, in rund acht Wochen marktreif.',
+      'Wie Kolac Digital mit wagenpuls eine Branchensoftware für Autohändler entwickelt hat: Ankauf, Bestand, §25a, Verträge und mobile.de in einem System.',
     company: 'wagenpuls',
     category: 'Branchensoftware für Autohändler',
     resultTeaser:
@@ -534,6 +536,8 @@ export const caseStudies: CaseStudy[] = [
   },
   {
     slug: 'carhifi-herford',
+    metaDescription:
+      'Case Study CarHiFi Herford: Website mit Konfigurator, Shop und Backend. Aus zwanzig Minuten Telefonat wurden dreißig Sekunden Konfigurator.',
     company: 'CarHifi Herford',
     category: 'Car-Hifi und Fachhandel',
     resultTeaser:
@@ -644,6 +648,8 @@ export const caseStudies: CaseStudy[] = [
   },
   {
     slug: 'kolac-digital',
+    metaDescription:
+      'Case Study Kolac Digital: das eigene System für Angebote, Rechnungen, Verträge und Steuer. Ein Klick statt fünf Tools, selbst entwickelt mit Next.js.',
     company: 'Kolac Digital',
     category: 'Eigenes Backoffice',
     resultTeaser:

@@ -12,7 +12,7 @@ import { branchenSeiten } from './branchen-seiten';
 import { staedteSeiten } from './staedte-seiten';
 export const LLMS_BASE = `# Kolac Digital
 
-> Webagentur aus Bielefeld (Ostwestfalen-Lippe) mit drei Bereichen: Webdesign für kleine und mittlere Betriebe (Hauptgeschäft), individuelle Software und KI-Beratung. Websites werden individuell gebaut, sind SEO-optimiert und bekommen auf Wunsch ein System dahinter: Terminbuchung, Anfragen-Dashboard, Angebote und Rechnungen. Ergänzend Google Ads, Meta Ads und Videocontent für Social Media. Für KMU in OWL, Nordrhein-Westfalen und ganz Deutschland.
+> Webagentur aus Bielefeld (Ostwestfalen-Lippe) mit vier Bereichen: Webdesign für kleine und mittlere Betriebe (Hauptgeschäft), SEO für lokale Betriebe, individuelle Software und KI-Beratung. Websites werden individuell gebaut, sind SEO-optimiert und bekommen auf Wunsch ein System dahinter: Terminbuchung, Anfragen-Dashboard, Angebote und Rechnungen. Ergänzend Google Ads, Meta Ads und Videocontent für Social Media. Für KMU in OWL, Nordrhein-Westfalen und ganz Deutschland.
 
 Kolac Digital ist eine inhabergeführte Webagentur mit Sitz in Bielefeld. Gegründet 2019 von Yusuf Kolac. Der Schwerpunkt liegt auf Webdesign: Websites, die bei Google gefunden werden und Anfragen bringen, auf Wunsch mit eigenem Backend (Webseite mit System). Wenn Standardsoftware nicht passt, entwickelt Kolac Digital individuelle Software, zum Beispiel um Excel abzulösen. Die Software passt sich an den Betrieb an, nicht andersrum. Daneben gibt es Google Ads, Meta Ads und Videocontent für Social Media (Reels, TikToks, Shorts) als Skalierungs-Add-ons, wenn die Basis steht.
 
@@ -35,6 +35,16 @@ Statt 50-Mann-Team und Aufschlag-Mentalität gibt es bei Kolac Digital direkte K
 - Landingpages und Unternehmensauftritte
 - Responsive Design, schnelle Ladezeiten, SEO-optimierte Struktur ab Tag eins
 
+### SEO für lokale Betriebe (https://www.kolac-digital.de/seo)
+- Lokale Suchmaschinenoptimierung für Betriebe in Bielefeld und Ostwestfalen-Lippe, eigene Seite für Paderborn: https://www.kolac-digital.de/seo/paderborn
+- Google-Unternehmensprofil komplett einrichten und pflegen (Kategorien, Leistungen, Fotos, Beiträge)
+- Seiten oder Abschnitte für die wichtigsten Suchbegriffe, mit Leistung und Ort
+- Einträge in passenden Verzeichnissen mit einheitlichen Firmendaten, Links von anderen Seiten
+- Ein einfacher Weg zu mehr echten Google-Bewertungen, keine gekauften Bewertungen
+- Monatlicher Bericht im eigenen Kundenportal mit echten Zahlen aus der Google Search Console
+- Paket „Sichtbar in 90 Tagen“: Fundament in vier Wochen, danach monatliche Betreuung. Preis nach kurzer Analyse, keine Pauschalpreise
+- Keine Platzierungsgarantie, Google entscheidet selbst. Erster Schritt ist der kostenlose SEO-Check: https://www.kolac-digital.de/seo-check
+
 ### Individuelle Software (https://www.kolac-digital.de/software)
 - Eigene Software für kleine und mittlere Betriebe, wenn Standardsoftware nicht passt
 - Excel ablösen, interne Tools und Dashboards, Kundenportale
@@ -56,7 +66,6 @@ Statt 50-Mann-Team und Aufschlag-Mentalität gibt es bei Kolac Digital direkte K
 
 ### Zusätzlich
 - Logos, Flyer, Produktfotografie
-- Lokale SEO-Optimierung (Google Business Profile)
 - E-Mail-Automatisierung und Mailkampagnen
 
 ## Wichtige Landingpage: Individuelle Webseiten aus Bielefeld

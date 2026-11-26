@@ -6,9 +6,9 @@ import { site } from '@/lib/site-config';
 import Reveal from '@/components/marketing/Reveal';
 
 export const metadata: Metadata = {
-  title: 'Portfolio · Kundenprojekte von Kolac Digital · Webagentur Bielefeld',
+  title: 'Portfolio: Kundenprojekte der Webagentur | Kolac Digital',
   description:
-    'Portfolio von Kolac Digital aus Bielefeld. Kundenprojekte aus OWL und ganz Deutschland: Webseiten mit System, Onlineshops, Buchungssysteme, Konfiguratoren und Social Media. Konkrete Ausgangslagen und Ergebnisse.',
+    'Kundenprojekte von Kolac Digital aus Bielefeld: Webseiten mit System, Onlineshops, Buchungssysteme und Software für Betriebe aus OWL und ganz Deutschland.',
   alternates: { canonical: `${site.baseUrl}/portfolio` },
   openGraph: {
     type: 'website',

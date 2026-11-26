@@ -15,7 +15,7 @@ export const revalidate = 600;
 export const metadata: Metadata = {
   title: 'Ratgeber für Webseiten und digitale Abläufe | Kolac Digital',
   description:
-    'Praxisnahe Beiträge zu Webseiten mit System, digitalen Abläufen, SEO und Google Ads. Von der Webagentur Kolac Digital aus Bielefeld, geschrieben für Betriebe in OWL und ganz Deutschland.',
+    'Ratgeber zu Webseiten, digitalen Abläufen, SEO und Google Ads für kleine Betriebe. Von der Webagentur Kolac Digital aus Bielefeld, einfach erklärt.',
   alternates: {
     canonical: `${site.baseUrl}/blog`,
     types: { 'application/rss+xml': `${site.baseUrl}/blog/feed.xml` },

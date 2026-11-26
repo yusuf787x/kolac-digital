@@ -26,6 +26,9 @@ const CASE_STUDY_LASTMOD: Record<string, string> = {
 const CASE_STUDY_LASTMOD_DEFAULT = '2026-08-14';
 
 const BRANCHEN_LASTMOD_DEFAULT = '2026-11-03';
+const STAEDTE_LASTMOD: Record<string, string> = {
+  guetersloh: '2026-11-26',
+};
 const STAEDTE_LASTMOD_DEFAULT = '2026-11-03';
 
 export function GET() {
@@ -58,7 +61,7 @@ export function GET() {
     ...staedteSeiten.map(
       (st): SitemapEntry => ({
         path: `/webdesign/${st.slug}`,
-        lastmod: STAEDTE_LASTMOD_DEFAULT,
+        lastmod: STAEDTE_LASTMOD[st.slug] ?? STAEDTE_LASTMOD_DEFAULT,
         changefreq: 'monthly',
         priority: 0.8,
         images: [findPortfolioProject(st.referenzen[0])?.overviewImage].filter(
@@ -66,6 +69,20 @@ export function GET() {
         ),
       }),
     ),
+    {
+      path: '/seo',
+      lastmod: '2026-11-26',
+      changefreq: 'monthly',
+      priority: 0.9,
+      images: ['/images/belege/praxis-search-console-verlauf.png'],
+    },
+    {
+      path: '/seo/paderborn',
+      lastmod: '2026-11-26',
+      changefreq: 'monthly',
+      priority: 0.8,
+      images: ['/images/portfolio/paderpuls.jpg'],
+    },
     {
       path: '/software',
       lastmod: '2026-11-03',

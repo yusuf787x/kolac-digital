@@ -1,8 +1,10 @@
 /**
  * Stadtseiten unter /webdesign/{slug}. Jede Seite zielt auf
  * "webdesign {stadt}" und lebt von echten Projekten aus der Stadt oder
- * dem Kreis. Ohne eigenes Projekt vor Ort keine Stadtseite, und nie nur
- * den Ortsnamen austauschen: Einstieg, Nachbarorte und Fragen sind je
+ * dem Kreis. Ohne eigenes Projekt vor Ort keine Stadtseite, Ausnahme:
+ * ein direkter Nachbar mit Projekten aus der Nachbarschaft, dann mit
+ * ehrlichem referenzHinweis (Gütersloh, 26.11.2026). Nie nur den
+ * Ortsnamen austauschen: Einstieg, Nachbarorte und Fragen sind je
  * Stadt eigen. Siehe docs/blog-keyword-strategie.md.
  *
  * Die Hauptseite für Bielefeld ist /webseiten, deshalb gibt es hier
@@ -28,6 +30,8 @@ export interface StadtSeite {
   referenzen: string[];
   /** Einordnung, wenn eine Referenz aus dem Umland stammt. */
   referenzHinweis?: string;
+  /** Überschrift der Referenzen, wenn kein Projekt aus der Stadt selbst stammt. */
+  referenzTitel?: string;
   faqs: BranchenFaq[];
   formSource: string;
 }
@@ -41,9 +45,9 @@ export const staedteSeiten: StadtSeite[] = [
     stadt: 'Herford',
     region: 'Kreis Herford',
     nachbarorte: ['Enger', 'Hiddenhausen', 'Löhne', 'Vlotho', 'Kirchlengern', 'Spenge', 'Bünde'],
-    metaTitle: 'Webdesign Herford · Websites für Betriebe aus dem Kreis Herford | Kolac Digital',
+    metaTitle: 'Webdesign Herford · Websites für Betriebe | Kolac Digital',
     metaDescription:
-      'Webdesign für Herford: individuelle Websites, die bei Google gefunden werden und Anfragen bringen. Referenzen aus Herford: CarHiFi Herford, Mironi, MK Automobile.',
+      'Webdesign für Herford: Websites, die bei Google gefunden werden und Anfragen bringen. Referenzen aus Herford: CarHiFi Herford, Mironi, MK Automobile.',
     h1: 'Webdesign für Herford: Websites, die Anfragen bringen.',
     intro:
       'Als Webdesign-Agentur aus dem Nachbarort Bielefeld bauen wir Websites für Unternehmen in Herford und im Kreis. Individuell statt Baukasten, schnell am Handy und so aufgebaut, dass Google dich bei Suchen aus der Region findet. Auf Wunsch mit System dahinter: Anfragen, Termine und Angebote laufen sortiert bei dir ein.',
@@ -80,9 +84,9 @@ export const staedteSeiten: StadtSeite[] = [
     stadt: 'Bünde',
     region: 'Kreis Herford',
     nachbarorte: ['Kirchlengern', 'Rödinghausen', 'Hiddenhausen', 'Löhne', 'Enger', 'Herford'],
-    metaTitle: 'Webdesign Bünde · Websites mit Online-Terminbuchung | Kolac Digital',
+    metaTitle: 'Webdesign Bünde · Websites mit Terminbuchung | Kolac Digital',
     metaDescription:
-      'Webdesign für Bünde: individuelle Websites für Praxen, Studios und Betriebe, auf Wunsch mit Online-Terminbuchung. Referenz aus Bünde: Bacara Ästhetik mit über 800 online gebuchten Terminen.',
+      'Webdesign für Bünde: Websites für Praxen, Studios und Betriebe, auf Wunsch mit Online-Terminbuchung. Referenz: Bacara Ästhetik, über 800 Termine online gebucht.',
     h1: 'Webdesign für Bünde: Websites, über die Kunden direkt buchen.',
     intro:
       'Wir bauen Websites für Betriebe in Bünde und Umgebung. Individuell gestaltet, bei Google sichtbar und auf Wunsch mit Online-Terminbuchung, damit Kunden nicht erst anrufen müssen. Für Praxen, Studios, Handwerker und Dienstleister zwischen Bünde, Kirchlengern und Rödinghausen.',
@@ -121,9 +125,9 @@ export const staedteSeiten: StadtSeite[] = [
     stadt: 'Paderborn',
     region: 'Kreis Paderborn',
     nachbarorte: ['Bad Lippspringe', 'Delbrück', 'Salzkotten', 'Büren', 'Hövelhof', 'Borchen', 'Altenbeken'],
-    metaTitle: 'Webdesign Paderborn · Relaunch und Websites, die gefunden werden | Kolac Digital',
+    metaTitle: 'Webdesign Paderborn · Relaunch und Neubau | Kolac Digital',
     metaDescription:
-      'Webdesign für Paderborn: Relaunch oder neue Website, die bei Google für Paderborn und den Kreis gefunden wird. Referenzen: PaderPuls Krankenfahrdienst und Pader Automobilzentrum.',
+      'Webdesign für Paderborn: Relaunch oder neue Website, die bei Google für Paderborn und den Kreis gefunden wird. Referenzen: PaderPuls und Pader Automobilzentrum.',
     h1: 'Webdesign für Paderborn: Websites, die in der Region gefunden werden.',
     intro:
       'Wir bauen Websites für Betriebe in Paderborn und im Kreis Paderborn, neu oder als Relaunch einer alten Seite. Mit klarer Struktur, Unterseiten für deine Leistungen und Orte und einer Technik, die Google sauber lesen kann. Damit Kunden aus Paderborn, Delbrück oder Salzkotten bei dir landen und nicht bei der Konkurrenz.',
@@ -160,6 +164,54 @@ export const staedteSeiten: StadtSeite[] = [
       },
     ],
     formSource: 'Stadtseite Paderborn',
+  },
+  {
+    slug: 'guetersloh',
+    stadt: 'Gütersloh',
+    region: 'Kreis Gütersloh',
+    nachbarorte: ['Rheda-Wiedenbrück', 'Verl', 'Harsewinkel', 'Herzebrock-Clarholz', 'Steinhagen', 'Halle (Westf.)', 'Schloß Holte-Stukenbrock', 'Rietberg'],
+    metaTitle: 'Webdesign Gütersloh · Websites für den Kreis | Kolac Digital',
+    metaDescription:
+      'Webdesign für Gütersloh und den Kreis: Websites, die bei Google für deinen Ort gefunden werden und Anfragen bringen. Aus dem Nachbarort Bielefeld.',
+    h1: 'Webdesign für Gütersloh: Websites, die im ganzen Kreis gefunden werden.',
+    intro:
+      'Wir bauen Websites für Handwerker, Werkstätten, Praxen und Dienstleister in Gütersloh und im Kreis Gütersloh. Jede Seite entwerfen wir für deinen Betrieb, sie lädt am Handy in Sekunden und nennt die Orte, in denen du arbeitest. So landen Suchende aus Verl, Rheda-Wiedenbrück oder Harsewinkel bei dir und nicht in einem Branchenverzeichnis.',
+    lokal: [
+      'Such mal bei Google nach Webdesign in Gütersloh: Vorne stehen vor allem Branchenverzeichnisse und Listen. So geht es vielen Branchen im Kreis. Statt der Website eines Betriebs zeigt Google ein Verzeichnis, in dem auch die Konkurrenz steht. Eine eigene Seite für jede Leistung, klare Ortsangaben und ein gepflegtes Google-Unternehmensprofil geben deiner Website die besseren Karten.',
+      'Der Kreis Gütersloh lebt vom Mittelstand. Neben großen Namen wie Bertelsmann, Miele und Claas gibt es hier viele kleine Betriebe, deren Aufträge aus der Nachbarschaft kommen. Für sie bauen wir Websites, die in wenigen Sekunden klar machen, was du anbietest und wo. Gütersloh ist unser direkter Nachbar im Südwesten von Bielefeld. Fürs Erstgespräch und das Fotoshooting kommen wir zu dir in den Betrieb.',
+      'Wie Seiten für einzelne Orte funktionieren, zeigt MC-Autopflege aus Herford. Für 12 Orte im Umkreis, von Hiddenhausen bis Gütersloh, gibt es eine eigene Seite mit echter Fahrstrecke und Fahrzeit. Nach demselben Prinzip planen wir deine Seiten für Gütersloh und die Orte, aus denen deine Kunden kommen.',
+    ],
+    referenzen: ['mc-autopflege', 'fahrschule-kreuzer'],
+    referenzTitel: 'Projekte aus der Nachbarschaft.',
+    referenzHinweis:
+      'Aus Gütersloh selbst zeigen wir hier noch kein Projekt. MC-Autopflege sitzt in Herford und hat eine eigene Seite für Kunden aus Gütersloh. Die Fahrschule Kreuzer ist in Bielefeld-Brackwede, im Süden von Bielefeld.',
+    faqs: [
+      {
+        question: 'Kommt ihr für Termine nach Gütersloh?',
+        answer:
+          'Ja. Unser Büro ist in Bielefeld, Gütersloh liegt direkt nebenan. Erstgespräch und Fotoshooting machen wir gern bei dir im Betrieb. Alles andere klappt genauso per Telefon oder Video Call.',
+      },
+      {
+        question: 'Warum stehen bei Google vorne oft nur Verzeichnisse?',
+        answer:
+          'Weil viele Betriebe keine eigene Seite für ihre Leistung und ihren Ort haben. Dann zeigt Google lieber eine Liste. Mit einer Unterseite pro Leistung, klaren Ortsangaben und einem gepflegten Google-Unternehmensprofil hat deine eigene Website die besseren Chancen. Einen ersten Platz garantiert dir aber niemand seriös.',
+      },
+      {
+        question: 'Macht ihr auch Websites für Betriebe in Rheda-Wiedenbrück, Verl oder Harsewinkel?',
+        answer:
+          'Ja, für den ganzen Kreis Gütersloh. Deine Website nennt die Orte, in denen du wirklich arbeitest. Erfundene Einsatzgebiete bauen wir nicht ein, das merken Google und deine Kunden.',
+      },
+      {
+        question: 'Ich habe schon eine Website. Reicht es, sie bei Google besser aufzustellen?',
+        answer:
+          'Oft ja. Ist deine Seite technisch in Ordnung, kümmern wir uns nur um die Sichtbarkeit bei Google, also um SEO und dein Google-Profil. Wo du gerade stehst, zeigt dir unser kostenloser SEO-Check in rund 30 Sekunden.',
+      },
+      {
+        question: 'Was kostet es, in Gütersloh eine Website erstellen zu lassen?',
+        answer: kostenAntwort,
+      },
+    ],
+    formSource: 'Stadtseite Gütersloh',
   },
 ];
 

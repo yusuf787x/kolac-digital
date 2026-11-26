@@ -25,10 +25,9 @@ import {
 } from './sections';
 
 export const metadata: Metadata = {
-  title:
-    'Webdesign Bielefeld · Webagentur für Webseiten mit System | Kolac Digital',
+  title: 'Webdesign Bielefeld · Webagentur mit System | Kolac Digital',
   description:
-    'Webdesign aus Bielefeld: Wir bauen deine Website mit System. Vorne SEO-stark bei Google. Hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten. Für KMU in OWL, NRW und ganz Deutschland.',
+    'Webdesign Bielefeld: Wir bauen deine Website mit System. Stark bei Google, dahinter ein Backend für Anfragen, Termine und Rechnungen. Für Betriebe in ganz OWL.',
   alternates: {
     canonical: `${site.baseUrl}/webseiten`,
   },
@@ -36,8 +35,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'de_DE',
     url: `${site.baseUrl}/webseiten`,
-    title:
-      'Webdesign Bielefeld · Webagentur für Webseiten mit System | Kolac Digital',
+    title: 'Webdesign Bielefeld · Webagentur mit System | Kolac Digital',
     description:
       'Webseite mit System aus Bielefeld. Vorne SEO-stark, hinten ein Backend für Anfragen, Termine, Angebote und Rechnungen. Individuell auf deinen Betrieb zugeschnitten.',
     siteName: 'Kolac Digital',
@@ -52,8 +50,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title:
-      'Webdesign Bielefeld · Webagentur für Webseiten mit System | Kolac Digital',
+    title: 'Webdesign Bielefeld · Webagentur mit System | Kolac Digital',
     description:
       'Individuelle Webseite mit Backend. Anfragen, Termine, Angebote, Berichte. Aus Bielefeld für KMU in OWL, NRW und ganz Deutschland.',
     images: ['/images/bacara-website.webp'],
@@ -494,6 +491,14 @@ function PainSolution() {
                 className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
               >
                 individuelle Software
+              </Link>
+              . Deine Website steht schon, wird aber bei Google nicht
+              gefunden? Dann hilft dir unsere{' '}
+              <Link
+                href="/seo"
+                className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
+              >
+                SEO für Bielefeld und OWL
               </Link>
               .
             </p>
