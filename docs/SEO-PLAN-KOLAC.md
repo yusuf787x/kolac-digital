@@ -117,7 +117,16 @@ nicht ranken:
 ## Offen zur Entscheidung (26.11.2026)
 - SEO als eigener Bereich mit Seite /seo (bisher drei Bereiche: Webdesign, Software, KI-Beratung).
 - Wer fragt die Kunden nach dem Fußzeilen-Link und den Bewertungen.
-- Verzeichnisse über Yusufs Browser eintragen lassen.
+- Verzeichnisse über Yusufs Browser eintragen lassen. Stand 26.11.: Chrome-Erweiterung war in der Sitzung
+  nicht verbunden, darum noch nichts eingetragen.
+
+## Stand Umsetzung
+- 26.11.2026: /seo, /seo/paderborn, /webdesign/guetersloh live und in der Sitemap, per IndexNow an Bing,
+  Yandex und Co. gemeldet. Google: „Indexierung beantragen“ macht Yusuf in der Search Console
+  (`docs/backlinks/verzeichnisse.html`, Abschnitt 6), per Schnittstelle geht das für normale Seiten nicht.
+- 26.11.2026 Google-Profil geprüft: Beschreibung alt (Du-Form, Social Media, Video, kein SEO), nur Kategorie
+  „Webdesigner“, keine Leistungen, 2 Fotos, Öffnungszeiten Mo bis Sa 8 bis 18 Uhr (Stammdaten sagen Mo bis Fr
+  9 bis 18 Uhr). Liste der Änderungen in der Kopierseite, Abschnitt 4.
 - Studie aus SEO-Check- und Outreach-Daten (zusammengefasst, ohne Namen).
 - Seite zu Kosten („was kostet eine website“ 480, „website kosten“ 590 Suchen), obwohl bisher keine
   Preise in Themen.
