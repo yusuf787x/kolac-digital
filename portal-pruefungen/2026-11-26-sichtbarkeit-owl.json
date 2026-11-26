@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-26",
+  "kind": "sichtbarkeit",
+  "title": "Sichtbarkeit in Bielefeld und OWL",
+  "summary": "Die Website ist technisch sauber und schnell, wird bei den wichtigen Suchbegriffen für Webdesign und SEO in OWL aber noch nicht unter den ersten 50 Ergebnissen gezeigt. Der Hauptgrund: Nur 5 andere Websites verlinken auf uns, die Konkurrenz vorne hat deutlich mehr Links und Bewertungen. Als Nächstes kommen Links von Kundenseiten, Einträge in Agenturportalen und eine eigene Seite für SEO.",
+  "metrics": [
+    { "key": "verweisende_domains", "label": "Websites, die auf uns verlinken", "value": 5, "unit": "Domains", "better": "higher", "explain": "Jede fremde Website, die auf uns verlinkt, ist für Google eine Empfehlung. Ziel bis Ende Februar 2027: 30." },
+    { "key": "google_bewertungen", "label": "Google-Bewertungen", "value": 9, "unit": "Bewertungen", "better": "higher", "explain": "Bewertungen im Google-Profil, im Schnitt 5,0 Sterne. Die Betriebe vorne in der Karte haben oft über 100." },
+    { "key": "karte_webdesign_bielefeld", "label": "Platz in der Google-Karte bei „webdesign“", "value": 33, "unit": "Platz", "better": "lower", "explain": "Gesucht in der Nähe des Büros in Bielefeld. Sichtbar sind meist nur die ersten 3." },
+    { "key": "hauptbegriffe_top50", "label": "Hauptbegriffe unter den ersten 50", "value": 0, "unit": "von 8", "better": "higher", "explain": "Geprüft: webdesign bielefeld, webagentur bielefeld, seo agentur bielefeld, homepage erstellen lassen, webdesign paderborn, seo paderborn, seo für handwerker, website für handwerker." },
+    { "key": "technik_probleme", "label": "Technische Fehler", "value": 0, "unit": "Fehler", "better": "lower", "explain": "64 Seiten geprüft. Keine Fehler, nur Hinweise zu langen Seitentiteln und Beschreibungen." }
+  ],
+  "findings": [
+    { "status": "ok", "text": "Alle 64 Seiten sind erreichbar, schnell (96 bis 98 von 100) und technisch fehlerfrei." },
+    { "status": "warn", "text": "28 Seitentitel und 22 Beschreibungen sind länger, als Google sie anzeigt. Sie werden gekürzt." },
+    { "status": "fail", "text": "Bei den Suchbegriffen für Webdesign und SEO in Bielefeld und Paderborn erscheint die Website noch nicht unter den ersten 50 Ergebnissen. Vorne stehen vor allem Agenturportale." },
+    { "status": "fail", "text": "Es gibt noch keine eigene Seite für SEO. Für Suchen wie „seo bielefeld“ oder „seo agentur bielefeld“ kann die Website deshalb nicht gefunden werden." },
+    { "status": "warn", "text": "Nur 5 fremde Websites verlinken auf uns. Von 12 Kundenwebsites verlinken erst 2." }
+  ],
+  "links": [
+    { "label": "Google-Suche „webdesign bielefeld“", "url": "https://www.google.de/search?q=webdesign+bielefeld" },
+    { "label": "Ladezeit bei Google prüfen", "url": "https://pagespeed.web.dev/analysis?url=https://www.kolac-digital.de/" }
+  ]
+}
