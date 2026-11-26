@@ -6,6 +6,7 @@ import { DEVICE_COOKIE, checkLimits, clientIp, deviceIdFrom, isOwnerRequest, lat
 import { hitRateLimit } from '@/lib/portal/rate-limit';
 import type { SeoCheckResponse } from '@/lib/seo-check/types';
 import { cleanSource } from '@/lib/seo-check/funnel';
+import { upsertLeadAkte } from '@/lib/crm-server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -89,6 +90,13 @@ export async function POST(req: Request) {
     const source = cleanSource(body.source);
     const id = await saveCheck(result, owner, ip, source);
     if (!owner) await recordUsage(ip, device.id, id);
+    // Kundenakte: jeder Check eines Besuchers wird eine Akte (erst nur mit Website,
+    // beim Freischalten kommen Name, Mail und Telefon dazu). Der Check selbst steht im Verlauf.
+    if (!owner) {
+      after(async () => {
+        await upsertLeadAkte({ website: result.domain, source: 'SEO-Check' });
+      });
+    }
     // Mail an Yusuf bei jedem Check eines Besuchers, nie im Inhaber-Modus.
     if (!owner && process.env.RESEND_API_KEY) {
       after(async () => {

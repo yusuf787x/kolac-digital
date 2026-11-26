@@ -31,6 +31,8 @@ export interface RankedKeyword {
   position: number;
   volume: number | null;
   url?: string;
+  /** Geschätzte Besuche pro Monat (nur intern zum Rechnen). */
+  etv?: number;
 }
 
 export interface RankingData {
@@ -45,6 +47,38 @@ export interface RankingData {
   estTraffic: number;
   top: RankedKeyword[];
   potentials: RankedKeyword[];
+  /** Alle Rohdaten aus DataForSEO, nur bis zur Auswertung (wird nicht gespeichert). */
+  all?: RankedKeyword[];
+  /**
+   * Live geprüfte Begriffe „Leistung + Ort“ (z. B. „hausmeisterservice augsburg“),
+   * abgeleitet aus Titeln und Überschriften der Website. Fehlt bei älteren Checks.
+   */
+  local?: LocalKeyword[];
+  /** Beste Platzierung bei Suchen nach dem eigenen Firmennamen (zählt nicht als Sichtbarkeit). */
+  brand?: RankedKeyword | null;
+  /** Wie viele Begriffe als Firmenname oder unpassend aussortiert wurden. */
+  filtered?: number;
+}
+
+export interface MapPackEntry {
+  name: string;
+  rating?: number;
+  reviews?: number;
+  domain?: string;
+}
+
+export interface LocalKeyword {
+  keyword: string;
+  volume: number | null;
+  /** Platz in den normalen Ergebnissen (1–20), null = nicht unter den ersten 20. */
+  position: number | null;
+  url?: string;
+  /** Google hat für diese Suche eine Karte mit Firmen gezeigt. */
+  hasMapPack: boolean;
+  /** Platz in der Karte (1–3), null = nicht in der Karte. */
+  mapPosition: number | null;
+  /** Die Firmen in der Karte. */
+  mapPack: MapPackEntry[];
 }
 
 export interface PageSpeedData {

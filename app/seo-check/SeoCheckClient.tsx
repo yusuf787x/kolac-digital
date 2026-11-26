@@ -446,7 +446,7 @@ function Report({
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {r.rankings.available && (
               <>
-                <Stat value={r.rankings.top10} label="Suchbegriffe auf Seite 1" />
+                <Stat value={r.rankings.top10} label={r.rankings.brand ? 'Suchbegriffe auf Seite 1 (ohne deinen Firmennamen)' : 'Suchbegriffe auf Seite 1'} />
                 <Stat value={r.rankings.total} label="Suchbegriffe in den Top 100" />
                 <Stat value={r.rankings.estTraffic} label="Geschätzte Besuche pro Monat über Google" />
               </>
@@ -499,6 +499,9 @@ function Report({
             />
           </div>
         )}
+
+        {/* Leistung + Ort, live geprüft (nur freigeschaltet) */}
+        {data.unlocked && (r.rankings.local?.length ?? 0) > 0 && <LocalKeywordTable rows={r.rankings.local!} brandRow={r.rankings.brand ?? null} />}
 
         {/* Suchbegriffe (nur freigeschaltet) */}
         {data.unlocked && r.rankings.available && (r.rankings.top.length > 0 || r.rankings.potentials.length > 0) && (
@@ -574,6 +577,61 @@ function Stat({ value, label, suffix }: { value: number; label: string; suffix?:
         {suffix && <span className="text-[15px] font-semibold text-[var(--color-gray)]">{suffix}</span>}
       </p>
       <p className="mt-2 text-[13px] leading-snug text-[var(--color-gray)]">{label}</p>
+    </div>
+  );
+}
+
+function LocalKeywordTable({
+  rows,
+  brandRow,
+}: {
+  rows: NonNullable<SeoCheckResponse['result']['rankings']['local']>;
+  brandRow: SeoCheckResponse['result']['rankings']['top'][number] | null;
+}) {
+  const leaders = rows.find((k) => k.hasMapPack && !k.mapPosition && (k.volume ?? 0) > 0);
+  return (
+    <div className="rounded-[18px] border border-[#e5e7eb] p-5 md:p-6">
+      <h3 className="text-[17px] font-semibold text-[var(--color-black)]">Deine wichtigsten Suchbegriffe mit Ort</h3>
+      <p className="text-[13px] text-[var(--color-gray)]">Live bei Google geprüft. So suchen neue Kunden nach dir.</p>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full min-w-[420px] text-[15px]">
+          <thead>
+            <tr className="text-left text-[13px] text-[var(--color-gray)]">
+              <th className="py-1 font-medium">Suchbegriff</th>
+              <th className="py-1 text-right font-medium">Suchen/Monat</th>
+              <th className="py-1 text-right font-medium">Platz</th>
+              <th className="py-1 text-right font-medium">In der Karte</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((k) => (
+              <tr key={k.keyword} className="border-t border-[#f0f0f2]">
+                <td className="py-2 pr-2 break-words text-[var(--color-black)]">{k.keyword}</td>
+                <td className="py-2 text-right text-[var(--color-gray)]">{k.volume ? k.volume.toLocaleString('de-DE') : 'kaum'}</td>
+                <td className="py-2 text-right font-semibold text-[var(--color-black)]">{k.position ?? 'nicht in Top 20'}</td>
+                <td className="py-2 text-right text-[var(--color-black)]">{!k.hasMapPack ? 'keine Karte' : k.mapPosition ? `Platz ${k.mapPosition}` : 'nein'}</td>
+              </tr>
+            ))}
+            {brandRow && (
+              <tr className="border-t border-[#f0f0f2]">
+                <td className="py-2 pr-2 break-words text-[var(--color-gray)]">{brandRow.keyword} (dein Name)</td>
+                <td className="py-2 text-right text-[var(--color-gray)]">{brandRow.volume ? brandRow.volume.toLocaleString('de-DE') : ''}</td>
+                <td className="py-2 text-right font-semibold text-[var(--color-black)]">{brandRow.position}</td>
+                <td className="py-2 text-right text-[var(--color-gray)]" />
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      {leaders && leaders.mapPack.length > 0 && (
+        <p className="mt-3 text-[13px] text-[var(--color-gray)]">
+          In der Karte bei „{leaders.keyword}“ stehen:{' '}
+          {leaders.mapPack
+            .map((e) => `${e.name}${e.reviews != null ? ` (${e.reviews.toLocaleString('de-DE')} Bewertungen)` : ''}`)
+            .join(', ')}
+          .
+        </p>
+      )}
     </div>
   );
 }

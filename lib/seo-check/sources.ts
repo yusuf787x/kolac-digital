@@ -6,7 +6,7 @@ import type { PageSpeedData, RankedKeyword, RankingData } from './types';
  *
  * Platzierungen: DataForSEO Labs "ranked_keywords" (Google Deutschland,
  * Sprache Deutsch). Zugang ueber DATAFORSEO_LOGIN und DATAFORSEO_PASSWORD
- * (app.dataforseo.com/api-access). Kosten ca. 2 Cent pro Check.
+ * (app.dataforseo.com/api-access).
  *
  * Ladezeit: Google PageSpeed Insights, mobil. PAGESPEED_API_KEY ist
  * optional, ohne Schluessel teilt man sich ein kleines Kontingent.
@@ -29,7 +29,14 @@ export function rankingsConfigured(): boolean {
 
 interface DfsItem {
   keyword_data?: { keyword?: string; keyword_info?: { search_volume?: number | null } };
-  ranked_serp_element?: { serp_item?: { rank_group?: number; url?: string; relative_url?: string } };
+  ranked_serp_element?: { serp_item?: { rank_group?: number; url?: string; relative_url?: string; etv?: number } };
+}
+
+/** Zugangsdaten für DataForSEO als Basic-Auth-Header (auch für die Live-Abfragen). */
+export function dfsAuthHeader(): string {
+  const login = (process.env.DATAFORSEO_LOGIN ?? '').trim().replace(/^["']|["']$/g, '');
+  const password = (process.env.DATAFORSEO_PASSWORD ?? '').trim().replace(/^["']|["']$/g, '');
+  return `Basic ${Buffer.from(`${login}:${password}`).toString('base64')}`;
 }
 
 interface DfsOrganicMetrics {
@@ -99,6 +106,7 @@ async function fetchRankingsOnce(domain: string): Promise<RankingData> {
         position: it.ranked_serp_element?.serp_item?.rank_group ?? 0,
         volume: it.keyword_data?.keyword_info?.search_volume ?? null,
         url: it.ranked_serp_element?.serp_item?.url ?? it.ranked_serp_element?.serp_item?.relative_url,
+        etv: it.ranked_serp_element?.serp_item?.etv ?? 0,
       }))
       .filter((k) => k.keyword && k.position > 0);
 
@@ -114,6 +122,7 @@ async function fetchRankingsOnce(domain: string): Promise<RankingData> {
 
     return {
       available: true,
+      all: items,
       total: result?.total_count ?? m.count ?? items.length,
       top3,
       top10,

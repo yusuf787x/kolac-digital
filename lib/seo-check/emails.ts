@@ -13,6 +13,14 @@ export function reportUrl(id: string): string {
   return `https://www.kolac-digital.de/seo-check?id=${encodeURIComponent(id)}`;
 }
 
+/** Live geprüfte „Leistung + Ort“-Begriffe als Zeilen für Yusufs Benachrichtigung. */
+function localLines(r: SeoCheckResult): Array<[string, string]> {
+  return (r.rankings.local ?? []).map((k) => [
+    k.keyword,
+    `${k.position ? `Platz ${k.position}` : 'nicht in Top 20'}${k.hasMapPack ? (k.mapPosition ? `, Karte Platz ${k.mapPosition}` : ', nicht in der Karte') : ''}${k.volume ? ` (${k.volume} Suchen/Monat)` : ''}`,
+  ]);
+}
+
 function categoryLines(r: SeoCheckResult): Array<[string, string]> {
   return (Object.keys(CATEGORY_LABELS) as (keyof typeof CATEGORY_LABELS)[]).map((k) => {
     const v = r.categories[k];
@@ -50,6 +58,7 @@ export function checkNotificationEmail(id: string, r: SeoCheckResult, src?: Lead
     ...categoryLines(r),
     ['Wichtigster Befund', top ? `${top.title}: ${top.detail}` : 'keiner'],
     ['Google-Daten', r.rankings.available ? `ja (${r.rankings.top10} Begriffe auf Seite 1, ${r.rankings.total} gesamt)` : 'nein'],
+    ...localLines(r),
     ['Einstieg', landingLabel(src)],
     ...sourceLines(src),
     ['Kontaktdaten', 'noch nicht, kommen erst beim Freischalten'],
@@ -87,6 +96,7 @@ export function leadNotificationEmail(id: string, lead: StoredLead, r: SeoCheckR
     ...categoryLines(r),
     ...(r.rankings.available
       ? ([
+          ...localLines(r),
           ['Begriffe auf Seite 1', String(r.rankings.top10)],
           ['Begriffe gesamt', String(r.rankings.total)],
         ] as Array<[string, string]>)

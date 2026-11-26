@@ -2,6 +2,7 @@ import 'server-only';
 import { detectPlatform, findAddress, findPhoneInText, parsePage, type ParsedPage } from './html';
 import { BlockedUrlError, safeFetch, type SafeResponse } from './safe-fetch';
 import { fetchPageSpeed, fetchRankings } from './sources';
+import { cityFromKeywords, deriveServicePhrases, detectBrand, fetchLocalKeywords, fold, refineRankings } from './local-keywords';
 import type {
   CategoryScores,
   CheckCategory,
@@ -108,8 +109,37 @@ function categoryScore(checks: CheckItem[], cat: CheckCategory): number {
  */
 function visibilityScore(r: RankingData): number {
   if (!r.available) return 0;
-  const s = 9 * Math.log(1 + r.top10 + 2 * r.top3) + 5 * Math.log(1 + r.estTraffic) + 2 * Math.log(1 + r.total);
-  return Math.min(100, Math.round(s));
+  const labs = Math.min(100, 9 * Math.log(1 + r.top10 + 2 * r.top3) + 5 * Math.log(1 + r.estTraffic) + 2 * Math.log(1 + r.total));
+  const local = r.local ?? [];
+  // Wer bei Suche nach dem eigenen Namen vorne steht, hat eine kleine Grundsichtbarkeit.
+  const brandBonus = r.brand && r.brand.position <= 3 ? 5 : 0;
+  if (local.length === 0) return Math.min(100, Math.round(labs + brandBonus));
+  // Die live geprüften Begriffe „Leistung + Ort“ zählen am meisten, gewichtet nach Suchanfragen.
+  // Karte unter den ersten drei zählt wie ein Platz unter den ersten drei.
+  const points = (k: (typeof local)[number]) =>
+    Math.max(
+      k.mapPosition ? 100 : 0,
+      k.position == null ? 0 : k.position <= 3 ? 100 : k.position <= 10 ? 75 : 40,
+    );
+  const weight = (k: (typeof local)[number]) => Math.max(10, k.volume ?? 0);
+  const total = local.reduce((a, k) => a + weight(k), 0);
+  const localScore = local.reduce((a, k) => a + points(k) * weight(k), 0) / total;
+  return Math.min(100, Math.round(0.7 * localScore + 0.3 * labs + brandBonus));
+}
+
+/** Ort, den Titel oder H1 nennen („Gebäudereinigung in Heilbronn“). */
+function placeFromHeadlines(headlines: string[]): string | undefined {
+  return headlines
+    .map((s) => s.match(/\b(?:in|aus|für)\s+([A-ZÄÖÜ][a-zäöüß]{2,}(?:[ -][A-ZÄÖÜ][a-zäöüß]+)?)/)?.[1])
+    .find((p) => p && !/^(Ihr|Ihre|Dein|Deine|Unser|Unsere|Sie|Du|Der|Die|Das|Den|Dem|Ihren)$/.test(p));
+}
+
+const plural = (n: number, one: string, many: string) => `${n.toLocaleString('de-DE')} ${n === 1 ? one : many}`;
+
+function mapPackText(entries: { name: string; rating?: number; reviews?: number }[]): string {
+  return entries
+    .map((e) => `${e.name}${e.reviews != null ? ` (${e.rating != null ? `${e.rating.toLocaleString('de-DE')} Sterne, ` : ''}${plural(e.reviews, 'Bewertung', 'Bewertungen')})` : ''}`)
+    .join(', ');
 }
 
 const fmt = (n: number) => n.toLocaleString('de-DE');
@@ -139,9 +169,10 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
 
   // 2. Alles Weitere parallel: Ranking, Ladezeit, robots, Sitemap, Varianten, Unterseiten.
   const altHost = finalUrl.hostname.startsWith('www.') ? finalUrl.hostname.slice(4) : `www.${finalUrl.hostname}`;
-  const [rankings, pagespeed, robotsRes, httpRes, altRes] = await Promise.all([
-    fetchRankings(domain),
-    fetchPageSpeed(home.finalUrl),
+  // Platzierungen und Ladezeit dauern am längsten: starten, aber erst nach den Unterseiten abwarten.
+  const rankingsP = fetchRankings(domain);
+  const pagespeedP = fetchPageSpeed(home.finalUrl);
+  const [robotsRes, httpRes, altRes] = await Promise.all([
     tryFetch(`${origin}/robots.txt`, 6000, 200_000),
     tryFetch(`http://${finalUrl.hostname}${finalUrl.pathname}`, 8000, 50_000),
     tryFetch(`${finalUrl.protocol}//${altHost}/`, 8000, 50_000),
@@ -173,6 +204,49 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
     return out;
   };
   const [sitemap, samples] = await Promise.all([sitemapUrlCount(origin, robotsTxt), loadSamples()]);
+
+  // „Leistung + Ort“: Ort aus der Adresse (oder dem Ort, den Titel/H1 nennen),
+  // Leistungen aus Titeln und Überschriften, dann live bei Google prüfen.
+  const sitePages = [page, ...samples.map((s) => s.page).filter((p): p is ParsedPage => !!p)];
+  const siteText = sitePages.map((p) => [p.title ?? '', p.description ?? '', ...p.h1, p.text].join(' ')).join(' ');
+  const earlyAddress =
+    page.schemaAddress ??
+    samples.find((s) => s.page?.schemaAddress)?.page?.schemaAddress ??
+    findAddress(page.text) ??
+    findAddress(siteText);
+  const homeHeadlines = [page.title ?? '', ...page.h1];
+  const allHeadlines = sitePages.flatMap((p) => [p.title ?? '', ...p.h1]);
+  const addrCity = earlyAddress?.city;
+  const siteFold = ` ${siteText.split(/\s+/).map(fold).filter(Boolean).join(' ')} `;
+  // Zielort: steht er im Titel der Startseite, gilt der. Sonst der Ort, mit dem
+  // Google die Seite schon verbindet, dann Orte aus Titeln, zuletzt die Adresse.
+  const rawRankings = await rankingsP;
+  const brandGuess = detectBrand(sitePages, domain, addrCity);
+  const targetCity =
+    (addrCity && homeHeadlines.some((h) => h.toLowerCase().includes(addrCity.toLowerCase())) ? addrCity : undefined) ??
+    placeFromHeadlines(homeHeadlines) ??
+    cityFromKeywords(rawRankings.all, siteFold, brandGuess) ??
+    placeFromHeadlines(allHeadlines) ??
+    addrCity;
+  const brand = detectBrand(sitePages, domain, targetCity);
+  const phrases = targetCity ? deriveServicePhrases(sitePages, targetCity, brand) : [];
+  const [pagespeed, local] = await Promise.all([
+    pagespeedP,
+    targetCity
+      ? fetchLocalKeywords({ domain, city: targetCity, phrases, brand }).catch((err) => {
+          console.error('SEO-Check Leistung+Ort:', err);
+          return [];
+        })
+      : Promise.resolve([]),
+  ]);
+  const rankings = refineRankings(rawRankings, {
+    brand,
+    siteFold,
+    servicePhraseWords: new Set(phrases.flatMap((p) => p.split(' ').map(fold))),
+    local,
+  });
+  // Erster Eintrag = Hauptleistung aus dem Titel der Startseite.
+  const mainLocal = rankings.local?.[0];
 
   const checks: CheckItem[] = [];
   const add = (c: CheckItem) => checks.push(c);
@@ -688,29 +762,76 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
     fix: 'Impressum und Datenschutz im Fußbereich verlinken.',
   });
 
-  add({
-    id: 'gbp',
-    category: 'lokal',
-    title: 'Google-Unternehmensprofil',
-    weight: 1,
-    status: 'info',
-    detail: 'Das Profil in Google Maps prüfen wir gern persönlich mit dir. Dort entscheidet sich, wer in der Karte oben steht.',
-  });
+  if (mainLocal?.hasMapPack && (mainLocal.volume ?? 0) > 0) {
+    add({
+      id: 'map-pack',
+      category: 'lokal',
+      title: `In der Google-Karte bei „${mainLocal.keyword}“`,
+      weight: 3,
+      status: mainLocal.mapPosition ? 'ok' : 'fail',
+      detail: mainLocal.mapPosition
+        ? `Du stehst in der Karte mit den drei Firmen auf Platz ${mainLocal.mapPosition}. Dort landen die meisten Anrufe.`
+        : `Du stehst nicht unter den drei Firmen in der Karte. Dort stehen: ${mapPackText(mainLocal.mapPack)}.`,
+      fix: 'Google-Profil vervollständigen (Haupt- und Nebenkategorien, Leistungen, Fotos) und regelmäßig Bewertungen sammeln.',
+    });
+  } else {
+    add({
+      id: 'gbp',
+      category: 'lokal',
+      title: 'Google-Unternehmensprofil',
+      weight: 1,
+      status: 'info',
+      detail: 'Das Profil in Google Maps prüfen wir gern persönlich mit dir. Dort entscheidet sich, wer in der Karte oben steht.',
+    });
+  }
 
   // ---------------- Sichtbarkeit ----------------
+  const localList = rankings.local ?? [];
+  if (localList.length > 0) {
+    const sorted = localList;
+    const line = (k: (typeof sorted)[number]) =>
+      `„${k.keyword}“${k.volume ? ` (${fmt(k.volume)} Suchen im Monat)` : ''}: ${
+        k.position ? `Platz ${k.position}` : 'nicht unter den ersten 20'
+      }${k.hasMapPack ? (k.mapPosition ? `, in der Karte Platz ${k.mapPosition}` : ', nicht in der Karte') : ''}`;
+    const good = sorted.filter((k) => (k.position != null && k.position <= 10) || k.mapPosition).length;
+    const some = sorted.filter((k) => k.position != null || k.mapPosition).length;
+    add({
+      id: 'kw-local',
+      category: 'sichtbarkeit',
+      title: 'Deine wichtigsten Suchbegriffe mit Ort',
+      weight: 3,
+      status: good >= Math.ceil(sorted.length / 2) ? 'ok' : some > 0 ? 'warn' : 'fail',
+      detail: `Live bei Google geprüft. ${sorted.map(line).join('. ')}.`,
+      fix: 'Die Seite zur Leistung gezielt auf „Leistung + Ort“ ausrichten und das Google-Profil für die Karte stärken.',
+    });
+  }
   if (rankings.available) {
+    const nameNote = rankings.brand ? ' (ohne Suchen nach deinem Firmennamen)' : '';
     add({
       id: 'kw-top10',
       category: 'sichtbarkeit',
       title: 'Suchbegriffe auf Seite 1',
       weight: 3,
-      status: rankings.top10 >= 20 ? 'ok' : rankings.top10 >= 5 ? 'warn' : 'fail',
+      status: rankings.top10 >= 10 ? 'ok' : rankings.top10 >= 3 ? 'warn' : 'fail',
       detail:
         rankings.top10 === 0
-          ? 'Für keinen Suchbegriff steht die Website auf Seite 1 bei Google.'
-          : `Für ${fmt(rankings.top10)} Suchbegriffe steht die Website auf Seite 1. ${rankings.top10 < 5 ? 'Das ist sehr wenig, die meisten Kunden finden dich so nicht.' : ''}`.trim(),
+          ? `Für keinen Suchbegriff steht die Website auf Seite 1 bei Google${nameNote}.`
+          : `Für ${fmt(rankings.top10)} Suchbegriffe steht die Website auf Seite 1${nameNote}.${
+              rankings.top10 < 3 ? ' Neue Kunden, die deinen Namen noch nicht kennen, finden dich so selten.' : ''
+            }`,
       fix: 'Seiten gezielt auf die Begriffe ausrichten, nach denen deine Kunden suchen.',
     });
+    if (rankings.brand) {
+      add({
+        id: 'kw-brand',
+        category: 'sichtbarkeit',
+        title: 'Gefunden bei Suche nach deinem Namen',
+        weight: 1,
+        status: rankings.brand.position <= 3 ? 'ok' : 'warn',
+        detail: `Wer nach „${rankings.brand.keyword}“ sucht, findet dich auf Platz ${rankings.brand.position}.`,
+        fix: 'Firmenname in Seitentitel und Google-Profil identisch schreiben.',
+      });
+    }
     add({
       id: 'kw-top3',
       category: 'sichtbarkeit',
@@ -729,9 +850,12 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
       title: 'Besuche über Google (geschätzt)',
       weight: 2,
       status: rankings.estTraffic >= 300 ? 'ok' : rankings.estTraffic >= 50 ? 'warn' : 'fail',
-      detail: `Rund ${fmt(rankings.estTraffic)} Besuche pro Monat kommen geschätzt über die normale Google-Suche.${
-        rankings.estTraffic < 50 ? ' Das reicht nicht für regelmäßige Anfragen.' : ''
-      }`,
+      detail:
+        rankings.estTraffic === 0
+          ? `Über die normale Google-Suche kommen geschätzt kaum Besuche${rankings.brand ? ' (ohne Suchen nach deinem Namen)' : ''}.`
+          : `Rund ${fmt(rankings.estTraffic)} Besuche pro Monat kommen geschätzt über die normale Google-Suche${rankings.brand ? ' (ohne Suchen nach deinem Namen)' : ''}.${
+              rankings.estTraffic < 50 ? ' Das reicht nicht für regelmäßige Anfragen.' : ''
+            }`,
       fix: 'Mehr Begriffe mit echtem Suchvolumen auf Seite 1 bringen, vor allem Leistung plus Ort.',
     });
     add({
@@ -739,7 +863,7 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
       category: 'sichtbarkeit',
       title: 'Suchbegriffe insgesamt',
       weight: 2,
-      status: rankings.total >= 100 ? 'ok' : rankings.total >= 30 ? 'warn' : 'fail',
+      status: rankings.total >= 50 ? 'ok' : rankings.total >= 15 ? 'warn' : 'fail',
       detail: `Die Website wird für ${fmt(rankings.total)} Suchbegriffe unter den ersten 100 Ergebnissen angezeigt.`,
       fix: 'Mehr Inhalte zu Leistungen, Orten und Kundenfragen erstellen.',
     });
@@ -773,8 +897,9 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
   ];
   const usable = weights.filter((w): w is [number, number] => w[0] !== null);
   const wsum = usable.reduce((a, [, w]) => a + w, 0);
-  let score = Math.round(usable.reduce((a, [v, w]) => a + v * w, 0) / wsum);
-  if (categories.sichtbarkeit !== null) score = Math.min(score, categories.sichtbarkeit + 30);
+  // Kein Deckel mehr: eine sehr gute Website ohne Sichtbarkeit landet bei rund 60,
+  // die Sichtbarkeit zieht über ihr Gewicht von 40 % nach unten. Ehrlich, aber nicht schlechter als die Lage.
+  const score = Math.round(usable.reduce((a, [v, w]) => a + v * w, 0) / wsum);
 
   return {
     url: inputUrl,
@@ -784,7 +909,15 @@ export async function runSeoCheck(inputUrl: string): Promise<SeoCheckResult> {
     score,
     categories,
     checks,
-    measures: buildMeasures(checks, rankings),
+    measures: buildMeasures(
+      checks,
+      rankings,
+      [
+        { url: home.finalUrl, title: page.title ?? '', h1: page.h1 },
+        ...samples.filter((x) => x.page).map((x) => ({ url: x.url, title: x.page!.title ?? '', h1: x.page!.h1 })),
+      ],
+      targetCity,
+    ),
     rankings,
     pagespeed,
     platform,
@@ -830,23 +963,96 @@ const MEASURE_WHY: Record<string, string> = {
   impressum: 'Pflichtangabe und Vertrauenssignal für Besucher und Google.',
   'kw-top10': 'Über 90 Prozent der Klicks gehen an Ergebnisse auf Seite 1.',
   'kw-total': 'Jeder zusätzliche Suchbegriff bringt neue Besucher.',
+  'map-pack': 'Die drei Firmen in der Google-Karte bekommen bei Suchen mit Ort die meisten Anrufe.',
 };
 
-function buildMeasures(checks: CheckItem[], rankings: RankingData): Measure[] {
+interface MeasurePage {
+  url: string;
+  title: string;
+  h1: string[];
+}
+
+function buildMeasures(checks: CheckItem[], rankings: RankingData, pages: MeasurePage[], city?: string): Measure[] {
   const measures: Measure[] = [];
-  if (rankings.available && rankings.potentials.length) {
+  const local = rankings.local ?? [];
+  const pathOf = (u?: string) => {
+    try {
+      return u ? decodeURI(new URL(u).pathname) : '';
+    } catch {
+      return '';
+    }
+  };
+  const serviceOf = (keyword: string) =>
+    city ? keyword.replace(new RegExp(`\\s*${city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i'), '').trim() : keyword;
+  const pageFor = (service: string) => {
+    const f = fold(service);
+    if (f.length < 4) return undefined;
+    return pages.find((p) => fold(pathOf(p.url)).includes(f) || fold([p.title, ...p.h1].join(' ')).includes(f));
+  };
+
+  // 1. „Leistung + Ort“ knapp hinter den ersten drei: hier bringt Arbeit am schnellsten etwas.
+  const near = local.find((k) => k.position != null && k.position >= 4);
+  if (near) {
+    const path = pathOf(near.url);
+    measures.push({
+      category: 'sichtbarkeit',
+      title: `„${near.keyword}“ von Platz ${near.position} nach vorne holen`,
+      why: `${near.volume ? `${fmt(near.volume)} Menschen suchen das jeden Monat. ` : ''}Die ersten drei Plätze bekommen die meisten Klicks, auf Platz ${near.position} kommt davon wenig an.`,
+      how: `${path && path !== '/' ? `Die Seite ${path}` : path === '/' ? 'Die Startseite' : 'Die Seite zu dieser Leistung'} gezielt auf „${near.keyword}“ ausrichten und von anderen Seiten darauf verlinken.`,
+    });
+  }
+
+  // 2. Die Seite zielt auf Begriffe, die kaum jemand sucht.
+  if (local.length > 0 && local.every((k) => !k.volume)) {
+    measures.push({
+      category: 'sichtbarkeit',
+      title: 'Auf Begriffe setzen, die wirklich gesucht werden',
+      why: `${local.map((k) => `„${k.keyword}“`).join(' und ')} ${local.length === 1 ? 'wird' : 'werden'} bei Google kaum gesucht. Deine Seite ist aber auf diese Wörter ausgerichtet.`,
+      how: 'Herausfinden, welche Begriffe deine Kunden wirklich eintippen, und Titel und Überschriften darauf umstellen.',
+    });
+  }
+
+  // 3. Nicht in der Karte, obwohl Google dort Firmen zeigt (nur bei Begriffen, die gesucht werden).
+  const main = local[0];
+  const notInMap = !!main && main.hasMapPack && !main.mapPosition && (main.volume ?? 0) > 0;
+  if (notInMap) {
+    measures.push({
+      category: 'lokal',
+      title: `In die Google-Karte bei „${main.keyword}“ kommen`,
+      why: `Bei dieser Suche zeigt Google zuerst eine Karte mit drei Firmen, die bekommen die meisten Anrufe. Dort stehen gerade: ${mapPackText(main.mapPack)}.`,
+      how: 'Google-Profil vervollständigen (Kategorien, Leistungen, Fotos, Beiträge) und nach jedem Auftrag um eine Bewertung bitten.',
+    });
+  }
+
+  // 4. Gesucht, aber nicht unter den ersten 20 (höchstens zwei Begriffe).
+  const missing = local.filter((k) => k !== near && k.position == null && !k.mapPosition && (k.volume ?? 0) > 0).slice(0, 2);
+  for (const k of missing) {
+    const page = pageFor(serviceOf(k.keyword));
+    const pagePath = page ? pathOf(page.url) : '';
+    measures.push({
+      category: 'sichtbarkeit',
+      title: `Bei „${k.keyword}“ gefunden werden`,
+      why: `${fmt(k.volume ?? 0)} Suchen im Monat, und deine Website steht nicht unter den ersten 20 Ergebnissen.`,
+      how: page
+        ? `${pagePath && pagePath !== '/' ? `Die Seite ${pagePath}` : 'Die Startseite'} auf genau diesen Begriff ausrichten und mehr eigenen Text dazu schreiben.`
+        : 'Eine eigene Seite für diese Leistung vor Ort anlegen und von der Startseite verlinken.',
+    });
+  }
+
+  // 4. Ohne Live-Daten: bereinigte Begriffe auf Platz 4 bis 20 aus der Datenbank.
+  if (!near && rankings.available && rankings.potentials.length) {
     const names = rankings.potentials.slice(0, 3).map((k) => `„${k.keyword}“ (Platz ${k.position})`).join(', ');
     measures.push({
       category: 'sichtbarkeit',
       title: 'Begriffe auf Platz 4 bis 20 nach vorne holen',
-      why: 'Diese Begriffe werden schon gesucht und du stehst knapp hinter den Plätzen, die die meisten Klicks bekommen. Hier bringt wenig Arbeit am meisten.',
+      why: 'Diese Begriffe werden schon gesucht und du stehst knapp hinter den Plätzen, die die meisten Klicks bekommen.',
       how: `Die passenden Seiten gezielt auf diese Begriffe ausbauen: ${names}.`,
     });
   }
-  // kw-* sind Ergebnisse, keine Handlungen. Die Hebel dafuer liefern die
-  // uebrigen Punkte und die Massnahmen fuer Google-Profil und Ortsseiten.
+
+  // 5. Offene Prüfpunkte der Website. kw-* und Karte sind Ergebnisse, die oben schon Maßnahmen haben.
   const ranked = checks
-    .filter((c) => (c.status === 'fail' || c.status === 'warn') && c.fix && !c.id.startsWith('kw-'))
+    .filter((c) => (c.status === 'fail' || c.status === 'warn') && c.fix && !c.id.startsWith('kw-') && c.id !== 'map-pack')
     .map((c) => ({
       c,
       prio: (c.status === 'fail' ? 2 : 1) * c.weight * CATEGORY_PRIORITY[c.category],
@@ -861,10 +1067,20 @@ function buildMeasures(checks: CheckItem[], rankings: RankingData): Measure[] {
       how: c.fix!,
     });
   }
-  // Ist die Website technisch sauber, bleiben die Hebel ausserhalb der
-  // Seite. Die gelten fuer jeden lokalen Betrieb und fuellen auf fuenf auf.
+
+  // 6. Hebel außerhalb der Website, mit echten Zahlen, wo es sie gibt.
+  const leaders = (main?.mapPack ?? []).filter((e) => e.reviews != null);
   for (const m of EVERGREEN_MEASURES) {
     if (measures.length >= 5) break;
+    if (notInMap && (m.title.startsWith('Google-Unternehmensprofil') || m.title.startsWith('Regelmäßig neue Google-Bewertungen'))) continue;
+    if (main?.mapPosition && m.title.startsWith('Google-Unternehmensprofil')) continue;
+    if (m.title.startsWith('Regelmäßig neue Google-Bewertungen') && leaders.length) {
+      measures.push({
+        ...m,
+        why: `${m.why} Die Firmen in der Karte bei „${main!.keyword}“ haben ${leaders.map((e) => e.reviews!.toLocaleString('de-DE')).join(', ')} Bewertungen.`,
+      });
+      continue;
+    }
     measures.push(m);
   }
   return measures;
