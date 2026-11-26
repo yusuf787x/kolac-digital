@@ -1040,7 +1040,7 @@ function buildMeasures(checks: CheckItem[], rankings: RankingData, pages: Measur
   }
 
   // 4. Ohne Live-Daten: bereinigte Begriffe auf Platz 4 bis 20 aus der Datenbank.
-  if (!near && rankings.available && rankings.potentials.length) {
+  if (rankings.available && rankings.potentials.length && measures.length < 4) {
     const names = rankings.potentials.slice(0, 3).map((k) => `„${k.keyword}“ (Platz ${k.position})`).join(', ');
     measures.push({
       category: 'sichtbarkeit',

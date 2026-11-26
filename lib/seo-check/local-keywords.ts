@@ -338,6 +338,17 @@ export function refineRankings(
   const estTraffic = Math.max(0, Math.round(complete ? etv(relevant) : raw.estTraffic - etv(brandItems)));
   const strip = ({ etv: _e, ...k }: RankedKeyword): RankedKeyword => k;
 
+  // Live und Datenbank widersprechen sich manchmal (Google schwankt je nach Abruf).
+  // Fehlt der Begriff in der Live-Abfrage, steht aber in der Datenbank auf Seite 1 oder 2,
+  // gilt der Datenbank-Platz. So nennt der Bericht nie zwei verschiedene Plätze für denselben Begriff.
+  const byKeyword = new Map(relevant.map((k) => [k.keyword.toLowerCase(), k]));
+  const local = ctx.local.map((l) => {
+    if (l.position != null) return l;
+    const db = byKeyword.get(l.keyword.toLowerCase());
+    return db && db.position <= 20 ? { ...l, position: db.position, url: l.url ?? db.url } : l;
+  });
+  const localKeys = new Set(local.map((l) => l.keyword.toLowerCase()));
+
   const brand = brandItems
     .filter((k) => isOwnBrandKeyword(k.keyword, ctx.brand, ctx.servicePhraseWords))
     .sort((a, b) => a.position - b.position || (b.volume ?? 0) - (a.volume ?? 0))[0];
@@ -350,11 +361,11 @@ export function refineRankings(
     estTraffic,
     top: [...relevant].sort((a, b) => a.position - b.position || (b.volume ?? 0) - (a.volume ?? 0)).slice(0, 10).map(strip),
     potentials: relevant
-      .filter((k) => k.position >= 4 && k.position <= 20 && (k.volume ?? 0) > 0)
+      .filter((k) => k.position >= 4 && k.position <= 20 && (k.volume ?? 0) > 0 && !localKeys.has(k.keyword.toLowerCase()))
       .sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0))
       .slice(0, 10)
       .map(strip),
-    local: ctx.local,
+    local,
     brand: brand ? strip(brand) : null,
     filtered: items.length - relevant.length,
   };
