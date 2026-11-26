@@ -80,7 +80,13 @@ nicht ranken:
    nach dem bestehenden Muster (eigene Texte, echtes Projekt, nie nur Ortsname getauscht).
 7. **Nische deutschlandweit:** /seo/handwerker oder /webseiten/handwerk für „seo für handwerker“ und
    „website für handwerker“, mit den Branchenseiten (Werkstatt, Gebäudereinigung, Fahrschule ...)
-   verlinkt.
+   verlinkt. **Erledigt 26.11.2026:** /webseiten/handwerker (website/homepage/webseite für handwerker,
+   handwerker website erstellen lassen, zusammen rund 760 Suchen), /seo/handwerker (seo für
+   handwerker 260, steigend) und /seo/google-unternehmensprofil (google unternehmensprofil optimieren
+   90, google my business optimierung 90, google maps seo 110, google maps ranking verbessern 50).
+   Verworfen: website/webdesign für kleine unternehmen (vorne Wix, IONOS, Jimdo, HubSpot), lokale
+   suchmaschinenoptimierung (nur große Anleitungen, Begriff bleibt bei /seo), local seo agentur
+   (Schwierigkeit 56). Fragen aus der Search Console für Ratgeber: docs/ratgeber/ergaenzungen-2026-11.md.
 8. **Kleinkram auf allen Seiten:** zu lange Titel und Beschreibungen kürzen, ein Suchbegriff je Seite.
    Fragen aus der Search Console oben auf der Seite beantworten, die schon dafür angezeigt wird
    (z. B. „wie bekomme ich mehr anfragen über meine website“, Platz 10 bis 14).

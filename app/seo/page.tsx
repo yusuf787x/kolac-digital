@@ -338,6 +338,24 @@ function Leistungen() {
             ))}
           </div>
         </Reveal>
+
+        <p className="mt-8 text-sm text-gray-600">
+          Alle Punkte fürs Profil in der Karte findest du in unserer Checkliste{' '}
+          <Link
+            href="/seo/google-unternehmensprofil"
+            className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
+          >
+            Google-Unternehmensprofil optimieren
+          </Link>
+          . Für Handwerksbetriebe gibt es eine eigene Seite:{' '}
+          <Link
+            href="/seo/handwerker"
+            className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
+          >
+            SEO für Handwerker
+          </Link>
+          .
+        </p>
       </div>
     </section>
   );
@@ -467,6 +485,12 @@ function WeitereSeiten() {
         <span>Außerdem bei uns:</span>
         <Link href="/seo/paderborn" className="font-medium text-brand-blue hover:underline">
           SEO Paderborn
+        </Link>
+        <Link href="/seo/handwerker" className="font-medium text-brand-blue hover:underline">
+          SEO für Handwerker
+        </Link>
+        <Link href="/seo/google-unternehmensprofil" className="font-medium text-brand-blue hover:underline">
+          Google-Unternehmensprofil optimieren
         </Link>
         <Link href="/seo-check" className="font-medium text-brand-blue hover:underline">
           Kostenloser SEO-Check

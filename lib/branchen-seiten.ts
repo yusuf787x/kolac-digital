@@ -49,6 +49,13 @@ export interface BranchenSeite {
    * Branche gehört.
    */
   ratgeber?: { href: string; title: string };
+  /** Passende Leistungsseite außerhalb von /webseiten, z.B. SEO für die Branche. */
+  passendeSeite?: { href: string; title: string };
+  /**
+   * Hauptaktion oben auf der Seite. Standard ist das Erstgespräch.
+   * „seo-check“ macht den kostenlosen SEO-Check zur Hauptaktion.
+   */
+  hauptaktion?: 'seo-check';
   faqs: BranchenFaq[];
   /** Quelle im Kontaktformular, steht in der Anfrage-Mail. */
   formSource: string;
@@ -607,6 +614,110 @@ export const branchenSeiten: BranchenSeite[] = [
       },
     ],
     formSource: 'Branchenseite Autoaufbereitung',
+  },
+  {
+    // Sammelseite fürs Handwerk (26.11.2026). Besitzt „website für handwerker“
+    // (590 Suchen im Monat, Schwierigkeit 12), „homepage für handwerker“ und
+    // „handwerker website erstellen lassen“. Vorne standen Baukasten-Vorlagen,
+    // Instagram und kleine Agenturseiten. „seo für handwerker“ gehört /seo/handwerker.
+    slug: 'handwerker',
+    name: 'Handwerker',
+    zielgruppe: 'Handwerksbetriebe',
+    metaTitle: 'Website für Handwerker erstellen lassen | Kolac Digital',
+    metaDescription:
+      'Website für deinen Handwerksbetrieb: jede Leistung mit eigener Seite, Anfragen mit Fotos, dein Einsatzgebiet klar benannt und bei Google gut zu finden.',
+    eyebrow: 'Website für Handwerker',
+    h1: 'Website für Handwerker, die Anfragen annimmt, während du auf der Baustelle bist.',
+    intro:
+      'Eine gute Website für Handwerker beantwortet drei Fragen in wenigen Sekunden: Machst du, was ich brauche? Kommst du zu mir? Wie erreiche ich dich? Dafür braucht sie deine Leistungen einzeln erklärt, dein Einsatzgebiet, echte Fotos deiner Arbeit und ein Anfrageformular, über das Kunden gleich Fotos und Maße schicken. Genau so bauen wir sie, und wir sorgen dafür, dass Google dich in deiner Region findet. Für Handwerksbetriebe in ganz Deutschland.',
+    problemsTitle: 'Kennst du das aus deinem Betrieb?',
+    problems: [
+      'Du stehst auf der Leiter oder im Keller, das Handy klingelt. Bis du zurückrufst, hat der Kunde schon den Nächsten angerufen.',
+      'Viele Anfragen passen nicht: falsches Gewerk, zu weit weg oder eine Arbeit, die du gar nicht anbietest.',
+      'Für ein Angebot musst du erst rausfahren, weil am Telefon niemand Maße oder Fotos schickt.',
+      'Deine Homepage ist Jahre alt, am Handy kaum lesbar, und die neuesten Referenzen fehlen.',
+      'Bei Google stehen Handwerkerportale vor dir. Dort bist du einer von vielen und teilst jede Anfrage mit anderen Betrieben.',
+    ],
+    featuresTitle: 'Was deine Handwerker-Website kann.',
+    featuresIntro:
+      'Kunden suchen nach ihrem Problem und ihrem Ort, zum Beispiel „Bad sanieren“ oder „Dach undicht“ plus Stadt. Deshalb baut die Seite auf deinen Leistungen und deinem Einsatzgebiet auf, nicht auf einer Vorlage.',
+    features: [
+      {
+        icon: '🛠️',
+        title: 'Jede Leistung eine eigene Seite',
+        text: 'Badsanierung, Heizungstausch, Fliesen, Dachrinne oder Elektroprüfung: Was du anbietest, bekommt eine eigene Unterseite mit Ablauf und Fotos. So findet Google dich für genau die Arbeit, die gesucht wird.',
+      },
+      {
+        icon: '📷',
+        title: 'Anfrage mit Fotos und Maßen',
+        text: 'Kunden laden Fotos hoch und geben Maße, Adresse und Wunschtermin an. Du siehst vor dem Rückruf, worum es geht, und kannst manches Angebot ohne Besichtigung vorbereiten.',
+      },
+      {
+        icon: '🗺️',
+        title: 'Dein Einsatzgebiet klar benannt',
+        text: 'Die Seite nennt die Orte, in die du fährst. Google versteht, wo du arbeitest, und Anfragen von zu weit weg werden seltener. Wichtige Orte bekommen eigene Seiten mit echtem Inhalt, keine kopierten Ortsseiten.',
+      },
+      {
+        icon: '📍',
+        title: 'Google-Profil und Bewertungen',
+        text: 'Wir richten dein Google-Unternehmensprofil passend zur Website ein und bauen dir einen einfachen Weg zu echten Bewertungen. In der Karte entscheidet sich, wen Leute aus deiner Gegend zuerst anrufen.',
+      },
+      {
+        icon: '📱',
+        title: 'Am Handy schnell und klar',
+        text: 'Die meisten suchen unterwegs. Telefonnummer und WhatsApp-Knopf sind auf jeder Seite einen Daumen entfernt, und die Seite lädt auch über mobiles Netz zügig.',
+      },
+      {
+        icon: '🧰',
+        title: 'Wächst mit deinem Betrieb',
+        text: 'Später kommt dazu, was du brauchst: eine Terminbuchung für Besichtigungen, ein Konfigurator für grobe Preise oder eine Karriereseite für Gesellen und Azubis. Wie eine Software, die mitwächst.',
+      },
+    ],
+    portfolioSlug: 'carhifi-herford',
+    weitereReferenzen: ['af-gebaeudeservice', 'motorenfachmann'],
+    referenceNote:
+      'CarHiFi Herford baut Soundanlagen individuell in jedes Fahrzeug ein. Wie bei vielen Handwerksbetrieben kamen vorher Anfragen, die am Ende nicht passten. Heute sortiert ein Konfigurator auf der Website vor. Darunter zwei weitere Betriebe: eine Gebäudereinigung und ein Kfz-Meisterbetrieb.',
+    passendeSeite: { href: '/seo/handwerker', title: 'SEO für Handwerker: so findet Google deinen Betrieb' },
+    hauptaktion: 'seo-check',
+    faqs: [
+      {
+        question: 'Was gehört auf eine Website für Handwerker?',
+        answer:
+          'Deine Leistungen einzeln erklärt, die Orte, in denen du arbeitest, echte Fotos von Baustellen und fertigen Arbeiten, eine gut sichtbare Telefonnummer und ein Anfrageformular. Dazu ein paar Sätze über dich und dein Team sowie Impressum und Datenschutz. Meisterbrief, Innung oder Zertifikate gehören dazu, wenn du sie hast. Das schafft Vertrauen, bevor jemand anruft.',
+      },
+      {
+        question: 'Brauche ich eine Website, wenn meine Auftragsbücher voll sind?',
+        answer:
+          'Gerade dann kann sie dir Arbeit abnehmen. Sie beantwortet die Standardfragen, sortiert vor, welche Anfragen zu dir passen, und hilft bei der Suche nach Gesellen und Azubis, die sich deinen Betrieb vorher online ansehen. Und wird es einmal ruhiger, bist du bei Google schon da und musst nicht bei null anfangen.',
+      },
+      {
+        question: 'Reicht nicht ein Eintrag bei einem Handwerkerportal?',
+        answer:
+          'Ein Portal kann Anfragen bringen, aber du teilst sie dort mit anderen Betrieben und zahlst je nach Anbieter pro Kontakt oder im Abo. Deine eigene Website gehört dir, und die Anfragen kommen nur zu dir. Viele Betriebe nutzen beides: das Portal für den Moment, die eigene Seite für den Aufbau.',
+      },
+      {
+        question: 'Wie findet man meinen Handwerksbetrieb bei Google?',
+        answer:
+          'Über drei Dinge: ein gepflegtes Google-Unternehmensprofil mit echten Bewertungen, eine eigene Seite für jede wichtige Leistung und Texte, die dein Einsatzgebiet klar nennen. Einen garantierten ersten Platz verspricht niemand seriös. Wie wir das für Handwerksbetriebe umsetzen, steht auf unserer Seite SEO für Handwerker.',
+      },
+      {
+        question: 'Meine alte Homepage gibt es noch. Reicht es, sie zu überarbeiten?',
+        answer:
+          'Manchmal ja. Der kostenlose SEO-Check zeigt dir in rund 30 Sekunden, ob Technik, Ladezeit und Inhalte noch tragen. Ist die Seite sauber gebaut, richten wir sie auf deine Leistungen und Orte aus. Ist sie am Handy kaum nutzbar oder steckt in einem alten Baukasten fest, sagen wir dir ehrlich, dass sich ein Neubau mehr lohnt. Alte Adressen leiten wir dabei weiter, damit nichts verloren geht.',
+      },
+      {
+        question: 'Was kostet es, eine Website für Handwerker erstellen zu lassen?',
+        answer: kostenAntwort(
+          'Eine Seite mit Leistungen, Einsatzgebiet und Anfrageformular',
+          'eine Seite mit vielen Leistungs- und Ortsseiten oder einem Konfigurator',
+        ),
+      },
+      {
+        question: 'Mein Betrieb ist nicht in OWL. Geht das trotzdem?',
+        answer: deutschlandweitAntwort,
+      },
+    ],
+    formSource: 'Branchenseite Handwerker',
   },
 ];
 

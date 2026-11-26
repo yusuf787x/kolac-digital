@@ -293,6 +293,9 @@ function WeitereSeiten() {
         <Link href="/webdesign/paderborn" className="font-medium text-brand-blue hover:underline">
           Webdesign Paderborn
         </Link>
+        <Link href="/seo/google-unternehmensprofil" className="font-medium text-brand-blue hover:underline">
+          Google-Unternehmensprofil optimieren
+        </Link>
         <Link href="/seo-check" className="font-medium text-brand-blue hover:underline">
           Kostenloser SEO-Check
         </Link>

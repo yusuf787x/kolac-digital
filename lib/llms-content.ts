@@ -37,6 +37,8 @@ Statt 50-Mann-Team und Aufschlag-Mentalität gibt es bei Kolac Digital direkte K
 
 ### SEO für lokale Betriebe (https://www.kolac-digital.de/seo)
 - Lokale Suchmaschinenoptimierung für Betriebe in Bielefeld und Ostwestfalen-Lippe, eigene Seite für Paderborn: https://www.kolac-digital.de/seo/paderborn
+- SEO für Handwerksbetriebe in ganz Deutschland: https://www.kolac-digital.de/seo/handwerker
+- Google-Unternehmensprofil (früher Google My Business) optimieren, mit Checkliste: https://www.kolac-digital.de/seo/google-unternehmensprofil
 - Google-Unternehmensprofil komplett einrichten und pflegen (Kategorien, Leistungen, Fotos, Beiträge)
 - Seiten oder Abschnitte für die wichtigsten Suchbegriffe, mit Leistung und Ort
 - Einträge in passenden Verzeichnissen mit einheitlichen Firmendaten, Links von anderen Seiten

@@ -135,28 +135,54 @@ function Hero({
               {seite.intro}
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
-              <a
-                href={site.meetingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary px-5 py-3 text-base"
-              >
-                📅 Termin buchen
-              </a>
-              <a href="#referenz" className="btn-secondary px-5 py-3 text-base">
-                Beispiel ansehen
-              </a>
-            </div>
-            <p className="mt-3 text-sm text-gray-600">
-              Oder{' '}
-              <a
-                href="#kontakt"
-                className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
-              >
-                Formular ausfüllen und Rückruf anfordern
-              </a>
-            </p>
+            {seite.hauptaktion === 'seo-check' ? (
+              <>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link href="/seo-check" className="btn-primary px-5 py-3 text-base">
+                    Kostenlosen SEO-Check starten
+                  </Link>
+                  <a href="#referenz" className="btn-secondary px-5 py-3 text-base">
+                    Beispiel ansehen
+                  </a>
+                </div>
+                <p className="mt-3 text-sm text-gray-600">
+                  Noch keine Website?{' '}
+                  <a
+                    href={site.meetingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
+                  >
+                    Direkt ein Erstgespräch buchen
+                  </a>
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <a
+                    href={site.meetingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary px-5 py-3 text-base"
+                  >
+                    📅 Termin buchen
+                  </a>
+                  <a href="#referenz" className="btn-secondary px-5 py-3 text-base">
+                    Beispiel ansehen
+                  </a>
+                </div>
+                <p className="mt-3 text-sm text-gray-600">
+                  Oder{' '}
+                  <a
+                    href="#kontakt"
+                    className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
+                  >
+                    Formular ausfüllen und Rückruf anfordern
+                  </a>
+                </p>
+              </>
+            )}
 
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-gray-600">
               <span className="flex items-center gap-1.5">
@@ -401,6 +427,17 @@ function BranchenFaq({ seite }: { seite: BranchenSeite }) {
             className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
           >
             {seite.ratgeber.title}
+          </Link>
+        </p>
+      )}
+      {seite.passendeSeite && (
+        <p className="mt-4 text-sm text-gray-600">
+          Passend dazu:{' '}
+          <Link
+            href={seite.passendeSeite.href}
+            className="font-medium text-brand-blue underline underline-offset-2 hover:opacity-80"
+          >
+            {seite.passendeSeite.title}
           </Link>
         </p>
       )}

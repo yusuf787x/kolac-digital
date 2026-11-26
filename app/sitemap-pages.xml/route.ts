@@ -25,6 +25,9 @@ const CASE_STUDY_LASTMOD: Record<string, string> = {
 };
 const CASE_STUDY_LASTMOD_DEFAULT = '2026-08-14';
 
+const BRANCHEN_LASTMOD: Record<string, string> = {
+  handwerker: '2026-11-26',
+};
 const BRANCHEN_LASTMOD_DEFAULT = '2026-11-03';
 const STAEDTE_LASTMOD: Record<string, string> = {
   guetersloh: '2026-11-26',
@@ -50,7 +53,7 @@ export function GET() {
     ...branchenSeiten.map(
       (b): SitemapEntry => ({
         path: `/webseiten/${b.slug}`,
-        lastmod: BRANCHEN_LASTMOD_DEFAULT,
+        lastmod: BRANCHEN_LASTMOD[b.slug] ?? BRANCHEN_LASTMOD_DEFAULT,
         changefreq: 'monthly',
         priority: 0.8,
         images: [findPortfolioProject(b.portfolioSlug)?.overviewImage].filter(
@@ -82,6 +85,20 @@ export function GET() {
       changefreq: 'monthly',
       priority: 0.8,
       images: ['/images/portfolio/paderpuls.jpg'],
+    },
+    {
+      path: '/seo/handwerker',
+      lastmod: '2026-11-26',
+      changefreq: 'monthly',
+      priority: 0.8,
+      images: ['/images/portfolio/motorenfachmann.webp'],
+    },
+    {
+      path: '/seo/google-unternehmensprofil',
+      lastmod: '2026-11-26',
+      changefreq: 'monthly',
+      priority: 0.8,
+      images: ['/images/portfolio/pader-automobilzentrum.webp'],
     },
     {
       path: '/software',

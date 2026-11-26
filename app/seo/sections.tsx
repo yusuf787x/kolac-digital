@@ -5,7 +5,7 @@ import ProofChart from '../seo-check/ProofChart';
 import Reveal from '@/components/marketing/Reveal';
 
 /**
- * Abschnitte, die /seo und /seo/paderborn gemeinsam nutzen. Der Beleg
+ * Abschnitte, die /seo und seine Unterseiten gemeinsam nutzen. Der Beleg
  * stammt aus lib/seo-check/proof-data.ts (anonyme Praxis-Referenz, echte
  * Search-Console-Werte) und wird dort gepflegt.
  */

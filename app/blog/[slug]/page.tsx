@@ -17,6 +17,23 @@ import type { BlogPost } from '@/lib/types';
 import { branchenSeiten } from '@/lib/branchen-seiten';
 import { findPortfolioProject } from '@/lib/portfolio';
 
+/**
+ * Ratgeber, die auf eine SEO-Leistungsseite verweisen (gleicher Kasten wie bei
+ * den Branchenseiten). Branchenseiten mit passendem `ratgeber` haben Vorrang.
+ */
+const SEO_SEITEN_VERWEISE: Record<string, { href: string; label: string; text: string }> = {
+  'lokales-seo-handwerker-owl': {
+    href: '/seo/handwerker',
+    label: 'SEO für Handwerker ansehen',
+    text: 'Keine Zeit, das selbst umzusetzen? Auf unserer Seite SEO für Handwerker steht, was wir für Handwerksbetriebe übernehmen und wie das bei einem Kfz-Meisterbetrieb aus Lage aussieht.',
+  },
+  'google-bewertungen-bekommen': {
+    href: '/seo/google-unternehmensprofil',
+    label: 'Checkliste ansehen',
+    text: 'Bewertungen sind ein Teil deines Google-Unternehmensprofils. Was sonst noch dazugehört, steht in unserer Checkliste zum Google-Unternehmensprofil.',
+  },
+};
+
 export const revalidate = 600;
 /** Unbekannte Slugs zur Laufzeit nachrendern statt 404 beim Build. */
 export const dynamicParams = true;
@@ -93,6 +110,7 @@ export default async function BlogArticlePage({ params }: Props) {
     (b) => b.ratgeber?.href === `/blog/${post.slug}`,
   );
   const brancheReferenz = branche && findPortfolioProject(branche.portfolioSlug);
+  const seoVerweis = branche ? undefined : SEO_SEITEN_VERWEISE[post.slug];
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
@@ -270,6 +288,14 @@ export default async function BlogArticlePage({ params }: Props) {
               </Link>
             </div>
           )}
+          {seoVerweis && (
+            <div className="blog-cta-inline">
+              <p>{seoVerweis.text}</p>
+              <Link href={seoVerweis.href} className="btn btn-primary">
+                {seoVerweis.label}
+              </Link>
+            </div>
+          )}
 
           {/* Markiert das Artikelende fuer die Zaehlung "gelesen". */}
           <div id="artikel-ende" aria-hidden="true" />
@@ -295,6 +321,8 @@ export default async function BlogArticlePage({ params }: Props) {
               secondaryHref={`/webseiten/${branche.slug}`}
               secondaryLabel={`${branche.eyebrow} ansehen`}
             />
+          ) : seoVerweis ? (
+            <BlogCta secondaryHref={seoVerweis.href} secondaryLabel={seoVerweis.label} />
           ) : (
             <BlogCta />
           )}

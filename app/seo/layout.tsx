@@ -5,7 +5,7 @@ import SiteHeader from '@/components/marketing/SiteHeader';
 import SiteFooter from '@/components/marketing/SiteFooter';
 
 /**
- * Layout für /seo und /seo/paderborn. Gleiche Bausteine wie /software
+ * Layout für /seo und alle Unterseiten. Gleiche Bausteine wie /software
  * und /webseiten (SiteHeader + SiteFooter, Styles aus public/css/style.css).
  * Der Knopf oben rechts führt zum kostenlosen SEO-Check, das ist auf
  * diesen Seiten die Hauptaktion.
