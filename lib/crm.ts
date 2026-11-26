@@ -98,13 +98,19 @@ export const CALL_STATUS_LABELS: Record<CallStatus, string> = {
   'kein-interesse': 'Kein Interesse',
 };
 
+/** Hat die Akte einen SEO-Check (als Quelle oder später dazugekommen)? */
+export function hasSeoCheck(c: Customer): boolean {
+  return (c.source ?? '').startsWith('SEO-Check') || !!c.seoCheckAt;
+}
+
 /**
- * Gehört die Akte heute in die Anruf-Liste? SEO-Leads, die noch Lead sind und
- * noch nicht angerufen wurden, oder deren neuer Versuch heute fällig ist.
+ * Gehört die Akte heute in die Anruf-Liste? Jeder SEO-Check ist ein Lead (auch wenn
+ * jemand die Seite eines anderen geprüft hat), außer bei bestehenden Kunden: noch nicht
+ * angerufen, oder der neue Versuch ist heute fällig.
  */
 export function inCallQueue(c: Customer, now = Date.now()): boolean {
-  if (!(c.source ?? '').startsWith('SEO-Check')) return false;
-  if (lifecycleOf(c) !== 'lead') return false;
+  if (!hasSeoCheck(c)) return false;
+  if (lifecycleOf(c) === 'kunde') return false;
   const st = c.callStatus ?? 'neu';
   if (st === 'neu') return true;
   if (st === 'nicht-erreicht' || st === 'spaeter') {
@@ -118,7 +124,8 @@ export function inCallQueue(c: Customer, now = Date.now()): boolean {
 /** Reihenfolge der Anruf-Liste: mit Rückrufwunsch bzw. Nummer zuerst, dann die neuesten (frische Leads zuerst). */
 export function callQueueSort(a: Customer, b: Customer): number {
   const prio = (c: Customer) => (c.wantsCall ? 2 : 0) + (c.phone ? 1 : 0);
-  return prio(b) - prio(a) || tsToMillis(b.createdAt) - tsToMillis(a.createdAt);
+  const frisch = (c: Customer) => Math.max(tsToMillis(c.seoCheckAt), tsToMillis(c.createdAt));
+  return prio(b) - prio(a) || frisch(b) - frisch(a);
 }
 
 // ===================================================================

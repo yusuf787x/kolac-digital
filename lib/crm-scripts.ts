@@ -209,7 +209,7 @@ export function baueLeitfaden(opts: {
     {
       titel: 'Einstieg',
       zeilen: einstieg,
-      hinweis: 'Siezt er dich, sofort mitsiezen. Keine Zeit? „Wann passt es besser, heute Nachmittag oder morgen Vormittag?“ und unten „Später anrufen“ wählen.',
+      hinweis: 'Siezt er dich, sofort mitsiezen. War es nicht die Person selbst (Kollege, Familie, jemand von außen)? Kein Problem, die Antwort steht unten bei den Einwänden. Keine Zeit? „Wann passt es besser, heute Nachmittag oder morgen Vormittag?“ und unten „Später anrufen“ wählen.',
     },
     {
       titel: 'Fragen stellen und zuhören',
@@ -240,6 +240,10 @@ export function baueLeitfaden(opts: {
   ];
 
   const einwaende: Leitfaden['einwaende'] = [
+    {
+      frage: 'Ich hab gar keinen Check gemacht',
+      antwort: `Kein Problem, das kommt vor. Vielleicht war es ein Kollege, oder jemand hat sich eure Seite von außen angeschaut. Das Ergebnis betrifft trotzdem eure Website: ${befund} Wer kümmert sich bei euch um die Website? Mit der Person würde ich mir das gern 20 Minuten anschauen.`,
+    },
     { frage: 'Keine Zeit', antwort: 'Verstehe ich, genau deshalb nur 20 Minuten. Lieber Anfang oder Ende der Woche?' },
     { frage: 'Was kostet das?', antwort: 'Kommt darauf an, was du brauchst. Das sage ich dir im Termin ganz konkret, bevor du irgendwas entscheidest. Im Termin selbst kostet nichts.' },
     { frage: 'Ich wollte nur mal schauen', antwort: 'Klar, dafür ist der Check da. Hat dich das Ergebnis überrascht, oder war es so, wie du gedacht hast?' },
@@ -249,7 +253,7 @@ export function baueLeitfaden(opts: {
     { frage: 'Kein Budget gerade', antwort: 'Verstehe. Dann lass uns trotzdem kurz draufschauen, damit du weißt, was du zuerst selbst machen kannst. Wenn es besser läuft, reden wir weiter.' },
   ];
 
-  const mailbox = `Hi${vorname ? ` ${vorname}` : ''}, hier ist Yusuf von Kolac Digital. ${anrede === 'du' ? 'Du hast' : 'Sie haben'} ${checkWann} den SEO-Check für ${site_} gemacht, mir ist dabei ${main ? `bei „${main.keyword}“ ` : ''}etwas aufgefallen. Ich versuch es morgen nochmal, oder ${anrede === 'du' ? 'ruf mich zurück' : 'rufen Sie mich zurück'} unter ${site.phone}.`;
+  const mailbox = `Hi${vorname ? ` ${vorname}` : ''}, hier ist Yusuf von Kolac Digital. ${anrede === 'du' ? `Du hast ${checkWann} den SEO-Check für ${site_} gemacht` : `Für Ihre Website ${site_} wurde ${checkWann} bei uns der SEO-Check gemacht`}, mir ist dabei ${main ? `bei „${main.keyword}“ ` : ''}etwas aufgefallen. Ich versuch es morgen nochmal, oder ${anrede === 'du' ? 'ruf mich zurück' : 'rufen Sie mich zurück'} unter ${site.phone}.`;
 
   const whatsapp = customer.phone && customer.wantsCall
     ? `Hi${vorname ? ` ${vorname}` : ''}, hier ist Yusuf von Kolac Digital. Ich hab versucht, dich wegen deines SEO-Checks zu ${site_} zu erreichen.${main ? ` Mir ist bei „${main.keyword}“ etwas aufgefallen.` : ''} Wann passt dir ein kurzer Anruf? Oder such dir direkt einen Termin aus: ${FUNNEL_MEETING_URL}`

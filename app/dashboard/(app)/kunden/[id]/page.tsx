@@ -37,6 +37,7 @@ import {
   LIFECYCLE_BADGES,
   LIFECYCLE_HINTS,
   LIFECYCLE_LABELS,
+  hasSeoCheck,
   LIFECYCLE_ORDER,
   lifecycleOf,
   listActivitiesByCustomer,
@@ -324,7 +325,7 @@ function KundenAkte() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          {((customer.source ?? '').startsWith('SEO-Check') || customer.callStatus || lc === 'lead' || lc === 'interessent') && (
+          {(hasSeoCheck(customer) || customer.callStatus || lc === 'lead' || lc === 'interessent') && (
             <CallScript
               key={customer.id}
               customer={customer}

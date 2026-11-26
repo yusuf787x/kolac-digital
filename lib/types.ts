@@ -42,6 +42,8 @@ export interface Customer {
   /** Stand der Anrufe bei SEO-Leads. Fehlt = neu, noch nicht angerufen. */
   callStatus?: CallStatus;
   callAttempts?: number;
+  /** Letzter SEO-Check zu dieser Akte (auch wenn die Akte aus einer anderen Quelle stammt). */
+  seoCheckAt?: Timestamp | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

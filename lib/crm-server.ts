@@ -77,6 +77,8 @@ async function findAkteByDomainScan(input: Pick<AkteInput, 'email' | 'website'>)
   return hit?.id ?? null;
 }
 
+const isSeoCheck = (input: Pick<AkteInput, 'source'>) => input.source.startsWith('SEO-Check');
+
 export async function createAkte(input: AkteInput): Promise<string> {
   const email = (input.email ?? '').trim().toLowerCase();
   const domain = normalizeDomain(input.website) || companyDomainFromEmail(email);
@@ -101,6 +103,7 @@ export async function createAkte(input: AkteInput): Promise<string> {
       ...(input.importedFrom ? { importedFrom: input.importedFrom } : {}),
       ...(input.branche ? { branche: input.branche } : {}),
       ...(input.wantsCall ? { wantsCall: true } : {}),
+      ...(isSeoCheck(input) ? { seoCheckAt: FieldValue.serverTimestamp() } : {}),
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -161,6 +164,12 @@ async function enrichAkte(id: string, input: AkteInput): Promise<void> {
   if (company && (!c.company || c.company === c.website)) patch.company = company;
   if (!c.branche && input.branche) patch.branche = input.branche;
   if (input.wantsCall && !c.wantsCall) patch.wantsCall = true;
+  // Jeder SEO-Check ist ein Lead, auch wenn die Akte schon aus Outreach o. Ä. stammt: zurück in die Anruf-Liste.
+  if (isSeoCheck(input) && (c.lifecycle ?? 'kunde') !== 'kunde') {
+    patch.seoCheckAt = FieldValue.serverTimestamp();
+    if (c.callStatus === 'kein-interesse' || c.lifecycle === 'verloren') Object.assign(patch, { callStatus: 'neu', lifecycle: 'lead' });
+    else if (c.callStatus === 'nicht-erreicht' || c.callStatus === 'spaeter') patch.nextStepAt = null;
+  }
   if (Object.keys(patch).length === 0) return;
   await ref.update({ ...patch, updatedAt: FieldValue.serverTimestamp() });
 }
@@ -447,9 +456,14 @@ export async function runImport(keys: string[], opts: { note?: boolean; candidat
 export async function syncAutoAkten(force = false): Promise<{ created: number; skipped: boolean }> {
   const db = adminDb();
   const stateRef = db.collection('settings').doc('crm_sync');
-  const last = Number((await stateRef.get()).data()?.lastRunAt ?? 0);
+  const state = (await stateRef.get()).data() ?? {};
+  const last = Number(state.lastRunAt ?? 0);
   if (!force && Date.now() - last < 10 * 60 * 1000) return { created: 0, skipped: true };
   await stateRef.set({ lastRunAt: Date.now() }, { merge: true });
+  if (!state.seoBackfill) {
+    await backfillSeoCheckAt();
+    await stateRef.set({ seoBackfill: Date.now() }, { merge: true });
+  }
   const { candidates } = await importCandidates();
   const auto = candidates.filter((c) => c.kinds.includes('seo') || c.replied);
   if (auto.length === 0) return { created: 0, skipped: false };
@@ -458,6 +472,52 @@ export async function syncAutoAkten(force = false): Promise<{ created: number; s
     { note: false, candidates: auto },
   );
   return { created, skipped: false };
+}
+
+/**
+ * Einmalig: ältere SEO-Checks, deren Firma schon eine Akte hatte (z. B. aus Outreach),
+ * an der Akte vermerken. So landen auch sie in der Anruf-Liste. Kunden bleiben draußen.
+ */
+async function backfillSeoCheckAt(): Promise<number> {
+  const db = adminDb();
+  const [custSnap, contactSnap, checkSnap] = await Promise.all([
+    db.collection('customers').get(),
+    db.collection('contacts').select('email', 'customerId').get(),
+    db.collection('seoChecks').orderBy('createdAt', 'desc').limit(2000).get(),
+  ]);
+  const byKey = new Map<string, string>();
+  for (const d of custSnap.docs) {
+    const c = d.data();
+    const e = String(c.email ?? '').toLowerCase();
+    if (e) byKey.set(`e:${e}`, d.id);
+    const dom = normalizeDomain(c.website) || companyDomainFromEmail(e);
+    if (dom && !byKey.has(`d:${dom}`)) byKey.set(`d:${dom}`, d.id);
+  }
+  for (const d of contactSnap.docs) {
+    const e = String(d.data().email ?? '').toLowerCase();
+    const cid = d.data().customerId as string | undefined;
+    if (e && cid && !byKey.has(`e:${e}`)) byKey.set(`e:${e}`, cid);
+  }
+  // Neuester Check je Akte (Checks kommen absteigend sortiert).
+  const latest = new Map<string, Timestamp>();
+  for (const d of checkSnap.docs) {
+    const x = d.data();
+    if (!x.result || x.test || x.owner || !(x.createdAt instanceof Timestamp)) continue;
+    const domain = normalizeDomain(x.domain ?? x.result?.domain);
+    if (!domain || domain === OWN_DOMAIN) continue;
+    const email = String(x.lead?.email ?? '').toLowerCase();
+    const id = (email && byKey.get(`e:${email}`)) || byKey.get(`d:${domain}`);
+    if (id && !latest.has(id)) latest.set(id, x.createdAt);
+  }
+  let n = 0;
+  for (const d of custSnap.docs) {
+    const at = latest.get(d.id);
+    const c = d.data();
+    if (!at || c.seoCheckAt || (c.lifecycle ?? 'kunde') === 'kunde') continue;
+    await d.ref.update({ seoCheckAt: at });
+    n++;
+  }
+  return n;
 }
 
 const OUTREACH_LIFECYCLE: Record<string, CustomerLifecycle> = {
