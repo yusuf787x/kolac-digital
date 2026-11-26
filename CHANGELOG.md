@@ -6,6 +6,20 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ---
 
+## 26.11.2026
+
+### SEO-Check
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Der Check prüft die wichtigsten Suchbegriffe aus Leistung und Ort live bei Google (z. B. „Hausmeisterservice Augsburg“): Suchanfragen pro Monat, Platz in den Ergebnissen und ob die Firma in der Karte mit den drei Firmen steht | Besucher sehen ihre echte Lage bei den Suchen, über die neue Kunden kommen, statt nur Schätzwerten | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Bei der Karte nennt der Bericht die drei Firmen, die dort stehen, mit ihren Bewertungen | Der Abstand zur Konkurrenz ist auf einen Blick klar und nachprüfbar | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Suchen nach dem eigenen Firmennamen und Begriffe, die nichts mit der Website zu tun haben, zählen nicht mehr als Sichtbarkeit; der Platz bei Suche nach dem eigenen Namen steht als eigener Prüfpunkt | Die Bewertung zeigt, wie gut neue Kunden die Firma finden, nicht nur Stammkunden | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Gesamtnote fairer: eine sehr gute Website wird nicht mehr künstlich auf die Sichtbarkeit gedeckelt, die Sichtbarkeit zählt weiter am stärksten | Note und Bericht passen zur tatsächlichen Lage | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+| ✅ | Die fünf Maßnahmen bauen auf den live gemessenen Zahlen auf (Begriff, Suchanfragen, Platz, passende Unterseite) statt auf allgemeinen Tipps | Konkrete Schritte, die sich nachprüfen lassen | [SEO-Check](https://www.kolac-digital.de/seo-check) |
+
+---
+
 ## 24.11.2026
 
 ### SEO-Check
