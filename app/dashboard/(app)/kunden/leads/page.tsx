@@ -1,13 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Timestamp } from 'firebase/firestore';
 import { createActivity, listCustomers, updateCustomer } from '@/lib/firestore';
 import { isOwnActivity, LEAD_STAGE_LABEL, leadStageOf, leadStagePatch, listActivitiesByCustomer } from '@/lib/crm';
 import type { Customer, LeadStage } from '@/lib/types';
 import { tsToMillis } from '@/lib/utils';
+import { authedFetch } from '@/lib/api-client';
 import LeadBoard, { leadAt, type LeadItem } from '@/components/crm/LeadBoard';
+import KundenAkte from '@/components/crm/KundenAkte';
 
 /**
  * Akten ohne gesetzte Spalte, die als „Neu“ gelten, aber schon eine eigene Notiz,
@@ -32,9 +34,12 @@ export default function SeoLeadsPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
+      // Neue SEO-Checks als Akten anlegen (serverseitig höchstens alle 10 Minuten).
+      await authedFetch('/api/crm/sync', { method: 'POST' }).catch(() => null);
       const list = await listCustomers();
       const moves = await bereinigeNeue(list);
       setCustomers(moves.size ? list.map((c) => (moves.has(c.id) ? { ...c, leadStage: moves.get(c.id) } : c)) : list);
@@ -117,8 +122,45 @@ export default function SeoLeadsPage() {
           ))}
         </div>
       ) : (
-        <LeadBoard items={items} onMove={move} />
+        <LeadBoard items={items} onMove={move} onOpen={setOpenId} />
       )}
+
+      {openId && (
+        <AktePopup
+          id={openId}
+          onClose={() => {
+            setOpenId(null);
+            load();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Akte als Fenster über dem Board: Klick daneben, Escape oder „Schließen“ führt zurück. */
+function AktePopup({ id, onClose }: { id: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Kundenakte">
+      <button type="button" aria-label="Schließen" className="absolute inset-0 bg-gray-900/40" onClick={onClose} />
+      <div className="relative h-full w-full max-w-6xl overflow-y-auto bg-[var(--k-canvas,#f1f3f6)] p-4 shadow-2xl sm:p-6">
+        <Suspense fallback={<div className="card text-sm text-gray-500">Lädt…</div>}>
+          <KundenAkte key={id} id={id} embedded onClose={onClose} />
+        </Suspense>
+      </div>
     </div>
   );
 }

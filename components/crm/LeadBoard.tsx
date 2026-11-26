@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   DndContext,
   DragOverlay,
@@ -32,6 +31,8 @@ export interface LeadItem {
 interface Props {
   items: LeadItem[];
   onMove: (customer: Customer, stage: LeadStage) => void;
+  /** Akte im Pop-up öffnen. */
+  onOpen: (customerId: string) => void;
 }
 
 function wannText(ms: number): string {
@@ -43,7 +44,7 @@ function wannText(ms: number): string {
   return new Date(ms).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
 
-export default function LeadBoard({ items, onMove }: Props) {
+export default function LeadBoard({ items, onMove, onOpen }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mobilStage, setMobilStage] = useState<LeadStage>('neu');
   const sensors = useSensors(
@@ -83,7 +84,7 @@ export default function LeadBoard({ items, onMove }: Props) {
         </div>
         <div className="space-y-2">
           {byStage(mobilStage).map((i) => (
-            <LeadCard key={i.customer.id} item={i} onMove={onMove} draggable={false} />
+            <LeadCard key={i.customer.id} item={i} onMove={onMove} onOpen={onOpen} draggable={false} />
           ))}
           {byStage(mobilStage).length === 0 && <Empty stage={mobilStage} />}
         </div>
@@ -97,14 +98,14 @@ export default function LeadBoard({ items, onMove }: Props) {
               return (
                 <Column key={s.key} id={s.key} label={s.label} hint={s.hint} color={s.color} count={list.length}>
                   {list.map((i) => (
-                    <LeadCard key={i.customer.id} item={i} onMove={onMove} draggable />
+                    <LeadCard key={i.customer.id} item={i} onMove={onMove} onOpen={onOpen} draggable />
                   ))}
                   {list.length === 0 && <Empty stage={s.key} />}
                 </Column>
               );
             })}
           </div>
-          <DragOverlay>{active ? <LeadCard item={active} onMove={onMove} draggable={false} overlay /> : null}</DragOverlay>
+          <DragOverlay>{active ? <LeadCard item={active} onMove={onMove} onOpen={onOpen} draggable={false} overlay /> : null}</DragOverlay>
         </DndContext>
       </div>
     </>
@@ -160,15 +161,16 @@ function Column({
 function LeadCard({
   item,
   onMove,
+  onOpen,
   draggable,
   overlay,
 }: {
   item: LeadItem;
   onMove: (customer: Customer, stage: LeadStage) => void;
+  onOpen: (customerId: string) => void;
   draggable: boolean;
   overlay?: boolean;
 }) {
-  const router = useRouter();
   const { customer: c } = item;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: c.id,
@@ -186,7 +188,7 @@ function LeadCard({
       {...(draggable ? listeners : {})}
       {...(draggable ? attributes : {})}
       onClick={() => {
-        if (!overlay) router.push(`/dashboard/kunden/${c.id}`);
+        if (!overlay) onOpen(c.id);
       }}
       className={`card cursor-pointer p-3 transition-shadow hover:shadow-md ${isDragging ? 'opacity-40' : ''} ${
         overlay ? 'rotate-1 shadow-lg' : ''
@@ -239,5 +241,6 @@ function LeadCard({
 }
 
 export function leadAt(c: Customer): number {
-  return Math.max(tsToMillis(c.seoCheckAt), tsToMillis(c.createdAt));
+  // Datum des SEO-Checks zählt; Akten aus der Übernahme sind jünger als ihr Check.
+  return tsToMillis(c.seoCheckAt) || tsToMillis(c.createdAt);
 }

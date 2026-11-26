@@ -166,7 +166,7 @@ export function isOwnActivity(a: Activity): boolean {
 
 /** Reihenfolge der Anruf-Liste: wer zuletzt angefragt hat (neuester SEO-Check), steht oben. */
 export function callQueueSort(a: Customer, b: Customer): number {
-  const frisch = (c: Customer) => Math.max(tsToMillis(c.seoCheckAt), tsToMillis(c.createdAt));
+  const frisch = (c: Customer) => tsToMillis(c.seoCheckAt) || tsToMillis(c.createdAt);
   return frisch(b) - frisch(a);
 }
 

@@ -29,6 +29,8 @@ export interface AkteInput {
   /** Branche aus dem SEO-Check (für den Anruf-Leitfaden). */
   branche?: string;
   wantsCall?: boolean;
+  /** Echtes Datum des SEO-Checks (Übernahme alter Checks); sonst jetzt. */
+  seoCheckAt?: Date;
 }
 
 function splitName(name: string | undefined): { firstName: string; lastName: string } {
@@ -103,7 +105,7 @@ export async function createAkte(input: AkteInput): Promise<string> {
       ...(input.importedFrom ? { importedFrom: input.importedFrom } : {}),
       ...(input.branche ? { branche: input.branche } : {}),
       ...(input.wantsCall ? { wantsCall: true } : {}),
-      ...(isSeoCheck(input) ? { seoCheckAt: FieldValue.serverTimestamp() } : {}),
+      ...(isSeoCheck(input) ? { seoCheckAt: input.seoCheckAt ? Timestamp.fromDate(input.seoCheckAt) : FieldValue.serverTimestamp() } : {}),
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -443,6 +445,7 @@ export async function runImport(keys: string[], opts: { note?: boolean; candidat
       outreachLeadId: c.outreachLeadId,
       importedFrom: stamp,
       branche: c.branche,
+      ...(c.kinds.includes('seo') && c.lastAt ? { seoCheckAt: new Date(c.lastAt) } : {}),
     });
     if (opts.note !== false) await addAkteActivity(id, 'notiz', `Aus der Übernahme: ${c.facts.join(' · ')}`);
     created++;
@@ -461,9 +464,9 @@ export async function syncAutoAkten(force = false): Promise<{ created: number; s
   const last = Number(state.lastRunAt ?? 0);
   if (!force && Date.now() - last < 10 * 60 * 1000) return { created: 0, skipped: true };
   await stateRef.set({ lastRunAt: Date.now() }, { merge: true });
-  if (!state.seoBackfill) {
+  if (!state.seoBackfill2) {
     await backfillSeoCheckAt();
-    await stateRef.set({ seoBackfill: Date.now() }, { merge: true });
+    await stateRef.set({ seoBackfill2: Date.now() }, { merge: true });
   }
   const { candidates } = await importCandidates();
   const auto = candidates.filter((c) => c.kinds.includes('seo') || c.replied);
@@ -514,7 +517,10 @@ async function backfillSeoCheckAt(): Promise<number> {
   for (const d of custSnap.docs) {
     const at = latest.get(d.id);
     const c = d.data();
-    if (!at || c.seoCheckAt || (c.lifecycle ?? 'kunde') === 'kunde') continue;
+    if (!at || (c.lifecycle ?? 'kunde') === 'kunde') continue;
+    // Fehlt das Datum, oder steht dort das Anlagedatum der Übernahme (später als der echte Check): korrigieren.
+    const cur = c.seoCheckAt instanceof Timestamp ? c.seoCheckAt.toMillis() : 0;
+    if (cur && cur <= at.toMillis() + 60 * 60 * 1000) continue;
     await d.ref.update({ seoCheckAt: at });
     n++;
   }
