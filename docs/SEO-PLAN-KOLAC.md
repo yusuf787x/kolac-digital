@@ -133,6 +133,25 @@ nicht ranken:
 - 26.11.2026 Google-Profil geprüft: Beschreibung alt (Du-Form, Social Media, Video, kein SEO), nur Kategorie
   „Webdesigner“, keine Leistungen, 2 Fotos, Öffnungszeiten Mo bis Sa 8 bis 18 Uhr (Stammdaten sagen Mo bis Fr
   9 bis 18 Uhr). Liste der Änderungen in der Kopierseite, Abschnitt 4.
+- 26.11.2026 Google-Profil per Browser geändert: Kategorien + „Online-Marketing-Unternehmen“ und
+  „Softwareentwickler/-hersteller“ (eine eigene SEO-Kategorie gibt es auf Deutsch nicht), neue Beschreibung,
+  Öffnungszeiten Mo bis Fr 9 bis 18 Uhr (überall gleich), Einzugsgebiet + Gütersloh, Lemgo, Detmold, Herford,
+  Paderborn, Bünde, Minden, 5 Leistungen mit Text. Offen: Fotos, Beiträge, Eröffnungsdatum (Monat fehlt).
+- 26.11.2026 Verzeichnisse (Konto immer yusuf@kolac-digital.de, meist „Mit Google anmelden“):
+  - Netz & Werke: eingetragen und bestätigt.
+  - agenturmarkt.de (Trustmarkt): kostenloser Plan, per Meta-Tag auf der Startseite verifiziert (Tag muss bleiben),
+    Texte gespeichert.
+  - feedbax: Profil mit Texten, Adresse, Leistungen; zeigt noch „nicht sichtbar“.
+  - Sortlist: live, Webseitengestaltung und SEO je Startpreis 1.000 € (Yusufs Entscheidung), Logo.
+  - werbeagentur.de: Formular vorausgefüllt, Passwort, Captcha und Absenden macht Yusuf.
+  - Bing Places: Google-Anmeldung läuft über ein Popup, das Claude nicht bedienen kann (2 Versuche). Macht Yusuf.
+  - Cylex: Konto mit yusuf@kolac-digital.de gibt es schon (fragt Passwort). Yusuf meldet sich an, dann Eintrag prüfen.
+  - Netz & Werke: Logo hochgeladen, Status „In Prüfung“. feedbax: Logo hochgeladen. agenturmarkt: Logo fehlt
+    (Upload öffnet nur das Mac-Dateifenster).
+  - Noch nicht begonnen: trustlocal, Apple Business Connect, 11880, Gelbe Seiten, Das Örtliche, Das Telefonbuch,
+    golocal, branchen-info.net, meinestadt.de, Yelp, ProvenExpert, Clutch, DesignRush, GoodFirms, LinkedIn, XING,
+    Facebook.
+  - Logo für Portale: `docs/backlinks/assets/logo-quadrat.png`.
 - Studie aus SEO-Check- und Outreach-Daten (zusammengefasst, ohne Namen).
 - Seite zu Kosten („was kostet eine website“ 480, „website kosten“ 590 Suchen), obwohl bisher keine
   Preise in Themen.
