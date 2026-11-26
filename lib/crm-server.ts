@@ -26,6 +26,9 @@ export interface AkteInput {
   notes?: string;
   outreachLeadId?: string;
   importedFrom?: string;
+  /** Branche aus dem SEO-Check (für den Anruf-Leitfaden). */
+  branche?: string;
+  wantsCall?: boolean;
 }
 
 function splitName(name: string | undefined): { firstName: string; lastName: string } {
@@ -96,6 +99,8 @@ export async function createAkte(input: AkteInput): Promise<string> {
       source: input.source,
       ...(input.outreachLeadId ? { outreachLeadId: input.outreachLeadId } : {}),
       ...(input.importedFrom ? { importedFrom: input.importedFrom } : {}),
+      ...(input.branche ? { branche: input.branche } : {}),
+      ...(input.wantsCall ? { wantsCall: true } : {}),
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -122,6 +127,21 @@ export async function addAkteActivity(
   });
 }
 
+/** Fällige Aufgabe in der Akte (erscheint oben im Verlauf und auf der Startseite). */
+export async function addAkteTask(customerId: string, text: string, dueAt: Date = new Date()): Promise<void> {
+  await adminDb().collection('activities').add({
+    customerId,
+    type: 'anruf',
+    description: text,
+    emailSubject: null,
+    emailBody: null,
+    dueDate: Timestamp.fromDate(dueAt),
+    completed: false,
+    completedAt: null,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+}
+
 /** Leere Felder einer bestehenden Akte mit neuen Kontaktdaten füllen (nie überschreiben). */
 async function enrichAkte(id: string, input: AkteInput): Promise<void> {
   const ref = adminDb().collection('customers').doc(id);
@@ -139,12 +159,18 @@ async function enrichAkte(id: string, input: AkteInput): Promise<void> {
   // Akte aus einem Check ohne Kontaktdaten heißt erst wie die Domain: dann den echten Firmennamen nehmen.
   const company = (input.company ?? '').trim();
   if (company && (!c.company || c.company === c.website)) patch.company = company;
+  if (!c.branche && input.branche) patch.branche = input.branche;
+  if (input.wantsCall && !c.wantsCall) patch.wantsCall = true;
   if (Object.keys(patch).length === 0) return;
   await ref.update({ ...patch, updatedAt: FieldValue.serverTimestamp() });
 }
 
 /** Neue Anfrage (SEO-Check, Kontaktformular, Outreach-Antwort): Akte finden und ergänzen oder als Lead anlegen. */
-export async function upsertLeadAkte(input: AkteInput, activity?: { type: 'notiz' | 'email'; text: string; subject?: string }): Promise<string | null> {
+export async function upsertLeadAkte(
+  input: AkteInput,
+  activity?: { type: 'notiz' | 'email'; text: string; subject?: string },
+  task?: { text: string },
+): Promise<string | null> {
   try {
     const email = (input.email ?? '').toLowerCase();
     if (email.endsWith(`@${OWN_DOMAIN}`) || normalizeDomain(input.website) === OWN_DOMAIN) return null;
@@ -152,6 +178,7 @@ export async function upsertLeadAkte(input: AkteInput, activity?: { type: 'notiz
     if (id) await enrichAkte(id, input);
     else id = await createAkte(input);
     if (activity) await addAkteActivity(id, activity.type, activity.text, activity.subject ?? null);
+    if (task) await addAkteTask(id, task.text);
     return id;
   } catch (err) {
     console.error('[crm] Akte konnte nicht angelegt werden:', err instanceof Error ? err.message : err);
@@ -185,6 +212,7 @@ export interface ImportCandidate {
   suggested: boolean;
   /** Outreach-Kontakt hat geantwortet (wird automatisch eine Akte). */
   replied?: boolean;
+  branche?: string;
   outreachLeadId?: string;
 }
 
@@ -204,6 +232,12 @@ function splitAddress(address: string, fallbackCity: string): { street: string; 
   const m = rest.join(' ').match(/(\d{5})\s+(.+)/);
   if (m) return { street: first ?? '', zip: m[1], city: m[2].replace(/,?\s*Deutschland$/i, '').trim() };
   return { street: rest.length ? (first ?? '') : '', zip: '', city: fallbackCity };
+}
+
+/** „/seo-check/autohaus“ → „autohaus“ (Branchen-Seite des SEO-Checks). */
+export function brancheFromLanding(landing?: string): string | undefined {
+  const m = (landing ?? '').match(/^\/seo-check\/([a-z-]+)/);
+  return m?.[1] && m[1] !== 'bericht' ? m[1] : undefined;
 }
 
 const fmt = (ms: number) => (ms ? new Date(ms).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }) : '');
@@ -262,6 +296,7 @@ export async function importCandidates(): Promise<{ candidates: ImportCandidate[
     hit.outreachLeadId ||= c.outreachLeadId;
     hit.suggested ||= c.suggested;
     hit.replied ||= c.replied;
+    hit.branche ||= c.branche;
     hit.lastAt = Math.max(hit.lastAt, c.lastAt);
     const rank: CustomerLifecycle[] = ['verloren', 'lead', 'interessent', 'kunde'];
     if (rank.indexOf(c.lifecycle) > rank.indexOf(hit.lifecycle)) hit.lifecycle = c.lifecycle;
@@ -297,6 +332,7 @@ export async function importCandidates(): Promise<{ candidates: ImportCandidate[
       facts: [`SEO-Check am ${fmt(at)}: ${x.score ?? x.result?.score ?? '?'}/100${lead ? ', Bericht freigeschaltet' : ', ohne Kontaktdaten'}${lead?.wantsCall ? ', möchte Rückruf' : ''}${x.source?.landing ? ` (über ${x.source.landing})` : ''}`],
       lastAt: at,
       suggested: !!lead,
+      branche: lead?.branche ?? brancheFromLanding(x.source?.landing ?? lead?.source?.landing),
     });
   }
 
@@ -396,6 +432,7 @@ export async function runImport(keys: string[], opts: { note?: boolean; candidat
       lifecycle: c.lifecycle,
       outreachLeadId: c.outreachLeadId,
       importedFrom: stamp,
+      branche: c.branche,
     });
     if (opts.note !== false) await addAkteActivity(id, 'notiz', `Aus der Übernahme: ${c.facts.join(' · ')}`);
     created++;

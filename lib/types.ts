@@ -35,9 +35,18 @@ export interface Customer {
   outreachLeadId?: string;
   /** Aus welcher Übernahme die Akte stammt (für Nachvollziehbarkeit). */
   importedFrom?: string;
+  /** Branche aus dem SEO-Check (autohaus, werkstatt, …), steuert den Anruf-Leitfaden. */
+  branche?: string;
+  /** Hat beim Freischalten um Rückruf gebeten. */
+  wantsCall?: boolean;
+  /** Stand der Anrufe bei SEO-Leads. Fehlt = neu, noch nicht angerufen. */
+  callStatus?: CallStatus;
+  callAttempts?: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
+
+export type CallStatus = 'neu' | 'nicht-erreicht' | 'spaeter' | 'termin' | 'kein-interesse';
 
 export type CustomerLifecycle =
   | 'lead'

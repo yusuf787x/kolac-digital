@@ -109,6 +109,10 @@ Drei Modi im „Neuer Vertrag"-Flow:
 - **Abgleich** (`/api/crm/sync`, beim Öffnen der Kontaktliste, höchstens alle 10 Minuten, Stand in `settings/crm_sync`): legt Akten für alle alten SEO-Checks und Outreach-Antworten an, die noch keine haben.
 - **„Kontakte ohne Akte“** (`/api/crm/import`): nur noch für Termin-Gäste und Outreach ohne Antwort, mit Häkchen.
 - **Suche:** Liste durchsucht alle Felder und Ansprechpartner; ⌘K findet zusätzlich Ansprechpartner, SEO-Checks und Outreach.
+- **Anruf-Liste für SEO-Leads** (Filter „SEO-Leads anrufen“, `?filter=anrufen`, `inCallQueue`/`callQueueSort` in `lib/crm.ts`): Akten mit Quelle SEO-Check, Status Lead, noch nicht angerufen oder neuer Versuch heute fällig; Rückrufwunsch und Nummer zuerst, dann die neuesten. Zähler an „Kontakte & Kunden“ in der Seitenleiste.
+- **Anruf-Leitfaden in der Akte** (`components/crm/CallScript.tsx`, Texte in `lib/crm-scripts.ts`): je Branche des SEO-Checks (Feld `branche`, aus Freischalten oder Branchen-Seite), gefüllt mit Vorname, Website, Datum des Checks und dem live geprüften Hauptbegriff samt Kartenkonkurrenz. Abschnitte Einstieg, Fragen, Befund, Termin, Abschluss; 7 Einwände; Mailbox-, WhatsApp- (nur mit eigener Nummer und Rückrufwunsch) und Mail-Text zum Kopieren. Ergebnis-Knöpfe setzen `callStatus`, `callAttempts`, Status, nächsten Schritt und Aufgaben (nicht erreicht: morgen 10 Uhr neu), danach „Nächster Lead“. Preise werden am Telefon nicht genannt.
+- **Aufgabe beim Freischalten:** fällige Aufgabe „anrufen und Termin legen“ in der Akte (Startseite „Fällige Aktivitäten“).
+- **Newsletter-Einwilligung** (`lib/newsletter.ts`, Collection `newsletterSubscribers`): freiwilliges Häkchen beim Freischalten, Bestätigungsmail, `/api/newsletter/bestaetigen` und `/api/newsletter/abmelden`, Nachweis mit Wortlaut, Zeit und gekürzter IP. Noch kein Versand von Newslettern.
 
 ## Termin-Erinnerungen (`app/dashboard/(app)/termine/` + `lib/meetings/`)
 

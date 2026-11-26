@@ -6,6 +6,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { listCustomers, listInvoices } from '@/lib/firestore';
 import type { Contact, Customer, CustomerLifecycle, Invoice } from '@/lib/types';
 import {
+  CALL_STATUS_LABELS,
+  callQueueSort,
+  inCallQueue,
   customerMoney,
   customerName,
   domainOf,
@@ -28,10 +31,12 @@ export default function KundenPage() {
   );
 }
 
-type Filter = 'alle' | 'offen' | CustomerLifecycle;
+type Filter = 'anrufen' | 'alle' | 'offen' | CustomerLifecycle;
 type Sort = 'schritt' | 'name' | 'umsatz' | 'neu';
 
-const FILTERS: { key: Filter; label: string; match: (l: CustomerLifecycle) => boolean }[] = [
+const FILTERS: { key: Filter; label: string; match: (l: CustomerLifecycle, c: Customer) => boolean }[] = [
+  // Anruf-Liste: neue SEO-Leads und heute fällige neue Versuche (lib/crm.ts inCallQueue)
+  { key: 'anrufen', label: 'SEO-Leads anrufen', match: (_l, c) => inCallQueue(c) },
   { key: 'alle', label: 'Alle', match: () => true },
   { key: 'offen', label: 'Im Vertrieb', match: (l) => l === 'lead' || l === 'interessent' },
   { key: 'lead', label: 'Leads', match: (l) => l === 'lead' },
@@ -51,7 +56,14 @@ function KundenInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<Filter>('alle');
+  const filterParam = searchParams.get('filter');
+  const [filter, setFilter] = useState<Filter>(filterParam === 'anrufen' ? 'anrufen' : 'alle');
+  // Link „SEO-Leads anrufen“ aus der Seitenleiste, während die Liste schon offen ist.
+  const [lastParam, setLastParam] = useState(filterParam);
+  if (filterParam !== lastParam) {
+    setLastParam(filterParam);
+    if (filterParam === 'anrufen') setFilter('anrufen');
+  }
   const [sort, setSort] = useState<Sort>('name');
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
@@ -111,8 +123,8 @@ function KundenInner() {
   }, [invoices]);
 
   const counts = useMemo(() => {
-    const out: Record<Filter, number> = { alle: 0, offen: 0, lead: 0, interessent: 0, kunde: 0, verloren: 0, ehemalig: 0 };
-    customers.forEach((c) => FILTERS.forEach((f) => f.match(lifecycleOf(c)) && out[f.key]++));
+    const out: Record<Filter, number> = { anrufen: 0, alle: 0, offen: 0, lead: 0, interessent: 0, kunde: 0, verloren: 0, ehemalig: 0 };
+    customers.forEach((c) => FILTERS.forEach((f) => f.match(lifecycleOf(c), c) && out[f.key]++));
     return out;
   }, [customers]);
 
@@ -120,7 +132,7 @@ function KundenInner() {
     const q = search.trim().toLowerCase();
     const f = FILTERS.find((x) => x.key === filter) ?? FILTERS[0];
     const list = customers.filter((c) => {
-      if (!f.match(lifecycleOf(c))) return false;
+      if (!f.match(lifecycleOf(c), c)) return false;
       if (!q) return true;
       const extra = contactsBy.get(c.id) ?? [];
       return [
@@ -147,6 +159,7 @@ function KundenInner() {
     });
     const nextAt = (c: Customer) => (c.nextStepAt ? tsToMillis(c.nextStepAt) : Number.MAX_SAFE_INTEGER);
     return list.sort((a, b) => {
+      if (filter === 'anrufen') return callQueueSort(a, b);
       if (sort === 'schritt') return nextAt(a) - nextAt(b);
       if (sort === 'umsatz') return (revenueBy.get(b.id) ?? 0) - (revenueBy.get(a.id) ?? 0);
       if (sort === 'neu') return tsToMillis(b.createdAt) - tsToMillis(a.createdAt);
@@ -187,16 +200,22 @@ function KundenInner() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        {FILTERS.map((f) => (
+        {FILTERS.filter((f) => f.key !== 'anrufen' || counts.anrufen > 0 || filter === 'anrufen').map((f) => (
           <button
             key={f.key}
             type="button"
             onClick={() => setFilter(f.key)}
             className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-              filter === f.key ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+              f.key === 'anrufen'
+                ? filter === f.key
+                  ? 'border-[var(--k-brand)] bg-[var(--k-brand)] text-white'
+                  : 'border-[var(--k-brand-line)] bg-[var(--k-brand-tint)] font-medium text-[var(--k-brand-dunkel)] hover:border-[var(--k-brand)]'
+                : filter === f.key
+                  ? 'border-gray-900 bg-gray-900 text-white'
+                  : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >
-            {f.label} <span className={filter === f.key ? 'text-gray-300' : 'text-gray-400'}>{counts[f.key]}</span>
+            {f.label} <span className={filter === f.key ? 'opacity-70' : 'opacity-60'}>{counts[f.key]}</span>
           </button>
         ))}
         <label className="ml-auto flex items-center gap-2 text-sm text-gray-500">
@@ -262,7 +281,16 @@ function KundenInner() {
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${LIFECYCLE_BADGES[lc]}`}>{LIFECYCLE_LABELS[lc]}</span>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      {c.nextStep ? (
+                      {filter === 'anrufen' ? (
+                        <>
+                          <p className="text-gray-800">{c.phone ? `Anrufen: ${c.phone}` : 'Nummer auf der Website suchen'}</p>
+                          <p className="text-xs text-gray-500">
+                            {CALL_STATUS_LABELS[c.callStatus ?? 'neu']}
+                            {c.callAttempts ? ` · ${c.callAttempts} Versuch${c.callAttempts === 1 ? '' : 'e'}` : ''}
+                            {c.wantsCall ? ' · möchte Rückruf' : ''}
+                          </p>
+                        </>
+                      ) : c.nextStep ? (
                         <>
                           <p className="text-gray-800 truncate max-w-[16rem]">{c.nextStep}</p>
                           {due > 0 && (

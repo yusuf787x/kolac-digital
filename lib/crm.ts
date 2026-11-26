@@ -23,6 +23,7 @@ import {
 import { db } from './firebase';
 import type {
   Activity,
+  CallStatus,
   Contact,
   Contract,
   Customer,
@@ -32,6 +33,7 @@ import type {
   Quote,
 } from './types';
 import type { Meeting } from './meetings/types';
+import type { LocalKeyword } from './seo-check/types';
 import type { OutreachLead } from './outreach';
 import { OUTREACH_STATUS_LABELS } from './outreach';
 import { stageDef } from './sales';
@@ -82,6 +84,41 @@ export const LIFECYCLE_BADGES: Record<CustomerLifecycle, string> = {
 /** Altkunden ohne Status gelten als Kunde. */
 export function lifecycleOf(c: Pick<Customer, 'lifecycle'>): CustomerLifecycle {
   return c.lifecycle ?? 'kunde';
+}
+
+// ===================================================================
+// ANRUF-LISTE (SEO-Leads)
+// ===================================================================
+
+export const CALL_STATUS_LABELS: Record<CallStatus, string> = {
+  neu: 'Neu, noch nicht angerufen',
+  'nicht-erreicht': 'Nicht erreicht',
+  spaeter: 'Rückruf verabredet',
+  termin: 'Termin gelegt',
+  'kein-interesse': 'Kein Interesse',
+};
+
+/**
+ * Gehört die Akte heute in die Anruf-Liste? SEO-Leads, die noch Lead sind und
+ * noch nicht angerufen wurden, oder deren neuer Versuch heute fällig ist.
+ */
+export function inCallQueue(c: Customer, now = Date.now()): boolean {
+  if (!(c.source ?? '').startsWith('SEO-Check')) return false;
+  if (lifecycleOf(c) !== 'lead') return false;
+  const st = c.callStatus ?? 'neu';
+  if (st === 'neu') return true;
+  if (st === 'nicht-erreicht' || st === 'spaeter') {
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+    return !c.nextStepAt || tsToMillis(c.nextStepAt) <= end.getTime();
+  }
+  return false;
+}
+
+/** Reihenfolge der Anruf-Liste: mit Rückrufwunsch bzw. Nummer zuerst, dann die neuesten (frische Leads zuerst). */
+export function callQueueSort(a: Customer, b: Customer): number {
+  const prio = (c: Customer) => (c.wantsCall ? 2 : 0) + (c.phone ? 1 : 0);
+  return prio(b) - prio(a) || tsToMillis(b.createdAt) - tsToMillis(a.createdAt);
 }
 
 // ===================================================================
@@ -231,6 +268,8 @@ export interface PublicSeoCheck {
   utmSource?: string;
   test?: boolean;
   owner?: boolean;
+  /** Live geprüfte „Leistung + Ort“-Begriffe (Checks seit 26.11.2026). */
+  local?: LocalKeyword[];
   lead?: {
     name?: string;
     email?: string;
@@ -262,6 +301,7 @@ function toPublicCheck(d: QueryDocumentSnapshot<DocumentData>): PublicSeoCheck |
     utmSource: x.source?.utm_source ?? x.lead?.source?.utm_source,
     test: !!x.test,
     owner: !!x.owner,
+    local: Array.isArray(x.result?.rankings?.local) ? (x.result.rankings.local as LocalKeyword[]) : undefined,
     lead: x.lead
       ? {
           name: x.lead.name,

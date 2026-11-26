@@ -948,6 +948,7 @@ function UnlockForm({
   const [branche, setBranche] = useState<Branche | ''>(defaultBranche ?? '');
   const [websiteAlter, setWebsiteAlter] = useState<WebsiteAlter | ''>('');
   const [business, setBusiness] = useState(false);
+  const [newsletter, setNewsletter] = useState(false);
   const [website, setWebsite] = useState('');
   const [sending, setSending] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
@@ -998,6 +999,8 @@ function UnlockForm({
           wantsCall: true,
           // Erfolgsmessung an Meta nur mit „Akzeptieren“ im Banner (freiwillig, getrennt vom Formular).
           measureConsent: measureEnabled && !test && readMarketingConsent() === 'granted' ? true : undefined,
+          // Freiwillig, nicht vorausgewählt, mit Bestätigungsmail (Double-Opt-in).
+          newsletter: newsletter || undefined,
           website,
         }),
       });
@@ -1172,6 +1175,18 @@ function UnlockForm({
         </span>
       </label>
       {fieldError('business')}
+      <label className="mt-3 flex cursor-pointer items-start gap-3 text-[15px] text-[var(--color-gray)]">
+        <input
+          type="checkbox"
+          checked={newsletter}
+          onChange={(e) => setNewsletter(e.target.checked)}
+          className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-blue)]"
+        />
+        <span>
+          Freiwillig: Ja, ich möchte gelegentlich Neuigkeiten und Tipps von Kolac Digital per E-Mail bekommen. Abmelden geht jederzeit.
+          Dazu kommt eine Bestätigungsmail.
+        </span>
+      </label>
       <div className="hidden" aria-hidden="true">
         <label>
           Website (nicht ausfüllen)

@@ -6,7 +6,7 @@ import { DEVICE_COOKIE, checkLimits, clientIp, deviceIdFrom, isOwnerRequest, lat
 import { hitRateLimit } from '@/lib/portal/rate-limit';
 import type { SeoCheckResponse } from '@/lib/seo-check/types';
 import { cleanSource } from '@/lib/seo-check/funnel';
-import { upsertLeadAkte } from '@/lib/crm-server';
+import { brancheFromLanding, upsertLeadAkte } from '@/lib/crm-server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
     // beim Freischalten kommen Name, Mail und Telefon dazu). Der Check selbst steht im Verlauf.
     if (!owner) {
       after(async () => {
-        await upsertLeadAkte({ website: result.domain, source: 'SEO-Check' });
+        await upsertLeadAkte({ website: result.domain, source: 'SEO-Check', branche: brancheFromLanding(source?.landing) });
       });
     }
     // Mail an Yusuf bei jedem Check eines Besuchers, nie im Inhaber-Modus.

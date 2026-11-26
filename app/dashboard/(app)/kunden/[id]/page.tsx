@@ -52,6 +52,7 @@ import {
 import { authedFetch } from '@/lib/api-client';
 import ContactsCard from '@/components/crm/ContactsCard';
 import Timeline, { type MailState } from '@/components/crm/Timeline';
+import CallScript from '@/components/crm/CallScript';
 
 export default function KundeDetailPage() {
   return (
@@ -323,6 +324,19 @@ function KundenAkte() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
+          {((customer.source ?? '').startsWith('SEO-Check') || customer.callStatus || lc === 'lead' || lc === 'interessent') && (
+            <CallScript
+              key={customer.id}
+              customer={customer}
+              vorname={customer.firstName || contacts[0]?.firstName}
+              check={latestCheck}
+              domain={domain}
+              openTaskIds={extra.activities
+                .filter((a) => a.customerId === customer.id && a.type === 'anruf' && a.dueDate && !a.completed)
+                .map((a) => a.id)}
+              onLogged={load}
+            />
+          )}
           <Timeline customerId={customer.id} contacts={contacts} items={timeline} mailState={mailState} onChanged={load} />
 
           <ListSection title="Deals" count={deals.length} action={{ href: '/dashboard/vertrieb', label: 'Zur Pipeline →' }} empty="Noch kein Deal.">

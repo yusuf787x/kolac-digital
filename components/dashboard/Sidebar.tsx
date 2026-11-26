@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, Ellipsis, LogOut, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { listContracts, listInvoices, listOpenActivities } from '@/lib/firestore';
+import { listContracts, listCustomers, listInvoices, listOpenActivities } from '@/lib/firestore';
+import { inCallQueue } from '@/lib/crm';
 import { isOverdue, tsToMillis } from '@/lib/utils';
 import type { Contract } from '@/lib/types';
 import Logo from '@/components/Logo';
@@ -26,12 +27,15 @@ function useZaehler(aktiv: boolean): Zaehler {
     if (Date.now() - zuletzt.current < 2 * 60 * 1000) return;
     zuletzt.current = Date.now();
     const now = Date.now();
-    const [invoices, acts, contracts] = await Promise.all([
+    const [invoices, acts, contracts, customers] = await Promise.all([
       listInvoices().catch(() => []),
       listOpenActivities().catch(() => []),
       listContracts().catch(() => [] as Contract[]),
+      listCustomers().catch(() => []),
     ]);
     setZaehler({
+      // Neue SEO-Leads und heute fällige Anrufversuche
+      kunden: customers.filter((c) => inCallQueue(c, now)).length,
       rechnungen: invoices.filter(
         (inv) => inv.status !== 'paid' && inv.status !== 'partially_paid' && isOverdue(inv.status, inv.dueDate.toDate()),
       ).length,

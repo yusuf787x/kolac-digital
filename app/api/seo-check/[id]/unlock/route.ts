@@ -8,6 +8,7 @@ import type { SeoCheckResponse } from '@/lib/seo-check/types';
 import { BRANCHEN, WEBSITE_ALTER, type Branche, type WebsiteAlter } from '@/lib/seo-check/funnel';
 import { onLeadCaptured } from '@/lib/seo-check/lead-hooks';
 import { upsertLeadAkte } from '@/lib/crm-server';
+import { startNewsletterOptIn } from '@/lib/newsletter';
 import { emailProblem, phoneProblem } from '@/lib/seo-check/contact-check';
 import { emailDomainIsDead } from '@/lib/seo-check/email-dns';
 
@@ -34,6 +35,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     business?: boolean;
     /** Optionales Häkchen „Erfolgsmessung an Meta“ (nur sichtbar, wenn Pixel-ID und Schlüssel gesetzt sind). */
     measureConsent?: boolean;
+    /** Freiwillige Newsletter-Einwilligung, wird per Bestätigungsmail bestätigt. */
+    newsletter?: boolean;
   };
 
   const stored = await loadCheck(id).catch(() => null);
@@ -112,16 +115,27 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       clickSeenAtMs: typeof stored.createdAt?.toMillis === 'function' ? stored.createdAt.toMillis() : undefined,
     };
     after(() => onLeadCaptured(id, lead, ctx).catch((err) => console.error('SEO-Check Lead-Hook:', err)));
-    // Kundenakte: Kontakt als Lead anlegen oder an die bestehende Akte hängen.
+    // Kundenakte: Kontakt als Lead anlegen oder an die bestehende Akte hängen,
+    // dazu eine fällige Aufgabe „anrufen“ (Skript steht in der Akte).
     after(async () => {
       await upsertLeadAkte(
-        { company, name, email, phone, website: stored.result.domain, source: 'SEO-Check' },
+        { company, name, email, phone, website: stored.result.domain, source: 'SEO-Check', branche: branche ?? undefined, wantsCall: lead.wantsCall },
         {
           type: 'notiz',
           text: `SEO-Check freigeschaltet: ${stored.result.domain}, ${stored.result.score}/100${lead.wantsCall ? ', möchte einen Rückruf' : ''}${branche ? `, Branche: ${branche}` : ''}`,
         },
+        { text: 'SEO-Check freigeschaltet: anrufen und Termin legen (Anruf-Leitfaden in der Akte)' },
       );
     });
+  }
+
+  // Newsletter nur mit Häkchen und nie im Testmodus; erst die Bestätigungsmail macht die Anmeldung gültig.
+  if (body.newsletter === true && !stored.test) {
+    const ip = clientIp(req) ?? '';
+    const masked = ip.includes('.') ? ip.replace(/\.\d+$/, '.0') : ip.split(':').slice(0, 4).join(':');
+    after(() =>
+      startNewsletterOptIn({ email, name, source: 'seo-check', sourceId: id, ip: masked }).catch((err) => console.error('Newsletter:', err)),
+    );
   }
 
   const response: SeoCheckResponse = { id, owner: false, unlocked: true, result: stored.result, ...(stored.test ? { test: true } : {}) };
