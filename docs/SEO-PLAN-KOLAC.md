@@ -178,9 +178,12 @@ nicht ranken:
       Unternehmen und Leistungen.
     - Ausgelassen: agenturfinder.com und agenturmatching.de (kein Selbsteintrag), stadtbranchenbuch.com/opendi
       (Sellwerk-Verkaufsformular mit Werbe-Einwilligung und Testzeitraum), Cylex.
-    - Zur Entscheidung: Branchenbuch der Stadt Bielefeld (bielefeld.de/branchenbuch, Kategorie Internetagentur,
-      einmalig 20 €; die Seite rankt selbst auf Seite 1 für „webdesign bielefeld“), „Das kommt aus Bielefeld“
-      (Partnernetzwerk der WEGE, nur über Kontaktformular).
+    - stadtbranche, unternehmensverzeichnis.org und agentur.de hat Yusuf am 27.11. abgeschlossen.
+    - Branchenbuch der Stadt Bielefeld (bielefeld.de/branchenbuch, Dienstleistungen > Internetagentur, einmalig 20 €,
+      Yusufs Freigabe 27.11.; die Seite rankt selbst auf Seite 1 für „webdesign bielefeld“): Formular ausgefüllt bis
+      „Verbindlich einreichen“, Einreichen und Bezahlen macht Yusuf.
+    - „Das kommt aus Bielefeld“ (Partnernetzwerk der WEGE): Anfrage zu Möglichkeiten und Kosten am 27.11. per
+      Kontaktformular gesendet (Freigabe Yusuf), Antwort offen.
   - Ausgelassen: meinestadt.de (nur über kostenpflichtigen Partner), XING (nur bezahlte Arbeitgeberprofile, nicht
     angemeldet), Facebook (lässt sich nicht automatisieren).
   - Logo für Portale: `docs/backlinks/assets/logo-quadrat.png`, große Fassungen `logo-1024.png`,
