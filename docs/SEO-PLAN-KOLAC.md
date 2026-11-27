@@ -153,8 +153,8 @@ nicht ranken:
   - Gelbe Seiten: Eintrag gab es schon (mit Logo). Das Örtliche: Grundeintrag abgeschickt, Bestätigungsmail
     („Anmeldebestätigung…“) klickt Yusuf; Verlag Oeding betreut auch Das Telefonbuch.
   - branchen-info.net: eingetragen (Yusuf hat Passwort gesetzt und abgeschlossen).
-  - trustlocal: Firmenprofil angelegt, danach nur kostenpflichtig (29 €/Monat ab 2027 + 50 € je Anfrage), nicht
-    weitergemacht.
+  - trustlocal: Firmenprofil angelegt, geht aber nur live mit bezahlter Freischaltung (Monatsgebühr, erster Monat
+    gratis, dann 29 €/Monat + 50 € je Anfrage; Vertriebsmail 27.11.). Nicht freischalten, bringt kostenlos keinen Link.
   - Yelp: Kolac Digital war schon beansprucht, wartet auf Freigabe durch Yelp.
   - Clutch: kostenloses Profil angelegt (Webdesign 50 %, SEO 50 %, Mindestprojekt 1.000 $, Stundensatz keine
     Angabe, 2 bis 9 Mitarbeiter), Standortprüfung 7 bis 10 Werktage.
