@@ -196,7 +196,8 @@ nicht ranken:
   `docs/google-beitraege/beitraege-dez-2026.html`, Zahlen aus den Kundenportalen. Am 27.11. per Browser nur im
   Profil Kolac Digital eingestellt (Kopieren in andere Profile jeweils übersprungen): Motorenfachmann/Ford,
   Google-Profil-Tipps und Bacara sofort veröffentlicht; SEO-Check 1.12., PaderPuls 8.12., Ladezeit 15.12.,
-  CarHifi 22.12., Pader Automobilzentrum 29.12., jeweils 9 Uhr geplant. Fotos: Website-Bilder bzw. Yusufs Porträt.
+  CarHifi 22.12., Pader Automobilzentrum 29.12., jeweils 9 Uhr geplant. Fotos: Website-Bilder bzw. Yusufs Fotos,
+  jedes Bild nur einmal (Yusufs Wunsch); weitere Fotos von Yusuf in `docs/google-beitraege/fotos/`.
 
 ### Weiter offen zur Entscheidung
 - Studie aus SEO-Check- und Outreach-Daten (zusammengefasst, ohne Namen).
