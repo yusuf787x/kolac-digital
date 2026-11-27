@@ -193,7 +193,10 @@ nicht ranken:
   „Indexierung beantragen“ in der Search Console macht Yusuf.
 
 - 27.11.2026: 8 Google-Beiträge (Kundengeschichten und Tipps, einer pro Woche ab 1.12.) als Kopierseite
-  `docs/google-beitraege/beitraege-dez-2026.html`, Zahlen aus den Kundenportalen. Einstellen macht Yusuf.
+  `docs/google-beitraege/beitraege-dez-2026.html`, Zahlen aus den Kundenportalen. Am 27.11. per Browser nur im
+  Profil Kolac Digital eingestellt (Kopieren in andere Profile jeweils übersprungen): Motorenfachmann/Ford,
+  Google-Profil-Tipps und Bacara sofort veröffentlicht; SEO-Check 1.12., PaderPuls 8.12., Ladezeit 15.12.,
+  CarHifi 22.12., Pader Automobilzentrum 29.12., jeweils 9 Uhr geplant. Fotos: Website-Bilder bzw. Yusufs Porträt.
 
 ### Weiter offen zur Entscheidung
 - Studie aus SEO-Check- und Outreach-Daten (zusammengefasst, ohne Namen).
