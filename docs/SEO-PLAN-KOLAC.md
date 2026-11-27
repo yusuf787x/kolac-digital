@@ -167,6 +167,20 @@ nicht ranken:
   - Cylex: Registrierung klappte nicht (Yusuf ist dort schon mit PaderPuls registriert), ausgelassen.
   - GoodFirms: Registrierung kaputt („something went wrong“, LinkedIn-Login „not configured“), später erneut.
   - feedbax: weiter „nicht sichtbar“, vermutlich erst ab erster Bewertung.
+  - 27.11. OWL/Bielefeld-Runde (reine OWL-Verzeichnisse gibt es kaum, darum deutsche Portale mit Bielefeld-Seiten,
+    gefunden über die Links gut rankender Bielefelder Agenturen):
+    - kennstdueinen.de: eingereicht als Firmeneintrag ohne Inhaber-Konto (Inhaber-Variante verlangt Zustimmung zu
+      Werbeanrufen von WinLocal), Freischaltung in 2 Werktagen.
+    - stadtbranche.de: ausgefüllt, Spam-Frage + Absenden macht Yusuf.
+    - unternehmensverzeichnis.org (EBID, speist auch YellowMap): Eintrag mit Logo, Branchen, Stichwörtern, Zeiten
+      vorbereitet; Passwort, Registrieren und SMS-Code macht Yusuf.
+    - agentur.de (dofollow-Link im Profil, Free-Paket): Konto vorbereitet, Passwort macht Yusuf, danach füllt Claude
+      Unternehmen und Leistungen.
+    - Ausgelassen: agenturfinder.com und agenturmatching.de (kein Selbsteintrag), stadtbranchenbuch.com/opendi
+      (Sellwerk-Verkaufsformular mit Werbe-Einwilligung und Testzeitraum), Cylex.
+    - Zur Entscheidung: Branchenbuch der Stadt Bielefeld (bielefeld.de/branchenbuch, Kategorie Internetagentur,
+      einmalig 20 €; die Seite rankt selbst auf Seite 1 für „webdesign bielefeld“), „Das kommt aus Bielefeld“
+      (Partnernetzwerk der WEGE, nur über Kontaktformular).
   - Ausgelassen: meinestadt.de (nur über kostenpflichtigen Partner), XING (nur bezahlte Arbeitgeberprofile, nicht
     angemeldet), Facebook (lässt sich nicht automatisieren).
   - Logo für Portale: `docs/backlinks/assets/logo-quadrat.png`, große Fassungen `logo-1024.png`,
