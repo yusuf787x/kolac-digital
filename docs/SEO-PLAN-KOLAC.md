@@ -65,7 +65,8 @@ nicht ranken:
 2. **Verzeichnisse und Agenturportale** (Plan-Punkt im Portal, fällig 27.11.2026): werbeagentur.de,
    Feedbax, Sortlist, netzundwerke, agenturmarkt, trustlocal, Gelbe Seiten und Das Örtliche (nur
    Grundeintrag), 11880, golocal, Cylex, Bing Places, Apple Business, dazu Clutch, DesignRush,
-   GoodFirms. Danach die Liste kostenloser Verzeichnisse (Nick Nolan) auf Passendes prüfen. Eine
+   GoodFirms. Englische Verzeichnisse (Liste Nick Nolan, Tool-Verzeichnisse) bewusst nicht: Zielgruppe ist
+   deutsch, sie schaden nicht, bringen aber kaum Wirkung und nur fremdsprachige Besucher (Entscheidung 27.11.). Eine
    Kopierseite mit allen Texten; Claude füllt im Browser vor, Yusuf bestätigt Mails und Captchas.
 3. **Bewertungen 9 auf 25.** Alle zufriedenen Kunden persönlich mit direktem Bewertungslink bitten.
    Keine Gegenleistung anbieten, nichts vorformulieren (Werberecht).
@@ -162,9 +163,8 @@ nicht ranken:
     Car-HiFi, Akquise-Helfer, Fotos aus den Case Studies). Teamgröße überall auf das Kleinste gesetzt (Yusuf ist
     solo): Clutch Freelancer/1, feedbax 1, agenturmarkt 1, Sortlist 1, werbeagentur.de 2 bis 5 (kleinste Stufe).
     Das Örtliche bestätigt. ProvenExpert: Yusuf ist schon eingetragen.
-  - golocal: Pader-Konto abgemeldet, Kolac Digital als neue Location vorgeschlagen (Prüfung durch golocal);
-    Übernahme per „Mit Google-Konto“ (Popup) klickt Yusuf.
-  - Cylex: neues Konto mit cylex@kolac-digital.de (Catch-all) vorbereitet, Passwort + Captcha macht Yusuf.
+  - golocal: Kolac Digital als neue Location eingetragen, von Yusuf per Google-Konto übernommen (27.11.).
+  - Cylex: Registrierung klappte nicht (Yusuf ist dort schon mit PaderPuls registriert), ausgelassen.
   - GoodFirms: Registrierung kaputt („something went wrong“, LinkedIn-Login „not configured“), später erneut.
   - feedbax: weiter „nicht sichtbar“, vermutlich erst ab erster Bewertung.
   - Ausgelassen: meinestadt.de (nur über kostenpflichtigen Partner), XING (nur bezahlte Arbeitgeberprofile, nicht
