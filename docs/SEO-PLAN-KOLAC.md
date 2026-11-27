@@ -189,6 +189,9 @@ nicht ranken:
   - Logo für Portale: `docs/backlinks/assets/logo-quadrat.png`, große Fassungen `logo-1024.png`,
     `header-1920x400.png`.
 
+- 27.11.2026: /webseiten/handwerker, /seo/handwerker, /seo/google-unternehmensprofil per IndexNow gemeldet (200),
+  „Indexierung beantragen“ in der Search Console macht Yusuf.
+
 ### Weiter offen zur Entscheidung
 - Studie aus SEO-Check- und Outreach-Daten (zusammengefasst, ohne Namen).
 - Seite zu Kosten („was kostet eine website“ 480, „website kosten“ 590 Suchen), obwohl bisher keine
