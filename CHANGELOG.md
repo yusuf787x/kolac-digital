@@ -6,6 +6,15 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ---
 
+## 27.11.2026
+
+### Google
+
+| Status | Änderung | Nutzen | Nachweis |
+|---|---|---|---|
+| ✅ | Einträge in Agentur- und Branchenportalen: werbeagentur.de, Sortlist, Feedbax, agenturmarkt, Netz & Werke, 11880, Das Örtliche, branchen-info, golocal, Clutch, kennstdueinen, stadtbranche, unternehmensverzeichnis.org, agentur.de und das Branchenbuch der Stadt Bielefeld (einzelne werden noch vom Portal geprüft) | Mehr Links von außen und mehr Stellen, an denen Betriebe aus Bielefeld und OWL auf der Suche nach einer Agentur fündig werden | |
+| ✅ | 8 Beiträge im Google-Unternehmensprofil mit Kundengeschichten und Tipps: 3 veröffentlicht, 5 bis zum 29.12. wöchentlich geplant | Ein aktives Profil mit echten Ergebnissen überzeugt Besucher in Google Maps und zeigt Google, dass der Betrieb gepflegt wird | [Profil in Google Maps](https://www.google.com/maps/search/Kolac+Digital) |
+
 ## 26.11.2026
 
 ### Inhalte
@@ -328,6 +337,5 @@ Status: ✅ live · 🟡 vorbereitet, noch nicht live · 🔍 geprüft, keine Ä
 
 ## Offene Punkte
 
-- [ ] **Agentur-Portale:** Profile bei werbeagentur.de, Sortlist, Feedbax und Gelbe Seiten anlegen | bis 27.11.2026 | Ziel: Mehr Einträge mit Link zur Website und Anfragen über die Portale
 - [ ] **Barrierefreiheit (BFSG):** Ratgeber-Artikel zur BFSG-Pflicht ausbauen und eine eigene Leistungsseite für barrierefreie Websites prüfen | bis 11.12.2026 | Ziel: Das Thema bringt schon über 470 Anzeigen im Monat, die Platzierung liegt aber erst um Platz 25
 - [ ] **Google-Unternehmensprofil:** Profil von Kolac Digital mit Leistungen, Fotos und Referenzen vervollständigen | bis 18.12.2026 | Ziel: Mehr Sichtbarkeit bei „Webdesign Bielefeld“ in Google Maps
