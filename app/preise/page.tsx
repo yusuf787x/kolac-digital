@@ -17,8 +17,6 @@ import {
   Target,
   TrendingUp,
   Wrench,
-  Clock,
-  Users,
   type LucideIcon,
 } from 'lucide-react';
 import { site } from '@/lib/site-config';
@@ -78,37 +76,51 @@ const wachstumStart: Posten[] = [
   { icon: ChartColumn, text: 'Anfragen-Messung: du siehst, welche Anrufe und Anfragen von Google kommen', wert: 290 },
 ];
 
-type Garantie = { icon: LucideIcon; titel: string; text: string; ab: 'Basis' | 'Sichtbar' | 'Wachstum' };
+type Garantie = { titel: string; text: string; ab: 'Basis' | 'Sichtbar' | 'Wachstum' };
 
 const garantien: Garantie[] = [
   {
-    icon: Eye,
     titel: 'Erst sehen, dann zahlen',
-    text: 'Du siehst deine neue Startseite, bevor du etwas zahlst. Gefällt sie dir nicht, kostet es dich nichts.',
+    text: 'Du siehst deine neue Startseite, bevor du zahlst. Gefällt sie dir nicht, kostet es nichts.',
     ab: 'Basis',
   },
   {
-    icon: Clock,
     titel: 'Pünktlich online',
-    text: 'Deine Website ist spätestens 30 Tage nach deiner Freigabe online. Sonst zahlst du die ersten 3 Monate nichts.',
+    text: 'Spätestens 30 Tage nach deiner Freigabe online, sonst zahlst du die ersten 3 Monate nichts.',
     ab: 'Basis',
   },
   {
-    icon: TrendingUp,
     titel: 'Öfter bei Google',
-    text: 'Nach 90 Tagen zeigt Google dich mindestens 50\u00a0% öfter als vorher. Sonst zahlst du keinen Monatsbeitrag, bis es so weit ist.',
+    text: 'Nach 90 Tagen zeigt Google dich mindestens 50 % öfter, sonst kein Monatsbeitrag, bis es so weit ist.',
     ab: 'Sichtbar',
   },
   {
-    icon: Users,
-    titel: 'Mehr neue Besucher',
-    text: 'Nach 90 Tagen kommen mindestens 50\u00a0% mehr Leute über Google zu dir, die nicht nach deinem Namen gesucht haben. Sonst ruht dein Monatsbeitrag, bis es so weit ist.',
+    titel: 'Mehr neue Kunden über Google',
+    text: 'Nach 90 Tagen mindestens 50 % mehr Besucher, die nicht nach deinem Namen gesucht haben, sonst kein Monatsbeitrag, bis es so weit ist.',
     ab: 'Wachstum',
   },
 ];
 
 const stufe = { Basis: 0, Sichtbar: 1, Wachstum: 2 } as const;
-const garantienFuer = (name: keyof typeof stufe) => garantien.filter((g) => stufe[g.ab] <= stufe[name]).length;
+const garantienFuer = (name: string) =>
+  garantien.filter((g) => stufe[g.ab] <= stufe[name as keyof typeof stufe]);
+
+const SIEGEL_RAND = Array.from({ length: 32 }, (_, i) => {
+  const r = i % 2 === 0 ? 11.5 : 9.6;
+  const a = (Math.PI * i) / 16 - Math.PI / 2;
+  return `${(12 + r * Math.cos(a)).toFixed(2)},${(12 + r * Math.sin(a)).toFixed(2)}`;
+}).join(' ');
+
+/** Gezacktes Garantie-Siegel mit Haken, damit Garantien sofort als solche erkannt werden. */
+function Siegel({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className}>
+      <polygon points={SIEGEL_RAND} style={{ fill: 'var(--color-guarantee)' }} />
+      <circle cx="12" cy="12" r="7.4" fill="none" stroke="#ffffff" strokeOpacity="0.55" strokeWidth="0.8" />
+      <path d="M8.4 12.3l2.4 2.4 4.8-5" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 const summe = (p: Posten[]) => p.reduce((s, x) => s + (x.wert ?? 0), 0);
 const basisWert = summe(basisStart);
@@ -301,13 +313,25 @@ function PaketKarte({ p }: { p: Paket & { gesamt: number } }) {
         </p>
       </div>
       <p className="mt-2 text-sm text-gray-600">netto zzgl. MwSt., {LAUFZEIT} Mindestlaufzeit</p>
-      <a
-        href="#garantien"
-        className="mt-4 inline-flex items-center gap-2 self-start rounded-full bg-blue-50 px-3 py-1.5 text-sm font-semibold text-brand-blue hover:bg-blue-100"
+      <div
+        className="mt-5 rounded-2xl border p-4"
+        style={{ background: 'var(--color-guarantee-bg)', borderColor: 'var(--color-guarantee-line)' }}
       >
-        <ShieldCheck aria-hidden className="h-4 w-4" strokeWidth={2} />
-        Mit {garantienFuer(p.name as keyof typeof stufe)} Garantien
-      </a>
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-guarantee)' }}>
+          Deine Garantien
+        </p>
+        <ul className="mt-3 space-y-3">
+          {garantienFuer(p.name).map((g) => (
+            <li key={g.titel} className="flex items-start gap-2.5">
+              <Siegel className="mt-0.5 h-7 w-7 shrink-0" />
+              <span className="text-sm leading-snug text-gray-700">
+                <strong className="block font-semibold text-gray-900">{g.titel}</strong>
+                {g.text}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <div className="mt-6 border-t border-gray-100 pt-6">
         <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Zum Start bekommst du</p>
@@ -364,34 +388,10 @@ function Pakete() {
           ))}
         </div>
 
-        <div id="garantien" className="mx-auto mt-16 max-w-4xl scroll-mt-24">
-          <h2 className="text-center text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            Unsere Garantien.
-          </h2>
-          <p className="mt-3 text-center text-base text-gray-600">Damit das Risiko bei uns liegt, nicht bei dir.</p>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-            {garantien.map((g) => {
-              const Icon = g.icon;
-              return (
-                <li key={g.titel} className="flex gap-4 rounded-3xl border border-gray-100 bg-white p-6 shadow-xs">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-50 text-brand-blue">
-                    <Icon aria-hidden className="h-6 w-6" strokeWidth={2} />
-                  </span>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                      {g.ab === 'Basis' ? 'In allen Paketen' : g.ab === 'Sichtbar' ? 'Ab Sichtbar' : 'Bei Wachstum'}
-                    </p>
-                    <h3 className="mt-1 text-lg font-semibold text-gray-900">{g.titel}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-gray-600">{g.text}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-          <p className="mt-4 text-center text-xs text-gray-500">Die genauen Regeln stehen im Vertrag.</p>
-        </div>
-
         <p className="mx-auto mt-10 max-w-2xl text-center text-sm leading-relaxed text-gray-600">
+          Die genauen Regeln der Garantien stehen im Vertrag.
+        </p>
+        <p className="mx-auto mt-2 max-w-2xl text-center text-sm leading-relaxed text-gray-600">
           Extras wie Online-Shop oder Terminbuchung für Beratungen planen wir gern dazu, mit festem Preis vorab.
         </p>
       </div>

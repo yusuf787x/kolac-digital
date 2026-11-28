@@ -31,7 +31,7 @@ Monatlich (ohne Wert ausgewiesen): Basis Hosting/Domain/SSL/Updates, Google-Prof
 
 ## Garantien
 
-Seit 28.11. live (Yusuf: „ja, umsetzen, so dass ein Mensch es versteht“), je ein Satz auf der Seite, Regeln im Vertrag. Karten zeigen nur „Mit 2/3/4 Garantien“:
+Seit 28.11. live (Yusuf: „ja, umsetzen, so dass ein Mensch es versteht“), je ein Satz auf der Seite, Regeln im Vertrag. Jede Karte listet ihre Garantien in einem grünen Kasten mit gezacktem Siegel (Yusuf: nur die Zahl versteht keiner), kein eigener Garantie-Abschnitt mehr:
 0. **Erst sehen, dann zahlen (alle Pakete):** Entwurf vor Zahlung, 0 € wenn er nicht gefällt.
 1. **Pünktlich-Garantie (alle Pakete):** Live in 30 Tagen nach Entwurfsfreigabe (wenn Zugänge und Infos da sind), sonst zahlst du die ersten 3 Monatsbeiträge nicht. Risiko klein, wir haben es selbst in der Hand.
 2. **Sichtbar-Garantie (ab Sichtbar):** Nach 90 Tagen mindestens 50 % mehr Einblendungen bei Google als zum Start (Search Console plus Google-Profil), sonst ruht der Monatsbeitrag, bis es erreicht ist. Aus „Sichtbar in 90 Tagen“ übernommen.
