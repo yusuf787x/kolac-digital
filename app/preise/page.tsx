@@ -343,7 +343,7 @@ function Abschluss() {
   );
 }
 
-export default function PaketePage() {
+export default function PreisePage() {
   return (
     <>
       <Hero />

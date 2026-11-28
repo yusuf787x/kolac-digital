@@ -1,6 +1,6 @@
 # Website-Pakete mit Monatspreis (Entwurf 27.11.2026)
 
-Seite: `/pakete` (noindex, nicht in der Sitemap, nirgends verlinkt). Nur im Gespräch zeigen, nie in Anzeigen.
+Seite: `/preise` (noindex, nicht in der Sitemap, nirgends verlinkt). Nur im Gespräch zeigen, nie in Anzeigen.
 Erster Einsatz: Termin beim Juwelier am 28.11.2026.
 
 ## Pakete (netto, einmalig + monatlich, 6 Monate Mindestlaufzeit, danach monatlich kündbar)

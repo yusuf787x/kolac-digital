@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
 };
 
-export default function PaketeLayout({ children }: { children: React.ReactNode }) {
+export default function PreiseLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={`${inter.className} min-h-screen bg-white text-gray-900 site-marketing-shell`}>
       <link rel="stylesheet" href="/css/style.css" />
