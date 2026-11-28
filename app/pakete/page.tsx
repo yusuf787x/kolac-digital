@@ -5,14 +5,17 @@ import { FaqListe } from '../webseiten/sections';
 import { PraxisBeleg } from '../seo/sections';
 
 /**
- * Website-Pakete mit Monatspreisen, sortiert von umfangreich nach schlicht.
- * Wird im Gespräch gezeigt (Sie-Form, Geschäftsdokument), nicht beworben.
- * Marktwerte stammen aus den Quellen unten, umgerechnet auf 24 Monate.
+ * Website-Pakete (einmaliger Aufbau plus Monatspreis), sortiert von
+ * umfangreich nach schlicht. Wird im Gespräch gezeigt, nicht beworben.
+ * Marktwerte aus den Quellen unten.
  */
+
+const LAUFZEIT = '6 Monate';
 
 type Paket = {
   name: string;
   claim: string;
+  einmalig: number;
   preis: number;
   seo: string;
   empfohlen?: boolean;
@@ -25,12 +28,13 @@ const pakete: Paket[] = [
   {
     name: 'Wachstum',
     claim: 'Website und SEO mit neuen Inhalten jeden Monat',
-    preis: 399,
+    einmalig: 3490,
+    preis: 349,
     seo: 'Mit laufender SEO',
     basis: 'Alles aus „Sichtbar“, dazu:',
     inhalt: [
-      'Jeden Monat zwei neue Seiten oder Ratgeber zu Ihren Leistungen',
-      'Google-Beiträge jeden Monat, damit das Profil aktiv bleibt',
+      'Jeden Monat zwei neue Seiten oder Ratgeber zu deinen Leistungen',
+      'Google-Beiträge jeden Monat, damit dein Profil aktiv bleibt',
       'Aufsteller mit NFC für mehr echte Bewertungen',
       'Suchbegriffe alle drei Monate geprüft und nachgeschärft',
       'Änderungen bis 2 Stunden im Monat',
@@ -44,7 +48,8 @@ const pakete: Paket[] = [
   {
     name: 'Sichtbar',
     claim: 'Website und Google-Grundlage',
-    preis: 249,
+    einmalig: 2490,
+    preis: 199,
     seo: 'Mit SEO-Grundlage',
     empfohlen: true,
     basis: 'Alles aus „Basis“, dazu:',
@@ -52,19 +57,20 @@ const pakete: Paket[] = [
       'Bis 10 Seiten, eine eigene Seite pro wichtiger Leistung',
       'Ausgerichtet auf die 10 Suchbegriffe, die Kunden bringen',
       'Google-Unternehmensprofil komplett eingerichtet und verbunden',
-      'Kundenportal mit Ihren Google-Zahlen und Bericht jeden Monat',
+      'Kundenportal mit deinen Google-Zahlen und Bericht jeden Monat',
       'Änderungen bis 1 Stunde im Monat',
     ],
     erwartung: [
       { label: 'Seiten zum Start', wert: 'bis 10' },
       { label: 'Bei Google ohne Firmennamen', wert: 'für die Hauptbegriffe' },
-      { label: 'Ihre Zahlen', wert: 'jeden Monat im Portal' },
+      { label: 'Deine Zahlen', wert: 'jeden Monat im Portal' },
     ],
   },
   {
     name: 'Basis',
     claim: 'Website ohne SEO',
-    preis: 129,
+    einmalig: 1000,
+    preis: 99,
     seo: 'Ohne SEO',
     inhalt: [
       'Website bis 5 Seiten, schnell und fürs Handy gebaut',
@@ -74,45 +80,25 @@ const pakete: Paket[] = [
     ],
     erwartung: [
       { label: 'Seiten zum Start', wert: 'bis 5' },
-      { label: 'Bei Google', wert: 'über Ihren Firmennamen' },
+      { label: 'Bei Google', wert: 'über deinen Firmennamen' },
       { label: 'Neue Kunden über Google', wert: 'nicht das Ziel dieses Pakets' },
     ],
   },
 ];
 
 const kennzahlen = [
-  { wert: 'ab 129 €', label: 'im Monat, netto' },
-  { wert: '0 €', label: 'Einrichtung' },
-  { wert: '24 Monate', label: 'Mindestlaufzeit' },
+  { wert: 'ab 1.000 €', label: 'einmalig für den Aufbau' },
+  { wert: 'ab 99 €', label: 'im Monat, Pflege inklusive' },
+  { wert: LAUFZEIT, label: 'Mindestlaufzeit, danach monatlich kündbar' },
   { wert: '7 Tage', label: 'bis zum Startseiten-Entwurf' },
 ];
 
 const markt = [
-  {
-    wer: 'Baukasten, selbst gebaut',
-    wie: '7 bis 36 € im Monat, Bauen und Pflegen machen Sie selbst',
-    monat: 'rund 7 bis 36 €',
-  },
-  {
-    wer: 'Freelancer',
-    wie: '800 bis 3.000 € einmalig, Wartung 50 bis 150 € im Monat',
-    monat: 'rund 80 bis 280 €',
-  },
-  {
-    wer: 'Website-Abo einer Agentur',
-    wie: '129 bis 229 € im Monat plus 490 bis 1.490 € Einrichtung',
-    monat: 'rund 150 bis 290 €',
-  },
-  {
-    wer: 'Agentur, einmal gekauft',
-    wie: '2.000 bis 8.000 € einmalig, Wartung 200 bis 500 € im Monat',
-    monat: 'rund 280 bis 830 €',
-  },
-  {
-    wer: 'SEO-Betreuung einer Agentur',
-    wie: 'zusätzlich zur Website',
-    monat: '500 bis 1.500 €',
-  },
+  { wer: 'Baukasten, selbst gebaut', hinweis: 'Bauen und Pflegen machst du selbst', einmalig: '0 €', monat: '7 bis 36 €' },
+  { wer: 'Freelancer', einmalig: '800 bis 3.000 €', monat: '50 bis 150 €' },
+  { wer: 'Website-Abo einer Agentur', hinweis: 'meist 24 Monate Laufzeit', einmalig: '490 bis 1.490 €', monat: '129 bis 229 €' },
+  { wer: 'Agentur', einmalig: '2.000 bis 8.000 €', monat: '200 bis 500 €' },
+  { wer: 'SEO-Betreuung einer Agentur', hinweis: 'zusätzlich zur Website', einmalig: 'oft extra', monat: '500 bis 1.500 €' },
 ];
 
 const quellen = [
@@ -123,22 +109,22 @@ const quellen = [
 
 const faqs = [
   {
-    question: 'Warum monatlich statt einmal bezahlen?',
+    question: 'Wofür ist der einmalige Betrag, wofür der monatliche?',
     answer:
-      'Sie zahlen keine große Rechnung am Anfang. Hosting, Sicherheit und Änderungen laufen mit, und wir bleiben an Ihrer Website dran, statt sie nach dem Start allein zu lassen.',
+      'Der einmalige Betrag deckt den Aufbau: Entwurf, Seiten, Texte und Einrichtung. Der monatliche Betrag deckt Hosting, Sicherheit und Änderungen, und je nach Paket die Arbeit dafür, dass du bei Google gefunden wirst.',
   },
   {
-    question: 'Was passiert nach den 24 Monaten?',
-    answer: 'Das Paket läuft einfach weiter und ist dann monatlich kündbar.',
+    question: `Wie lange bin ich gebunden?`,
+    answer: `Nur ${LAUFZEIT}. Danach läuft dein Paket weiter und ist monatlich kündbar.`,
   },
   {
     question: 'Kann ich später ein größeres Paket nehmen?',
-    answer: 'Ja, ein Wechsel nach oben geht jederzeit. Die Laufzeit beginnt dafür nicht neu.',
+    answer: 'Ja, ein Wechsel nach oben geht jederzeit.',
   },
   {
     question: 'Wann sieht man Ergebnisse bei Google?',
     answer:
-      'Google braucht Zeit, einer neuen Seite zu vertrauen. Erste Bewegung sehen wir oft nach einigen Wochen, deutlich wird es meist nach drei bis sechs Monaten. Ihre Zahlen sehen Sie dabei jeden Monat im Kundenportal.',
+      'Google braucht Zeit, einer neuen Seite zu vertrauen. Erste Bewegung sehen wir oft nach einigen Wochen, deutlich wird es meist nach drei bis sechs Monaten. Deine Zahlen siehst du dabei jeden Monat im Kundenportal.',
   },
   {
     question: 'Gibt es Kosten, die noch dazukommen?',
@@ -156,12 +142,12 @@ function Hero() {
         <Reveal>
           <p className="text-sm font-medium uppercase tracking-wider text-brand-blue">Pakete und Preise</p>
           <h1 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-5xl">
-            Ihre Website zum Monatspreis.
+            Deine Website, klar kalkuliert.
           </h1>
           <p className="mt-5 max-w-2xl text-base text-gray-600 sm:text-lg">
-            Drei Pakete, von umfangreich bis schlicht. Alle mit festem Monatspreis, ohne Einrichtungsgebühr und
-            mit Pflege inklusive. Der Unterschied ist, wie stark wir uns darum kümmern, dass Sie bei Google
-            gefunden werden.
+            Drei Pakete, von umfangreich bis schlicht. Einmal für den Aufbau, danach ein fester Monatspreis
+            mit Pflege inklusive. Der Unterschied ist, wie stark wir uns darum kümmern, dass du bei Google
+            gefunden wirst.
           </p>
         </Reveal>
 
@@ -197,11 +183,17 @@ function PaketKarte({ p }: { p: Paket }) {
       <h3 className="mt-1 text-2xl font-semibold tracking-tight text-gray-900">{p.name}</h3>
       <p className="mt-1 text-sm text-gray-600">{p.claim}</p>
 
-      <p className="mt-6 flex items-baseline gap-1">
-        <span className="text-5xl font-extrabold tracking-tight text-gray-900 tabular-nums">{eur(p.preis)} €</span>
-        <span className="text-base text-gray-600">/ Monat</span>
-      </p>
-      <p className="mt-1 text-sm text-gray-600">netto zzgl. MwSt., 24 Monate Mindestlaufzeit</p>
+      <div className="mt-6 space-y-1">
+        <p className="flex items-baseline gap-2">
+          <span className="text-5xl font-extrabold tracking-tight text-gray-900 tabular-nums">{eur(p.einmalig)} €</span>
+          <span className="text-base text-gray-600">einmalig</span>
+        </p>
+        <p className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold tracking-tight text-gray-900 tabular-nums">+ {eur(p.preis)} €</span>
+          <span className="text-base text-gray-600">im Monat</span>
+        </p>
+      </div>
+      <p className="mt-2 text-sm text-gray-600">netto zzgl. MwSt., {LAUFZEIT} Mindestlaufzeit</p>
 
       <div className="mt-6 border-t border-gray-100 pt-6">
         {p.basis && <p className="mb-3 text-sm font-semibold text-gray-900">{p.basis}</p>}
@@ -219,7 +211,7 @@ function PaketKarte({ p }: { p: Paket }) {
 
       <div className="mt-auto pt-6">
         <div className="rounded-2xl bg-gray-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Was Sie erwarten können</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Was du erwarten kannst</p>
           <dl className="mt-3 space-y-2">
             {p.erwartung.map((e) => (
               <div key={e.label} className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
@@ -245,7 +237,7 @@ function Pakete() {
           ))}
         </div>
         <p className="mx-auto mt-10 max-w-2xl text-center text-sm leading-relaxed text-gray-600">
-          Bevor Sie sich festlegen, sehen Sie einen Entwurf Ihrer Startseite. Extras wie Online-Shop oder
+          Bevor du dich festlegst, siehst du einen Entwurf deiner Startseite. Extras wie Online-Shop oder
           Terminbuchung für Beratungen planen wir gern dazu, mit festem Preis vorab.
         </p>
       </div>
@@ -262,30 +254,47 @@ function Marktvergleich() {
           Was Websites sonst kosten.
         </h2>
         <p className="mt-4 text-base leading-relaxed text-gray-700">
-          Übliche Preise in Deutschland, damit Sie einordnen können. Einmalbeträge haben wir auf 24 Monate
-          verteilt, so lassen sich alle Angebote als Monatspreis vergleichen.
+          Übliche Preise in Deutschland, damit du einordnen kannst, wo wir liegen.
         </p>
 
         <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200">
-          <div className="hidden grid-cols-[1.2fr_2fr_1fr] gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 sm:grid">
+          <div className="hidden grid-cols-[2fr_1fr_1fr] gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500 sm:grid">
             <span>Anbieter</span>
-            <span>Üblicher Preis</span>
-            <span className="text-right">Pro Monat gerechnet</span>
+            <span className="text-right">Einmalig</span>
+            <span className="text-right">Im Monat</span>
           </div>
           {markt.map((m) => (
             <div
               key={m.wer}
-              className="grid gap-1 border-t border-gray-100 px-5 py-4 first:border-t-0 sm:grid-cols-[1.2fr_2fr_1fr] sm:gap-4 sm:first:border-t"
+              className="grid grid-cols-2 gap-x-4 gap-y-1 border-t border-gray-100 px-5 py-4 first:border-t-0 sm:grid-cols-[2fr_1fr_1fr] sm:first:border-t"
             >
-              <span className="font-semibold text-gray-900">{m.wer}</span>
-              <span className="text-sm text-gray-600">{m.wie}</span>
-              <span className="text-sm font-semibold tabular-nums text-gray-900 sm:text-right">{m.monat}</span>
+              <div className="col-span-2 sm:col-span-1">
+                <span className="font-semibold text-gray-900">{m.wer}</span>
+                {m.hinweis && <span className="block text-sm text-gray-600">{m.hinweis}</span>}
+              </div>
+              <span className="text-sm tabular-nums text-gray-900 sm:text-right">
+                <span className="text-gray-500 sm:hidden">Einmalig: </span>
+                {m.einmalig}
+              </span>
+              <span className="text-sm font-semibold tabular-nums text-gray-900 sm:text-right">
+                <span className="font-normal text-gray-500 sm:hidden">Monat: </span>
+                {m.monat}
+              </span>
             </div>
           ))}
-          <div className="grid gap-1 border-t border-gray-200 bg-blue-50/60 px-5 py-4 sm:grid-cols-[1.2fr_2fr_1fr] sm:gap-4">
-            <span className="font-semibold text-brand-blue">Kolac Digital</span>
-            <span className="text-sm text-gray-700">ohne Einrichtung, Pflege inklusive, SEO je nach Paket</span>
-            <span className="text-sm font-semibold tabular-nums text-brand-blue sm:text-right">129 bis 399 €</span>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 border-t border-gray-200 bg-blue-50/60 px-5 py-4 sm:grid-cols-[2fr_1fr_1fr]">
+            <div className="col-span-2 sm:col-span-1">
+              <span className="font-semibold text-brand-blue">Kolac Digital</span>
+              <span className="block text-sm text-gray-700">Pflege inklusive, SEO je nach Paket, nur {LAUFZEIT} Laufzeit</span>
+            </div>
+            <span className="text-sm font-semibold tabular-nums text-brand-blue sm:text-right">
+              <span className="font-normal text-gray-500 sm:hidden">Einmalig: </span>
+              1.000 bis 3.490 €
+            </span>
+            <span className="text-sm font-semibold tabular-nums text-brand-blue sm:text-right">
+              <span className="font-normal text-gray-500 sm:hidden">Monat: </span>
+              99 bis 349 €
+            </span>
           </div>
         </div>
 
@@ -310,11 +319,9 @@ function Abschluss() {
   return (
     <section className="bg-white py-16 sm:py-20">
       <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-        <h2 className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-          Welches Paket passt zu Ihnen?
-        </h2>
+        <h2 className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">Welches Paket passt zu dir?</h2>
         <p className="mt-4 text-base leading-relaxed text-gray-700">
-          Wir schauen gemeinsam, wonach Ihre Kunden bei Google suchen und wer dort heute vorne steht. Danach ist
+          Wir schauen gemeinsam, wonach deine Kunden bei Google suchen und wer dort heute vorne steht. Danach ist
           meist klar, welches Paket sich lohnt.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
