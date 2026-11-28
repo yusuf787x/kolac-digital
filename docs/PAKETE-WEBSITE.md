@@ -31,20 +31,19 @@ Monatlich (ohne Wert ausgewiesen): Basis Hosting/Domain/SSL/Updates, Google-Prof
 
 ## Garantien
 
-Live auf der Seite: **Erst sehen, dann zahlen** (Entwurf in 7 Tagen, 0 € wenn er nicht gefällt), schon für den Website-Neustart entschieden.
-
-Vorschläge, nicht auf der Seite, bis Yusuf entscheidet:
+Seit 28.11. live (Yusuf: „ja, umsetzen, so dass ein Mensch es versteht“), je ein Satz auf der Seite, Regeln im Vertrag. Karten zeigen nur „Mit 2/3/4 Garantien“:
+0. **Erst sehen, dann zahlen (alle Pakete):** Entwurf vor Zahlung, 0 € wenn er nicht gefällt.
 1. **Pünktlich-Garantie (alle Pakete):** Live in 30 Tagen nach Entwurfsfreigabe (wenn Zugänge und Infos da sind), sonst zahlst du die ersten 3 Monatsbeiträge nicht. Risiko klein, wir haben es selbst in der Hand.
 2. **Sichtbar-Garantie (ab Sichtbar):** Nach 90 Tagen mindestens 50 % mehr Einblendungen bei Google als zum Start (Search Console plus Google-Profil), sonst ruht der Monatsbeitrag, bis es erreicht ist. Aus „Sichtbar in 90 Tagen“ übernommen.
 3. **Mehr-Klicks-Garantie (Wachstum):** Wie die Doppelt-gefunden-Garantie, gemessen an Klicks ohne Firmennamen. Für Juweliere wegen Saison (Weihnachten, Hochzeitssaison) Ziel 50 % statt Verdoppeln, sonst ist der Vergleich verzerrt.
 
-Weitere Hebel (Vorschlag): echte Knappheit über freie Plätze im Monat (`site.freeSlots`), Schnell-Bonus bei Zusage innerhalb 7 Tagen nach Entwurf (z. B. erster Monat frei), für Juweliere Beratungstermin online buchen als Bonus in Wachstum.
+Bewusst nicht auf der Seite (sonst überladen), mündlich nutzbar: echte Knappheit über freie Plätze im Monat (`site.freeSlots`), Schnell-Bonus bei Zusage innerhalb 7 Tagen nach Entwurf (z. B. erster Monat frei), für Juweliere Beratungstermin online buchen als Bonus in Wachstum.
 
 ## Marktvergleich (auf der Seite, mit Quellen)
 Baukasten 7 bis 36 €/Monat; Freelancer 800 bis 3.000 € + 50 bis 150 € Wartung; Website-Abo Agentur 129 bis 229 € + 490 bis 1.490 € Einrichtung; Agentur 2.000 bis 8.000 € + 200 bis 500 € Wartung; SEO-Agentur 500 bis 1.500 €/Monat (aus OFFER.md).
 
 ## Noch offen
-- Garantien 1 bis 3 und weitere Hebel (siehe oben).
+- Garantie-Regeln in den Vertrag übernehmen (Startwert, Mitwirkung, Messung wie in OFFER-WEBSITE.md Abschnitt 5).
 - Neue Einzelwerte im Wertstapel.
 - Wechsel nach oben: wird die Differenz der Einmalbeträge fällig?
 - Wem gehört die Website bei Kündigung (bewusst nicht auf der Seite).
